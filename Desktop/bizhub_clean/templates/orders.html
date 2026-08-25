@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Biz Hub Orders</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='biz-hub-logo.svg') }}">
+    <style>
+        :root { color-scheme: light; --page-bg: #f7fafc; --surface: #ffffff; --text: #2d3748; --muted: #718096; --border: #e2e8f0; --soft-bg: #ebf8ff; }
+        :root[data-theme="dark"] { color-scheme: dark; --page-bg: #17202b; --surface: #243140; --text: #f7fafc; --muted: #c0cad6; --border: #405163; --soft-bg: #20384b; }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: clamp(14px, 4vw, 40px); background: var(--page-bg); color: var(--text); font-family: 'Segoe UI', Tahoma, sans-serif; }
+        .container { width: min(100%, 900px); margin: 0 auto; }
+        .navbar, .order { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .navbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; margin-bottom: 22px; }
+        .navbar a { color: #2b6cb0; font-weight: bold; text-decoration: none; }
+        .nav-links { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+        .logo { width: 150px; height: auto; display: block; }
+        :root[data-theme="dark"] .logo { background: #fff; border-radius: 6px; }
+        .order { padding: 18px; margin-bottom: 16px; }
+        .order-header { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .status { font-weight: bold; color: #2f855a; }
+        .status.cancelled { color: #c53030; }
+        .status.pending { color: #b7791f; }
+        .payment-status { font-weight: bold; color: #718096; }
+        .payment-status.marked-paid { color: #2b6cb0; }
+        .payment-status.confirmed { color: #2f855a; }
+        .payment-status.rejected { color: #c53030; }
+        .item { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; color: var(--muted); }
+        .order-total { text-align: right; font-weight: bold; }
+        button { border: 0; border-radius: 4px; padding: 9px 12px; color: white; font-weight: bold; cursor: pointer; }
+        .confirm { background: #319795; }
+        .cancel { background: #e53e3e; }
+        .empty { color: var(--muted); }
+        @media (max-width: 600px) { .navbar { align-items: flex-start; flex-direction: column; } .item { font-size: 14px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="navbar">
+            <a href="{{ url_for('home') }}"><img class="logo" src="{{ url_for('static', filename='biz-hub-logo.svg') }}" alt="Biz Hub"></a>
+            <div class="nav-links"><a href="{{ url_for('home') }}">Home</a><a href="{{ url_for('logout') }}">Logout</a></div>
+        </div>
+
+        <h1>Order History</h1>
+        {% if customer_orders %}
+            <h2>Your Orders</h2>
+            {% for order in customer_orders %}
+                <section class="order">
+                    <div class="order-header"><strong>Order #{{ order.id }} · {{ order_sellers[order.id]|join(', ') }}</strong><span class="status {{ order.status|lower }}">{{ order.status }} · <span class="payment-status {{ order.payment_status|lower|replace(' ', '-') }}">Payment: {{ order.payment_status }}</span></span></div>
+                    {% for item in order_items[order.id] %}<div class="item"><span>{{ item.title }} x{{ item.quantity }}</span><span>GH₵{{ "%.2f"|format(item.price * item.quantity) }}</span></div>{% endfor %}
+                    <div class="order-total">Total: GH₵{{ "%.2f"|format(order.total) }}</div>
+                    {% if order.status == 'Pending' and order.payment_status == 'Unpaid' %}<form method="POST" action="{{ url_for('mark_payment_sent', order_id=order.id) }}"><button class="confirm" type="submit">I sent payment</button></form>{% endif %}
+                </section>
+            {% endfor %}
+        {% else %}<p class="empty">You have no orders yet.</p>{% endif %}
+
+        {% if vendor_orders %}
+            <h2>Orders For Your Listings</h2>
+            {% for order in vendor_orders %}
+                <section class="order">
+                    <div class="order-header"><strong>Order #{{ order.id }} from @{{ order.customer_username }}</strong><span class="status {{ order.status|lower }}">{{ order.status }} · <span class="payment-status {{ order.payment_status|lower|replace(' ', '-') }}">Payment: {{ order.payment_status }}</span></span></div>
+                    {% for item in order_items[order.id] if item.seller == session['username'] %}<div class="item"><span>{{ item.title }} x{{ item.quantity }}</span><span>GH₵{{ "%.2f"|format(item.price * item.quantity) }}</span></div>{% endfor %}
+                    {% if order.status == 'Pending' and order.payment_status == 'Marked paid' %}<form method="POST" action="{{ url_for('confirm_order', order_id=order.id) }}" style="display:inline-block; margin-top:10px;"><button class="confirm" type="submit">Confirm payment and mark sold</button></form> <form method="POST" action="{{ url_for('reject_payment', order_id=order.id) }}" style="display:inline-block; margin-top:10px;"><button class="cancel" type="submit">Reject payment</button></form>{% endif %}
+                    {% if order.status == 'Pending' %}<form method="POST" action="{{ url_for('cancel_order', order_id=order.id) }}" style="display:inline-block; margin-top:10px;"><button class="cancel" type="submit">Cancel order</button></form>{% endif %}
+                </section>
+            {% endfor %}
+        {% endif %}
+    </div>
+    <script>
+        const savedTheme = localStorage.getItem('biz-hub-theme');
+        document.documentElement.dataset.theme = savedTheme === 'dark' ? 'dark' : 'light';
+    </script>
+</body>
+</html>

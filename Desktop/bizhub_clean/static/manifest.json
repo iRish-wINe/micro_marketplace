@@ -1,0 +1,19 @@
+{
+  "name": "Biz Hub - Your Local Market, Unified Online",
+  "short_name": "Biz Hub",
+  "description": "Discover local products, meals, vendors, and companies in one online marketplace.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7fafc",
+  "theme_color": "#123047",
+  "lang": "en-GH",
+  "icons": [
+    {
+      "src": "/static/biz-hub-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
