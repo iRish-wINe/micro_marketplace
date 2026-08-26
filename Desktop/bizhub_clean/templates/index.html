@@ -132,9 +132,9 @@
     <div class="container">
         <div class="layout">
             
-            <!-- PANEL 1: CONTEXTUAL CONTROLS -->
+            <!-- PANEL 1: CONTEXTUAL SIDEBAR CONTROLS -->
             <div>
-                <!-- 🛠️ FIXED COUPLING CRASH LOGIC FOR FAST FOOD AND VENDORS -->
+                <!-- FIXED DUAL VENDOR VALIDATION MATRIX -->
                 {% if session.get('username') and session.get('role') in ['Vendor', 'Fast Food'] %}
                     <div class="panel-box">
                         <h3>👑 Subscription Dashboard</h3>
@@ -196,24 +196,16 @@
                     </div>
                 {% endif %}
             </div>
-
             <!-- PANEL 2: MAIN CATALOG GRID -->
-                                            <div class="card-actions">
-                                    {% if session.get('username') == product.seller %}
-                                        <a href="/delete-item/{{ product.id }}" class="btn-action btn-delete">🗑️ Delete Listing</a>
-                                    {% else %}
-                                        <!-- 💬 NEW FEATURE: SECURE INSTANT ITEM INQUIRY DEEP LINK -->
-                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hello%20@{{ product.seller }},%20I%20want%20to%20ask%20about%20{{ product.title | urlencode }}%20on%20Biz%20Hub." 
-                                           class="btn-action" 
-                                           style="background-color: #EDF2F7; color: var(--primary); border: 1px solid var(--border-color);">
-                                            ❓ Ask About Item
-                                        </a>
-
-                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hello%20@{{ product.seller }},%20I%20want%20to%20buy%20your%20{{ product.title | urlencode }}%20for%20GHS%20{{ product.price }}%20in%20{{ product.location }}%20on%20Biz%20Hub." class="btn-action btn-momo">💬 Quick Buy (MoMo)</a>
-                                        <a href="/add-to-cart/{{ product.id }}" class="btn-action btn-cart">🛒 Add to Cart</a>
-                                    {% endif %}
-                                </div>
-
+            <div>
+                <h3 style="margin-top: 0; font-size: 18px; color: var(--primary); margin-bottom: 20px;">🛍️ Available Marketplace Items</h3>
+                <div class="grid" id="masterCatalogGrid">
+                    {% for product in products %}
+                        <div class="card">
+                            <div class="card-media-wrapper">
+                                <img class="card-img" src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}">
+                                <span class="loc-badge">📍 {{ product.location }}</span>
+                            </div>
 
                             <div class="card-body">
                                 <div class="card-brand-wrapper">
@@ -232,7 +224,13 @@
                                     {% if session.get('username') == product.seller %}
                                         <a href="/delete-item/{{ product.id }}" class="btn-action btn-delete">🗑️ Delete Listing</a>
                                     {% else %}
-                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hello,%20I%20want%20to%20buy%20your%20{{ product.title }}%20for%20GHS%20{{ product.price }}%20in%20{{ product.location }}%20on%20Biz%20Hub." class="btn-action btn-momo">💬 Quick Buy (MoMo)</a>
+                                        <!-- 💬 DYNAMIC WHATSAPP ITEM INQUIRY DEEP LINK -->
+                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hello%20@{{ product.seller }},%20I%20want%20to%20ask%20about%20{{ product.title | urlencode }}%20on%20Biz%20Hub." 
+                                           class="btn-action" 
+                                           style="background-color: #EDF2F7; color: var(--primary); border: 1px solid var(--border-color);">
+                                            ❓ Ask About Item
+                                        </a>
+                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hello%20@{{ product.seller }},%20I%20want%20to%20buy%20your%20{{ product.title | urlencode }}%20for%20GHS%20{{ product.price }}%20in%20{{ product.location }}%20on%20Biz%20Hub." class="btn-action btn-momo">💬 Quick Buy (MoMo)</a>
                                         <a href="/add-to-cart/{{ product.id }}" class="btn-action btn-cart">🛒 Add to Cart</a>
                                     {% endif %}
                                 </div>
@@ -245,7 +243,7 @@
                     {% endfor %}
                 </div>
             </div>
-                      <!-- PANEL 3: CLIENT SHOPPING BASKET SIDEBAR -->
+            <!-- PANEL 3: CLIENT SHOPPING BASKET SIDEBAR -->
             <div class="cart-sidebar">
                 <h3 class="cart-title-side" style="margin-top:0;">🛒 My Basket ({{ session.get('cart', [])|length }})</h3>
                 {% if cart_items %}
@@ -267,18 +265,12 @@
                         <div style="background: #FFFDF5; border: 1px dashed var(--accent); padding: 10px; border-radius: var(--radius-sm); margin-bottom: 10px; text-align: center;">
                             {% if order.number %}
                                 <span style="font-size: 11px; font-weight: bold; color: #C05621; display: block; margin-bottom: 4px;">Owner: @{{ order.seller }}</span>
-                                <a href="whatsapp://send?phone={{ order.number }}&text={{ whatsapp_text }}" class="btn-whatsapp-checkout" style="margin-top:0; font-size:11px; padding:6px;">💬 Pay via WhatsApp</a>
+                                <a href="whatsapp://send?phone={{ order.number }}&text={{ order.whatsapp_text }}" class="btn-whatsapp-checkout" style="margin-top:0; font-size:11px; padding:6px;">💬 Pay via WhatsApp</a>
                             {% else %}
                                 <small style="color: var(--text-muted); font-size:11px;">@{{ order.seller }} has omitted their contact number.</small>
                             {% endif %}
                         </div>
                     {% endfor %}
-
-                    {% if session.get('username') %}
-                        <form method="POST" action="/record-order" style="margin:0 0 10px 0; width:100%;">
-                            <button type="submit" class="submit-btn" style="background: var(--primary); font-size:12px; padding:8px;">Record Order</button>
-                        </form>
-                    {% endif %}
                     
                     <a href="/clear-cart" class="clear-cart-link">Empty Shopping Cart</a>
                 {% else %}
@@ -307,9 +299,9 @@
             let itemCards = catalogGrid.getElementsByClassName("card");
             
             for (let i = 0; i < itemCards.length; i++) {
-                let textContainer = itemCards[i].getElementsByClassName("card-title");
+                let textContainer = itemCards[i].getElementsByClassName("card-title")[0];
                 if (textContainer) {
-                    let evaluationText = textContainer[0].textContent || textContainer[0].innerText;
+                    let evaluationText = textContainer.textContent || textContainer.innerText;
                     if (evaluationText.toLowerCase().indexOf(inputString) > -1) {
                         itemCards[i].style.display = "";
                     } else {
@@ -321,6 +313,3 @@
     </script>
 </body>
 </html>
-
-                    
-
