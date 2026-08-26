@@ -134,39 +134,63 @@
             
             <!-- PANEL 1: CONTEXTUAL SIDEBAR CONTROLS -->
             <div>
-                <!-- FIXED DUAL VENDOR VALIDATION MATRIX -->
                 {% if session.get('username') and session.get('role') in ['Vendor', 'Fast Food'] %}
-                    <div class="panel-box">
-                        <h3>👑 Subscription Dashboard</h3>
-                        <p style="margin: 0 0 5px; font-size: 13px;">Plan: <b>{{ vendor_subscription.name if vendor_subscription else 'Free Trial' }}</b></p>
-                        {% if vendor_subscription and vendor_subscription.get('trial') %}
-                            <small style="color: var(--accent); display: block; margin-bottom: 8px;">Premium trial ends {{ vendor_subscription.expires }}</small>
-                        {% elif vendor_subscription and vendor_subscription.get('is_premium') %}
-                            <small style="color: var(--success); display: block; margin-bottom: 8px;">Renews {{ vendor_subscription.expires }}</small>
-                        {% endif %}
-                        <p style="margin: 5px 0 12px; font-size: 12px; color: var(--text-muted);">
-                            Listings: <b>{{ listing_count }}{% if vendor_subscription and not vendor_subscription.get('is_premium') %}/3{% else %} · Unlimited{% endif %}</b>
-                        </p>
-                    </div>
+                    
+                    <!-- 🍟 RESTAURANT KITCHEN MANAGER DASHBOARD PANEL -->
+                    {% if session.get('role') == 'Fast Food' %}
+                        <div class="panel-box" style="background: linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%); border: 1px solid #FED7D7;">
+                            <h3 style="color: #C53030; border-bottom: 2px solid #FED7D7;">🍳 Kitchen Operations Hub</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                                <div style="background: white; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #FEEBC8; text-align: center;">
+                                    <span style="font-size: 20px; display: block;">🍔</span>
+                                    <small style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Active Menu Items</small>
+                                    <b style="font-size: 16px; color: var(--primary); display: block;">{{ fast_food_count }} items</b>
+                                </div>
+                                <div style="background: white; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #C6F6D5; text-align: center;">
+                                    <span style="font-size: 20px; display: block;">🛵</span>
+                                    <small style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Fulfillment</small>
+                                    <b style="font-size: 14px; color: #22543D; display: block; margin-top:3px;">Instant Delivery</b>
+                                </div>
+                            </div>
+                            <p style="margin: 0; font-size: 12px; color: #742A2A; font-weight: 600; text-align: center; background: #FFF5F5; padding: 6px; border-radius: var(--radius-sm);">
+                                Status: 🟢 Kitchen Open & Accepting Orders
+                            </p>
+                        </div>
+                    {% else %}
+                        <!-- Standard Merchant Dashboard Tracker -->
+                        <div class="panel-box">
+                            <h3>👑 Subscription Dashboard</h3>
+                            <p style="margin: 0 0 5px; font-size: 13px;">Plan: <b>{{ vendor_subscription.name if vendor_subscription else 'Free Trial' }}</b></p>
+                            {% if vendor_subscription and vendor_subscription.get('trial') %}
+                                <small style="color: var(--accent); display: block; margin-bottom: 8px;">Premium trial ends {{ vendor_subscription.expires }}</small>
+                            {% elif vendor_subscription and vendor_subscription.get('is_premium') %}
+                                <small style="color: var(--success); display: block; margin-bottom: 8px;">Renews {{ vendor_subscription.expires }}</small>
+                            {% endif %}
+                            <p style="margin: 5px 0 12px; font-size: 12px; color: var(--text-muted);">
+                                Listings: <b>{{ listing_count }}/Unlimited</b>
+                            </p>
+                        </div>
+                    {% endif %}
 
+                    <!-- LISTING CREATION FORM BLOCK -->
                     <div class="panel-box">
                         {% if session.get('role') == 'Fast Food' %}
-                            <h3>🍽️ List Meal Box</h3>
+                            <h3 style="color: #C53030; border-bottom: 2px solid #FED7D7;">🍕 Publish Hot Meal Deal</h3>
                         {% else %}
                             <h3>📢 Upload Product Listing</h3>
                         {% endif %}
 
                         <form method="POST" action="/" enctype="multipart/form-data">
                             <div class="form-group">
-                                <label>Item Title / Name:</label>
-                                <input type="text" name="{% if session.get('role') == 'Fast Food' %}meal_name{% else %}title{% endif %}" placeholder="e.g. Smart Watch" class="form-control" required>
+                                <label>{% if session.get('role') == 'Fast Food' %}Meal / Combo Name:{% else %}Item Title / Name:{% endif %}</label>
+                                <input type="text" name="{% if session.get('role') == 'Fast Food' %}meal_name{% else %}title{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Jollof with Grilled Chicken{% else %}e.g. Smart Watch{% endif %}" class="form-control" required>
                             </div>
                             <div class="form-group">
                                 <label>Price (GH₵):</label>
-                                <input type="number" name="price" step="0.01" class="form-control" required>
+                                <input type="number" name="price" step="0.01" class="form-control" placeholder="0.00" required>
                             </div>
                             <div class="form-group">
-                                <label>Fulfillment City:</label>
+                                <label>Preparation / Dispatch City:</label>
                                 <select name="location" class="form-control">
                                     {% for city in ['Abirem', 'Aburi', 'Accra', 'Ada', 'Aflao', 'Agona Swedru', 'Akim Achiase', 'Akim Oda', 'Asamankese', 'Axim', 'Bandai', 'Bimbila', 'Cape Coast', 'Damongo', 'Elmina', 'Ho', 'Hohoe', 'Jasikan', 'Kasoa', 'Keta', 'Kintampo', 'Koforidua', 'Kumasi', 'Kwahu', 'Mankessim', 'Nkawkaw', 'Nsawam', 'Obuase', 'Sehwi', 'Suhum', 'Sunyani', 'Takoradi', 'Tamale', 'Tarkwa', 'Tema'] %}
                                         <option value="{{ city }}">{{ city }}</option>
@@ -174,14 +198,16 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>Product Description:</label>
-                                <textarea name="{% if session.get('role') == 'Fast Food' %}meal_description{% else %}description{% endif %}" class="form-control" required></textarea>
+                                <label>{% if session.get('role') == 'Fast Food' %}Ingredients / Delivery Package Notes:{% else %}Product Description:{% endif %}</label>
+                                <textarea name="{% if session.get('role') == 'Fast Food' %}meal_description{% else %}description{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Served hot with pepper sauce, salad, and a free drink.{% else %}Enter details...{% endif %}" class="form-control" required></textarea>
                             </div>
                             <div class="form-group">
-                                <label>Media Upload (Image):</label>
+                                <label>Meal Cover Photo (Image):</label>
                                 <input type="file" name="product_image" accept="image/*" class="form-control" required>
                             </div>
-                            <button type="submit" class="submit-btn">Publish Item</button>
+                            <button type="submit" class="submit-btn" style="background-color: {% if session.get('role') == 'Fast Food' %}#E53E3E{% else %}var(--primary-light){% endif %};">
+                                {% if session.get('role') == 'Fast Food' %}🚀 Launch Meal Live{% else %}Publish Item{% endif %}
+                            </button>
                         </form>
                     </div>
                 {% elif session.get('username') %}
@@ -220,18 +246,18 @@
                                     <span>Owner: <b>@{{ product.seller }}</b></span>
                                 </div>
 
-                                                                <div class="card-actions">
+                                <div class="card-actions">
                                     {% if session.get('username') == product.seller %}
                                         <a href="/delete-item/{{ product.id }}" class="btn-action btn-delete">🗑️ Delete Listing</a>
                                     {% else %}
-                                        <!-- ❓ ASK ABOUT ITEM: NATIVE MOBILE PROTOCOL -->
+                                        <!-- ❓ ASK ABOUT ITEM: UNEDITABLE PROTOCOL HOOK -->
                                         <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=I%20want%20to%20ask%20about%20your%20{{ product.title | urlencode }}%20on%20Biz%20Hub." 
                                            class="btn-action" 
                                            style="background-color: #EDF2F7; color: var(--primary); border: 1px solid var(--border-color);">
                                             ❓ Ask About Item
                                         </a>
 
-                                        <!-- 💬 QUICK BUY (MOMO): NATIVE MOBILE PROTOCOL WITH EXACT FORMAT -->
+                                        <!-- 💬 QUICK BUY (MOMO): UNEDITABLE PROTOCOL WITH EXACT MANDATORY SENTENCE -->
                                         <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hello%20@{{ product.seller }}%20I%20want%20to%20buy%20your%20{{ product.title | urlencode }}%20for%20GH%E2%82%B5%20{{ product.price }}%20in%20{{ product.location | urlencode }}%20on%20Biz%20Hub.%20Let's%20arrange%20for%20payment%20and%20delivery!" 
                                            class="btn-action btn-momo">
                                             💬 Quick Buy (MoMo)
@@ -240,7 +266,8 @@
                                         <a href="/add-to-cart/{{ product.id }}" class="btn-action btn-cart">🛒 Add to Cart</a>
                                     {% endif %}
                                 </div>
-
+                            </div>
+                        </div>
                     {% else %}
                         <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); background: white; border-radius: var(--radius-lg); border: 2px dashed var(--border-color);">
                             📭 No matching marketplace items found.
@@ -304,9 +331,9 @@
             let itemCards = catalogGrid.getElementsByClassName("card");
             
             for (let i = 0; i < itemCards.length; i++) {
-                let textContainer = itemCards[i].getElementsByClassName("card-title")[0];
-                if (textContainer) {
-                    let evaluationText = textContainer.textContent || textContainer.innerText;
+                let textContainer = itemCards[i].getElementsByClassName("card-title");
+                if (textContainer && textContainer[0]) {
+                    let evaluationText = textContainer[0].textContent || textContainer[0].innerText;
                     if (evaluationText.toLowerCase().indexOf(inputString) > -1) {
                         itemCards[i].style.display = "";
                     } else {

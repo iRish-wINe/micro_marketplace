@@ -234,7 +234,29 @@ def home():
         listing_count = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ?", (session["username"],))[0]["count"]
         if not vendor_subscription["is_premium"] and listing_count >= 3:
             return redirect(url_for("home", listing_error="Basic accounts can list up to 3 products. Upgrade to Premium for unlimited listings."))
-            
+      # 🧠 TRACK FAST FOOD STATISTICS FOR THE DASHBOARD
+    fast_food_count = 0
+    if session.get("role") == "Fast Food":
+        fast_food_count = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ? AND category = 'Fast Food'", (session["username"],), one=True)["count"]
+
+    return render_template(
+        "index.html", 
+        products=all_products, 
+        active_filter=selected_filter, 
+        company_search=company_search, 
+        selected_category=selected_category, 
+        categories=PRODUCT_CATEGORIES, 
+        vendor_logos=vendor_logos, 
+        cart_items=cart_items, 
+        cart_total=cart_total, 
+        seller_orders=sorted(seller_orders.values(), key=lambda order: not order["priority"]), 
+        vendor_subscription=vendor_subscription, 
+        listing_count=listing_count, 
+        fast_food_count=fast_food_count, # 👈 PASSED HERE SAFELY
+        listing_error=listing_error, 
+        premium_sellers=premium_sellers
+    )
+          
         price = request.form.get("price")
         is_fast_food = vendor["seller_type"] == "Fast Food" or session.get("role") == "Fast Food"
         title = request.form.get("meal_name" if is_fast_food else "title")
