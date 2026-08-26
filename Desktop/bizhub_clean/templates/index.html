@@ -224,15 +224,15 @@
                                     {% if session.get('username') == product.seller %}
                                         <a href="/delete-item/{{ product.id }}" class="btn-action btn-delete">🗑️ Delete Listing</a>
                                     {% else %}
-                                        <!-- ❓ ASK ABOUT ITEM: UNEDITABLE DEEP LINK -->
-                                        <a href="https://whatsapp.com{{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=I%20want%20to%20ask%20about%20{{ product.title | urlencode }}%20on%20Biz%20Hub." 
+                                        <!-- ❓ ASK ABOUT ITEM: NATIVE MOBILE PROTOCOL -->
+                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=I%20want%20to%20ask%20about%20{{ product.title | urlencode }}%20on%20Biz%20Hub." 
                                            class="btn-action" 
                                            style="background-color: #EDF2F7; color: var(--primary); border: 1px solid var(--border-color);">
                                             ❓ Ask About Item
                                         </a>
 
-                                        <!-- 💬 QUICK BUY (MOMO): UNEDITABLE DEEP LINK WITH NEW REVISED STRUCTURE -->
-                                        <a href="https://whatsapp.com{{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hello%20@{{ product.seller }}%20I%20want%20to%20buy%20your%20{{ product.title | urlencode }}%20for%20GH%E2%82%B5%20{{ product.price }}%20in%20{{ product.location | urlencode }}%20on%20Biz%20Hub.%20Let's%20arrange%20for%20payment%20and%20delivery!" 
+                                        <!-- 💬 QUICK BUY (MOMO): NATIVE MOBILE PROTOCOL WITH EXACT FORMAT -->
+                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hello%20@{{ product.seller }}%20I%20want%20to%20buy%20your%20{{ product.title | urlencode }}%20for%20GH%E2%82%B5%20{{ product.price }}%20in%20{{ product.location | urlencode }}%20on%20Biz%20Hub.%20Let's%20arrange%20for%20payment%20and%20delivery!" 
                                            class="btn-action btn-momo">
                                             💬 Quick Buy (MoMo)
                                         </a>
@@ -241,8 +241,6 @@
                                     {% endif %}
                                 </div>
 
-                            </div>
-                        </div>
                     {% else %}
                         <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); background: white; border-radius: var(--radius-lg); border: 2px dashed var(--border-color);">
                             📭 No matching marketplace items found.
