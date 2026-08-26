@@ -331,12 +331,15 @@ def home():
                 seller_order["items"].append(item)
                 seller_order["total"] += float(item["price"])
 
+       # 🛒 UPGRADED: FIXED WHATSAPP ORDER basket COMPILER UTILITY
     for seller_order in seller_orders.values():
         message = f"Hello {seller_order['seller']}, I want to buy these products on Biz Hub:\n"
         for item in seller_order["items"]:
             message += f"- {item['title']} (GH₵{item['price']}) in {item['location']}\n"
-        message += f"\nTotal Cost: GH₵{seller_order['total']:.2f}. Let's arrange MoMo payment and delivery!"
+        # Enforces the unalterable payment reminder footnote layout parameters
+        message += f"\nTotal Cost: GH₵{seller_order['total']:.2f}. Let's arrange for payment and delivery."
         seller_order["whatsapp_text"] = quote(message)
+
 
     premium_sellers = {row["username"] for row in query_db("SELECT username FROM users WHERE (role = 'Vendor' OR role = 'Fast Food') AND plan = 'premium' AND subscription_expires_at > ?", (datetime.now(timezone.utc).isoformat(),))}
     trial_sellers = {row["username"] for row in query_db("SELECT username FROM users WHERE (role = 'Vendor' OR role = 'Fast Food') AND plan = 'basic' AND subscription_expires_at > ?", (datetime.now(timezone.utc).isoformat(),))}
