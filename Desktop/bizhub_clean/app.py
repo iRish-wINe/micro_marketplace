@@ -19,6 +19,7 @@ UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 def init_db():
     conn = sqlite3.connect("marketplace.db", timeout=20)
     cursor = conn.cursor()
@@ -109,8 +110,8 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
-    
-    user_columns = {row for row in cursor.execute("PRAGMA table_info(users)")}
+
+    user_columns = {row[1] for row in cursor.execute("PRAGMA table_info(users)")}
     if "whatsapp_number" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN whatsapp_number TEXT")
     if "plan" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'basic'")
     if "trial_started_at" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN trial_started_at TEXT")
@@ -119,8 +120,8 @@ def init_db():
     if "catalog_mode" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN catalog_mode TEXT")
     if "company_logo" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN company_logo TEXT")
     if "registered_at" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN registered_at TEXT")
-        
-    product_columns = {row for row in cursor.execute("PRAGMA table_info(products)")}
+
+    product_columns = {row[1] for row in cursor.execute("PRAGMA table_info(products)")}
     if "seller_whatsapp" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN seller_whatsapp TEXT")
     if "category" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN category TEXT NOT NULL DEFAULT 'Other'")
     if "video_file" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN video_file TEXT")
@@ -128,13 +129,14 @@ def init_db():
     if "status" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN status TEXT NOT NULL DEFAULT 'Available'")
     if "views" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN views INTEGER NOT NULL DEFAULT 0")
 
-    order_columns = {row for row in cursor.execute("PRAGMA table_info(orders)")}
+    order_columns = {row[1] for row in cursor.execute("PRAGMA table_info(orders)")}
     if "payment_status" not in order_columns: cursor.execute("ALTER TABLE orders ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'Unpaid'")
 
     conn.commit()
     conn.close()
 
 init_db()
+
 def normalize_whatsapp_number(number):
     digits = "".join(character for character in (number or "") if character.isdigit())
     if digits.startswith("0"):
@@ -180,7 +182,7 @@ def query_db(query, args=(), one=False):
     rv = cursor.fetchall()
     conn.commit()
     conn.close()
-    return (rv if rv else None) if one else rv
+    return (rv[0] if rv else None) if one else rv
 
 def get_vendor_categories(user_id):
     return [row["category"] for row in query_db("SELECT category FROM vendor_categories WHERE user_id = ? ORDER BY category", (user_id,))]
@@ -188,18 +190,18 @@ def get_vendor_categories(user_id):
 def valid_reset_token(token):
     if not token:
         return None
-    reset_rows = query_db("SELECT * FROM password_resets WHERE token = ? AND used = 0", (token,), one=True)
-    return reset_rows
+    return query_db("SELECT * FROM password_resets WHERE token = ? AND used = 0", (token,), one=True)
 
 def save_company_logo(upload):
     if not upload or not upload.filename:
         return None
-    extension = os.path.splitext(upload.filename).lower()
+    extension = os.path.splitext(upload.filename)[1].lower()
     if extension not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
         return None
     filename = f"company-{uuid.uuid4().hex}{extension}"
     upload.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
     return filename
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
@@ -210,7 +212,7 @@ def home():
         listing_count = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ?", (session["username"],), one=True)["count"]
         if not vendor_subscription["is_premium"] and listing_count >= 3:
             return redirect(url_for("home", listing_error="Basic accounts can list up to 3 products. Upgrade to Premium for unlimited listings."))
-            
+
         price = request.form.get("price")
         is_fast_food = vendor["seller_type"] == "Fast Food" or session.get("role") == "Fast Food"
         title = request.form.get("meal_name" if is_fast_food else "title")
@@ -222,14 +224,14 @@ def home():
         video = request.files.get("product_video")
         video_filename = None
         if video and video.filename:
-            video_extension = os.path.splitext(video.filename).lower()
+            video_extension = os.path.splitext(video.filename)[1].lower()
             if not vendor_subscription["is_premium"]:
                 return redirect(url_for("home", listing_error="Only verified vendors with an active Premium Store or trial can upload product videos."))
             if video_extension not in VIDEO_EXTENSIONS:
                 return redirect(url_for("home", listing_error="Product videos must be MP4, WebM, or MOV files."))
             video_filename = f"video-{uuid.uuid4().hex}{video_extension}"
         filename = "fast-food-placeholder.svg" if is_fast_food else secure_filename(file.filename) if file and file.filename else ""
-        
+
         has_image = bool(file and file.filename)
         has_video = bool(video and video.filename)
         if not is_fast_food and has_image == has_video:
@@ -248,13 +250,12 @@ def home():
             if video_filename:
                 video.save(os.path.join(app.config["UPLOAD_FOLDER"], video_filename))
             b_label = session.get("company_name") if vendor_subscription["is_premium"] and session.get("company_name") else "Individual Vendor"
-            
             query_db(
                 "INSERT INTO products (title, price, description, image_file, video_file, stock_quantity, status, seller, seller_email, seller_whatsapp, location, business_label, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (title, float(price), description, filename, video_filename, stock_quantity, "Available", session["username"], session["email"], session.get("whatsapp_number"), location, b_label, category)
             )
             return redirect(url_for("home"))
-            
+
     selected_filter = request.args.get("filter_location", "All")
     company_search = request.args.get("company_search", "").strip()
     selected_category = request.args.get("category", "All")
@@ -280,20 +281,20 @@ def home():
         row["username"]: row["company_logo"]
         for row in query_db("SELECT username, company_logo FROM users WHERE company_logo IS NOT NULL")
     }
-        
+
     cart_items = []
     cart_total = 0.0
     seller_orders = {}
-    
-    if 'cart' in session and session['cart']:
-        placeholders = ",".join("?" for _ in session['cart'])
-        items_in_db = query_db(f"SELECT * FROM products WHERE id IN ({placeholders})", session['cart'])
+
+    if "cart" in session and session["cart"]:
+        placeholders = ",".join("?" for _ in session["cart"])
+        items_in_db = query_db(f"SELECT * FROM products WHERE id IN ({placeholders})", session["cart"])
         if items_in_db:
             for item in items_in_db:
                 cart_items.append(item)
-                cart_total += float(item['price'])
-                seller_number = normalize_whatsapp_number(item['seller_whatsapp'])
-                seller_key = (item['seller'], seller_number)
+                cart_total += float(item["price"])
+                seller_number = normalize_whatsapp_number(item["seller_whatsapp"])
+                seller_key = (item["seller"], seller_number)
                 seller_order = seller_orders.setdefault(seller_key, {
                     "seller": item["seller"],
                     "number": seller_number,
@@ -311,11 +312,11 @@ def home():
         seller_order["whatsapp_text"] = quote(message)
 
     premium_sellers = {row["username"] for row in query_db("SELECT username FROM users WHERE (role = 'Vendor' OR role = 'Fast Food') AND plan = 'premium' AND subscription_expires_at > ?", (datetime.now(timezone.utc).isoformat(),))}
-    trial_sellers = {row["username"] for row in query_db("SELECT username FROM users WHERE (role = 'Vendor' OR role = 'Fast Food') Navn plan = 'basic' AND subscription_expires_at > ?", (datetime.now(timezone.utc).isoformat(),))}
+    trial_sellers = {row["username"] for row in query_db("SELECT username FROM users WHERE (role = 'Vendor' OR role = 'Fast Food') AND plan = 'basic' AND subscription_expires_at > ?", (datetime.now(timezone.utc).isoformat(),))}
     premium_sellers.update(trial_sellers)
     for seller_order in seller_orders.values():
         seller_order["priority"] = seller_order["seller"] in premium_sellers
-    
+
     vendor_subscription = None
     listing_count = 0
     fast_food_count = 0
@@ -325,8 +326,9 @@ def home():
         listing_count = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ?", (session["username"],), one=True)["count"]
         if session.get("role") == "Fast Food":
             fast_food_count = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ? AND category = 'Fast Food'", (session["username"],), one=True)["count"]
-            
+
     return render_template("index.html", products=all_products, active_filter=selected_filter, company_search=company_search, selected_category=selected_category, categories=PRODUCT_CATEGORIES, vendor_logos=vendor_logos, cart_items=cart_items, cart_total=cart_total, seller_orders=sorted(seller_orders.values(), key=lambda order: not order["priority"]), vendor_subscription=vendor_subscription, listing_count=listing_count, fast_food_count=fast_food_count, listing_error=listing_error, premium_sellers=premium_sellers)
+
 @app.route("/delete-item/<int:product_id>")
 def delete_item(product_id):
     if "username" not in session:
@@ -343,12 +345,12 @@ def add_to_cart(product_id):
         return redirect(url_for("home"))
     if product["stock_quantity"] < 1 or product["status"] == "Sold":
         return redirect(url_for("home", listing_error="This product is sold out."))
-    if 'cart' not in session:
-        session['cart'] = []
-    current_cart = session['cart']
+    if "cart" not in session:
+        session["cart"] = []
+    current_cart = session["cart"]
     if product_id not in current_cart:
         current_cart.append(product_id)
-        session['cart'] = current_cart
+        session["cart"] = current_cart
     return redirect(url_for("home"))
 
 @app.route("/mark-sold/<int:product_id>", methods=["POST"])
@@ -431,8 +433,9 @@ def cancel_order(order_id):
 
 @app.route("/clear-cart")
 def clear_cart():
-    session.pop('cart', None)
+    session.pop("cart", None)
     return redirect(url_for("home"))
+
 @app.route("/subscription")
 def subscription():
     if "username" not in session:
@@ -539,7 +542,6 @@ def admin_logout():
 def settings():
     if "username" not in session:
         return redirect(url_for("login"))
-
     user = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
     if not user:
         session.clear()
@@ -591,21 +593,21 @@ def settings():
         return redirect(url_for("settings", updated="1"))
 
     return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, updated=request.args.get("updated") == "1")
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         username = request.form.get("login_user")
         password = request.form.get("login_pass")
         user = query_db("SELECT * FROM users WHERE username = ?", (username,), one=True)
-        if user:
-            if check_password_hash(user["password_hash"], password):
-                session["username"] = user["username"]
-                session["email"] = user["email"]
-                session["role"] = user["role"]
-                session["seller_type"] = user["seller_type"]
-                session["company_name"] = user["company_name"]
-                session["whatsapp_number"] = user["whatsapp_number"]
-                return redirect(url_for("home"))
+        if user and check_password_hash(user["password_hash"], password):
+            session["username"] = user["username"]
+            session["email"] = user["email"]
+            session["role"] = user["role"]
+            session["seller_type"] = user["seller_type"]
+            session["company_name"] = user["company_name"]
+            session["whatsapp_number"] = user["whatsapp_number"]
+            return redirect(url_for("home"))
         return render_template("login.html", login_error="Invalid username or password.")
     return render_template("login.html")
 
@@ -625,7 +627,7 @@ def forgot_password():
             reset_link = url_for("reset_credentials", token=token, _external=True)
             payment_number = normalize_whatsapp_number(os.environ.get("BIZ_HUB_PAYMENT_WHATSAPP", "233558272972"))
             reset_text = quote(f"Hello Biz Hub, I need to recover my account registered with WhatsApp {whatsapp_number}. My reset link is: {reset_link}")
-            reset_link = f"https://wa.me{payment_number}?text={reset_text}"
+            reset_link = f"https://wa.me/{payment_number}?text={reset_text}"
     return render_template("forgot_password.html", reset_error=reset_error, reset_link=reset_link)
 
 @app.route("/reset-credentials/<token>", methods=["GET", "POST"])
@@ -657,7 +659,7 @@ def register():
         email = request.form.get("reg_email", "").strip()
         password = request.form.get("reg_pass", "")
         submitted_role = request.form.get("role", "").strip()
-        
+
         role_aliases = {
             "customer": "Customer",
             "vendor": "Vendor",
@@ -667,47 +669,44 @@ def register():
 
         if not username or not email or not password:
             return render_template("login.html", reg_error="Username, email, and password are required.")
-            
+
         seller_type = request.form.get("seller_type", "Individual")
         catalog_mode = request.form.get("catalog_mode", "Focused")
         selected_categories = [category for category in request.form.getlist("vendor_categories") if category in VENDOR_CATEGORIES]
         company_name = request.form.get("company_name")
         whatsapp_number = normalize_whatsapp_number(request.form.get("whatsapp_number"))
-        
+
         if role == "Fast Food":
             seller_type = "Fast Food"
             catalog_mode = "Focused"
             selected_categories = ["Fast Food"]
         elif role == "Vendor" and seller_type == "Individual":
             company_name = None
-            
+
         if role == "Customer":
             seller_type = "Individual"
             company_name = None
             whatsapp_number = None
             catalog_mode = None
             selected_categories = []
-            
+
         if role in ["Vendor", "Fast Food"] and not whatsapp_number:
             return render_template("login.html", reg_error="Merchant and Fast Food vendor accounts need a compulsory WhatsApp number to receive order tallies.")
         if role == "Vendor" and (catalog_mode not in ("Variety", "Focused") or not selected_categories):
             return render_template("login.html", reg_error="Choose a product range and select at least one category.")
-            
+
         try:
             hashed_pwd = generate_password_hash(password)
             trial_started_at = datetime.now(timezone.utc)
             trial_expires_at = trial_started_at + timedelta(days=61)
-            
             query_db(
-                "INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, trial_started_at, subscription_expires_at, catalog_mode, registered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+                "INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, trial_started_at, subscription_expires_at, catalog_mode, registered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (username, email, hashed_pwd, role, seller_type, company_name, whatsapp_number, "basic", trial_started_at.isoformat() if role in ["Vendor", "Fast Food"] else None, trial_expires_at.isoformat() if role in ["Vendor", "Fast Food"] else None, catalog_mode, datetime.now(timezone.utc).isoformat())
             )
-            
             new_user = query_db("SELECT id FROM users WHERE username = ?", (username,), one=True)
             if new_user and selected_categories:
                 for category in selected_categories:
                     query_db("INSERT INTO vendor_categories (user_id, category) VALUES (?, ?)", (new_user["id"], category))
-                
             session.clear()
             session["username"] = username
             session["email"] = email
