@@ -19,12 +19,9 @@ UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 def init_db():
     conn = sqlite3.connect("marketplace.db", timeout=20)
     cursor = conn.cursor()
-    
-    # 👥 1. Create Core Users Table Architecture
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,8 +41,6 @@ def init_db():
             registered_at TEXT
         )
     """)
-    
-    # 🛍️ 2. Create Core Products Table Architecture
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,8 +60,6 @@ def init_db():
             views INTEGER NOT NULL DEFAULT 0
         )
     """)
-    
-    # 🏬 3. Create Core Vendor Categories Table Architecture
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS vendor_categories (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,8 +69,6 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
-    
-    # 🛡️ 4. Create Core Admin Users Table Architecture
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS admin_users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -86,8 +77,6 @@ def init_db():
             created_at TEXT NOT NULL
         )
     """)
-    
-    # 🛒 5. Create Core Orders Table Architecture
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS orders (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -98,8 +87,6 @@ def init_db():
             created_at TEXT NOT NULL
         )
     """)
-    
-    # 📦 6. Create Core Order Items Table Architecture
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS order_items (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -112,8 +99,6 @@ def init_db():
             FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE
         )
     """)
-    
-    # 🔐 7. Create Password Resets Table Architecture
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS password_resets (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -125,8 +110,7 @@ def init_db():
         )
     """)
     
-    # 🧠 Safe Runtime Migration Array Scanners (Ensures zero missing column parameters)
-    user_columns = {row[1] for row in cursor.execute("PRAGMA table_info(users)")}
+    user_columns = {row for row in cursor.execute("PRAGMA table_info(users)")}
     if "whatsapp_number" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN whatsapp_number TEXT")
     if "plan" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'basic'")
     if "trial_started_at" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN trial_started_at TEXT")
@@ -136,7 +120,7 @@ def init_db():
     if "company_logo" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN company_logo TEXT")
     if "registered_at" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN registered_at TEXT")
         
-    product_columns = {row[1] for row in cursor.execute("PRAGMA table_info(products)")}
+    product_columns = {row for row in cursor.execute("PRAGMA table_info(products)")}
     if "seller_whatsapp" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN seller_whatsapp TEXT")
     if "category" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN category TEXT NOT NULL DEFAULT 'Other'")
     if "video_file" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN video_file TEXT")
@@ -144,15 +128,13 @@ def init_db():
     if "status" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN status TEXT NOT NULL DEFAULT 'Available'")
     if "views" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN views INTEGER NOT NULL DEFAULT 0")
 
-    order_columns = {row[1] for row in cursor.execute("PRAGMA table_info(orders)")}
+    order_columns = {row for row in cursor.execute("PRAGMA table_info(orders)")}
     if "payment_status" not in order_columns: cursor.execute("ALTER TABLE orders ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'Unpaid'")
 
     conn.commit()
     conn.close()
 
-
 init_db()
-
 def normalize_whatsapp_number(number):
     digits = "".join(character for character in (number or "") if character.isdigit())
     if digits.startswith("0"):
@@ -198,7 +180,7 @@ def query_db(query, args=(), one=False):
     rv = cursor.fetchall()
     conn.commit()
     conn.close()
-    return (rv[0] if rv else None) if one else rv
+    return (rv if rv else None) if one else rv
 
 def get_vendor_categories(user_id):
     return [row["category"] for row in query_db("SELECT category FROM vendor_categories WHERE user_id = ? ORDER BY category", (user_id,))]
@@ -206,57 +188,29 @@ def get_vendor_categories(user_id):
 def valid_reset_token(token):
     if not token:
         return None
-    reset_rows = query_db("SELECT * FROM password_resets WHERE token = ? AND used = 0", (token,))
-    if not reset_rows:
-        return None
-    reset = reset_rows[0]
-    if datetime.fromisoformat(reset["expires_at"]) <= datetime.now(timezone.utc):
-        return None
-    return reset
+    reset_rows = query_db("SELECT * FROM password_resets WHERE token = ? AND used = 0", (token,), one=True)
+    return reset_rows
 
 def save_company_logo(upload):
     if not upload or not upload.filename:
         return None
-    extension = os.path.splitext(upload.filename)[1].lower()
+    extension = os.path.splitext(upload.filename).lower()
     if extension not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
         return None
     filename = f"company-{uuid.uuid4().hex}{extension}"
     upload.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
     return filename
-
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
         if "username" not in session or session.get("role") not in ["Vendor", "Fast Food"]:
             return redirect(url_for("home"))
-        vendor = query_db("SELECT * FROM users WHERE username = ?", (session["username"],))[0]
+        vendor = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
         vendor_subscription = subscription_status(vendor)
-        listing_count = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ?", (session["username"],))[0]["count"]
+        listing_count = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ?", (session["username"],), one=True)["count"]
         if not vendor_subscription["is_premium"] and listing_count >= 3:
             return redirect(url_for("home", listing_error="Basic accounts can list up to 3 products. Upgrade to Premium for unlimited listings."))
-      # 🧠 TRACK FAST FOOD STATISTICS FOR THE DASHBOARD
-    fast_food_count = 0
-    if session.get("role") == "Fast Food":
-        fast_food_count = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ? AND category = 'Fast Food'", (session["username"],), one=True)["count"]
-
-    return render_template(
-        "index.html", 
-        products=all_products, 
-        active_filter=selected_filter, 
-        company_search=company_search, 
-        selected_category=selected_category, 
-        categories=PRODUCT_CATEGORIES, 
-        vendor_logos=vendor_logos, 
-        cart_items=cart_items, 
-        cart_total=cart_total, 
-        seller_orders=sorted(seller_orders.values(), key=lambda order: not order["priority"]), 
-        vendor_subscription=vendor_subscription, 
-        listing_count=listing_count, 
-        fast_food_count=fast_food_count, # 👈 PASSED HERE SAFELY
-        listing_error=listing_error, 
-        premium_sellers=premium_sellers
-    )
-          
+            
         price = request.form.get("price")
         is_fast_food = vendor["seller_type"] == "Fast Food" or session.get("role") == "Fast Food"
         title = request.form.get("meal_name" if is_fast_food else "title")
@@ -268,7 +222,7 @@ def home():
         video = request.files.get("product_video")
         video_filename = None
         if video and video.filename:
-            video_extension = os.path.splitext(video.filename)[1].lower()
+            video_extension = os.path.splitext(video.filename).lower()
             if not vendor_subscription["is_premium"]:
                 return redirect(url_for("home", listing_error="Only verified vendors with an active Premium Store or trial can upload product videos."))
             if video_extension not in VIDEO_EXTENSIONS:
@@ -349,42 +303,42 @@ def home():
                 seller_order["items"].append(item)
                 seller_order["total"] += float(item["price"])
 
-       # 🛒 UPGRADED: FIXED WHATSAPP ORDER basket COMPILER UTILITY
     for seller_order in seller_orders.values():
         message = f"Hello {seller_order['seller']}, I want to buy these products on Biz Hub:\n"
         for item in seller_order["items"]:
             message += f"- {item['title']} (GH₵{item['price']}) in {item['location']}\n"
-        # Enforces the unalterable payment reminder footnote layout parameters
         message += f"\nTotal Cost: GH₵{seller_order['total']:.2f}. Let's arrange for payment and delivery."
         seller_order["whatsapp_text"] = quote(message)
 
-
     premium_sellers = {row["username"] for row in query_db("SELECT username FROM users WHERE (role = 'Vendor' OR role = 'Fast Food') AND plan = 'premium' AND subscription_expires_at > ?", (datetime.now(timezone.utc).isoformat(),))}
-    trial_sellers = {row["username"] for row in query_db("SELECT username FROM users WHERE (role = 'Vendor' OR role = 'Fast Food') AND plan = 'basic' AND subscription_expires_at > ?", (datetime.now(timezone.utc).isoformat(),))}
+    trial_sellers = {row["username"] for row in query_db("SELECT username FROM users WHERE (role = 'Vendor' OR role = 'Fast Food') Navn plan = 'basic' AND subscription_expires_at > ?", (datetime.now(timezone.utc).isoformat(),))}
     premium_sellers.update(trial_sellers)
     for seller_order in seller_orders.values():
         seller_order["priority"] = seller_order["seller"] in premium_sellers
+    
     vendor_subscription = None
     listing_count = 0
+    fast_food_count = 0
     if session.get("role") in ["Vendor", "Fast Food"]:
-        vendor = query_db("SELECT * FROM users WHERE username = ?", (session["username"],))[0]
+        vendor = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
         vendor_subscription = subscription_status(vendor)
-        listing_count = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ?", (session["username"],))[0]["count"]
-    return render_template("index.html", products=all_products, active_filter=selected_filter, company_search=company_search, selected_category=selected_category, categories=PRODUCT_CATEGORIES, vendor_logos=vendor_logos, cart_items=cart_items, cart_total=cart_total, seller_orders=sorted(seller_orders.values(), key=lambda order: not order["priority"]), vendor_subscription=vendor_subscription, listing_count=listing_count, listing_error=listing_error, premium_sellers=premium_sellers)
+        listing_count = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ?", (session["username"],), one=True)["count"]
+        if session.get("role") == "Fast Food":
+            fast_food_count = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ? AND category = 'Fast Food'", (session["username"],), one=True)["count"]
+            
+    return render_template("index.html", products=all_products, active_filter=selected_filter, company_search=company_search, selected_category=selected_category, categories=PRODUCT_CATEGORIES, vendor_logos=vendor_logos, cart_items=cart_items, cart_total=cart_total, seller_orders=sorted(seller_orders.values(), key=lambda order: not order["priority"]), vendor_subscription=vendor_subscription, listing_count=listing_count, fast_food_count=fast_food_count, listing_error=listing_error, premium_sellers=premium_sellers)
 @app.route("/delete-item/<int:product_id>")
 def delete_item(product_id):
     if "username" not in session:
         return redirect(url_for("login"))
-    product_list = query_db("SELECT * FROM products WHERE id = ?", (product_id,), one=True)
-    product = product_list if product_list else None
+    product = query_db("SELECT * FROM products WHERE id = ?", (product_id,), one=True)
     if product and product["seller"] == session["username"]:
         query_db("DELETE FROM products WHERE id = ?", (product_id,))
     return redirect(url_for("home"))
 
 @app.route("/add-to-cart/<int:product_id>")
 def add_to_cart(product_id):
-    product_list = query_db("SELECT stock_quantity, status FROM products WHERE id = ?", (product_id,), one=True)
-    product = product_list if product_list else None
+    product = query_db("SELECT stock_quantity, status FROM products WHERE id = ?", (product_id,), one=True)
     if not product:
         return redirect(url_for("home"))
     if product["stock_quantity"] < 1 or product["status"] == "Sold":
@@ -401,8 +355,7 @@ def add_to_cart(product_id):
 def mark_sold(product_id):
     if session.get("role") not in ["Vendor", "Fast Food"]:
         return redirect(url_for("login"))
-    product_list = query_db("SELECT stock_quantity FROM products WHERE id = ? AND seller = ?", (product_id, session["username"]), one=True)
-    product = product_list if product_list else None
+    product = query_db("SELECT stock_quantity FROM products WHERE id = ? AND seller = ?", (product_id, session["username"]), one=True)
     if product:
         try:
             sold_quantity = int(request.form.get("sold_quantity", "1"))
@@ -426,7 +379,7 @@ def place_order():
     total = sum(float(item["price"]) for item in items)
     created_at = datetime.now(timezone.utc).isoformat()
     query_db("INSERT INTO orders (customer_username, total, status, payment_status, created_at) VALUES (?, ?, 'Pending', 'Unpaid', ?)", (session["username"], total, created_at))
-    order_id = query_db("SELECT id FROM orders WHERE customer_username = ? AND created_at = ? ORDER BY id DESC LIMIT 1", (session["username"], created_at))["id"]
+    order_id = query_db("SELECT id FROM orders WHERE customer_username = ? AND created_at = ? ORDER BY id DESC LIMIT 1", (session["username"], created_at), one=True)["id"]
     for item in items:
         query_db("INSERT INTO order_items (order_id, product_id, seller, title, price, quantity) VALUES (?, ?, ?, ?, ?, 1)", (order_id, item["id"], item["seller"], item["title"], item["price"]))
     session.pop("cart", None)
@@ -460,7 +413,7 @@ def order_history():
 def confirm_order(order_id):
     if session.get("role") not in ["Vendor", "Fast Food"]:
         return redirect(url_for("login"))
-    order = query_db("SELECT * FROM orders WHERE id = ?", (order_id,))
+    order = query_db("SELECT * FROM orders WHERE id = ?", (order_id,), one=True)
     order_items = query_db("SELECT * FROM order_items WHERE order_id = ? AND seller = ?", (order_id, session["username"]))
     if order and order["payment_status"] == "Marked paid" and order["status"] == "Pending" and order_items:
         for item in order_items:
@@ -475,20 +428,19 @@ def cancel_order(order_id):
     if query_db("SELECT id FROM order_items WHERE order_id = ? AND seller = ?", (order_id, session["username"])):
         query_db("UPDATE orders SET status = 'Cancelled' WHERE id = ?", (order_id,))
     return redirect(url_for("order_history"))
+
 @app.route("/clear-cart")
 def clear_cart():
     session.pop('cart', None)
     return redirect(url_for("home"))
-
 @app.route("/subscription")
 def subscription():
     if "username" not in session:
         return redirect(url_for("login"))
-    user_list = query_db("SELECT * FROM users WHERE username = ?", (session["username"],))
-    if not user_list:
+    user = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+    if not user:
         session.clear()
         return redirect(url_for("login"))
-    user = user_list[0]
     payment_number = normalize_whatsapp_number(os.environ.get("BIZ_HUB_PAYMENT_WHATSAPP", "233558272972"))
     payment_text = quote(f"Hello Biz Hub, I want to upgrade my {session['username']} account to Premium Store.")
     return render_template("subscription.html", user=user, subscription=subscription_status(user), payment_number=payment_number, payment_text=payment_text, requested=request.args.get("requested") == "1")
@@ -507,8 +459,8 @@ def admin_login():
             return render_template("admin_login.html", admin_error="Admin credentials are not configured.")
         submitted_username = request.form.get("username", "").strip()
         submitted_password = request.form.get("password", "")
-        database_admin = query_db("SELECT * FROM admin_users WHERE username = ?", (submitted_username,))
-        database_login = database_admin and check_password_hash(database_admin[0]["password_hash"], submitted_password)
+        database_admin = query_db("SELECT * FROM admin_users WHERE username = ?", (submitted_username,), one=True)
+        database_login = database_admin and check_password_hash(database_admin["password_hash"], submitted_password)
         configured_login = submitted_username == os.environ.get("BIZ_HUB_ADMIN_USERNAME", "").strip() and submitted_password == os.environ.get("BIZ_HUB_ADMIN_PASSWORD", "")
         local_login = submitted_username == LOCAL_ADMIN_USERNAME and submitted_password == LOCAL_ADMIN_PASSWORD
         if database_login or configured_login or local_login:
@@ -556,10 +508,9 @@ def approve_premium(user_id):
 def admin_delete_user(user_id):
     if not is_admin():
         return redirect(url_for("admin_login"))
-    user_list = query_db("SELECT * FROM users WHERE id = ?", (user_id,))
-    if not user_list:
+    user = query_db("SELECT * FROM users WHERE id = ?", (user_id,), one=True)
+    if not user:
         return redirect(url_for("admin_dashboard"))
-    user = user_list[0]
     product_rows = query_db("SELECT image_file, video_file FROM products WHERE seller = ?", (user["username"],))
     for product in product_rows:
         for filename in (product["image_file"], product["video_file"], user["company_logo"]):
@@ -589,11 +540,10 @@ def settings():
     if "username" not in session:
         return redirect(url_for("login"))
 
-    user_list = query_db("SELECT * FROM users WHERE username = ?", (session["username"],))
-    if not user_list:
+    user = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+    if not user:
         session.clear()
         return redirect(url_for("login"))
-    user = user_list[0]
     is_vendor_any = user["role"] in ["Vendor", "Fast Food"]
     vendor_categories = get_vendor_categories(user["id"]) if is_vendor_any else []
 
@@ -641,34 +591,23 @@ def settings():
         return redirect(url_for("settings", updated="1"))
 
     return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, updated=request.args.get("updated") == "1")
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form.get("login_user", "").strip()
-        password = request.form.get("login_pass", "")
+        username = request.form.get("login_user")
+        password = request.form.get("login_pass")
         user = query_db("SELECT * FROM users WHERE username = ?", (username,), one=True)
-
-        valid_password = False
-        if user is not None:
-            try:
-                valid_password = bool(user["password_hash"]) and check_password_hash(user["password_hash"], password)
-            except (TypeError, ValueError):
-                valid_password = False
-
-        if valid_password:
-            session.clear()
-            session["username"] = user["username"]
-            session["email"] = user["email"]
-            session["role"] = user["role"]
-            session["seller_type"] = user["seller_type"]
-            session["company_name"] = user["company_name"]
-            session["whatsapp_number"] = user["whatsapp_number"]
-            return redirect(url_for("home"))
-
+        if user:
+            if check_password_hash(user["password_hash"], password):
+                session["username"] = user["username"]
+                session["email"] = user["email"]
+                session["role"] = user["role"]
+                session["seller_type"] = user["seller_type"]
+                session["company_name"] = user["company_name"]
+                session["whatsapp_number"] = user["whatsapp_number"]
+                return redirect(url_for("home"))
         return render_template("login.html", login_error="Invalid username or password.")
     return render_template("login.html")
-
 
 @app.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
@@ -718,19 +657,19 @@ def register():
         email = request.form.get("reg_email", "").strip()
         password = request.form.get("reg_pass", "")
         submitted_role = request.form.get("role", "").strip()
+        
         role_aliases = {
             "customer": "Customer",
             "vendor": "Vendor",
-            "fast food": "Fast Food",
+            "fast food": "Fast Food"
         }
-        role = role_aliases.get(submitted_role.casefold())
+        role = role_aliases.get(submitted_role.lower(), submitted_role)
 
         if not username or not email or not password:
             return render_template("login.html", reg_error="Username, email, and password are required.")
-        if not role:
-            return render_template("login.html", reg_error="Choose Customer, General Merchant, or Fast Food Vendor before registering.")
-        seller_type = request.form.get("seller_type")
-        catalog_mode = request.form.get("catalog_mode")
+            
+        seller_type = request.form.get("seller_type", "Individual")
+        catalog_mode = request.form.get("catalog_mode", "Focused")
         selected_categories = [category for category in request.form.getlist("vendor_categories") if category in VENDOR_CATEGORIES]
         company_name = request.form.get("company_name")
         whatsapp_number = normalize_whatsapp_number(request.form.get("whatsapp_number"))
@@ -765,8 +704,9 @@ def register():
             )
             
             new_user = query_db("SELECT id FROM users WHERE username = ?", (username,), one=True)
-            for category in selected_categories:
-                query_db("INSERT INTO vendor_categories (user_id, category) VALUES (?, ?)", (new_user["id"], category))
+            if new_user and selected_categories:
+                for category in selected_categories:
+                    query_db("INSERT INTO vendor_categories (user_id, category) VALUES (?, ?)", (new_user["id"], category))
                 
             session.clear()
             session["username"] = username
@@ -787,4 +727,3 @@ def logout():
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
-
