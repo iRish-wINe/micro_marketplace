@@ -23,6 +23,8 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def init_db():
     conn = sqlite3.connect("marketplace.db", timeout=20)
     cursor = conn.cursor()
+    
+    # 👥 1. Create Core Users Table Architecture
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,6 +44,8 @@ def init_db():
             registered_at TEXT
         )
     """)
+    
+    # 🛍️ 2. Create Core Products Table Architecture
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,14 +53,20 @@ def init_db():
             price REAL NOT NULL,
             description TEXT NOT NULL,
             image_file TEXT NOT NULL,
+            video_file TEXT,
+            stock_quantity INTEGER NOT NULL DEFAULT 1,
+            status TEXT NOT NULL DEFAULT 'Available',
             seller TEXT NOT NULL,
             seller_email TEXT NOT NULL,
             seller_whatsapp TEXT,
             location TEXT NOT NULL DEFAULT 'Accra',
             business_label TEXT NOT NULL DEFAULT 'Individual Vendor',
-            category TEXT NOT NULL DEFAULT 'Other'
+            category TEXT NOT NULL DEFAULT 'Other',
+            views INTEGER NOT NULL DEFAULT 0
         )
     """)
+    
+    # 🏬 3. Create Core Vendor Categories Table Architecture
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS vendor_categories (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,6 +76,8 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
+    
+    # 🛡️ 4. Create Core Admin Users Table Architecture
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS admin_users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,6 +86,8 @@ def init_db():
             created_at TEXT NOT NULL
         )
     """)
+    
+    # 🛒 5. Create Core Orders Table Architecture
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS orders (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -84,6 +98,8 @@ def init_db():
             created_at TEXT NOT NULL
         )
     """)
+    
+    # 📦 6. Create Core Order Items Table Architecture
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS order_items (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -96,6 +112,8 @@ def init_db():
             FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE
         )
     """)
+    
+    # 🔐 7. Create Password Resets Table Architecture
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS password_resets (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -106,54 +124,32 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
-        # 👥 SECURE USER TABLE SCHEMA VALIDATOR (Fixes the 500 error)
+    
+    # 🧠 Safe Runtime Migration Array Scanners (Ensures zero missing column parameters)
     user_columns = {row[1] for row in cursor.execute("PRAGMA table_info(users)")}
-    
-    if "whatsapp_number" not in user_columns:
-        cursor.execute("ALTER TABLE users ADD COLUMN whatsapp_number TEXT")
-    if "plan" not in user_columns:
-        cursor.execute("ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'basic'")
-    if "trial_started_at" not in user_columns:
-        cursor.execute("ALTER TABLE users ADD COLUMN trial_started_at TEXT")
-    if "subscription_expires_at" not in user_columns:
-        cursor.execute("ALTER TABLE users ADD COLUMN subscription_expires_at TEXT")
-    if "upgrade_requested_at" not in user_columns:
-        cursor.execute("ALTER TABLE users ADD COLUMN upgrade_requested_at TEXT")
-    if "catalog_mode" not in user_columns:
-        cursor.execute("ALTER TABLE users ADD COLUMN catalog_mode TEXT")
-    if "company_logo" not in user_columns:
-        cursor.execute("ALTER TABLE users ADD COLUMN company_logo TEXT")
-    if "registered_at" not in user_columns:
-        cursor.execute("ALTER TABLE users ADD COLUMN registered_at TEXT")
+    if "whatsapp_number" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN whatsapp_number TEXT")
+    if "plan" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'basic'")
+    if "trial_started_at" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN trial_started_at TEXT")
+    if "subscription_expires_at" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN subscription_expires_at TEXT")
+    if "upgrade_requested_at" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN upgrade_requested_at TEXT")
+    if "catalog_mode" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN catalog_mode TEXT")
+    if "company_logo" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN company_logo TEXT")
+    if "registered_at" not in user_columns: cursor.execute("ALTER TABLE users ADD COLUMN registered_at TEXT")
         
-    cursor.execute("UPDATE users SET registered_at = COALESCE(registered_at, ?) WHERE registered_at IS NULL", (datetime.now(timezone.utc).isoformat(),))
-    
-    # 🛍️ SECURE PRODUCT TABLE SCHEMA VALIDATOR
     product_columns = {row[1] for row in cursor.execute("PRAGMA table_info(products)")}
-    
-    if "seller_whatsapp" not in product_columns:
-        cursor.execute("ALTER TABLE products ADD COLUMN seller_whatsapp TEXT")
-    if "category" not in product_columns:
-        cursor.execute("ALTER TABLE products ADD COLUMN category TEXT NOT NULL DEFAULT 'Other'")
-    if "video_file" not in product_columns:
-        cursor.execute("ALTER TABLE products ADD COLUMN video_file TEXT")
-    if "stock_quantity" not in product_columns:
-        cursor.execute("ALTER TABLE products ADD COLUMN stock_quantity INTEGER NOT NULL DEFAULT 1")
-    if "status" not in product_columns:
-        cursor.execute("ALTER TABLE products ADD COLUMN status TEXT NOT NULL DEFAULT 'Available'")
-        
-    order_columns = {row[1] for row in cursor.execute("PRAGMA table_info(orders)")}
+    if "seller_whatsapp" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN seller_whatsapp TEXT")
+    if "category" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN category TEXT NOT NULL DEFAULT 'Other'")
+    if "video_file" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN video_file TEXT")
+    if "stock_quantity" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN stock_quantity INTEGER NOT NULL DEFAULT 1")
+    if "status" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN status TEXT NOT NULL DEFAULT 'Available'")
+    if "views" not in product_columns: cursor.execute("ALTER TABLE products ADD COLUMN views INTEGER NOT NULL DEFAULT 0")
 
-    if "payment_status" not in order_columns:
-        cursor.execute("ALTER TABLE orders ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'Unpaid'")
-    trial_start = datetime.now(timezone.utc)
-    trial_expiry = trial_start + timedelta(days=61)
-    cursor.execute(
-        "UPDATE users SET trial_started_at = ?, subscription_expires_at = ? WHERE (role = 'Vendor' OR role = 'Fast Food') AND trial_started_at IS NULL",
-        (trial_start.isoformat(), trial_expiry.isoformat())
-    )
+    order_columns = {row[1] for row in cursor.execute("PRAGMA table_info(orders)")}
+    if "payment_status" not in order_columns: cursor.execute("ALTER TABLE orders ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'Unpaid'")
+
     conn.commit()
     conn.close()
+
 
 init_db()
 
