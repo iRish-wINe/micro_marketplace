@@ -99,7 +99,6 @@
 </head>
 <body>
 
-    <!-- BRAND TOP NAVIGATION BAR -->
     <div class="navbar">
         <a href="/" class="brand-logo">🏪 Biz<span>Hub</span></a>
         <div class="nav-links">
@@ -257,7 +256,7 @@
                                             ❓ Ask About Item
                                         </a>
 
-                                        <!-- 💬 QUICK BUY (MOMO): UNEDITABLE PROTOCOL WITH EXACT MANDATORY SENTENCE -->
+                                        <!-- 💬 QUICK BUY (MOMO): UNEDITABLE PROTOCOL WITH REVISED STRUCTURE -->
                                         <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hello%20@{{ product.seller }}%20I%20want%20to%20buy%20your%20{{ product.title | urlencode }}%20for%20GH%E2%82%B5%20{{ product.price }}%20in%20{{ product.location | urlencode }}%20on%20Biz%20Hub.%20Let's%20arrange%20for%20payment%20and%20delivery!" 
                                            class="btn-action btn-momo">
                                             💬 Quick Buy (MoMo)
@@ -275,6 +274,7 @@
                     {% endfor %}
                 </div>
             </div>
+
             <!-- PANEL 3: CLIENT SHOPPING BASKET SIDEBAR -->
             <div class="cart-sidebar">
                 <h3 class="cart-title-side" style="margin-top:0;">🛒 My Basket ({{ session.get('cart', [])|length }})</h3>
@@ -332,8 +332,8 @@
             
             for (let i = 0; i < itemCards.length; i++) {
                 let textContainer = itemCards[i].getElementsByClassName("card-title");
-                if (textContainer && textContainer[0]) {
-                    let evaluationText = textContainer[0].textContent || textContainer[0].innerText;
+                if (textContainer) {
+                    let evaluationText = textContainer.textContent || textContainer.innerText;
                     if (evaluationText.toLowerCase().indexOf(inputString) > -1) {
                         itemCards[i].style.display = "";
                     } else {
