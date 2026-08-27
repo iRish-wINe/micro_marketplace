@@ -125,7 +125,7 @@
                 <input type="text" id="liveSearchField" onkeyup="filterCatalogCards()" placeholder="Search from local products, categories, or tech stores instantly..." class="search-input">
                 
                 <select name="filter_location" class="filter-select" onchange="this.form.submit()">
-                    {% for city in ['🌍 All Cities (Ghana)', 'Abirem', 'Aburi', 'Accra', 'Ada', 'Aflao', 'Agona Swedru', 'Akim Achiase', 'Akim Oda', 'Asamankese', 'Axim', 'Bandai', 'Bimbila', 'Cape Coast', 'Damongo', 'Elmina', 'Ho', 'Hohoe', 'Jasikan', 'Kasoa', 'Keta', 'Kintampo', 'Koforidua', 'Kumasi', 'Kwahu', 'Mankessim', 'Nkawkaw', 'Nsawam', 'Obuase', 'Sehwi', 'Suhum', 'Sunyani', 'Takoradi', 'Tamale', 'Tarkwa', 'Tema'] %}
+                    {% for city in ['🌍 All Cities (Ghana)', 'Abirem', 'Aburi', 'Accra', 'Ada', 'Aflao', 'Agona Swedru', 'Akim Achiase', 'Akim Oda', 'Asamankese', 'Axim', 'Bandai', 'Bimbila', 'Cape Coast', 'Damongo', 'Elmina', 'Ho', 'Hohoe', 'Jasikan', 'Kasoa', 'Keta', 'Kintampo', 'Koforidua', 'Konongo', 'Kumasi', 'Kwahu', 'Mankessim', 'Nkawkaw', 'Nsawam', 'Obuase', 'Sehwi', 'Suhum', 'Sunyani', 'Takoradi', 'Tamale', 'Tarkwa', 'Tema'] %}
                         <option value="{{ 'All' if city == '🌍 All Cities (Ghana)' else city }}" {% if active_filter == city or (active_filter == 'All' and city == '🌍 All Cities (Ghana)') %}selected{% endif %}>{{ city }}</option>
                     {% endfor %}
                 </select>
@@ -198,7 +198,7 @@
                             <div class="form-group">
                                 <label>Preparation / Dispatch City:</label>
                                 <select name="location" class="form-control">
-                                    {% for city in ['Abirem', 'Aburi', 'Accra', 'Ada', 'Aflao', 'Agona Swedru', 'Akim Achiase', 'Akim Oda', 'Asamankese', 'Axim', 'Bandai', 'Bimbila', 'Cape Coast', 'Damongo', 'Elmina', 'Ho', 'Hohoe', 'Jasikan', 'Kasoa', 'Keta', 'Kintampo', 'Koforidua', 'Kumasi', 'Kwahu', 'Mankessim', 'Nkawkaw', 'Nsawam', 'Obuase', 'Sehwi', 'Suhum', 'Sunyani', 'Takoradi', 'Tamale', 'Tarkwa', 'Tema'] %}
+                                    {% for city in ['Abirem', 'Aburi', 'Accra', 'Ada', 'Aflao', 'Agona Swedru', 'Akim Achiase', 'Akim Oda', 'Asamankese', 'Axim', 'Bandai', 'Bimbila', 'Cape Coast', 'Damongo', 'Elmina', 'Ho', 'Hohoe', 'Jasikan', 'Kasoa', 'Keta', 'Kintampo', 'Koforidua', 'Konongo', 'Kumasi', 'Kwahu', 'Mankessim', 'Nkawkaw', 'Nsawam', 'Obuase', 'Sehwi', 'Suhum', 'Sunyani', 'Takoradi', 'Tamale', 'Tarkwa', 'Tema'] %}
                                         <option value="{{ city }}">{{ city }}</option>
                                     {% endfor %}
                                 </select>
