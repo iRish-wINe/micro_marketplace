@@ -224,13 +224,19 @@ def home():
         if "username" not in session or session.get("role") not in ["Vendor", "Fast Food"]:
             return redirect(url_for("home"))
         vendor = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
-        vendor_subscription = subscription_status(vendor)
-        listing_count = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ?", (session["username"],), one=True)["count"]
-        if not vendor_subscription["is_premium"] and listing_count >= 3:
+        
+        # Safe fallback dictionary conversion
+        vendor_dict = dict(vendor) if vendor else {}
+        vendor_subscription = subscription_status(vendor_dict) if vendor_dict else {"name": "Basic", "is_premium": False, "trial": False, "expires": None}
+        
+        listing_count_row = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ?", (session["username"],), one=True)
+        listing_count = listing_count_row["count"] if listing_count_row else 0
+        
+        if not vendor_subscription.get("is_premium") and listing_count >= 3:
             return redirect(url_for("home", listing_error="Basic accounts can list up to 3 products. Upgrade to Premium for unlimited listings."))
 
         price = request.form.get("price")
-        is_fast_food = vendor["seller_type"] == "Fast Food" or session.get("role") == "Fast Food"
+        is_fast_food = vendor_dict.get("seller_type") == "Fast Food" or session.get("role") == "Fast Food"
         title = request.form.get("meal_name" if is_fast_food else "title")
         description = request.form.get("meal_description" if is_fast_food else "description")
         category = "Fast Food" if is_fast_food else request.form.get("category", "Other")
@@ -239,9 +245,10 @@ def home():
         file = request.files.get("product_image")
         video = request.files.get("product_video")
         video_filename = None
+        
         if video and video.filename:
-            video_extension = os.path.splitext(video.filename).lower()
-            if not vendor_subscription["is_premium"]:
+            video_extension = os.path.splitext(video.filename)[1].lower()
+            if not vendor_subscription.get("is_premium"):
                 return redirect(url_for("home", listing_error="Only verified vendors with an active Premium Store or trial can upload product videos."))
             if video_extension not in VIDEO_EXTENSIONS:
                 return redirect(url_for("home", listing_error="Product videos must be MP4, WebM, or MOV files."))
@@ -265,12 +272,13 @@ def home():
                 file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
             if video_filename:
                 video.save(os.path.join(app.config["UPLOAD_FOLDER"], video_filename))
-            b_label = session.get("company_name") if vendor_subscription["is_premium"] and session.get("company_name") else "Individual Vendor"
+            b_label = session.get("company_name") if vendor_subscription.get("is_premium") and session.get("company_name") else "Individual Vendor"
             query_db(
                 "INSERT INTO products (title, price, description, image_file, video_file, stock_quantity, status, seller, seller_email, seller_whatsapp, location, business_label, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (title, float(price), description, filename, video_filename, stock_quantity, "Available", session["username"], session["email"], session.get("whatsapp_number"), location, b_label, category)
             )
             return redirect(url_for("home"))
+
     selected_filter = request.args.get("filter_location", "All")
     company_search = request.args.get("company_search", "").strip()
     selected_category = request.args.get("category", "All")
@@ -291,11 +299,12 @@ def home():
     if product_conditions:
         product_query += " WHERE " + " AND ".join(product_conditions)
     product_query += " ORDER BY id DESC"
-    all_products = query_db(product_query, product_args)
-    vendor_logos = {
-        row["username"]: row["company_logo"]
-        for row in query_db("SELECT username, company_logo FROM users WHERE company_logo IS NOT NULL")
-    }
+    all_products = query_db(product_query, product_args) or []
+    
+    vendor_logos = {}
+    logo_rows = query_db("SELECT username, company_logo FROM users WHERE company_logo IS NOT NULL") or []
+    for row in logo_rows:
+        vendor_logos[row["username"]] = row["company_logo"]
 
     cart_items = []
     cart_total = 0.0
@@ -303,21 +312,20 @@ def home():
 
     if "cart" in session and session["cart"]:
         placeholders = ",".join("?" for _ in session["cart"])
-        items_in_db = query_db(f"SELECT * FROM products WHERE id IN ({placeholders})", session["cart"])
-        if items_in_db:
-            for item in items_in_db:
-                cart_items.append(item)
-                cart_total += float(item["price"])
-                seller_number = normalize_whatsapp_number(item["seller_whatsapp"])
-                seller_key = (item["seller"], seller_number)
-                seller_order = seller_orders.setdefault(seller_key, {
-                    "seller": item["seller"],
-                    "number": seller_number,
-                    "items": [],
-                    "total": 0.0,
-                })
-                seller_order["items"].append(item)
-                seller_order["total"] += float(item["price"])
+        items_in_db = query_db(f"SELECT * FROM products WHERE id IN ({placeholders})", session["cart"]) or []
+        for item in items_in_db:
+            cart_items.append(item)
+            cart_total += float(item["price"])
+            seller_number = normalize_whatsapp_number(item["seller_whatsapp"])
+            seller_key = (item["seller"], seller_number)
+            seller_order = seller_orders.setdefault(seller_key, {
+                "seller": item["seller"],
+                "number": seller_number,
+                "items": [],
+                "total": 0.0,
+            })
+            seller_order["items"].append(item)
+            seller_order["total"] += float(item["price"])
 
     for seller_order in seller_orders.values():
         message = f"Hello {seller_order['seller']}, I want to buy these products on Biz Hub:\n"
@@ -326,28 +334,30 @@ def home():
         message += f"\nTotal Cost: GH₵{seller_order['total']:.2f}. Let's arrange for payment and delivery."
         seller_order["whatsapp_text"] = quote(message)
 
-       # 🧠 SAFE SELLER MATRIX SCANNER: Bypasses empty query list crashes cleanly
     premium_rows = query_db("SELECT username FROM users WHERE (role = 'Vendor' OR role = 'Fast Food') AND plan = 'premium' AND subscription_expires_at > ?", (datetime.now(timezone.utc).isoformat(),))
     premium_sellers = {row["username"] for row in premium_rows} if premium_rows else set()
-
     trial_rows = query_db("SELECT username FROM users WHERE (role = 'Vendor' OR role = 'Fast Food') AND plan = 'basic' AND subscription_expires_at > ?", (datetime.now(timezone.utc).isoformat(),))
     trial_sellers = {row["username"] for row in trial_rows} if trial_rows else set()
-
     premium_sellers.update(trial_sellers)
     for seller_order in seller_orders.values():
         seller_order["priority"] = seller_order["seller"] in premium_sellers
 
-    vendor_subscription = None
+    vendor_subscription = {"name": "Free Trial", "is_premium": False, "trial": True, "expires": "N/A"}
     listing_count = 0
     fast_food_count = 0
     if session.get("role") in ["Vendor", "Fast Food"]:
         vendor = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
-        vendor_subscription = subscription_status(vendor)
-        listing_count = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ?", (session["username"],), one=True)["count"]
-        if session.get("role") == "Fast Food":
-            fast_food_count = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ? AND category = 'Fast Food'", (session["username"],), one=True)["count"]
+        if vendor:
+            vendor_dict = dict(vendor)
+            vendor_subscription = subscription_status(vendor_dict)
+            listing_count_row = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ?", (session["username"],), one=True)
+            listing_count = listing_count_row["count"] if listing_count_row else 0
+            if session.get("role") == "Fast Food":
+                fast_food_count_row = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ? AND category = 'Fast Food'", (session["username"],), one=True)
+                fast_food_count = fast_food_count_row["count"] if fast_food_count_row else 0
 
     return render_template("index.html", products=all_products, active_filter=selected_filter, company_search=company_search, selected_category=selected_category, categories=PRODUCT_CATEGORIES, vendor_logos=vendor_logos, cart_items=cart_items, cart_total=cart_total, seller_orders=sorted(seller_orders.values(), key=lambda order: not order["priority"]), vendor_subscription=vendor_subscription, listing_count=listing_count, fast_food_count=fast_food_count, listing_error=listing_error, premium_sellers=premium_sellers)
+
 
 @app.route("/delete-item/<int:product_id>")
 def delete_item(product_id):
