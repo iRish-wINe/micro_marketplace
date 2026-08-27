@@ -68,7 +68,7 @@ def init_db():
     cursor = conn.cursor()
     
     # ⚠️ CLEAN RE-ALIGNMENT MATRIX: All tab/space mismatches removed cleanly
-    cursor.execute("DROP TABLE IF EXISTS users")
+
 
     # Core User Profiles Registry
     cursor.execute("""
@@ -286,7 +286,7 @@ def service_worker():
 # =========================================================================
 
 def query_db(query, args=(), one=False):
-    """Executes transaction threads safely using mapping structures."""
+    """Executes database transactions safely using row mapping structures."""
     conn = sqlite3.connect("marketplace.db", timeout=20)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -295,8 +295,11 @@ def query_db(query, args=(), one=False):
     conn.commit()
     conn.close()
     
-    # FIXED DATABASE MAPPER NODE: Safe single item vs collection mapper block
-    return (rv[0] if rv else None) if one else rv
+    # 🧠 FIXED: Standard companion parameters added to prevent dictionary key array crashes
+    if rv:
+        return rv[0] if one else rv
+    return None
+
 
 
 def get_vendor_categories(user_id):
