@@ -182,7 +182,7 @@ def query_db(query, args=(), one=False):
     rv = cursor.fetchall()
     conn.commit()
     conn.close()
-    # 🧠 FIXED: Safe sqlite3.Row dict mapping without indexing array collisions
+    # 🧠 FIXED DATABASE MAPPER NODE: Safe list conversion layout logic
     return (rv[0] if rv else None) if one else rv
 
 def get_vendor_categories(user_id):
@@ -225,7 +225,7 @@ def home():
         video = request.files.get("product_video")
         video_filename = None
         if video and video.filename:
-            video_extension = os.path.splitext(video.filename)[1].lower()
+            video_extension = os.path.splitext(video.filename).lower()
             if not vendor_subscription["is_premium"]:
                 return redirect(url_for("home", listing_error="Only verified vendors with an active Premium Store or trial can upload product videos."))
             if video_extension not in VIDEO_EXTENSIONS:
@@ -256,7 +256,6 @@ def home():
                 (title, float(price), description, filename, video_filename, stock_quantity, "Available", session["username"], session["email"], session.get("whatsapp_number"), location, b_label, category)
             )
             return redirect(url_for("home"))
-
     selected_filter = request.args.get("filter_location", "All")
     company_search = request.args.get("company_search", "").strip()
     selected_category = request.args.get("category", "All")
@@ -688,7 +687,7 @@ def register():
             catalog_mode = None
             selected_categories = []
 
-        if role in ["Vendor", "Fast Food"] and not whatsapp_number:
+               if role in ["Vendor", "Fast Food"] and not whatsapp_number:
             return render_template("login.html", reg_error="Merchant and Fast Food vendor accounts need a compulsory WhatsApp number to receive order tallies.")
         if role == "Vendor" and (catalog_mode not in ("Variety", "Focused") or not selected_categories):
             return render_template("login.html", reg_error="Choose a product range and select at least one category.")
