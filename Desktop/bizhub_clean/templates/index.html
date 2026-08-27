@@ -1,385 +1,490 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-gray-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biz Hub - Your Local Market, Unified Online</title>
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#1A365D">
-    <style>
-        /* Modern Premium Design Tokens */
-        :root {
-            --primary: #1A365D;
-            --primary-light: #2B6CB0;
-            --accent: #FF9900;
-            --success: #25D366;
-            --bg-light: #F7FAFC;
-            --text-main: #2D3748;
-            --text-muted: #718096;
-            --border-color: #E2E8F0;
-            --radius-sm: 6px;
-            --radius-lg: 12px;
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
-            --transition: all 0.25s ease-in-out;
-        }
-
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-light); color: var(--text-main); margin: 0; padding-bottom: 60px; }
-        .container { width: 100%; max-width: 1300px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
-        
-        /* Sticky Navigation Bar */
-        .navbar { display: flex; justify-content: space-between; align-items: center; background-color: white; padding: 15px 30px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm); }
-        .brand-logo { font-size: 22px; font-weight: 800; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 5px; }
-        .brand-logo span { color: var(--accent); }
-        .nav-links { display: flex; align-items: center; gap: 15px; }
-        .nav-links a { text-decoration: none; color: var(--primary-light); font-weight: 600; font-size: 14px; }
-        .nav-links a.logout { color: #E53E3E; background: #FFF5F5; padding: 6px 12px; border-radius: var(--radius-sm); }
-
-        /* Integrated Premium Search & Filter Panel */
-        .search-hero { background-color: var(--primary); padding: 25px 0; color: white; margin-bottom: 30px; }
-        .search-panel { display: flex; flex-wrap: wrap; background: white; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); max-width: 950px; margin: 0 auto; width: 100%; border: 1px solid var(--border-color); }
-        .search-panel select, .search-panel input { border: none; padding: 12px 15px; font-size: 14px; outline: none; color: var(--text-main); box-sizing: border-box; }
-        .filter-select { background: #EDF2F7; font-weight: bold; border-right: 1px solid var(--border-color) !important; cursor: pointer; }
-        .search-input { flex-grow: 1; min-width: 200px; }
-        .search-btn { background: var(--accent); border: none; padding: 0 25px; color: white; font-weight: bold; cursor: pointer; transition: var(--transition); font-size: 14px; }
-        .search-btn:hover { background: #E68A00; }
-
-        /* Responsive E-Commerce Grid System */
-        .layout { display: grid; grid-template-columns: 1fr; gap: 25px; width: 100%; }
-        @media (min-width: 992px) {
-            .layout { grid-template-columns: 300px 1fr 320px; }
-        }
-        
-        /* Premium Sidebar Forms */
-        .panel-box { background: white; padding: 20px; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); height: fit-content; margin-bottom: 20px; }
-        .panel-box h3 { margin-top: 0; font-size: 16px; font-weight: 700; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; margin-bottom: 15px; color: var(--primary); }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
-        .form-control { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); box-sizing: border-box; font-size: 13px; outline: none; }
-        .form-control:focus { border-color: var(--primary-light); }
-                .submit-btn { background-color: var(--primary-light); color: white; border: none; padding: 10px; cursor: pointer; border-radius: var(--radius-sm); font-size: 13px; width: 100%; font-weight: bold; }
-        
-        /* 🍟 ADDED HERE: Dynamic styling modifier overrides */
-        .submit-btn.btn-ff-override { background-color: #E53E3E !important; }
-
-        
-        /* High-End Amazon-Style Catalog Cards */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
-        .card { background-color: white; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); display: flex; flex-direction: column; transition: var(--transition); position: relative; }
-        .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-        
-        /* FIXED MEDIA ASPECT RATIO */
-        .card-media-wrapper { width: 100%; height: 150px; position: relative; background-color: #EDF2F7; overflow: hidden; }
-        .card-img { width: 100%; height: 100%; object-fit: cover; }
-        .loc-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; font-size: 10px; font-weight: bold; padding: 3px 6px; border-radius: 10px; backdrop-filter: blur(2px); }
-        .soldout-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; font-weight: bold; color: #E53E3E; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
-
-        .card-body { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; }
-        .card-brand-wrapper { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-        .brand-logo-img { width: 16px; height: 16px; object-fit: contain; border-radius: 50%; }
-        .card-brand { font-size: 10px; color: var(--primary-light); font-weight: bold; text-transform: uppercase; }
-                /* 🧠 FIXED: Standard companion parameters added to prevent clamp warnings */
-        .card-title { font-size: 14px; font-weight: 600; margin: 0 0 4px 0; color: var(--text-main); height: 40px; overflow: hidden; display: -webkit-box; display: box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; box-orient: vertical; }
-        .card-price { color: #B12704; font-size: 17px; font-weight: 700; margin-bottom: 6px; }
-        .card-text { color: var(--text-muted); font-size: 11px; margin: 0 0 10px 0; height: 32px; overflow: hidden; display: -webkit-box; display: box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; box-orient: vertical; }
-
-        .card-metadata { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; border-top: 1px solid #EDF2F7; padding-top: 6px; display: flex; flex-direction: column; gap: 2px; }
-        
-        /* Action Button System */
-        .card-actions { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
-        .btn-action { text-align: center; text-decoration: none; padding: 8px; border-radius: var(--radius-sm); font-size: 11px; font-weight: bold; width: 100%; box-sizing: border-box; display: block; border: none; cursor: pointer; transition: var(--transition); }
-        .btn-cart { background-color: var(--primary-light); color: white; }
-        .btn-momo { background-color: var(--accent); color: white; }
-        .btn-delete { background-color: #FFF5F5; color: #E53E3E; border: 1px solid #FED7D7; }
-        .btn-sold { background-color: #EDF2F7; color: var(--text-main); }
-
-        /* Premium Cart Sidebar */
-        .cart-sidebar { background: white; padding: 20px; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); height: fit-content; position: sticky; top: 85px; }
-        .cart-item-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; color: var(--text-main); border-bottom: 1px dashed var(--border-color); padding-bottom: 6px; }
-        .cart-total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; color: #B12704; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border-color); }
-        .btn-whatsapp-checkout { background-color: var(--success); color: white; text-align: center; text-decoration: none; padding: 10px; border-radius: var(--radius-sm); font-size: 13px; font-weight: bold; display: block; margin-top: 10px; }
-        .clear-cart-link { display: block; color: var(--text-muted); text-align: center; font-size: 11px; margin-top: 12px; text-decoration: none; }
-        
-        .footer-info { background: white; padding: 20px; border-radius: var(--radius-lg); border: 1px solid var(--border-color); margin-top: 30px; font-size: 12px; color: var(--text-muted); }
-    </style>
+    <title>Biz Hub | Modern West African Marketplace</title>
+    <!-- Tailwind CSS CDN for high-utility rapid rendering -->
+    <script src="https://tailwindcss.com"></script>
+    <!-- FontAwesome CDN for visual interface anchors and typography badges -->
+    <link rel="stylesheet" href="https://cloudflare.com">
 </head>
-<body>
+<body class="flex flex-col h-full font-sans antialiased text-gray-900">
 
-    <!-- BRAND TOP NAVIGATION BAR -->
-    <div class="navbar">
-        <a href="/" class="brand-logo">🏪 Biz<span>Hub</span></a>
-        <div class="nav-links">
-            {% if session.get('username') %}
-                <span>Welcome, <b>@{{ session['username'] }}</b>!</span>
-                <a href="/">Home</a>
-                <a href="/logout" class="logout">Logout</a>
-            {% else %}
-                <a href="/login">Login / Register</a>
-            {% endif %}
-        </div>
-    </div>
-    <!-- SEARCH HERO HEADER PANEL -->
-    <div class="search-hero">
-        <div class="container">
-            <form method="GET" action="/" class="search-panel">
-                <input type="text" id="liveSearchField" onkeyup="filterCatalogCards()" placeholder="Search from local products, categories, or tech stores instantly..." class="search-input">
+    <!-- GLOBAL APPARATUS NAVIGATION HEADER -->
+    <header class="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm">
+        <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
                 
-                <select name="filter_location" class="filter-select" onchange="this.form.submit()">
-                    {% for city in ['🌍 All Cities (Ghana)', 'Abirem', 'Aburi', 'Accra', 'Ada', 'Aflao', 'Agona Swedru', 'Akim Achiase', 'Akim Oda', 'Asamankese', 'Axim', 'Bandai', 'Bimbila', 'Cape Coast', 'Damongo', 'Elmina', 'Ho', 'Hohoe', 'Jasikan', 'Kasoa', 'Keta', 'Kintampo', 'Koforidua', 'Konongo', 'Kumasi', 'Kwahu', 'Mankessim', 'Nkawkaw', 'Nsawam', 'Obuase', 'Sehwi', 'Suhum', 'Sunyani', 'Takoradi', 'Tamale', 'Tarkwa', 'Tema'] %}
-                        <option value="{{ 'All' if city == '🌍 All Cities (Ghana)' else city }}" {% if active_filter == city or (active_filter == 'All' and city == '🌍 All Cities (Ghana)') %}selected{% endif %}>{{ city }}</option>
-                    {% endfor %}
-                </select>
                 
-                <button type="submit" class="search-btn">Filter Feed</button>
-            </form>
-        </div>
-    </div>
+                <div class="flex items-center flex-shrink-0">
+                    <a href="/" class="flex items-center space-x-2">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 shadow-md shadow-emerald-200">
+                            <i class="fa-solid fa-shop text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold tracking-tight text-gray-900 sm:block">Biz<span class="text-emerald-600">Hub</span></span>
+                    </a>
+                </div>
 
-    <div class="container">
-        <div class="layout">
-            
-            <!-- PANEL 1: CONTEXTUAL SIDEBAR CONTROLS -->
-                       <!-- PANEL 1: CONTEXTUAL SIDEBAR CONTROLS -->
-            <div>
-                {% if session.get('username') and session.get('role') in ['Vendor', 'Fast Food'] %}
+                <!-- Unified Session Management & Navigation Array -->
+                <nav class="flex items-center space-x-3 sm:space-x-6">
+                    <a href="/" class="text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition">
+                        <i class="fa-solid fa-house mr-1"></i> Market
+                    </a>
                     
-                    <!-- 👑 UPGRADED SUBSCRIPTION SIDEBAR TRACKER: JINJA DOT NOTATION COMPILING FIXED -->
-                                    <!-- 👑 UPGRADED SUBSCRIPTION SIDEBAR TRACKER -->
-                    <div class="panel-box">
-                        <h3>👑 Subscription Dashboard</h3>
-                        <p style="margin: 0 0 5px; font-size: 13px;">Plan: <b>{{ vendor_subscription.name if vendor_subscription else 'Free Trial' }}</b></p>
-                        {% if vendor_subscription and vendor_subscription.trial %}
-                            <small style="color: var(--accent); display: block; margin-bottom: 8px;">Premium trial active</small>
-                        {% elif vendor_subscription and vendor_subscription.is_premium %}
-                            <small style="color: var(--success); display: block; margin-bottom: 8px;">Premium Tier Active</small>
-                        {% endif %}
-                        <p style="margin: 5px 0 12px; font-size: 12px; color: var(--text-muted);">
-                            Listings: <b>{{ listing_count }}</b>
-                        </p>
-                        
-                        <a href="/subscription" class="btn-action" style="background-color: var(--primary-light); color: white; border-radius: var(--radius-sm); text-decoration: none; padding: 10px; display: block; text-align: center; font-size: 13px; font-weight: bold; box-sizing: border-box;">
-                            💎 Manage Store Subscription
+                    {% if session.get('username') %}
+                        <!-- Active Verified Session Control Pins -->
+                        <a href="/orders" class="text-sm font-medium text-gray-600 hover:text-gray-900 transition">
+                            <i class="fa-solid fa-box mr-1"></i> Orders
                         </a>
-                    </div>
-
-
-                    <!-- 🍟 RESTAURANT KITCHEN MANAGER DASHBOARD PANEL -->
-                    {% if session.get('role') == 'Fast Food' %}
-                        <div class="panel-box" style="background: linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%); border: 1px solid #FED7D7;">
-                            <h3 style="color: #C53030; border-bottom: 2px solid #FED7D7;">🍳 Kitchen Operations Hub</h3>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-                                <div style="background: white; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #FEEBC8; text-align: center;">
-                                    <span style="font-size: 20px; display: block;">🍔</span>
-                                    <small style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Active Menu Items</small>
-                                    <b style="font-size: 16px; color: var(--primary); display: block;">{{ fast_food_count }} items</b>
-                                </div>
-                                <div style="background: white; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #C6F6D5; text-align: center;">
-                                    <span style="font-size: 20px; display: block;">🛵</span>
-                                    <small style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Fulfillment</small>
-                                    <b style="font-size: 14px; color: #22543D; display: block; margin-top:3px;">Instant Delivery</b>
-                                </div>
-                            </div>
-                            <p style="margin: 0; font-size: 12px; color: #742A2A; font-weight: 600; text-align: center; background: #FFF5F5; padding: 6px; border-radius: var(--radius-sm);">
-                                Status: 🟢 Kitchen Open & Accepting Orders
-                            </p>
-                        </div>
-                    {% endif %}
-
-                        <!-- Standard Merchant Dashboard Tracker -->
-                                       <!-- 👑 UPGRADED SUBSCRIPTION SIDEBAR TRACKER -->
-                    <div class="panel-box">
-                        <h3>👑 Subscription Dashboard</h3>
-                        <p style="margin: 0 0 5px; font-size: 13px;">Plan: <b>{{ vendor_subscription.name if vendor_subscription else 'Free Trial' }}</b></p>
-                        {% if vendor_subscription and vendor_subscription.get('trial') %}
-                            <small style="color: var(--accent); display: block; margin-bottom: 8px;">Premium trial ends {{ vendor_subscription.expires }}</small>
-                        {% elif vendor_subscription and vendor_subscription.get('is_premium') %}
-                            <small style="color: var(--success); display: block; margin-bottom: 8px;">Renews {{ vendor_subscription.expires }}</small>
-                        {% endif %}
-                        <p style="margin: 5px 0 12px; font-size: 12px; color: var(--text-muted);">
-                            Listings: <b>{{ listing_count }}{% if vendor_subscription and not vendor_subscription.get('is_premium') %}/3{% else %} · Unlimited{% endif %}</b>
-                        </p>
                         
-                        <!-- 🛠️ CLICKABLE ACCESS BUTTON NODE ADDED HERE -->
-                        <a href="/subscription" class="btn-action premium-action" style="background-color: var(--primary-light); color: white; border-radius: var(--radius-sm); text-decoration: none; padding: 10px; display: block; text-align: center; font-size: 13px; font-weight: bold; box-sizing: border-box;">
-                            💎 Manage Store Subscription
-                        </a>
-                    </div>
-
-
-                    <!-- LISTING CREATION FORM BLOCK -->
-                    <div class="panel-box">
-                        {% if session.get('role') == 'Fast Food' %}
-                            <h3 style="color: #C53030; border-bottom: 2px solid #FED7D7;">🍕 Publish Hot Meal Deal</h3>
-                        {% else %}
-                            <h3>📢 Upload Product Listing</h3>
+                        {% if session.get('role') in ['Vendor', 'Fast Food'] %}
+                            <a href="/subscription" class="text-sm font-medium text-gray-600 hover:text-gray-900 transition flex items-center">
+                                <i class="fa-solid fa-gem text-amber-500 mr-1.0"></i> Hub Tier
+                            </a>
                         {% endif %}
-
-                        <form method="POST" action="/" enctype="multipart/form-data">
-                            <div class="form-group">
-                                <label>{% if session.get('role') == 'Fast Food' %}Meal / Combo Name:{% else %}Item Title / Name:{% endif %}</label>
-                                <input type="text" name="{% if session.get('role') == 'Fast Food' %}meal_name{% else %}title{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Jollof with Grilled Chicken{% else %}e.g. Smart Watch{% endif %}" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Price (GH₵):</label>
-                                <input type="number" name="price" step="0.01" class="form-control" placeholder="0.00" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Preparation / Dispatch City:</label>
-                                <select name="location" class="form-control">
-                                    {% for city in ['Abirem', 'Aburi', 'Accra', 'Ada', 'Aflao', 'Agona Swedru', 'Akim Achiase', 'Akim Oda', 'Asamankese', 'Axim', 'Bandai', 'Bimbila', 'Cape Coast', 'Damongo', 'Elmina', 'Ho', 'Hohoe', 'Jasikan', 'Kasoa', 'Keta', 'Kintampo', 'Koforidua', 'Konongo', 'Kumasi', 'Kwahu', 'Mankessim', 'Nkawkaw', 'Nsawam', 'Obuase', 'Sehwi', 'Suhum', 'Sunyani', 'Takoradi', 'Tamale', 'Tarkwa', 'Tema'] %}
-                                        <option value="{{ city }}">{{ city }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>{% if session.get('role') == 'Fast Food' %}Ingredients / Delivery Package Notes:{% else %}Product Description:{% endif %}</label>
-                                <textarea name="{% if session.get('role') == 'Fast Food' %}meal_description{% else %}description{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Served hot with pepper sauce, salad, and a free drink.{% else %}Enter details...{% endif %}" class="form-control" required></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Meal Cover Photo (Image):</label>
-                                <input type="file" name="product_image" accept="image/*" class="form-control" required>
-                            </div>
-                            <!-- 🧠 FIXED: Inner quotes swapped cleanly to single quotes to clear HTML breaks -->
-                                                       <!-- 🧠 FIXED: Removed style variables entirely to fix empty ruleset warnings -->
-                            <button type="submit" class="submit-btn {% if session.get('role') == 'Fast Food' %}btn-ff-override{% endif %}">
-                                {% if session.get('role') == 'Fast Food' %}🚀 Launch Meal Live{% else %}Publish Item{% endif %}
-                            </button>
-
-                        </form>
-                    </div>
-                {% elif session.get('username') %}
-                    <div class="auth-box" style="background-color: white; border: 1px solid var(--border-color); padding: 20px; border-radius: var(--radius-lg);">
-                        <p style="margin:0; font-size:13px;">👤 You are logged into a <b>Customer Account</b>. Browse active local entries on the right!</p>
-                    </div>
-                {% else %}
-                    <div class="panel-box" style="text-align: center;">
-                        <h3>🔒 Security Gate</h3>
-                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Log in to list items for sale or manage shopping carts.</p>
-                        <a href="/login" class="btn-action btn-cart">Sign In / Register</a>
-                    </div>
-                {% endif %}
-            </div>
-                     <!-- PANEL 2: MAIN CATALOG GRID -->
-            <div>
-                <h3 style="margin-top: 0; font-size: 18px; color: var(--primary); margin-bottom: 20px;">🛍️ Available Marketplace Items</h3>
-                <div class="grid" id="masterCatalogGrid">
-                    {% for product in products %}
-                        <div class="card">
-                            <div class="card-media-wrapper">
-                                <img class="card-img" src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}">
-                                <span class="loc-badge">📍 {{ product.location }}</span>
-                            </div>
-
-                            <div class="card-body">
-                                <div class="card-brand-wrapper">
-                                    <div class="card-brand">🏬 {{ product.business_label }}</div>
-                                </div>
-
-                                <h4 class="card-title">{{ product.title }}</h4>
-                                <div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div>
-                                <p class="card-text">{{ product.description }}</p>
-                                
-                                <div class="card-metadata">
-                                    <span>Owner: <b>@{{ product.seller }}</b></span>
-                                </div>
-
-                                <div class="card-actions">
-                                    {% if session.get('username') == product.seller %}
-                                        <a href="/delete-item/{{ product.id }}" class="btn-action btn-delete">🗑️ Delete Listing</a>
-                                    {% else %}
-                                        <!-- ❓ ASK ABOUT ITEM: NATIVE ESCAPE STRINGS FIXED -->
-                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=I%20want%20to%20ask%20about%20your%20{{ product.title }}%20on%20Biz%20Hub." 
-                                           class="btn-action" 
-                                           style="background-color: #EDF2F7; color: var(--primary); border: 1px solid var(--border-color);">
-                                            ❓ Ask About Item
-                                        </a>
-
-                                        <!-- 💬 QUICK BUY (MOMO): UNALTERABLE NATIVE ARRAYS FIXED -->
-                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hello%20@{{ product.seller }}%20I%20want%20to%20buy%20your%20{{ product.title }}%20for%20GH%E2%82%B5%20{{ product.price }}%20in%20{{ product.location }}%20on%20Biz%20Hub.%20Let's%20arrange%20for%20payment%20and%20delivery!" 
-                                           class="btn-action btn-momo">
-                                            💬 Quick Buy (MoMo)
-                                        </a>
-
-                                        <a href="/add-to-cart/{{ product.id }}" class="btn-action btn-cart">🛒 Add to Cart</a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
+                        
+                        <a href="/settings" class="text-sm font-medium text-gray-600 hover:text-gray-900 transition">
+                            <i class="fa-solid fa-gear mr-1"></i> Settings
+                        </a>
+                        
+                        <div class="h-4 w-px bg-gray-200 hidden sm:block"></div>
+                        
+                        <span class="text-sm text-gray-500 hidden md:inline-block">
+                            Hi, <strong class="text-gray-800 font-semibold">{{ session['username'] }}</strong>
+                        </span>
+                        
+                        <a href="/logout" class="inline-flex items-center justify-center px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition">
+                            <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Logout
+                        </a>
                     {% else %}
-                        <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); background: white; border-radius: var(--radius-lg); border: 2px dashed var(--border-color);">
-                            📭 No matching marketplace items found.
-                        </div>
-                    {% endfor %}
+                        <!-- Anonymous Visitor Credentials Triggers -->
+                        <a href="/login" class="text-sm font-medium text-gray-600 hover:text-gray-900 transition">Sign In</a>
+                        <a href="/login" class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-100 rounded-xl transition">
+                            Start Selling
+                        </a>
+                    {% endif %}
+                </nav>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN VIEWPORT HOOK BLOCK -->
+    <main class="flex-grow">
+        <div class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <!-- =========================================================================
+             NOTIFICATION LAYER (ERROR & STATUS CHANNELS)
+             ========================================================================= -->
+        {% if listing_error %}
+        <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm flex items-start space-x-3">
+            <div class="flex-shrink-0 text-red-500 mt-0.5"><i class="fa-solid fa-circle-exclamation text-lg"></i></div>
+            <div class="flex-grow">
+                <h3 class="text-sm font-semibold text-red-800">Action Blocked</h3>
+                <p class="text-sm text-red-700 mt-0.5">{{ listing_error }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if request.args.get('listing_success') %}
+        <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 shadow-sm flex items-start space-x-3">
+            <div class="flex-shrink-0 text-emerald-500 mt-0.5"><i class="fa-solid fa-circle-check text-lg"></i></div>
+            <div class="flex-grow">
+                <h3 class="text-sm font-semibold text-emerald-800">Listing Deployed</h3>
+                <p class="text-sm text-emerald-700 mt-0.5">Your inventory matrix has been refreshed safely.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- =========================================================================
+             MERCHANT PRODUCT LISTING ENGINE (CONDITIONAL PORTAL)
+             ========================================================================= -->
+        {% if session.get('username') and session.get('role') in ['Vendor', 'Fast Food'] %}
+        <section class="mb-10 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md">
+            
+            <!-- Contextual Banner Header -->
+            <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 flex items-center justify-between flex-wrap gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2.5 rounded-lg bg-emerald-50 text-emerald-600"><i class="fa-solid fa-square-plus text-lg"></i></div>
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-900">Deploy New Commercial Listing</h2>
+                        <p class="text-xs text-gray-500">Currently operating on the <span class="font-semibold text-emerald-600">{{ vendor_subscription['name'] }}</span> account</p>
+                    </div>
+                </div>
+                
+                <!-- Account Limits Counter Badge -->
+                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {% if not vendor_subscription['is_premium'] and listing_count >= 3 %}bg-amber-50 text-amber-700{% else %}bg-gray-100 text-gray-700{% endif %}">
+                    Active Catalog Matrix Items: <span class="ml-1 font-bold">{{ listing_count }}</span> {% if not vendor_subscription['is_premium'] %}/ 3 Max{% endif %}
                 </div>
             </div>
 
-            <!-- PANEL 3: CLIENT SHOPPING BASKET SIDEBAR -->
-            <div class="cart-sidebar">
-                <h3 class="cart-title-side" style="margin-top:0;">🛒 My Basket ({{ session.get('cart', [])|length }})</h3>
-                {% if cart_items %}
-                    <div style="max-height: 220px; overflow-y: auto; margin-bottom: 15px;">
-                        {% for item in cart_items %}
-                            <div class="cart-item-row">
-                                <span>• {{ item.title }}</span>
-                                <b>GH₵{{ "%.2f"|format(item.price) }}</b>
-                            </div>
-                        {% endfor %}
-                    </div>
+            <!-- Central Form Formatter Matrix -->
+            <form action="/" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     
-                    <div class="cart-total-row">
-                        <span>Total Cost:</span>
-                        <span>GH₵ {{ "%.2f"|format(cart_total) }}</span>
+                    <!-- DYNAMIC FIELD SET: Name/Meal Mapping -->
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                            {% if session.get('role') == 'Fast Food' %}Meal Designation / Item Title{% else %}Product Title{% endif %} <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="{% if session.get('role') == 'Fast Food' %}meal_name{% else %}title{% endif %}" required placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Jollof Rice with Grilled Chicken{% else %}e.g. Samsung Galaxy S23 Ultra{% endif %}" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition placeholder-gray-400">
                     </div>
 
-                    {% for order in seller_orders %}
-                        <div style="background: #FFFDF5; border: 1px dashed var(--accent); padding: 10px; border-radius: var(--radius-sm); margin-bottom: 10px; text-align: center;">
-                            {% if order.number %}
-                                <span style="font-size: 11px; font-weight: bold; color: #C05621; display: block; margin-bottom: 4px;">Owner: @{{ order.seller }}</span>
-                                <a href="whatsapp://send?phone={{ order.number }}&text={{ order.whatsapp_text }}" class="btn-whatsapp-checkout" style="margin-top:0; font-size:11px; padding:6px;">💬 Pay via WhatsApp</a>
-                            {% else %}
-                                <small style="color: var(--text-muted); font-size:11px;">@{{ order.seller }} has omitted their contact number.</small>
-                            {% endif %}
+                    <!-- Price Component Field -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Price (GHS ₵) <span class="text-red-500">*</span></label>
+                        <div class="relative rounded-xl shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><span class="text-gray-400 font-medium">₵</span></div>
+                            <input type="number" step="0.01" name="price" required placeholder="0.00" class="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition placeholder-gray-400">
                         </div>
-                    {% endfor %}
+                    </div>
+
+                    <!-- DYNAMIC FIELD SET: Descriptions -->
+                    <div class="md:col-span-3">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Inventory Specifications & Details <span class="text-red-500">*</span></label>
+                        <textarea name="{% if session.get('role') == 'Fast Food' %}meal_description{% else %}description{% endif %}" rows="3" required placeholder="Describe item metrics, delivery timelines, sizes, conditions, or preparation time arrays..." class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition placeholder-gray-400"></textarea>
+                    </div>
+
+                    <!-- Strategic Parameters Segment -->
+                    {% if session.get('role') != 'Fast Food' %}
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Category Channel</label>
+                        <select name="category" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white transition">
+                            {% for cat in categories if cat != "Fast Food" %}
+                            <option value="{{ cat }}">{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Stock Inventory Allocation</label>
+                        <input type="number" name="stock_quantity" min="1" value="1" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Primary Fulfilment Hub Node <span class="text-red-500">*</span></label>
+                        <input type="text" name="location" required placeholder="e.g. Accra, Kumasi, East Legon" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition placeholder-gray-400">
+                    </div>
+
+                    <!-- MEDIA PIPELINES CAPTURE ELEMENT GRID -->
+                    <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                        
+                        <!-- Image Upload Channel (Hidden on raw Fast Food system profiles based on svg template rule) -->
+                        {% if session.get('role') != 'Fast Food' %}
+                        <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-emerald-400 transition bg-gray-50/50">
+                            <label class="block cursor-pointer">
+                                <i class="fa-solid fa-image text-gray-400 text-2xl mb-1 block"></i>
+                                <span class="text-xs font-semibold text-gray-700 block">Upload Showcase Image</span>
+                                <span class="text-[10px] text-gray-400 block mt-0.5">PNG, JPG, JPEG, WEBP or GIF format</span>
+                                <input type="file" name="product_image" class="hidden">
+                            </label>
+                        </div>
+                        {% endif %}
+
+                                             <!-- Premium Video Upload Channel -->
+                        <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-emerald-400 transition bg-gray-50/50 relative {% if not vendor_subscription['is_premium'] %}opacity-60 bg-gray-100/50 cursor-not-allowed{% endif %}">
+                            <label class="block {% if vendor_subscription['is_premium'] %}cursor-pointer{% else %}cursor-not-allowed{% endif %}">
+                                <i class="fa-solid fa-video text-gray-400 text-2xl mb-1 block {% if vendor_subscription['is_premium'] %}text-emerald-500{% endif %}"></i>
+                                <span class="text-xs font-semibold text-gray-700 block flex items-center justify-center">
+                                    Upload Video Pitch 
+                                    {% if not vendor_subscription['is_premium'] %}<i class="fa-solid fa-lock text-[10px] text-amber-500 ml-1.5"></i>{% endif %}
+                                </span>
+                                <span class="text-[10px] text-gray-400 block mt-0.5">MP4, WebM or MOV (Premium Privilege Only)</span>
+                                <input type="file" name="product_video" {% if not vendor_subscription['is_premium'] %}disabled{% endif %} class="hidden">
+                            </label>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Form Operations Terminal Panel -->
+                <div class="pt-4 border-t border-gray-100 flex items-center justify-end">
+                    <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent font-semibold rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition">
+                        <i class="fa-solid fa-rocket mr-2"></i> Deploy To Marketplace
+                    </button>
+                </div>
+            </form>
+        </section>
+        {% endif %}
+        <!-- =========================================================================
+             EXPLORATION ENGINE DASHBOARD (SEARCH & SUB-GRID FILTER FLUIDITY)
+             ========================================================================= -->
+        <section class="mb-8 bg-white p-4 sm:p-6 rounded-2xl border border-gray-200 shadow-sm">
+            <form action="/" method="GET" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                     
-                    <a href="/clear-cart" class="clear-cart-link">Empty Shopping Cart</a>
-                {% else %}
-                    <p style="color: var(--text-muted); text-align: center; font-size: 13px; padding: 20px 0; margin:0;">Your basket is completely empty. Select items from the catalog grid to assemble an order!</p>
+                    <!-- Text Filter Query Module -->
+                    <div class="md:col-span-5 relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                        <input type="text" name="company_search" value="{{ company_search }}" placeholder="Search company names or merchant handles..." class="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl border border-gray-300 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition placeholder-gray-400 text-sm">
+                    </div>
+
+                    <!-- Regional Fulfillment Isolation Dropdown -->
+                    <div class="md:col-span-3 relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <select name="filter_location" class="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl border border-gray-300 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition text-sm appearance-none">
+                            <option value="All" {% if active_filter == 'All' %}selected{% endif %}>All Territories / Hubs</option>
+                            <option value="Accra" {% if active_filter == 'Accra' %}selected{% endif %}>Accra Region</option>
+                            <option value="Kumasi" {% if active_filter == 'Kumasi' %}selected{% endif %}>Kumasi Hub</option>
+                            <option value="Tamale" {% if active_filter == 'Tamale' %}selected{% endif %}>Tamale Segment</option>
+                            <option value="Takoradi" {% if active_filter == 'Takoradi' %}selected{% endif %}>Takoradi Zone</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- Catalog Category Sifting Selector -->
+                    <div class="md:col-span-3 relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-tags"></i>
+                        </div>
+                        <select name="category" class="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl border border-gray-300 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition text-sm appearance-none">
+                            <option value="All" {% if selected_category == 'All' %}selected{% endif %}>All Inventory Channels</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- Trigger Execution Action Node -->
+                    <div class="md:col-span-1">
+                        <button type="submit" class="w-full h-full inline-flex items-center justify-center py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-sm transition">
+                            <i class="fa-solid fa-filter"></i>
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Fast Filter Status Indicators (Badges Interface Reset Matrix) -->
+                {% if active_filter != 'All' or selected_category != 'All' or company_search %}
+                <div class="pt-2 flex flex-wrap gap-2 items-center text-xs text-gray-500">
+                    <span class="font-medium">Active Constraints:</span>
+                    {% if company_search %}
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 font-semibold">Query: "{{ company_search }}"</span>
+                    {% endif %}
+                    {% if active_filter != 'All' %}
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 font-semibold">Hub: {{ active_filter }}</span>
+                    {% endif %}
+                    {% if selected_category != 'All' %}
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 font-semibold">Channel: {{ selected_category }}</span>
+                    {% endif %}
+                    <a href="/" class="text-red-500 hover:text-red-600 font-bold transition ml-1"><i class="fa-solid fa-rotate-left mr-1"></i>Reset Controls</a>
+                </div>
                 {% endif %}
+            </form>
+        </section>
+        <!-- =========================================================================
+             LIVE CATALOG RESILIENT PRODUCT GRID LOOPS
+             ========================================================================= -->
+        <section class="mb-12">
+            {% if products %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                    {% for product in products %}
+                    <article class="group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col h-full transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
+                        
+                        <!-- CARD HEADER CAPTURE PIPELINE: MEDIA AND HIGHLIGHT SHUNTS -->
+                        <div class="relative w-full aspect-video bg-gray-100 overflow-hidden flex-shrink-0">
+                            
+                            <!-- Premium Video Engine Insertion Check -->
+                            {% if product['video_file'] %}
+                            <video src="/static/uploads/{{ product['video_file'] }}" controls preload="metadata" class="w-full h-full object-cover" poster="{% if product['image_file'] and product['image_file'] != 'fast-food-placeholder.svg' %}/static/uploads/{{ product['image_file'] }}{% endif %}"></video>
+                            
+                            <!-- Placeholder SVG Alignment Matrix for Fast Food Profiles -->
+                            {% elif product['image_file'] == 'fast-food-placeholder.svg' %}
+                            <div class="w-full h-full flex flex-col items-center justify-center bg-amber-50 text-amber-600 p-6">
+                                <div class="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform"><i class="fa-solid fa-utensils text-2xl"></i></div>
+                                <span class="text-xs font-bold tracking-wide uppercase text-amber-800">Fresh Catering Track</span>
+                            </div>
+
+                            <!-- Standard Physical Product Image Pipeline -->
+                            {% elif product['image_file'] %}
+                            <img src="/static/uploads/{{ product['image_file'] }}" alt="{{ product['title'] }}" class="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" loading="lazy">
+                            {% endif %}
+
+                            <!-- Regional Location Node Anchor Tag Floating Badge -->
+                            <div class="absolute top-3 left-3 inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold text-gray-800 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-sm"><i class="fa-solid fa-location-dot text-emerald-600 mr-1.5"></i>{{ product['location'] }}</div>
+
+                            <!-- Category Channel Tag Badge Floating Blueprint -->
+                            <div class="absolute top-3 right-3 inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-gray-900/80 backdrop-blur-sm shadow-sm">{{ product['category'] }}</div>
+                        </div>
+
+                        <!-- CARD BODY ARCHITECTURE: CORE IDENTITIES & STRATEGIC ACCELERATORS -->
+                        <div class="p-5 sm:p-6 flex flex-col flex-grow">
+                            
+                            <!-- Vendor Brand Label Header Node Row -->
+                            <div class="flex items-center space-x-2.5 mb-2.5">
+                                {% if vendor_logos.get(product['seller']) %}
+                                <img src="/static/uploads/{{ vendor_logos[product['seller']] }}" alt="logo" class="w-5 h-5 rounded-full border border-gray-200 object-cover flex-shrink-0">
+                                {% else %}
+                                <div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-user-tie text-[10px]"></i></div>
+                                {% endif %}
+                                <span class="text-xs font-bold tracking-wide text-gray-600 uppercase truncate max-w-[180px]">{{ product['business_label'] }}</span>
+                                
+                                {% if product['seller'] in premium_sellers %}
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200"><i class="fa-solid fa-certificate text-[9px] mr-1"></i>VERIFIED</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Catalog Item Specific Titles -->
+                            <h3 class="text-base font-bold text-gray-900 group-hover:text-emerald-600 transition duration-200 line-clamp-1 mb-1.5">{{ product['title'] }}</h3>
+                            
+                            <!-- Multiline Description Scaffolding Box Block -->
+                            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed mb-4 flex-grow">{{ product['description'] }}</p>
+
+                            <!-- Financial Pricing and Stock Threshold Aligned Ledger Row -->
+                            <div class="pt-4 border-t border-gray-100 flex items-center justify-between flex-shrink-0">
+                                <div>
+                                    <span class="text-xs font-semibold text-gray-400 block uppercase tracking-wider">Unit Value</span>
+                                    <span class="text-lg font-black text-gray-900">₵{{ "%.2f"|format(product['price']) }}</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs font-semibold text-gray-400 block uppercase tracking-wider">Available Status</span>
+                                    {% if product['status'] == 'Sold' or product['stock_quantity'] < 1 %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200"><i class="fa-solid fa-circle-xmark text-[10px] mr-1.5"></i>Sold Out</span>
+                                    {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">In Stock: <strong class="ml-1">{{ product['stock_quantity'] }}</strong></span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- ACTION CHANNELS MATRIX FOOTER CONTAINER PIECE -->
+                            <div class="mt-4 pt-3 flex gap-2 border-t border-gray-50 flex-shrink-0">
+                                <!-- =========================================================================
+                                     CARD ACTIONS MATRIX INTERFACE (BUYER VS MERCHANT TERMINALS)
+                                     ========================================================================= -->
+                                {% if session.get('username') == product['seller'] %}
+                                    <!-- OWNER / MERCHANT DASHBOARD CONTROLS PANEL -->
+                                    <div class="w-full space-y-2.5 bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+                                        <form action="/mark-sold/{{ product['id'] }}" method="POST" class="flex items-center space-x-2">
+                                            <input type="number" name="sold_quantity" min="1" max="{{ product['stock_quantity'] }}" value="1" required class="w-16 px-2 py-1.5 text-xs text-center font-bold bg-white rounded-lg border border-gray-300 focus:ring-2 focus:focus:ring-emerald-500 focus:border-emerald-500 transition">
+                                            <button type="submit" {% if product['status'] == 'Sold' or product['stock_quantity'] < 1 %}disabled{% endif %} class="flex-grow inline-flex items-center justify-center px-3 py-1.5 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 disabled:opacity-50 rounded-lg shadow-sm transition">
+                                                <i class="fa-solid fa-tags mr-1.5"></i> Deduct Stock
+                                            </button>
+                                        </form>
+                                        <div class="flex items-center justify-between gap-2 pt-1">
+                                            <a href="/delete-item/{{ product['id'] }}" class="w-full inline-flex items-center justify-center px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-100 transition">
+                                                <i class="fa-solid fa-trash-can mr-1.5"></i> Purge Item
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <!-- STANDARD BUYER / VISITOR ACQUISITION TERMINAL -->
+                                    {% if product['status'] == 'Sold' or product['stock_quantity'] < 1 %}
+                                        <button disabled class="w-full inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold text-gray-400 bg-gray-100 border border-gray-200 cursor-not-allowed">
+                                            <i class="fa-solid fa-ban mr-2"></i> Allocation Depleted
+                                        </button>
+                                    {% else %}
+                                        <a href="/add-to-cart/{{ product['id'] }}" class="w-full inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-100 group-hover:bg-emerald-700 transition">
+                                            <i class="fa-solid fa-cart-plus mr-2"></i> Add to Purchase Order
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- FALLBACK MATRIX: EMPTY STATE RENDERING PANEL -->
+                <div class="text-center py-16 bg-white border border-gray-200 rounded-2xl shadow-sm max-w-xl mx-auto px-4">
+                    <div class="w-16 h-16 bg-gray-50 border border-gray-100 text-gray-400 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-gray-900 mb-1">No Catalog Allocation Detected</h3>
+                    <p class="text-sm text-gray-500 max-w-sm mx-auto mb-4">We couldn't locate active listings matching your query guidelines. Try broadening your location parameters or filter fields.</p>
+                    <a href="/" class="inline-flex items-center text-sm font-bold text-emerald-600 hover:text-emerald-700 transition">
+                        <i class="fa-solid fa-rotate-left mr-1.5"></i> Clear Active Rules
+                    </a>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- =========================================================================
+             SIDEBAR WORKSPACE DRAWER: SHOPPING BASKET SUMMARY
+             ========================================================================= -->
+        {% if cart_items %}
+        <section class="fixed bottom-6 right-6 z-40 max-w-sm w-full sm:w-96 bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transition-transform duration-300">
+            <!-- Sidebar Header Banner -->
+            <div class="px-5 py-4 bg-gray-900 text-white flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-basket-shopping text-emerald-400 text-lg"></i>
+                    <h2 class="text-sm font-bold tracking-wide uppercase">Your Active Basket Matrix</h2>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-500 text-white shadow-sm">{{ cart_items|length }}</span>
             </div>
 
-        </div>
-
-        <!-- FOOTER BRANDING FOOTNOTE -->
-        <div class="footer-info">
-            <h4 style="margin:0 0 10px 0; color: var(--primary);">📞 Contact Biz Hub Operations</h4>
-            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-                <span>💬 WhatsApp: <b>233558272972</b></span>
-                <span>✉️ Email: <b>contactBizHub@proton.me</b></span>
+            <!-- Scrollable Content Stack Container Segment -->
+            <div class="p-5 flex-grow overflow-y-auto space-y-3.5 bg-gray-50/50">
+                {% for item in cart_items %}
+                <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 shadow-sm gap-4">
+                    <div class="min-w-0 flex-grow">
+                        <h4 class="text-sm font-bold text-gray-900 truncate mb-0.5">{{ item['title'] }}</h4>
+                        <div class="flex items-center text-xs text-gray-400 font-medium">
+                            <span class="truncate max-w-[120px] font-semibold text-gray-500"><i class="fa-solid fa-user text-[9px] mr-1"></i>{{ item['business_label'] }}</span>
+                            <span class="mx-1.5">•</span>
+                            <span>{{ item['location'] }}</span>
+                        </div>
+                    </div>
+                    <span class="text-sm font-extrabold text-gray-900 flex-shrink-0">₵{{ "%.2f"|format(item['price']) }}</span>
+                </div>
+                {% endfor %}
             </div>
-        </div>
+
+            <!-- Ledger Breakdown Operations Panel Drawer Footer Footer Section -->
+            <div class="p-5 border-t border-gray-200 bg-white space-y-4 flex-shrink-0">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Aggregated Valuation</span>
+                    <span class="text-xl font-black text-gray-900">₵{{ "%.2f"|format(cart_total) }}</span>
+                </div>
+
+                <!-- ESCROW GATEWAY REDIRECT ROUTER DISPATCH TRIGGERS -->
+                <div class="space-y-2">
+                    <form action="/place-order" method="POST">
+                        <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-3 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-100 transition">
+                            <i class="fa-solid fa-cash-register mr-2"></i> Intiate Escrow Protocol
+                        </button>
+                    </form>
+
+                    <!-- WHATSAPP P2P DIRECT CHANNEL TRIGGERS LOOPS -->
+                    {% for order in seller_orders %}
+                    <a href="https://wa.me{{ order['number'] }}?text={{ order['whatsapp_text'] }}" target="_blank" class="w-full inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-green-600 hover:bg-green-700 shadow-sm transition">
+                        <i class="fa-brands fa-whatsapp text-sm mr-2"></i> Text Seller: <strong class="ml-1 font-extrabold">{{ order['seller'] }}</strong>
+                    </a>
+                    {% endfor %}
+
+                    <div class="pt-1 text-center">
+                        <a href="/clear-cart" class="text-xs font-bold text-red-500 hover:text-red-600 transition">
+                            <i class="fa-solid fa-trash-arrow-up mr-1"></i> Flush Basket
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% endif %}
 
     </div>
+</main>
 
-    <!-- JAVASCRIPT MASTER OPERATIONS CONTROL PACK -->
-    <script>
-        function filterCatalogCards() {
-            let inputString = document.getElementById("liveSearchField").value.toLowerCase().trim();
-            let catalogGrid = document.getElementById("masterCatalogGrid");
-            let itemCards = catalogGrid.getElementsByClassName("card");
-            
-            for (let i = 0; i < itemCards.length; i++) {
-                let textContainer = itemCards[i].getElementsByClassName("card-title")[0];
-                if (textContainer) {
-                    let evaluationText = textContainer.textContent || textContainer.innerText;
-                    if (evaluationText.toLowerCase().indexOf(inputString) > -1) {
-                        itemCards[i].style.display = "";
-                    } else {
-                        itemCards[i].style.display = "none";
-                    }
-                }
-            }
-        }
-    </script>
+<!-- GLOBAL APPARATUS FOOTER SCROLL RETAINER -->
+<footer class="bg-white border-t border-gray-200 py-6 mt-12 flex-shrink-0">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400 font-medium">
+        <p>&copy; 2026 Biz Hub Inc. Peer-to-Peer Secure Merchant Framework.</p>
+        <div class="flex space-x-4">
+            <span class="text-emerald-600 font-bold"><i class="fa-solid fa-shield-halved mr-1"></i> Secured Session Cryptography</span>
+            <span>West Africa Commerce Node</span>
+        </div>
+    </div>
+</footer>
+
 </body>
 </html>

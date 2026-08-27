@@ -1,691 +1,227 @@
-Copy this entire code into `templates/login.html`, replacing the old file:
-
-```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-gray-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biz Hub Auth Portal | Your Local Market, Unified Online</title>
-
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#1A365D">
-
-    <style>
-        :root {
-            --primary: #1A365D;
-            --primary-light: #2B6CB0;
-            --accent: #FF9900;
-            --bg-light: #F7FAFC;
-            --text-main: #2D3748;
-            --text-muted: #718096;
-            --border-color: #E2E8F0;
-            --danger: #E53E3E;
-            --radius-lg: 12px;
-            --radius-sm: 6px;
-            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-            --transition: all 0.2s ease-in-out;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: "Segoe UI", system-ui, sans-serif;
-            background-color: var(--bg-light);
-            color: var(--text-main);
-            margin: 0;
-            display: grid;
-            place-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .auth-container {
-            width: 100%;
-            max-width: 460px;
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            overflow: hidden;
-        }
-
-        .auth-header {
-            background: var(--primary);
-            padding: 25px;
-            text-align: center;
-            color: white;
-        }
-
-        .auth-header h1 {
-            margin: 0;
-            font-size: 26px;
-            font-weight: 800;
-        }
-
-        .auth-header h1 span {
-            color: var(--accent);
-        }
-
-        .auth-header p {
-            margin: 5px 0 0;
-            font-size: 13px;
-            color: #E2E8F0;
-            font-style: italic;
-        }
-
-        .auth-body {
-            padding: 30px;
-        }
-
-        .auth-tabs {
-            display: flex;
-            background: #EDF2F7;
-            border-radius: var(--radius-sm);
-            padding: 4px;
-            margin-bottom: 25px;
-        }
-
-        .auth-tab {
-            flex: 1;
-            text-align: center;
-            padding: 10px 8px;
-            font-size: 13px;
-            font-weight: 700;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: var(--transition);
-        }
-
-        .auth-tab.active {
-            background: white;
-            color: var(--primary);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-        }
-
-        .auth-form {
-            display: none;
-        }
-
-        .auth-form.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 700;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 11px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            outline: none;
-            background: #F7FAFC;
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            border-color: var(--primary-light);
-            background: white;
-            box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.15);
-        }
-
-        .alert {
-            padding: 12px 15px;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .alert-danger {
-            background: #FFF5F5;
-            color: var(--danger);
-            border: 1px solid #FED7D7;
-        }
-
-        .submit-btn {
-            width: 100%;
-            background: var(--primary-light);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: var(--transition);
-        }
-
-        .submit-btn:hover {
-            background: var(--primary);
-        }
-
-        .submit-btn:focus-visible,
-        .auth-tab:focus-visible,
-        .switch-link:focus-visible {
-            outline: 3px solid rgba(255, 153, 0, 0.55);
-            outline-offset: 3px;
-        }
-
-        .switch-prompt {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .switch-link {
-            color: var(--primary-light);
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .conditional-field {
-            display: none;
-            margin-top: 15px;
-        }
-
-        .category-checks {
-            display: grid;
-            gap: 7px;
-            padding: 10px;
-            background: #F7FAFC;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-        }
-
-        .category-checks label {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 12px;
-            font-weight: 500;
-            text-transform: none;
-            margin: 0;
-        }
-
-        .category-checks input {
-            accent-color: var(--primary-light);
-        }
-
-        .help-text {
-            display: block;
-            color: var(--text-muted);
-            font-size: 11px;
-            line-height: 1.4;
-            margin-top: 5px;
-        }
-
-        @media (max-width: 520px) {
-            .auth-body {
-                padding: 24px 20px;
-            }
-        }
-    </style>
+    <title>Access Gateway | Biz Hub</title>
+    <script src="https://tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cloudflare.com">
 </head>
+<body class="h-full font-sans antialiased text-gray-900 flex flex-col justify-between">
 
-<body>
-    <main class="auth-container">
-        <header class="auth-header">
-            <h1>🏪 Biz<span>Hub</span></h1>
-            <p>Your Local Market, Unified Online</p>
-        </header>
+    <!-- PLATFORM HEADER NAVIGATION MINIMAL BRANDING -->
+    <header class="w-full bg-white border-b border-gray-200 py-4 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 flex items-center justify-between">
+            <a href="/" class="flex items-center space-x-2">
+                <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 shadow-md">
+                    <i class="fa-solid fa-shop text-white text-base"></i>
+                </div>
+                <span class="text-lg font-black tracking-tight text-gray-900">Biz<span class="text-emerald-600">Hub</span></span>
+            </a>
+            <a href="/" class="text-xs font-bold uppercase tracking-wider text-gray-500 hover:text-gray-900 transition">
+                <i class="fa-solid fa-arrow-left-long mr-1.5"></i> Back to Market
+            </a>
+        </div>
+    </header>
 
-        <section class="auth-body">
+    <main class="flex-grow flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-5xl w-full space-y-6">
+
+            <!-- ERROR & FEEDBACK CHANNEL STACK -->
             {% if login_error %}
-                <div class="alert alert-danger">⚠️ {{ login_error }}</div>
+            <div class="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm flex items-start space-x-3 max-w-md mx-auto">
+                <div class="text-red-500 mt-0.5"><i class="fa-solid fa-circle-exclamation text-lg"></i></div>
+                <div>
+                    <h3 class="text-sm font-bold text-red-800">Authentication Failed</h3>
+                    <p class="text-xs text-red-700 mt-0.5">{{ login_error }}</p>
+                </div>
+            </div>
             {% endif %}
 
             {% if reg_error %}
-                <div class="alert alert-danger">⚠️ {{ reg_error }}</div>
+            <div class="p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm flex items-start space-x-3 max-w-lg mx-auto">
+                <div class="text-red-500 mt-0.5"><i class="fa-solid fa-triangle-exclamation text-lg"></i></div>
+                <div>
+                    <h3 class="text-sm font-bold text-red-800">Registration Rejected</h3>
+                    <p class="text-xs text-red-700 mt-0.5">{{ reg_error }}</p>
+                </div>
+            </div>
             {% endif %}
 
-            <div class="auth-tabs">
-                <button
-                    type="button"
-                    id="tab-login"
-                    class="auth-tab active"
-                    onclick="toggleAuthMode('login')"
-                >
-                    Sign In
-                </button>
-
-                <button
-                    type="button"
-                    id="tab-register"
-                    class="auth-tab"
-                    onclick="toggleAuthMode('register')"
-                >
-                    Create Account
-                </button>
+            {% if request.args.get('recovered') %}
+            <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 shadow-sm flex items-start space-x-3 max-w-md mx-auto">
+                <div class="text-emerald-500 mt-0.5"><i class="fa-solid fa-circle-check text-lg"></i></div>
+                <div>
+                    <h3 class="text-sm font-bold text-emerald-800">Security Credentials Updated</h3>
+                    <p class="text-xs text-emerald-700 mt-0.5">Your password hash has been realigned. Please verify access below.</p>
+                </div>
             </div>
+            {% endif %}
 
-            <!-- LOGIN FORM -->
-            <form
-                id="form-login"
-                method="POST"
-                action="{{ url_for('login') }}"
-                class="auth-form active"
-            >
-                <div class="form-group">
-                    <label for="login_user">Username</label>
-                    <input
-                        id="login_user"
-                        type="text"
-                        name="login_user"
-                        placeholder="Enter your username"
-                        class="form-control"
-                        autocomplete="username"
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="login_pass">Password</label>
-                    <input
-                        id="login_pass"
-                        type="password"
-                        name="login_pass"
-                        placeholder="Enter your password"
-                        class="form-control"
-                        autocomplete="current-password"
-                        required
-                    >
-                </div>
-
-                <button type="submit" class="submit-btn">
-                    Sign In Securely
-                </button>
-
-                <p class="switch-prompt">
-                    New to Biz Hub?
-                    <span
-                        class="switch-link"
-                        role="button"
-                        tabindex="0"
-                        onclick="toggleAuthMode('register')"
-                        onkeydown="handleSwitchKey(event, 'register')"
-                    >
-                        Create an account
-                    </span>
-                </p>
-            </form>
-
-            <!-- REGISTRATION FORM -->
-            <form
-                id="form-register"
-                method="POST"
-                action="{{ url_for('register') }}"
-                class="auth-form"
-            >
-                <div class="form-group">
-                    <label for="reg_user">Preferred Username</label>
-                    <input
-                        id="reg_user"
-                        type="text"
-                        name="reg_user"
-                        placeholder="e.g. shopper_accra"
-                        class="form-control"
-                        autocomplete="username"
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="reg_email">Email Address</label>
-                    <input
-                        id="reg_email"
-                        type="email"
-                        name="reg_email"
-                        placeholder="name@domain.com"
-                        class="form-control"
-                        autocomplete="email"
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="reg_pass">Account Password</label>
-                    <input
-                        id="reg_pass"
-                        type="password"
-                        name="reg_pass"
-                        placeholder="Minimum 6 characters"
-                        class="form-control"
-                        autocomplete="new-password"
-                        minlength="6"
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="role-select">Platform Access Tier</label>
-
-                    <select
-                        id="role-select"
-                        name="role"
-                        class="form-control"
-                        onchange="evaluateRoleInputs()"
-                        required
-                    >
-                        <option value="Customer">
-                            🛒 Buy Products (Customer Account)
-                        </option>
-                        <option value="Vendor">
-                            🏬 General Merchant / Company Store
-                        </option>
-                        <option value="Fast Food">
-                            🍟 Fast Food Vendor Account
-                        </option>
-                    </select>
-                </div>
-
-                <!-- VENDOR-ONLY OPTIONS -->
-                <div id="vendor-options" class="conditional-field">
-                    <div class="form-group">
-                        <label for="seller_type">Seller Type</label>
-
-                        <select
-                            id="seller_type"
-                            name="seller_type"
-                            class="form-control"
-                            onchange="evaluateSellerType()"
-                        >
-                            <option value="Individual">
-                                Individual Vendor
-                            </option>
-                            <option value="Company">
-                                Company Store
-                            </option>
-                        </select>
+            <!-- TWO-COLUMN WORKSPACE: LEFT FOR AUTHENTICATION, RIGHT FOR ENROLLMENT -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                
+                <!-- PORTAL A: PERSISTENT SIGN-IN HUB (4 COLUMNS) -->
+                <section class="md:col-span-5 bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-6">
+                    <div>
+                        <h2 class="text-lg font-black text-gray-900">Sign In to Your Workspace</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Welcome back! Access your peer-to-peer commerce node dashboards.</p>
                     </div>
 
-                    <div id="company-name-group" class="form-group conditional-field">
-                        <label for="company_name">Company Name</label>
-
-                        <input
-                            id="company_name"
-                            type="text"
-                            name="company_name"
-                            placeholder="Enter your business name"
-                            class="form-control"
-                        >
+                    <form action="/login" method="POST" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">User Identity Handle</label>
+                            <input type="text" name="login_user" required placeholder="Enter username handle" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 text-sm transition placeholder-gray-400">
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700">Security Cryptographic Key</label>
+                                <a href="/forgot-password" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 transition">Recover Key?</a>
+                            </div>
+                            <input type="password" name="login_pass" required placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 text-sm transition placeholder-gray-400">
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-sm rounded-xl shadow-md hover:from-emerald-700 hover:to-teal-700 shadow-emerald-100 transition">
+                            <i class="fa-solid fa-lock-open mr-2"></i> Verify Passkey Access
+                        </button>
+                    </form>
+                </section>
+                <!-- PORTAL B: ADVANCED MERCHANT REGISTRATION MATRIX (7 COLUMNS) -->
+                <section class="md:col-span-7 bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-6">
+                    <div>
+                        <h2 class="text-lg font-black text-gray-900">Initialize a Commercial Membership</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Customers browse for free. New merchants receive an instant 61-day commercial platform trial.</p>
                     </div>
 
-                    <div class="form-group">
-                        <label for="catalog_mode">Catalog Mode</label>
-
-                        <select
-                            id="catalog_mode"
-                            name="catalog_mode"
-                            class="form-control"
-                        >
-                            <option value="Focused">
-                                Focused category
-                            </option>
-                            <option value="Variety">
-                                Variety store
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Product Categories</label>
-
-                        <div class="category-checks">
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    name="vendor_categories"
-                                    value="Phones & Accessories"
-                                >
-                                Phones & Accessories
-                            </label>
-
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    name="vendor_categories"
-                                    value="Groceries"
-                                >
-                                Groceries
-                            </label>
-
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    name="vendor_categories"
-                                    value="Clothing"
-                                >
-                                Clothing
-                            </label>
-
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    name="vendor_categories"
-                                    value="Books"
-                                >
-                                Books
-                            </label>
-
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    name="vendor_categories"
-                                    value="Health & Beauty"
-                                >
-                                Health & Beauty
-                            </label>
-
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    name="vendor_categories"
-                                    value="Beauty & Personal Care"
-                                >
-                                Beauty & Personal Care
-                            </label>
-
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    name="vendor_categories"
-                                    value="Home & Kitchen"
-                                >
-                                Home & Kitchen
-                            </label>
-
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    name="vendor_categories"
-                                    value="Electronics"
-                                >
-                                Electronics
-                            </label>
-
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    name="vendor_categories"
-                                    value="Fast Food"
-                                >
-                                Fast Food
-                            </label>
-
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    name="vendor_categories"
-                                    value="Other"
-                                >
-                                Other
-                            </label>
+                    <form action="/register" method="POST" class="space-y-5">
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">Desired Username Handle</label>
+                                <input type="text" name="reg_user" required placeholder="e.g. stapps_of_faith" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 text-sm transition placeholder-gray-400">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">Primary Communication Email</label>
+                                <input type="email" name="reg_email" required placeholder="e.g. contact@domain.xyz" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 text-sm transition placeholder-gray-400">
+                            </div>
                         </div>
 
-                        <small class="help-text">
-                            Select at least one category for a Vendor account.
-                        </small>
-                    </div>
-                </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">Assign Complex Security Passkey</label>
+                                <input type="password" name="reg_pass" required placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 text-sm transition placeholder-gray-400">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">Operational Platform Role Membership</label>
+                                <select id="role_selector" name="role" required onchange="toggleMerchantLayers(this.value)" class="w-full px-4 py-3 bg-white rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                                    <option value="Customer">Standard Retail Consumer (Free Tier)</option>
+                                    <option value="Vendor">Merchant Supplier (P2P Catalog Mode)</option>
+                                    <option value="Fast Food">Catering Operator / Fast Food Kitchen</option>
+                                </select>
+                            </div>
+                        </div>
 
-                <!-- WHATSAPP FOR VENDORS -->
-                <div id="vendor-whatsapp-group" class="form-group conditional-field">
-                    <label for="whatsapp_number">
-                        WhatsApp Contact Number
-                    </label>
+                        <!-- ADAPTIVE INTERACTIVE CONTAINER (Revealed or Hidden via Client-Side Event Hooks) -->
+                        <div id="merchant_parameter_layers" class="hidden pt-5 border-t border-gray-100 space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div id="company_name_block">
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">Corporate / Enterprise Branding Name</label>
+                                    <input type="text" name="company_name" placeholder="e.g. Faith Groceries Enterprise" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 text-sm transition placeholder-gray-400">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">MoMo Settlement WhatsApp Contact</label>
+                                    <input type="text" name="whatsapp_number" placeholder="e.g. 0244123456" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 text-sm transition placeholder-gray-400">
+                                </div>
+                            </div>
 
-                    <input
-                        type="text"
-                        id="whatsapp_number"
-                        name="whatsapp_number"
-                        placeholder="e.g. 0558272972"
-                        class="form-control"
-                    >
+                            <div id="vendor_exclusives_block" class="space-y-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">Merchant Classification Structuring</label>
+                                        <select name="seller_type" onchange="toggleCorporateLayer(this.value)" class="w-full px-4 py-3 bg-white rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                                            <option value="Individual">Individual Peer Vendor</option>
+                                            <option value="Company">Registered Incorporated Company</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">Market Display Configuration Mode</label>
+                                        <select name="catalog_mode" class="w-full px-4 py-3 bg-white rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                                            <option value="Focused">Focused (Single Category Specialist)</option>
+                                            <option value="Variety">Variety (Generalized Open Storefront)</option>
+                                        </select>
+                                    </div>
+                                </div>
 
-                    <small class="help-text">
-                        Required for Vendor and Fast Food accounts so customers can contact you about orders.
-                    </small>
-                </div>
+                                <!-- Checklist Matrix Selection block for active product domains -->
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2.5">Select Targeted Commercial Domain Ranges</label>
+                                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                        <label class="flex items-center p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium cursor-pointer select-none">
+                                            <input type="checkbox" name="vendor_categories" value="Phones & Accessories" class="rounded text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5 mr-2"> Phones & Accs
+                                        </label>
+                                        <label class="flex items-center p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium cursor-pointer select-none">
+                                            <input type="checkbox" name="vendor_categories" value="Groceries" class="rounded text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5 mr-2"> Groceries
+                                        </label>
+                                        <label class="flex items-center p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium cursor-pointer select-none">
+                                            <input type="checkbox" name="vendor_categories" value="Clothing" class="rounded text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5 mr-2"> Clothing
+                                        </label>
+                                        <label class="flex items-center p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium cursor-pointer select-none">
+                                            <input type="checkbox" name="vendor_categories" value="Electronics" class="rounded text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5 mr-2"> Electronics
+                                        </label>
+                                        <label class="flex items-center p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium cursor-pointer select-none">
+                                            <input type="checkbox" name="vendor_categories" value="Health & Beauty" class="rounded text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5 mr-2"> Health/Beauty
+                                        </label>
+                                        <label class="flex items-center p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium cursor-pointer select-none">
+                                            <input type="checkbox" name="vendor_categories" value="Other" class="rounded text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5 mr-2"> Other Lines
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                <button
-                    type="submit"
-                    class="submit-btn"
-                    style="background: var(--accent);"
-                >
-                    Register Account
-                </button>
-
-                <p class="switch-prompt">
-                    Already have an account?
-                    <span
-                        class="switch-link"
-                        role="button"
-                        tabindex="0"
-                        onclick="toggleAuthMode('login')"
-                        onkeydown="handleSwitchKey(event, 'login')"
-                    >
-                        Sign in here
-                    </span>
-                </p>
-            </form>
-        </section>
+                        <button type="submit" class="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold text-sm rounded-xl shadow-md hover:from-teal-700 hover:to-emerald-700 shadow-teal-100 transition">
+                            <i class="fa-solid fa-user-plus mr-2"></i> Instantiate Membership Account
+                        </button>
+                    </form>
+                </section>
+            </div>
+        </div>
     </main>
 
+       <!-- CLIENT INTERACTIVE BEHAVIORAL SCRIPT MODULE -->
     <script>
-        function toggleAuthMode(mode) {
-            const tabLogin = document.getElementById("tab-login");
-            const tabRegister = document.getElementById("tab-register");
-            const formLogin = document.getElementById("form-login");
-            const formRegister = document.getElementById("form-register");
-
-            if (mode === "login") {
-                tabLogin.classList.add("active");
-                tabRegister.classList.remove("active");
-                formLogin.classList.add("active");
-                formRegister.classList.remove("active");
-            } else {
-                tabRegister.classList.add("active");
-                tabLogin.classList.remove("active");
-                formRegister.classList.add("active");
-                formLogin.classList.remove("active");
+        function toggleMerchantLayers(roleValue) {
+            const container = document.getElementById('merchant_parameter_layers');
+            const vendorExclusives = document.getElementById('vendor_exclusives_block');
+            const companyBlock = document.getElementById('company_name_block');
+            
+            if (roleValue === 'Customer') {
+                container.classList.add('hidden');
+            } else if (roleValue === 'Fast Food') {
+                container.classList.remove('hidden');
+                vendorExclusives.classList.add('hidden');
+                companyBlock.classList.remove('hidden');
+            } else if (roleValue === 'Vendor') {
+                container.classList.remove('hidden');
+                vendorExclusives.classList.remove('hidden');
+                // Auto-hide company input box by default to match Individual setup rules
+                companyBlock.classList.add('hidden');
             }
         }
 
-        function evaluateRoleInputs() {
-            const roleSelect = document.getElementById("role-select");
-            const whatsappGroup = document.getElementById("vendor-whatsapp-group");
-            const whatsappInput = document.getElementById("whatsapp_number");
-            const vendorOptions = document.getElementById("vendor-options");
-
-            const vendorInputs = vendorOptions.querySelectorAll(
-                "select, input"
-            );
-
-            const isVendor =
-                roleSelect.value === "Vendor" ||
-                roleSelect.value === "Fast Food";
-
-            if (isVendor) {
-                whatsappGroup.style.display = "block";
-                whatsappInput.setAttribute("required", "required");
+        function toggleCorporateLayer(sellerType) {
+            const companyBlock = document.getElementById('company_name_block');
+            if (sellerType === 'Company') {
+                companyBlock.classList.remove('hidden');
             } else {
-                whatsappGroup.style.display = "none";
-                whatsappInput.removeAttribute("required");
-                whatsappInput.value = "";
-            }
-
-            if (roleSelect.value === "Vendor") {
-                vendorOptions.style.display = "block";
-
-                vendorInputs.forEach((input) => {
-                    input.disabled = false;
-                });
-            } else {
-                vendorOptions.style.display = "none";
-
-                vendorInputs.forEach((input) => {
-                    input.disabled = true;
-                });
-
-                document
-                    .getElementById("company-name-group")
-                    .style.display = "none";
-            }
-
-            evaluateSellerType();
-        }
-
-        function evaluateSellerType() {
-            const roleSelect = document.getElementById("role-select");
-            const sellerType = document.getElementById("seller_type");
-            const companyGroup = document.getElementById("company-name-group");
-            const companyInput = document.getElementById("company_name");
-
-            if (
-                roleSelect.value === "Vendor" &&
-                sellerType.value === "Company"
-            ) {
-                companyGroup.style.display = "block";
-                companyInput.disabled = false;
-            } else {
-                companyGroup.style.display = "none";
-                companyInput.disabled = true;
-                companyInput.value = "";
+                companyBlock.classList.add('hidden');
             }
         }
-
-        function handleSwitchKey(event, mode) {
-            if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                toggleAuthMode(mode);
-            }
-        }
-
-        window.addEventListener("DOMContentLoaded", function () {
-            evaluateRoleInputs();
-
-            {% if reg_error %}
-                toggleAuthMode("register");
-            {% endif %}
-        });
     </script>
+
+    <footer class="w-full bg-white border-t border-gray-200 py-4 text-center text-xs text-gray-400 font-medium">
+        <p>&copy; 2026 Biz Hub Edge Vault Access Terminals.</p>
+    </footer>
+
 </body>
 </html>
+ 
