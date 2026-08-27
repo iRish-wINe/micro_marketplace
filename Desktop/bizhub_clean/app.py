@@ -687,7 +687,7 @@ def register():
             catalog_mode = None
             selected_categories = []
 
-               if role in ["Vendor", "Fast Food"] and not whatsapp_number:
+        if role in ["Vendor", "Fast Food"] and not whatsapp_number:
             return render_template("login.html", reg_error="Merchant and Fast Food vendor accounts need a compulsory WhatsApp number to receive order tallies.")
         if role == "Vendor" and (catalog_mode not in ("Variety", "Focused") or not selected_categories):
             return render_template("login.html", reg_error="Choose a product range and select at least one category.")
