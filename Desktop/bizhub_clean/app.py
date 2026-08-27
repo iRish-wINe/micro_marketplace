@@ -23,6 +23,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def init_db():
     conn = sqlite3.connect("marketplace.db", timeout=20)
     cursor = conn.cursor()
+        # 🧠 EMERGENCY CLEAN RESET: Wipe and realign structural data matrices
+    cursor.execute("DROP TABLE IF EXISTS users")
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
