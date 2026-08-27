@@ -131,6 +131,18 @@ def init_db():
 
     order_columns = {row[1] for row in cursor.execute("PRAGMA table_info(orders)")}
     if "payment_status" not in order_columns: cursor.execute("ALTER TABLE orders ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'Unpaid'")
+    # 💳 8. Create Financial Ledger Architecture (MoMo Cash Tracking Engine)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS financial_ledger (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            transaction_type TEXT NOT NULL, -- 'Subscription' or 'Escrow Purchase'
+            username TEXT NOT NULL,
+            amount REAL NOT NULL,
+            momo_reference TEXT UNIQUE,
+            status TEXT NOT NULL DEFAULT 'Pending', -- 'Pending', 'Verified', 'Failed'
+            created_at TEXT NOT NULL
+        )
+    """)
 
     conn.commit()
     conn.close()
@@ -493,9 +505,49 @@ def admin_signup():
 def admin_dashboard():
     if not is_admin():
         return redirect(url_for("admin_login"))
+        
+    # Fetch data sheets cleanly
     users = query_db("SELECT * FROM users ORDER BY COALESCE(registered_at, '') DESC, username")
     listing_counts = {row["seller"]: row["count"] for row in query_db("SELECT seller, COUNT(*) AS count FROM products GROUP BY seller")}
-    return render_template("admin.html", users=users, subscription_status=subscription_status, listing_counts=listing_counts)
+    
+    # 📊 NEW FINANCIAL CALCULATIONS
+    ledger_entries = query_db("SELECT * FROM financial_ledger ORDER BY id DESC") or []
+    
+    total_revenue = query_db("SELECT SUM(amount) AS total FROM financial_ledger WHERE status = 'Verified'", one=True)["total"] or 0.0
+    pending_momo = query_db("SELECT SUM(amount) AS total FROM financial_ledger WHERE status = 'Pending'", one=True)["total"] or 0.0
+    verified_count = query_db("SELECT COUNT(*) AS count FROM financial_ledger WHERE status = 'Verified'", one=True)["count"] or 0
+    
+    return render_template(
+        "admin.html", 
+        users=users, 
+        subscription_status=subscription_status, 
+        listing_counts=listing_counts,
+        ledger_entries=ledger_entries,
+        total_revenue=total_revenue,
+        pending_momo=pending_momo,
+        verified_count=verified_count
+    )
+
+@app.route("/admin/verify-transaction/<int:entry_id>", methods=["POST"])
+def verify_transaction(entry_id):
+    if not is_admin(): return redirect(url_for("admin_login"))
+    query_db("UPDATE financial_ledger SET status = 'Verified' WHERE id = ?", (entry_id,))
+    return redirect(url_for("admin_dashboard"))
+
+@app.route("/admin/log-payment", methods=["POST"])
+def log_payment():
+    # Helper path to simulate manual transaction logs or vendor filing inputs
+    username = request.form.get("username")
+    amount = float(request.form.get("amount", 0.0))
+    tx_type = request.form.get("transaction_type", "Subscription")
+    ref = request.form.get("momo_reference", "").strip() or f"WA-{uuid.uuid4().hex[:8].upper()}"
+    
+    query_db(
+        "INSERT INTO financial_ledger (transaction_type, username, amount, momo_reference, status, created_at) VALUES (?, ?, ?, ?, 'Pending', ?)",
+        (tx_type, username, amount, ref, datetime.now(timezone.utc).isoformat())
+    )
+    return redirect(url_for("admin_dashboard"))
+
 
 @app.route("/admin/approve-premium/<int:user_id>", methods=["POST"])
 def approve_premium(user_id):
