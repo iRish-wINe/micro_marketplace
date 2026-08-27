@@ -63,7 +63,7 @@ def enforce_device_standards():
             </body>
             </html>
         """), 403
-   def init_db():
+def init_db():
     conn = sqlite3.connect("marketplace.db", timeout=20)
     cursor = conn.cursor()
     
