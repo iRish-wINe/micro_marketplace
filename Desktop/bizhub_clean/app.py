@@ -323,8 +323,13 @@ def home():
         message += f"\nTotal Cost: GH₵{seller_order['total']:.2f}. Let's arrange for payment and delivery."
         seller_order["whatsapp_text"] = quote(message)
 
-    premium_sellers = {row["username"] for row in query_db("SELECT username FROM users WHERE (role = 'Vendor' OR role = 'Fast Food') AND plan = 'premium' AND subscription_expires_at > ?", (datetime.now(timezone.utc).isoformat(),))}
-    trial_sellers = {row["username"] for row in query_db("SELECT username FROM users WHERE (role = 'Vendor' OR role = 'Fast Food') AND plan = 'basic' AND subscription_expires_at > ?", (datetime.now(timezone.utc).isoformat(),))}
+       # 🧠 SAFE SELLER MATRIX SCANNER: Bypasses empty query list crashes cleanly
+    premium_rows = query_db("SELECT username FROM users WHERE (role = 'Vendor' OR role = 'Fast Food') AND plan = 'premium' AND subscription_expires_at > ?", (datetime.now(timezone.utc).isoformat(),))
+    premium_sellers = {row["username"] for row in premium_rows} if premium_rows else set()
+
+    trial_rows = query_db("SELECT username FROM users WHERE (role = 'Vendor' OR role = 'Fast Food') AND plan = 'basic' AND subscription_expires_at > ?", (datetime.now(timezone.utc).isoformat(),))
+    trial_sellers = {row["username"] for row in trial_rows} if trial_rows else set()
+
     premium_sellers.update(trial_sellers)
     for seller_order in seller_orders.values():
         seller_order["priority"] = seller_order["seller"] in premium_sellers
