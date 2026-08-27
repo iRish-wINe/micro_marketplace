@@ -164,19 +164,25 @@
                         </div>
                     {% else %}
                         <!-- Standard Merchant Dashboard Tracker -->
-                        <div class="panel-box">
-                            <h3>👑 Subscription Dashboard</h3>
-                            <p style="margin: 0 0 5px; font-size: 13px;">Plan: <b>{{ vendor_subscription.name if vendor_subscription else 'Free Trial' }}</b></p>
-                            {% if vendor_subscription and vendor_subscription.get('trial') %}
-                                <small style="color: var(--accent); display: block; margin-bottom: 8px;">Premium trial ends {{ vendor_subscription.expires }}</small>
-                            {% elif vendor_subscription and vendor_subscription.get('is_premium') %}
-                                <small style="color: var(--success); display: block; margin-bottom: 8px;">Renews {{ vendor_subscription.expires }}</small>
-                            {% endif %}
-                            <p style="margin: 5px 0 12px; font-size: 12px; color: var(--text-muted);">
-                                Listings: <b>{{ listing_count }}/Unlimited</b>
-                            </p>
-                        </div>
-                    {% endif %}
+                                       <!-- 👑 UPGRADED SUBSCRIPTION SIDEBAR TRACKER -->
+                    <div class="panel-box">
+                        <h3>👑 Subscription Dashboard</h3>
+                        <p style="margin: 0 0 5px; font-size: 13px;">Plan: <b>{{ vendor_subscription.name if vendor_subscription else 'Free Trial' }}</b></p>
+                        {% if vendor_subscription and vendor_subscription.get('trial') %}
+                            <small style="color: var(--accent); display: block; margin-bottom: 8px;">Premium trial ends {{ vendor_subscription.expires }}</small>
+                        {% elif vendor_subscription and vendor_subscription.get('is_premium') %}
+                            <small style="color: var(--success); display: block; margin-bottom: 8px;">Renews {{ vendor_subscription.expires }}</small>
+                        {% endif %}
+                        <p style="margin: 5px 0 12px; font-size: 12px; color: var(--text-muted);">
+                            Listings: <b>{{ listing_count }}{% if vendor_subscription and not vendor_subscription.get('is_premium') %}/3{% else %} · Unlimited{% endif %}</b>
+                        </p>
+                        
+                        <!-- 🛠️ CLICKABLE ACCESS BUTTON NODE ADDED HERE -->
+                        <a href="/subscription" class="btn-action premium-action" style="background-color: var(--primary-light); color: white; border-radius: var(--radius-sm); text-decoration: none; padding: 10px; display: block; text-align: center; font-size: 13px; font-weight: bold; box-sizing: border-box;">
+                            💎 Manage Store Subscription
+                        </a>
+                    </div>
+
 
                     <!-- LISTING CREATION FORM BLOCK -->
                     <div class="panel-box">
