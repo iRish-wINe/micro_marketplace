@@ -202,12 +202,7 @@ def is_admin():
 @app.route("/service-worker.js")
 def service_worker():
     return send_from_directory(app.static_folder, "service-worker.js", mimetype="application/javascript")
-    cursor = conn.cursor()
-    cursor.execute(query, args)
-    rv = cursor.fetchall()
-    conn.commit()
-    conn.close()
-    
+
 def query_db(query, args=(), one=False):
     """Executes database transactions safely using row mapping structures."""
     conn = sqlite3.connect("marketplace.db", timeout=20)
@@ -218,11 +213,10 @@ def query_db(query, args=(), one=False):
     conn.commit()
     conn.close()
     
-    # 👑 FIXED DATABASE MAPPER NODE: Safe mapping logic without tuple conversion crashes
+    # 🧠 SAFE DB CONVERSION FILTER FIXED: Prevents dictionary extraction tuple type errors
     if rv:
-        return dict(rv[0]) if one else rv
+        return dict(rv[0]) if one else [dict(row) for row in rv]
     return None if one else []
-
 
 def get_vendor_categories(user_id):
     return [row["category"] for row in query_db("SELECT category FROM vendor_categories WHERE user_id = ? ORDER BY category", (user_id,))]
@@ -235,13 +229,12 @@ def valid_reset_token(token):
 def save_company_logo(upload):
     if not upload or not upload.filename:
         return None
-    extension = os.path.splitext(upload.filename)[1].lower()
+    extension = os.path.splitext(upload.filename).lower()
     if extension not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
         return None
     filename = f"company-{uuid.uuid4().hex}{extension}"
     upload.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
     return filename
-
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
@@ -266,31 +259,19 @@ def home():
         location = request.form.get("location")
         file = request.files.get("product_image")
         video = request.files.get("product_video")
-        video_filename = None
         
-        if video and video.filename:
-            video_extension = os.path.splitext(video.filename).lower()
-            if not vendor_subscription["is_premium"]:
-                return redirect(url_for("home", listing_error="Only verified vendors with an active Premium Store or trial can upload product videos."))
-            if video_extension not in VIDEO_EXTENSIONS:
-                return redirect(url_for("home", listing_error="Product videos must be MP4, WebM, or MOV files."))
-            video_filename = f"video-{uuid.uuid4().hex}{video_extension}"
-            
         # 👑 BULLETPROOF MULTI-MEDIA FILE IDENTIFICATION MATRIX
         has_image = bool(file and file.filename)
         has_video = bool(video and video.filename)
         
-        # 1. Evaluate and restrict media choice combinations for standard vendors
         if not is_fast_food and has_image == has_video:
             return redirect(url_for("home", listing_error="Choose exactly one product image or video."))
 
-        # 2. Extract and securely sanitize image filenames safely
         if has_image:
             filename = secure_filename(file.filename)
         else:
             filename = "fast-food-placeholder.svg" if is_fast_food else ""
 
-        # 3. Extract and securely sanitize video filenames safely
         if has_video:
             video_extension = os.path.splitext(video.filename).lower()
             if not vendor_subscription["is_premium"]:
@@ -311,7 +292,7 @@ def home():
         if title and price and description and location:
             if has_image and not is_fast_food:
                 file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-            if video_filename:
+            if has_video:
                 video.save(os.path.join(app.config["UPLOAD_FOLDER"], video_filename))
                 
             b_label = session.get("company_name") if vendor_subscription["is_premium"] and session.get("company_name") else "Individual Vendor"
@@ -604,6 +585,7 @@ def approve_premium(user_id):
     expiry = datetime.now(timezone.utc) + timedelta(days=30)
     query_db("UPDATE users SET plan = 'premium', subscription_expires_at = ?, upgrade_requested_at = NULL WHERE id = ? AND (role = 'Vendor' OR role = 'Fast Food')", (expiry.isoformat(), user_id))
     return redirect(url_for("admin_dashboard"))
+
 @app.route("/admin/delete-user/<int:user_id>", methods=["POST"])
 def admin_delete_user(user_id):
     if not is_admin():
@@ -769,7 +751,6 @@ def register():
         company_name = request.form.get("company_name")
         whatsapp_number = normalize_whatsapp_number(request.form.get("whatsapp_number"))
         
-        # 🧠 FIXED LOGO EXTRACTOR PIPELINE
         logo_upload = request.files.get("company_logo")
         company_logo_filename = None
         if logo_upload and logo_upload.filename:
@@ -801,7 +782,6 @@ def register():
             trial_expires_at = trial_started_at + timedelta(days=60) # 2-Month promotional window
             user_plan = "premium" if role in ["Vendor", "Fast Food"] else "basic"
             
-            # 🧠 FIXED CLASH: Explicitly mapped identical user layout rows
             query_db(
                 "INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, trial_started_at, subscription_expires_at, catalog_mode, company_logo, registered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (username, email, hashed_pwd, role, seller_type, company_name, whatsapp_number, user_plan, trial_started_at.isoformat() if role in ["Vendor", "Fast Food"] else None, trial_expires_at.isoformat() if role in ["Vendor", "Fast Food"] else None, catalog_mode, company_logo_filename, datetime.now(timezone.utc).isoformat())
