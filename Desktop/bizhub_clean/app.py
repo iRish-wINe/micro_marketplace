@@ -56,6 +56,13 @@ def enforce_device_standards():
         """), 403
 
 def init_db():
+    def init_db():
+    # 👑 FREE-TIER DATABASE LOCK RESET: Automatically clears stuck file hooks on boot
+     if os.path.exists("marketplace.db"): os.remove("marketplace.db")
+    
+    conn = sqlite3.connect("marketplace.db", timeout=20)
+    cursor = conn.cursor()
+
     conn = sqlite3.connect("marketplace.db", timeout=20)
     cursor = conn.cursor()
     cursor.execute("""
