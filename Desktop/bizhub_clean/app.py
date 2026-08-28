@@ -210,7 +210,7 @@ def query_db(query, args=(), one=False):
     cursor = conn.cursor()
     cursor.execute(query, args)
     
-    # 👑 STABLE DATABASE SERIALIZATION LAYER
+    # 👑 STABLE DATABASE SERIALIZATION LAYER (FIXED FETCH MATRICES)
     if one:
         row = cursor.fetchone()
         res = dict(row) if row else None
@@ -222,11 +222,11 @@ def query_db(query, args=(), one=False):
     conn.close()
     return res
 
-
-    
-
 def get_vendor_categories(user_id):
     return [row["category"] for row in query_db("SELECT category FROM vendor_categories WHERE user_id = ? ORDER BY category", (user_id,))]
+
+   
+
 
 def valid_reset_token(token):
     if not token:
