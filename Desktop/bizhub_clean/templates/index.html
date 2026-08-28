@@ -293,15 +293,21 @@
         function filterCatalogCards() {
             let input = document.getElementById("liveSearchField").value.toLowerCase().trim();
             let cards = document.getElementsByClassName("card");
+            
             for (let i = 0; i < cards.length; i++) {
-                let titleElement = cards[i].getElementsByClassName("card-title");
-                if (titleElement.length > 0) {
-                    let titleText = titleElement[0].innerText.toLowerCase();
-                    if (titleText.indexOf(input) > -1) { cards[i].style.display = ""; }
-                    else { cards[i].style.display = "none"; }
+                // 🧠 SAFE INJECTION CHANNELS: Safely extracts text without breaking on empty entries
+                let titleElement = cards[i].querySelector(".card-title");
+                if (titleElement) {
+                    let titleText = (titleElement.textContent || titleElement.innerText || "").toLowerCase();
+                    if (titleText.indexOf(input) > -1) { 
+                        cards[i].style.display = ""; 
+                    } else { 
+                        cards[i].style.display = "none"; 
+                    }
                 }
             }
         }
+
     </script>
 </body>
 </html>
