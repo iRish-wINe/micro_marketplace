@@ -737,9 +737,10 @@ def reset_credentials(token):
             return render_template("reset_credentials.html", reset_error="That username is already taken.", token=token, user=user)
         return redirect(url_for("login", recovered="1"))
     return render_template("reset_credentials.html", token=token, user=user)
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    """Handles multi-tier registrations, configuring complementary trials for new vendors."""
+    """Handles multi-tier merchant registrations, configuring complementary trials securely."""
     if request.method == "POST":
         username = request.form.get("reg_user", "").strip()
         email = request.form.get("reg_email", "").strip()
@@ -785,18 +786,24 @@ def register():
         try:
             hashed_pwd = generate_password_hash(password)
             trial_started_at = datetime.now(timezone.utc)
-            trial_expires_at = trial_started_at + timedelta(days=60)
+            trial_expires_at = trial_started_at + timedelta(days=60) # 2-Month Promotional Package Active
             user_plan = "premium" if role in ["Vendor", "Fast Food"] else "basic"
             
-            query_db(
+            # 👑 EXPLICIT SAFE WRITE CONNECTOR
+            conn = sqlite3.connect("marketplace.db", timeout=20)
+            cursor = conn.cursor()
+            cursor.execute(
                 "INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, trial_started_at, subscription_expires_at, catalog_mode, company_logo, registered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (username, email, hashed_pwd, role, seller_type, company_name, whatsapp_number, user_plan, trial_started_at.isoformat() if role in ["Vendor", "Fast Food"] else None, trial_expires_at.isoformat() if role in ["Vendor", "Fast Food"] else None, catalog_mode, company_logo_filename, datetime.now(timezone.utc).isoformat())
             )
+            inserted_id = cursor.lastrowid
             
-            new_user = query_db("SELECT id FROM users WHERE username = ?", (username,), one=True)
-            if new_user and selected_categories:
+            if inserted_id and selected_categories:
                 for category in selected_categories:
-                    query_db("INSERT INTO vendor_categories (user_id, category) VALUES (?, ?)", (new_user["id"], category))
+                    cursor.execute("INSERT INTO vendor_categories (user_id, category) VALUES (?, ?)", (inserted_id, category))
+                    
+            conn.commit()
+            conn.close()
                     
             session.clear()
             session["username"] = username
@@ -811,6 +818,7 @@ def register():
             return render_template("login.html", reg_error="Username is already taken.")
             
     return redirect(url_for("login"))
+
 
 @app.route("/logout")
 def logout():
