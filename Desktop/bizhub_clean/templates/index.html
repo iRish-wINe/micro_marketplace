@@ -175,7 +175,7 @@
                             </p>
                         </div>
                     {% endif %}
-                    <!-- LISTING CREATION FORM BLOCK -->
+                                       <!-- LISTING CREATION FORM BLOCK (DYNAMIC MULTI-MEDIA CHANNELS FIXED) -->
                     <div class="panel-box">
                         {% if session.get('role') == 'Fast Food' %}
                             <h3 style="color: #C53030; border-bottom: 2px solid #FED7D7;">🍕 Publish Hot Meal Deal</h3>
@@ -204,14 +204,32 @@
                                 <label>{% if session.get('role') == 'Fast Food' %}Ingredients / Delivery Package Notes:{% else %}Product Description:{% endif %}</label>
                                 <textarea name="{% if session.get('role') == 'Fast Food' %}meal_description{% else %}description{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Served hot with pepper sauce, salad, and a free drink.{% else %}Enter details...{% endif %}" class="form-control" required></textarea>
                             </div>
-                            <div class="form-group">
-                                <label>Meal Cover Photo (Image):</label>
-                                <input type="file" name="product_image" accept="image/*" class="form-control" required>
-                            </div>
+                            
+                            <!-- 🧠 DYNAMIC MULTI-MEDIA INPUT LAYER -->
+                            {% if session.get('role') == 'Fast Food' %}
+                                <div class="form-group">
+                                    <label>Meal Cover Photo (Image Only):</label>
+                                    <input type="file" name="product_image" accept="image/*" class="form-control" required>
+                                </div>
+                            {% else %}
+                                <div class="form-group">
+                                    <label>Item Cover Photo (Image Option):</label>
+                                    <input type="file" name="product_image" accept="image/*" class="form-control">
+                                    <small style="font-size:11px; color: var(--text-muted); display:block; margin-top:2px;">Upload an image file if you are not attaching a product video.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>📦 Item Showcase Video (Premium/Trial Option):</label>
+                                    <input type="file" name="product_video" accept="video/mp4,video/webm,video/quicktime" class="form-control">
+                                    <small style="font-size:11px; color: var(--text-muted); display:block; margin-top:2px;">Upload an MP4, WebM, or MOV loop. Choose exactly one: Image OR Video.</small>
+                                </div>
+                            {% endif %}
+
                             <button type="submit" class="submit-btn {% if session.get('role') == 'Fast Food' %}btn-ff-override{% endif %}">
                                 {% if session.get('role') == 'Fast Food' %}🚀 Launch Meal Live{% else %}Publish Item{% endif %}
                             </button>
                         </form>
+                    </div>
+
                     </div>
                 {% elif session.get('username') %}
                     <div class="auth-box" style="background-color: white; border: 1px solid var(--border-color); padding: 20px; border-radius: var(--radius-lg);">
