@@ -1118,14 +1118,20 @@ def register():
         # =========================================================================
         # DATABASE ACCOUNT PERSISTENCE LAYER
         # =========================================================================
+        # =========================================================================
+        # DATABASE ACCOUNT PERSISTENCE LAYER (60-DAY FREE PREMIUM TRIAL)
+        # =========================================================================
         try:
             hashed_pwd = generate_password_hash(password)
             trial_started_at = datetime.now(timezone.utc)
-            trial_expires_at = trial_started_at + timedelta(days=61) # 61-day commercial free trial window
+            trial_expires_at = trial_started_at + timedelta(days=60) # 🧠 UPGRADED: 2-Month Free Premium Trial Window
+            
+            # Set default plan to 'premium' for the duration of the 60-day free introductory offer
+            user_plan = "premium" if role in ["Vendor", "Fast Food"] else "basic"
             
             query_db(
                 "INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, trial_started_at, subscription_expires_at, catalog_mode, registered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (username, email, hashed_pwd, role, seller_type, company_name, whatsapp_number, "basic", trial_started_at.isoformat() if role in ["Vendor", "Fast Food"] else None, trial_expires_at.isoformat() if role in ["Vendor", "Fast Food"] else None, catalog_mode, datetime.now(timezone.utc).isoformat())
+                (username, email, hashed_pwd, role, seller_type, company_name, whatsapp_number, user_plan, trial_started_at.isoformat() if role in ["Vendor", "Fast Food"] else None, trial_expires_at.isoformat() if role in ["Vendor", "Fast Food"] else None, catalog_mode, datetime.now(timezone.utc).isoformat())
             )
             
             new_user = query_db("SELECT id FROM users WHERE username = ?", (username,), one=True)
@@ -1142,6 +1148,7 @@ def register():
             session["company_name"] = company_name
             session["whatsapp_number"] = whatsapp_number
             return redirect(url_for("home"))
+
             
         except sqlite3.IntegrityError:
             return render_template("login.html", reg_error="Username is already taken.")
