@@ -204,6 +204,7 @@ def service_worker():
     return send_from_directory(app.static_folder, "service-worker.js", mimetype="application/javascript")
 
 def query_db(query, args=(), one=False):
+    """Executes database transactions safely using row mapping structures."""
     conn = sqlite3.connect("marketplace.db", timeout=20)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -211,7 +212,8 @@ def query_db(query, args=(), one=False):
     rv = cursor.fetchall()
     conn.commit()
     conn.close()
-    # 🧠 SAFE DB CONVERSION FILTER: Prevents index out of bounds exceptions on empty database structures
+    
+    # 🧠 FIXED DATABASE MAPPER NODE: Safe mapping logic without tuple conversion crashes
     if rv:
         return dict(rv[0]) if one else rv
     return None if one else []
@@ -227,7 +229,7 @@ def valid_reset_token(token):
 def save_company_logo(upload):
     if not upload or not upload.filename:
         return None
-    extension = os.path.splitext(upload.filename).lower()
+    extension = os.path.splitext(upload.filename)[1].lower()
     if extension not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
         return None
     filename = f"company-{uuid.uuid4().hex}{extension}"
@@ -578,7 +580,6 @@ def approve_premium(user_id):
     expiry = datetime.now(timezone.utc) + timedelta(days=30)
     query_db("UPDATE users SET plan = 'premium', subscription_expires_at = ?, upgrade_requested_at = NULL WHERE id = ? AND (role = 'Vendor' OR role = 'Fast Food')", (expiry.isoformat(), user_id))
     return redirect(url_for("admin_dashboard"))
-
 @app.route("/admin/delete-user/<int:user_id>", methods=["POST"])
 def admin_delete_user(user_id):
     if not is_admin():
@@ -800,7 +801,6 @@ def register():
             return render_template("login.html", reg_error="Username is already taken.")
             
     return redirect(url_for("login"))
-
 
 @app.route("/logout")
 def logout():
