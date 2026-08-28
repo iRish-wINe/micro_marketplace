@@ -210,17 +210,18 @@ def query_db(query, args=(), one=False):
     cursor = conn.cursor()
     cursor.execute(query, args)
     
-    # 👑 FIXED DATABASE MAPPER NODE: Safe unpacking method using clean fetch variants
+    # 👑 STABLE DATABASE SERIALIZATION LAYER
     if one:
-        rv = cursor.fetchone()
-        res = dict(rv) if rv else None
+        row = cursor.fetchone()
+        res = dict(row) if row else None
     else:
-        rv = cursor.fetchall()
-        res = [dict(row) for row in rv] if rv else []
+        rows = cursor.fetchall()
+        res = [dict(r) for r in rows] if rows else []
         
     conn.commit()
     conn.close()
     return res
+
 
     
 
