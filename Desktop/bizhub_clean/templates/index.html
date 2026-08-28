@@ -351,7 +351,7 @@
             let itemCards = catalogGrid.getElementsByClassName("card");
             
             for (let i = 0; i < itemCards.length; i++) {
-                let textContainer = itemCards[i].getElementsByClassName("card-title")[0];
+                let textContainer = itemCards[i].getElementsByClassName("card-title");
                 if (textContainer) {
                     let evaluationText = textContainer.textContent || textContainer.innerText;
                     if (evaluationText.toLowerCase().indexOf(inputString) > -1) {
