@@ -173,12 +173,18 @@
                         <a href="/subscription" class="btn-action btn-cart" style="text-align:center;">💎 Manage Account</a>
                     </div>
 
+                    <!-- LISTING CREATION FORM BLOCK (FIXED PARAMETER PATHS) -->
                     <div class="panel-box">
-                        <h3>📢 Upload Product Listing</h3>
+                        {% if session.get('role') == 'Fast Food' %}
+                            <h3 style="color: #C53030; border-bottom: 2px solid #FED7D7;">🍕 Publish Hot Meal Deal</h3>
+                        {% else %}
+                            <h3>📢 Upload Product Listing</h3>
+                        {% endif %}
+
                         <form method="POST" action="/" enctype="multipart/form-data">
                             <div class="form-group">
-                                <label>Item Title / Name:</label>
-                                <input type="text" name="title" placeholder="e.g. Smart Watch" class="form-control" required>
+                                <label>{% if session.get('role') == 'Fast Food' %}Meal / Combo Name:{% else %}Item Title / Name:{% endif %}</label>
+                                <input type="text" name="{% if session.get('role') == 'Fast Food' %}meal_name{% else %}title{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Jollof with Grilled Chicken{% else %}e.g. Smart Watch{% endif %}" class="form-control" required>
                             </div>
                             <div class="form-group">
                                 <label>Price (GH₵):</label>
@@ -193,11 +199,10 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>Product Description:</label>
-                                <textarea name="description" placeholder="Enter details..." class="form-control" required></textarea>
+                                <label>{% if session.get('role') == 'Fast Food' %}Ingredients / Delivery Package Notes:{% else %}Product Description:{% endif %}</label>
+                                <textarea name="{% if session.get('role') == 'Fast Food' %}meal_description{% else %}description{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Served hot with pepper sauce, salad, and a free drink.{% else %}Enter details...{% endif %}" class="form-control" required></textarea>
                             </div>
                             
-                            <!-- 🧠 DYNAMIC MULTI-MEDIA INPUT LAYER RESTORED -->
                             <div class="form-group">
                                 <label>Item Cover Photo (Image Option):</label>
                                 <input type="file" name="product_image" accept="image/*" class="form-control">
@@ -207,9 +212,12 @@
                                 <input type="file" name="product_video" accept="video/mp4,video/webm,video/quicktime" class="form-control">
                                 <small style="font-size:11px; color: var(--text-muted); display:block; margin-top:2px;">Choose exactly one: Image OR Video.</small>
                             </div>
-                            <button type="submit" class="submit-btn">Publish Item</button>
+                            <button type="submit" class="submit-btn {% if session.get('role') == 'Fast Food' %}btn-ff-override{% endif %}">
+                                {% if session.get('role') == 'Fast Food' %}🚀 Launch Meal Live{% else %}Publish Item{% endif %}
+                            </button>
                         </form>
                     </div>
+
                 {% endif %}
             </div>
             <!-- PANEL 2: MAIN Amazon FEED GRID -->
