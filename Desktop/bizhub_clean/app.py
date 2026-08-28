@@ -1175,10 +1175,9 @@ def logout():
 
 # =========================================================================
 # CENTRAL KERNEL BOOT SEQUENCE EXECUTION LOGIC
-# =====================================================================
+# =========================================================================
+
 if __name__ == "__main__":
-    # Dynamically read the assignment port string provided by Render's host node
-    port = int(os.environ.get("PORT", 10000))
-    # Boot server with network listener bound correctly
-    app.run(debug=False, host="0.0.0.0", port=port)
+    # Standard local debug fallback listener (Render ignores this and boots via Gunicorn directly)
+    app.run(debug=True, host="0.0.0.0")
 
