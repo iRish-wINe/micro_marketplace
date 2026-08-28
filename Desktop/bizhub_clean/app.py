@@ -732,7 +732,7 @@ def register():
         submitted_role = request.form.get("role", "").strip()
         role_aliases = {"customer": "Customer", "vendor": "Vendor", "fast food": "Fast Food"}
         role = role_aliases.get(submitted_role.lower(), submitted_role)
-             if not username or not email or not password:
+        if not username or not email or not password:
             return render_template("login.html", reg_error="Username, email, and password are required.")
         seller_type = request.form.get("seller_type", "Individual")
         catalog_mode = request.form.get("catalog_mode", "Focused")
@@ -759,7 +759,7 @@ def register():
         try:
             hashed_pwd = generate_password_hash(password)
             trial_started_at = datetime.now(timezone.utc)
-            trial_expires_at = trial_started_at + timedelta(days=60) # 2-Month promotional window
+            trial_expires_at = trial_started_at + timedelta(days=60)
             user_plan = "premium" if role in ["Vendor", "Fast Food"] else "basic"
             query_db(
                 "INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, trial_started_at, subscription_expires_at, catalog_mode, registered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
