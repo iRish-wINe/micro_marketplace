@@ -175,7 +175,8 @@
                             </p>
                         </div>
                     {% endif %}
-                                       <!-- LISTING CREATION FORM BLOCK (DYNAMIC MULTI-MEDIA CHANNELS FIXED) -->
+
+                    <!-- LISTING CREATION FORM BLOCK (FIXED MEDIA CONTROLS) -->
                     <div class="panel-box">
                         {% if session.get('role') == 'Fast Food' %}
                             <h3 style="color: #C53030; border-bottom: 2px solid #FED7D7;">🍕 Publish Hot Meal Deal</h3>
@@ -205,7 +206,7 @@
                                 <textarea name="{% if session.get('role') == 'Fast Food' %}meal_description{% else %}description{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Served hot with pepper sauce, salad, and a free drink.{% else %}Enter details...{% endif %}" class="form-control" required></textarea>
                             </div>
                             
-                            <!-- 🧠 DYNAMIC MULTI-MEDIA INPUT LAYER -->
+                            <!-- 🧠 FIXED DYNAMIC MEDIA LABELS & VIDEO CHANNELS -->
                             {% if session.get('role') == 'Fast Food' %}
                                 <div class="form-group">
                                     <label>Meal Cover Photo (Image Only):</label>
@@ -228,8 +229,6 @@
                                 {% if session.get('role') == 'Fast Food' %}🚀 Launch Meal Live{% else %}Publish Item{% endif %}
                             </button>
                         </form>
-                    </div>
-
                     </div>
                 {% elif session.get('username') %}
                     <div class="auth-box" style="background-color: white; border: 1px solid var(--border-color); padding: 20px; border-radius: var(--radius-lg);">
@@ -295,6 +294,7 @@
                     {% endfor %}
                 </div>
             </div>
+
             <!-- PANEL 3: CLIENT SHOPPING BASKET SIDEBAR -->
             <div class="cart-sidebar">
                 <h3 class="cart-title-side" style="margin-top:0;">🛒 My Basket ({{ session.get('cart', [])|length }})</h3>
