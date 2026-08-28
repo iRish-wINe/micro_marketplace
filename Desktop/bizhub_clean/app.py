@@ -209,9 +209,19 @@ def query_db(query, args=(), one=False):
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute(query, args)
-    rv = cursor.fetchall()
+    
+    # 👑 FIXED DATABASE MAPPER NODE: Safe unpacking method using clean fetch variants
+    if one:
+        rv = cursor.fetchone()
+        res = dict(rv) if rv else None
+    else:
+        rv = cursor.fetchall()
+        res = [dict(row) for row in rv] if rv else []
+        
     conn.commit()
     conn.close()
+    return res
+
     
     if rv:
         return dict(rv) if one else [dict(row) for row in rv]
