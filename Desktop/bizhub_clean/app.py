@@ -578,6 +578,7 @@ def approve_premium(user_id):
     expiry = datetime.now(timezone.utc) + timedelta(days=30)
     query_db("UPDATE users SET plan = 'premium', subscription_expires_at = ?, upgrade_requested_at = NULL WHERE id = ? AND (role = 'Vendor' OR role = 'Fast Food')", (expiry.isoformat(), user_id))
     return redirect(url_for("admin_dashboard"))
+
 @app.route("/admin/delete-user/<int:user_id>", methods=["POST"])
 def admin_delete_user(user_id):
     if not is_admin():
@@ -739,6 +740,14 @@ def register():
         selected_categories = [category for category in request.form.getlist("vendor_categories") if category in VENDOR_CATEGORIES]
         company_name = request.form.get("company_name")
         whatsapp_number = normalize_whatsapp_number(request.form.get("whatsapp_number"))
+        company_name = request.form.get("company_name")
+        whatsapp_number = normalize_whatsapp_number(request.form.get("whatsapp_number"))
+        
+        # 🧠 ADDED: Read optional logo file asset from multipart registration stream
+        logo_upload = request.files.get("company_logo")
+        company_logo = None
+        if logo_upload and logo_upload.filename:
+            company_logo = save_company_logo(logo_upload)
         
         if role == "Fast Food":
             seller_type = "Fast Food"
@@ -759,12 +768,15 @@ def register():
         try:
             hashed_pwd = generate_password_hash(password)
             trial_started_at = datetime.now(timezone.utc)
-            trial_expires_at = trial_started_at + timedelta(days=60)
+            trial_expires_at = trial_started_at + timedelta(days=60) # 2-Month promotional window
             user_plan = "premium" if role in ["Vendor", "Fast Food"] else "basic"
+            
+            # 🧠 UPGRADED INSERT QUERY: Maps company_logo parameter into user profile cell matrix cleanly
             query_db(
-                "INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, trial_started_at, subscription_expires_at, catalog_mode, registered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (username, email, hashed_pwd, role, seller_type, company_name, whatsapp_number, user_plan, trial_started_at.isoformat() if role in ["Vendor", "Fast Food"] else None, trial_expires_at.isoformat() if role in ["Vendor", "Fast Food"] else None, catalog_mode, datetime.now(timezone.utc).isoformat())
+                "INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, trial_started_at, subscription_expires_at, catalog_mode, company_logo, registered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (username, email, hashed_pwd, role, seller_type, company_name, whatsapp_number, user_plan, trial_started_at.isoformat() if role in ["Vendor", "Fast Food"] else None, trial_expires_at.isoformat() if role in ["Vendor", "Fast Food"] else None, catalog_mode, company_logo, datetime.now(timezone.utc).isoformat())
             )
+
             new_user = query_db("SELECT id FROM users WHERE username = ?", (username,), one=True)
             if new_user and selected_categories:
                 for category in selected_categories:

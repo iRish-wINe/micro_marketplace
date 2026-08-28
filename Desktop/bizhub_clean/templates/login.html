@@ -86,7 +86,8 @@
                 <div class="error-banner">❌ {{ reg_error }}</div>
             {% endif %}
 
-            <form method="POST" action="/register">
+            <form method="POST" action="/register" enctype="multipart/form-data">
+
                 <div class="form-group">
                     <label>Desired Username:</label>
                     <input type="text" name="reg_user" class="form-control" placeholder="e.g. ama_boutique" required autocomplete="username">
@@ -117,6 +118,15 @@
                             <option value="Individual">Individual Native Trader</option>
                             <option value="Registered Business">Registered Corporate Brand / Company</option>
                         </select>
+                                            <!-- 🧠 OPTIONAL BRAND LOGO FIELD ADDED HERE -->
+                    <div class="form-group" id="logoUploadGroup">
+                        <label>Store / Brand Cover Logo (Optional):</label>
+                        <input type="file" name="company_logo" accept="image/*" class="form-control">
+                        <small style="font-size:11px; color: var(--text-muted); display:block; margin-top:4px; line-height:1.3;">
+                            Upload a PNG, JPG, or WEBP logo image. This will brand your catalog cards across Ghana cities instantly!
+                        </small>
+                    </div>
+
                     </div>
                     
                     <div class="form-group" id="companyNameGroup" style="display:none;">
