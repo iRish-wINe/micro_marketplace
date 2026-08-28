@@ -270,12 +270,16 @@ def home():
                 return redirect(url_for("home", listing_error="Product videos must be MP4, WebM, or MOV files."))
             video_filename = f"video-{uuid.uuid4().hex}{video_extension}"
             
-        filename = "fast-food-placeholder.svg" if is_fast_food else secure_filename(file.filename) if file and file.filename else ""
+        # 👑 FIXED FORM CAPTURE INTERFACE: Safely assigns fallback placeholders for food items
         has_image = bool(file and file.filename)
         has_video = bool(video and video.filename)
         
-        if not is_fast_food and has_image == has_video:
-            return redirect(url_for("home", listing_error="Choose exactly one product image or video."))
+        if is_fast_food:
+            filename = secure_filename(file.filename) if has_image else "fast-food-placeholder.svg"
+        else:
+            filename = secure_filename(file.filename) if has_image else ""
+            if has_image == has_video:
+                return redirect(url_for("home", listing_error="Choose exactly one product image or video."))
 
         try:
             stock_quantity = int(stock_quantity)
