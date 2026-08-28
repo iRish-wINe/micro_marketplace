@@ -1169,9 +1169,10 @@ def logout():
 
 # =========================================================================
 # CENTRAL KERNEL BOOT SEQUENCE EXECUTION LOGIC
-# =========================================================================
-
+# =====================================================================
 if __name__ == "__main__":
-    # Launch system instance over local interfaces on public access network nodes
-    app.run(debug=True, host="0.0.0.0")
+    # Dynamically read the assignment port string provided by Render's host node
+    port = int(os.environ.get("PORT", 10000))
+    # Boot server with network listener bound correctly
+    app.run(debug=False, host="0.0.0.0", port=port)
 
