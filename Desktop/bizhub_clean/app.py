@@ -295,6 +295,12 @@ def query_db(query, args=(), one=False):
     conn.commit()
     conn.close()
     
+    # 🧠 FIXED QUERY FALLBACK MATRIX: Returns an empty list [] instead of None to prevent loop crashes
+    if rv:
+        return rv[0] if one else rv
+    return None if one else []
+
+    
     # 🧠 FIXED: Standard companion parameters added to prevent dictionary key array crashes
     if rv:
         return rv[0] if one else rv
