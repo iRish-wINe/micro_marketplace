@@ -202,7 +202,12 @@ def is_admin():
 @app.route("/service-worker.js")
 def service_worker():
     return send_from_directory(app.static_folder, "service-worker.js", mimetype="application/javascript")
-
+    cursor = conn.cursor()
+    cursor.execute(query, args)
+    rv = cursor.fetchall()
+    conn.commit()
+    conn.close()
+    
 def query_db(query, args=(), one=False):
     """Executes database transactions safely using row mapping structures."""
     conn = sqlite3.connect("marketplace.db", timeout=20)
@@ -213,10 +218,11 @@ def query_db(query, args=(), one=False):
     conn.commit()
     conn.close()
     
-    # 🧠 FIXED DATABASE MAPPER NODE: Safe mapping logic without tuple conversion crashes
+    # 👑 FIXED DATABASE MAPPER NODE: Safe mapping logic without tuple conversion crashes
     if rv:
         return dict(rv[0]) if one else rv
     return None if one else []
+
 
 def get_vendor_categories(user_id):
     return [row["category"] for row in query_db("SELECT category FROM vendor_categories WHERE user_id = ? ORDER BY category", (user_id,))]
