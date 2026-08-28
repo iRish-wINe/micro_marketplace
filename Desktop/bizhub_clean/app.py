@@ -270,16 +270,30 @@ def home():
                 return redirect(url_for("home", listing_error="Product videos must be MP4, WebM, or MOV files."))
             video_filename = f"video-{uuid.uuid4().hex}{video_extension}"
             
-        # 👑 FIXED FORM CAPTURE INTERFACE: Safely assigns fallback placeholders for food items
+        # 👑 BULLETPROOF MULTI-MEDIA FILE IDENTIFICATION MATRIX
         has_image = bool(file and file.filename)
         has_video = bool(video and video.filename)
         
-        if is_fast_food:
-            filename = secure_filename(file.filename) if has_image else "fast-food-placeholder.svg"
+        # 1. Evaluate and restrict media choice combinations for standard vendors
+        if not is_fast_food and has_image == has_video:
+            return redirect(url_for("home", listing_error="Choose exactly one product image or video."))
+
+        # 2. Extract and securely sanitize image filenames safely
+        if has_image:
+            filename = secure_filename(file.filename)
         else:
-            filename = secure_filename(file.filename) if has_image else ""
-            if has_image == has_video:
-                return redirect(url_for("home", listing_error="Choose exactly one product image or video."))
+            filename = "fast-food-placeholder.svg" if is_fast_food else ""
+
+        # 3. Extract and securely sanitize video filenames safely
+        if has_video:
+            video_extension = os.path.splitext(video.filename).lower()
+            if not vendor_subscription["is_premium"]:
+                return redirect(url_for("home", listing_error="Only verified vendors with an active Premium Store or trial can upload product videos."))
+            if video_extension not in VIDEO_EXTENSIONS:
+                return redirect(url_for("home", listing_error="Product videos must be MP4, WebM, or MOV files."))
+            video_filename = f"video-{uuid.uuid4().hex}{video_extension}"
+        else:
+            video_filename = None
 
         try:
             stock_quantity = int(stock_quantity)
