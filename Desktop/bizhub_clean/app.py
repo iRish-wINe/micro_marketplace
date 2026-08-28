@@ -726,6 +726,7 @@ def reset_credentials(token):
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    """Handles multi-tier registrations, configuring complementary trials for new vendors."""
     if request.method == "POST":
         username = request.form.get("reg_user", "").strip()
         email = request.form.get("reg_email", "").strip()
@@ -733,21 +734,21 @@ def register():
         submitted_role = request.form.get("role", "").strip()
         role_aliases = {"customer": "Customer", "vendor": "Vendor", "fast food": "Fast Food"}
         role = role_aliases.get(submitted_role.lower(), submitted_role)
+        
         if not username or not email or not password:
             return render_template("login.html", reg_error="Username, email, and password are required.")
+            
         seller_type = request.form.get("seller_type", "Individual")
         catalog_mode = request.form.get("catalog_mode", "Focused")
         selected_categories = [category for category in request.form.getlist("vendor_categories") if category in VENDOR_CATEGORIES]
         company_name = request.form.get("company_name")
         whatsapp_number = normalize_whatsapp_number(request.form.get("whatsapp_number"))
-        company_name = request.form.get("company_name")
-        whatsapp_number = normalize_whatsapp_number(request.form.get("whatsapp_number"))
         
-        # 🧠 ADDED: Read optional logo file asset from multipart registration stream
+        # 🧠 FIXED LOGO EXTRACTOR PIPELINE
         logo_upload = request.files.get("company_logo")
-        company_logo = None
+        company_logo_filename = None
         if logo_upload and logo_upload.filename:
-            company_logo = save_company_logo(logo_upload)
+            company_logo_filename = save_company_logo(logo_upload)
         
         if role == "Fast Food":
             seller_type = "Fast Food"
@@ -755,32 +756,37 @@ def register():
             selected_categories = ["Fast Food"]
         elif role == "Vendor" and seller_type == "Individual":
             company_name = None
+            
         if role == "Customer":
             seller_type = "Individual"
             company_name = None
             whatsapp_number = None
             catalog_mode = None
             selected_categories = []
+            company_logo_filename = None
+            
         if role in ["Vendor", "Fast Food"] and not whatsapp_number:
             return render_template("login.html", reg_error="Merchant and Fast Food vendor accounts need a compulsory WhatsApp number to receive order tallies.")
         if role == "Vendor" and (catalog_mode not in ("Variety", "Focused") or not selected_categories):
             return render_template("login.html", reg_error="Choose a product range and select at least one category.")
+            
         try:
             hashed_pwd = generate_password_hash(password)
             trial_started_at = datetime.now(timezone.utc)
             trial_expires_at = trial_started_at + timedelta(days=60) # 2-Month promotional window
             user_plan = "premium" if role in ["Vendor", "Fast Food"] else "basic"
             
-            # 🧠 UPGRADED INSERT QUERY: Maps company_logo parameter into user profile cell matrix cleanly
+            # 🧠 FIXED CLASH: Explicitly mapped identical user layout rows
             query_db(
                 "INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, trial_started_at, subscription_expires_at, catalog_mode, company_logo, registered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (username, email, hashed_pwd, role, seller_type, company_name, whatsapp_number, user_plan, trial_started_at.isoformat() if role in ["Vendor", "Fast Food"] else None, trial_expires_at.isoformat() if role in ["Vendor", "Fast Food"] else None, catalog_mode, company_logo, datetime.now(timezone.utc).isoformat())
+                (username, email, hashed_pwd, role, seller_type, company_name, whatsapp_number, user_plan, trial_started_at.isoformat() if role in ["Vendor", "Fast Food"] else None, trial_expires_at.isoformat() if role in ["Vendor", "Fast Food"] else None, catalog_mode, company_logo_filename, datetime.now(timezone.utc).isoformat())
             )
-
+            
             new_user = query_db("SELECT id FROM users WHERE username = ?", (username,), one=True)
             if new_user and selected_categories:
                 for category in selected_categories:
                     query_db("INSERT INTO vendor_categories (user_id, category) VALUES (?, ?)", (new_user["id"], category))
+                    
             session.clear()
             session["username"] = username
             session["email"] = email
@@ -789,9 +795,12 @@ def register():
             session["company_name"] = company_name
             session["whatsapp_number"] = whatsapp_number
             return redirect(url_for("home"))
+            
         except sqlite3.IntegrityError:
             return render_template("login.html", reg_error="Username is already taken.")
+            
     return redirect(url_for("login"))
+
 
 @app.route("/logout")
 def logout():
