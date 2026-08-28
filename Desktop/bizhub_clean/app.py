@@ -223,9 +223,6 @@ def query_db(query, args=(), one=False):
     return res
 
     
-    if rv:
-        return dict(rv) if one else [dict(row) for row in rv]
-    return None if one else []
 
 def get_vendor_categories(user_id):
     return [row["category"] for row in query_db("SELECT category FROM vendor_categories WHERE user_id = ? ORDER BY category", (user_id,))]
