@@ -56,13 +56,6 @@ def enforce_device_standards():
         """), 403
 
 def init_db():
-    def init_db():
-    # 👑 FREE-TIER DATABASE LOCK RESET: Automatically clears stuck file hooks on boot
-     
-    
-    conn = sqlite3.connect("marketplace.db", timeout=20)
-    cursor = conn.cursor()
-
     conn = sqlite3.connect("marketplace.db", timeout=20)
     cursor = conn.cursor()
     cursor.execute("""
@@ -220,9 +213,8 @@ def query_db(query, args=(), one=False):
     conn.commit()
     conn.close()
     
-    # 🧠 SAFE DB CONVERSION FILTER FIXED: Prevents dictionary extraction tuple type errors
     if rv:
-        return dict(rv[0]) if one else [dict(row) for row in rv]
+        return dict(rv) if one else [dict(row) for row in rv]
     return None if one else []
 
 def get_vendor_categories(user_id):
@@ -242,6 +234,7 @@ def save_company_logo(upload):
     filename = f"company-{uuid.uuid4().hex}{extension}"
     upload.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
     return filename
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
@@ -679,7 +672,6 @@ def settings():
         return redirect(url_for("settings", updated="1"))
 
     return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, updated=request.args.get("updated") == "1")
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -737,7 +729,6 @@ def reset_credentials(token):
             return render_template("reset_credentials.html", reset_error="That username is already taken.", token=token, user=user)
         return redirect(url_for("login", recovered="1"))
     return render_template("reset_credentials.html", token=token, user=user)
-
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Handles multi-tier registrations, configuring complementary trials for new vendors."""
@@ -786,7 +777,7 @@ def register():
         try:
             hashed_pwd = generate_password_hash(password)
             trial_started_at = datetime.now(timezone.utc)
-            trial_expires_at = trial_started_at + timedelta(days=60) # 2-Month promotional window
+            trial_expires_at = trial_started_at + timedelta(days=60)
             user_plan = "premium" if role in ["Vendor", "Fast Food"] else "basic"
             
             query_db(
