@@ -77,6 +77,91 @@
         .submit-btn:hover { background-color: #F5B800; }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 15px; }
+        
+/* MOBILE MARKETPLACE: 2 LISTINGS PER ROW */
+@media (max-width: 767px) {}
+    .grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+/* MOBILE BASKET NOTIFICATION */
+.basket-mobile-popup {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .basket-mobile-popup {
+        position: fixed;
+        top: 75px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 30px);
+        max-width: 400px;
+        background: var(--bg-abyssal);
+        color: white;
+        padding: 14px 16px;
+        border-radius: 10px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 4px;
+        animation: basketPopupIn 0.3s ease-out;
+    }
+
+    .basket-mobile-popup strong {
+        font-size: 15px;
+    }
+
+    .basket-mobile-popup span {
+        font-size: 13px;
+        color: #E2E8F0;
+    }
+
+    @keyframes basketPopupIn {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -15px);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+    }
+}
+
+
+    .card {
+        padding: 8px;
+    }
+
+    .card-media-wrapper {
+        height: 130px;
+    }
+
+    .card-title {
+        font-size: 13px;
+    }
+
+    .card-price {
+        font-size: 14px;
+    }
+
+    .card-text {
+        font-size: 11px;
+    }
+
+    .card-actions {
+        gap: 5px;
+    }
+    .card-actions .btn-action {
+        font-size: 10px;
+        padding: 7px 5px;
+    }
+
         .card { background-color: var(--bg-card); border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color); display: flex; flex-direction: column; transition: var(--transition); padding: 12px; box-sizing: border-box; }
         .card:hover { border-color: #C7511F; box-shadow: var(--shadow-sm); }
         
@@ -127,6 +212,14 @@
         <div class="splash-spinner"></div>
     </div>
 
+{% if request.args.get('cart_added') == '1' %}
+    <div id="basketMobilePopup" class="basket-mobile-popup">
+        🛒 <strong>Added to Basket!</strong>
+        <span>Scroll down to view your basket</span>
+    </div>
+{% endif %}
+
+
     <!-- MAIN BRAND HEADER (HOUSE EMOJI REMOVED COMPLETELY) -->
     <div class="navbar">
         <a href="/" class="brand-logo">Biz<span>Hub</span></a>
@@ -155,7 +248,7 @@
     </div>
 
     <!-- 👑 CINEMATIC ADVERTISING BILLBOARD MATRIX GRID -->
-```html
+
 {% if session.get('role') in ['Vendor', 'Fast Food'] %}
     <div class="amazon-billboard">
         <div class="billboard-text-layer">
@@ -338,6 +431,22 @@
                 }
             }
         }
+
+// Automatically hide the mobile basket notification//
+document.addEventListener("DOMContentLoaded", function() {
+    const basketPopup = document.getElementById("basketMobilePopup");
+
+    if (basketPopup) {
+        setTimeout(function() {
+            basketPopup.style.transition = "opacity 0.4s ease";
+            basketPopup.style.opacity = "0";
+
+            setTimeout(function() {
+                basketPopup.remove();
+            }, 400);
+        }, 3500);
+    }
+});
 
     </script>
 </body>

@@ -457,7 +457,7 @@ def add_to_cart(product_id):
     if product_id not in current_cart:
         current_cart.append(product_id)
         session["cart"] = current_cart
-    return redirect(url_for("home"))
+    return redirect(url_for("home", cart_added="1"))
 
 @app.route("/mark-sold/<int:product_id>", methods=["POST"])
 def mark_sold(product_id):
