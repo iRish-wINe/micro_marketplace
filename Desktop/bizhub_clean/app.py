@@ -795,7 +795,7 @@ def register():
             trial_expires_at = trial_started_at + timedelta(days=60) # 2-Month Promotional Package Active
             user_plan = "premium" if role in ["Vendor", "Fast Food"] else "basic"
             
-                    # 👑 FIXED SYSTEM CONNECTION MATRIX: Commits parent record before mapping relations
+            # 👑 EXPLICIT SAFE WRITE CONNECTOR - RE-ORDERED FOR FOREIGN KEY INTEGRITY
             conn = sqlite3.connect("marketplace.db", timeout=20)
             cursor = conn.cursor()
             cursor.execute(
@@ -804,17 +804,16 @@ def register():
             )
             inserted_id = cursor.lastrowid
             
-            # Commit the parent user row instantly so the foreign key constraint passes smoothly!
+            # 🚀 CRITICAL STEP: Commit parent user record immediately so foreign keys can find it!
             conn.commit()
             
             if inserted_id and selected_categories:
                 for category in selected_categories:
                     cursor.execute("INSERT INTO vendor_categories (user_id, category) VALUES (?, ?)", (inserted_id, category))
-                # Re-commit the child category mappings safely
+                # Commit secondary relational items safely
                 conn.commit()
                     
             conn.close()
-
                     
             session.clear()
             session["username"] = username
@@ -829,7 +828,6 @@ def register():
             return render_template("login.html", reg_error="Username is already taken.")
             
     return redirect(url_for("login"))
-
 
 @app.route("/logout")
 def logout():
