@@ -7,7 +7,7 @@ from urllib.parse import quote
 from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, render_template_string
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from werkzeug.exceptions import RequestEntityTooLarge
 app = Flask(__name__)
 app.secret_key = "commercial_marketplace_super_secret_token"
 LOCAL_ADMIN_USERNAME = "Stapps Of Faith"
@@ -18,8 +18,17 @@ VIDEO_EXTENSIONS = {".mp4", ".webm", ".mov"}
 
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+@app.errorhandler(RequestEntityTooLarge)
+def handle_file_too_large(error):
+    return redirect(
+        url_for(
+            "home",
+            listing_error="Video is too large. Maximum upload size is 50 MB."
+        )
+    )
 
 OUTDATED_ANDROID_REGEX = re.compile(r'Android\s([1-7]\.\d)')
 

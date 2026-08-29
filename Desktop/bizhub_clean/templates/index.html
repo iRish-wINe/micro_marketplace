@@ -82,6 +82,11 @@
         
         .card-media-wrapper { width: 100%; height: 170px; background-color: #FFF; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 10px; }
         .card-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: var(--transition); }
+        video.card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
         .loc-badge { position: absolute; bottom: 0; left: 0; background: #ECEFF1; color: #37474F; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 2px; }
 
         .card-body { display: flex; flex-direction: column; flex-grow: 1; padding: 0; }
@@ -228,14 +233,19 @@
                         <div class="card">
                             <!-- 👑 DYNAMIC MULTI-MEDIA RENDERING ENGINE ENGINE FIXED -->
                             <div class="card-media-wrapper" style="background-color: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; height: 170px;">
-                                {% if product.video_file %}
-                                    <video class="card-img" src="/stream-video/{{ product.video_file }}" preload="auto" autoplay loop muted playsinline controls style="width:100%; height:100%; object-fit:cover; display:block; background-color:#000;"></video>
+ {% if product.video_file %}
+        <video class="card-img" controls preload="metadata">
+            <source src="{{ url_for('static', filename='uploads/' + product.video_file) }}">
+            Your browser does not support video playback.
+        </video>
+    {% elif product.image_file %}
+        <img class="card-img"
+             src="{{ url_for('static', filename='uploads/' + product.image_file) }}"
+             alt="{{ product.title }}">
+    {% endif %}
 
-                                {% else %}
-                                    <img class="card-img" src="{{ url_for('static', filename='uploads/' + product.image_file if product.image_file else 'fast-food-placeholder.svg') }}" alt="{{ product.title }}" style="max-width:100%; max-height:100%; object-fit:contain;">
-                                {% endif %}
-                                <span class="loc-badge">📍 {{ product.location }}</span>
-                            </div>
+    <span class="loc-badge">📍 {{ product.location }}</span>
+</div>
                             
                             <div class="card-body">
                                 <div class="card-brand-wrapper">
