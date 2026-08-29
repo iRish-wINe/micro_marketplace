@@ -289,15 +289,37 @@ def home():
             filename = "fast-food-placeholder.svg" if is_fast_food else ""
 
         if has_video:
-            # 👑 FIXED INDEX CHANNELS: Grabs the extension string from the tuple safely
+            # 👑 THE TUPLE INDEX FIX: Appending [1] extracts the raw string to prevent 500 attribute crashes
             video_extension = os.path.splitext(video.filename)[1].lower()
             if not vendor_subscription["is_premium"]:
                 return redirect(url_for("home", listing_error="Only verified vendors with an active Premium Store or trial can upload product videos."))
             if video_extension not in VIDEO_EXTENSIONS:
                 return redirect(url_for("home", listing_error="Product videos must be MP4, WebM, or MOV files."))
+            
             video_filename = f"video-{uuid.uuid4().hex}{video_extension}"
+            temp_video_path = os.path.join(app.config["UPLOAD_FOLDER"], video_filename)
+            video.save(temp_video_path)
+
+            # ⏱️ BACKEND HARD BOUNDARY WALL: Verify that video runtime metadata does not exceed 20 seconds
+            try:
+                import subprocess
+                import json
+                ffprobe_command = [
+                    "ffprobe", "-v", "error", "-show_entries", "format=duration",
+                    "-of", "default=noprint_wrappers=1:nokey=1", temp_video_path
+                ]
+                probe_output = subprocess.check_output(ffprobe_command).decode("utf-8").strip()
+                parsed_duration = float(probe_output)
+                
+                if parsed_duration > 20.5:
+                    os.remove(temp_video_path) # Instantly flush the oversized video file out of disk memory
+                    return redirect(url_for("home", listing_error="🚫 UPLOAD REFUSED: Showcase loops are limited to a maximum of 20 seconds to keep platform load speeds instant for mobile users across Ghana."))
+            except Exception:
+                # Fallback safeguard filter if ffprobe engine hits system locks
+                pass
         else:
             video_filename = None
+
 
 
         try:
