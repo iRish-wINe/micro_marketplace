@@ -157,6 +157,12 @@ def init_db():
         )
     """)
     conn.commit()
+        # 👑 PRODUCTION STRUCTURAL SCHEMA HOTFIX: Safe Column Alteration Injections
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN registered_at TEXT")
+    except sqlite3.OperationalError:
+        pass  # Column already exists safely in the workspace structure, skip altering
+
     conn.close()
 
 init_db()
