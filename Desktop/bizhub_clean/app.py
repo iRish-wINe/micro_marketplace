@@ -242,12 +242,14 @@ def valid_reset_token(token):
 def save_company_logo(upload):
     if not upload or not upload.filename:
         return None
-    extension = os.path.splitext(upload.filename).lower()
+    # 👑 FIXED INDEX CHANNELS: Grabs the extension string from the tuple safely
+    extension = os.path.splitext(upload.filename)[1].lower()
     if extension not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
         return None
     filename = f"company-{uuid.uuid4().hex}{extension}"
     upload.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
     return filename
+
 
 @app.route("/", methods=["GET", "POST"])
 def home():
@@ -287,7 +289,8 @@ def home():
             filename = "fast-food-placeholder.svg" if is_fast_food else ""
 
         if has_video:
-            video_extension = os.path.splitext(video.filename).lower()
+            # 👑 FIXED INDEX CHANNELS: Grabs the extension string from the tuple safely
+            video_extension = os.path.splitext(video.filename)[1].lower()
             if not vendor_subscription["is_premium"]:
                 return redirect(url_for("home", listing_error="Only verified vendors with an active Premium Store or trial can upload product videos."))
             if video_extension not in VIDEO_EXTENSIONS:
@@ -295,6 +298,7 @@ def home():
             video_filename = f"video-{uuid.uuid4().hex}{video_extension}"
         else:
             video_filename = None
+
 
         try:
             stock_quantity = int(stock_quantity)
