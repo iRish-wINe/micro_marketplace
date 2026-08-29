@@ -859,6 +859,49 @@ def register():
 def logout():
     session.clear()
     return redirect(url_for("home"))
+# 👑 MASTER VIDEO CHUNK STREAMING SYSTEM: Fixes blank video screens on mobile browsers
+@app.route("/stream-video/<filename>")
+def stream_video(filename):
+    video_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    if not os.path.exists(video_path):
+        return "Video not found", 404
+
+    file_size = os.path.getsize(video_path)
+    byte_range = request.headers.get("Range", None)
+
+    if not byte_range:
+        # Standard full file stream request
+        def full_stream():
+            with open(video_path, "rb") as video_file:
+                while chunk := video_file.read(40960):
+                    yield chunk
+        return app.response_class(full_stream(), mimetype="video/mp4", headers={"Content-Length": str(file_size), "Accept-Ranges": "bytes"})
+
+    # Parse requested HTTP range bytes (e.g. bytes=0-1024)
+    parsed_range = re.search(r"bytes=(\d+)-(\d*)", byte_range)
+    start_byte = int(parsed_range.group(1))
+    end_byte = int(parsed_range.group(2)) if parsed_range.group(2) else file_size - 1
+
+    chunk_length = (end_byte - start_byte) + 1
+
+    def partial_chunk_stream():
+        with open(video_path, "rb") as video_file:
+            video_file.seek(start_byte)
+            bytes_sent = 0
+            while bytes_sent < chunk_length:
+                buffer_size = min(40960, chunk_length - bytes_sent)
+                data = video_file.read(buffer_size)
+                if not data:
+                    break
+                yield data
+                bytes_sent += len(data)
+
+    headers = {
+        "Content-Range": f"bytes {start_byte}-{end_byte}/{file_size}",
+        "Accept-Ranges": "bytes",
+        "Content-Length": str(chunk_length)
+    }
+    return app.response_class(partial_chunk_stream(), status=206, mimetype="video/mp4", headers=headers)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
