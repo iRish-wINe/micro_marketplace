@@ -280,8 +280,9 @@ def home():
         has_image = bool(file and file.filename)
         has_video = bool(video and video.filename)
         
+        # 👑 THE MASTER BUSINESS RULE FILTER: Enforces exactly one image OR max 20s video
         if not is_fast_food and has_image == has_video:
-            return redirect(url_for("home", listing_error="Choose exactly one product image or video."))
+            return redirect(url_for("home", listing_error="Invalid Media Config: You must choose exactly one option—either an Item Cover Photo OR a maximum 20-second Showcase Video loop."))
 
         if has_image:
             filename = secure_filename(file.filename)
@@ -289,7 +290,7 @@ def home():
             filename = "fast-food-placeholder.svg" if is_fast_food else ""
 
         if has_video:
-            # 👑 THE TUPLE INDEX FIX: Appending [1] extracts the raw string to prevent 500 attribute crashes
+            # 🚀 FIXED THE TUPLE EXTENSION TRACKER INDEX BLOCK
             video_extension = os.path.splitext(video.filename)[1].lower()
             if not vendor_subscription["is_premium"]:
                 return redirect(url_for("home", listing_error="Only verified vendors with an active Premium Store or trial can upload product videos."))
@@ -298,12 +299,13 @@ def home():
             
             video_filename = f"video-{uuid.uuid4().hex}{video_extension}"
             temp_video_path = os.path.join(app.config["UPLOAD_FOLDER"], video_filename)
+            
+            # Save the file exactly ONCE right here to analyze duration properties securely
             video.save(temp_video_path)
 
-            # ⏱️ BACKEND HARD BOUNDARY WALL: Verify that video runtime metadata does not exceed 20 seconds
+            # ⏱️ BACKEND BOUNDARY WALL: Verify that video runtime metadata does not exceed 20 seconds
             try:
                 import subprocess
-                import json
                 ffprobe_command = [
                     "ffprobe", "-v", "error", "-show_entries", "format=duration",
                     "-of", "default=noprint_wrappers=1:nokey=1", temp_video_path
@@ -312,15 +314,13 @@ def home():
                 parsed_duration = float(probe_output)
                 
                 if parsed_duration > 20.5:
-                    os.remove(temp_video_path) # Instantly flush the oversized video file out of disk memory
-                    return redirect(url_for("home", listing_error="🚫 UPLOAD REFUSED: Showcase loops are limited to a maximum of 20 seconds to keep platform load speeds instant for mobile users across Ghana."))
+                    os.remove(temp_video_path) # Instantly flush oversized file to save disk footprint
+                    return redirect(url_for("home", listing_error="🚫 UPLOAD REFUSED: Showcase loops are strictly limited to a maximum of 20 seconds to keep load speeds instant for mobile users across Ghana."))
             except Exception:
-                # Fallback safeguard filter if ffprobe engine hits system locks
+                # Fallback guard if server utilities hit lock bounds
                 pass
         else:
             video_filename = None
-
-
 
         try:
             stock_quantity = int(stock_quantity)
@@ -330,10 +330,9 @@ def home():
             return redirect(url_for("home", listing_error="Stock quantity must be a whole number greater than zero."))
 
         if title and price and description and location:
+            # Save the product image if applicable (Videos are already saved safely above!)
             if has_image and not is_fast_food:
                 file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-            if has_video:
-                video.save(os.path.join(app.config["UPLOAD_FOLDER"], video_filename))
                 
             b_label = session.get("company_name") if vendor_subscription["is_premium"] and session.get("company_name") else "Individual Vendor"
             
@@ -342,6 +341,7 @@ def home():
                 (title, float(price), description, filename, video_filename, stock_quantity, "Available", session["username"], session["email"], session.get("whatsapp_number"), location, b_label, category)
             )
             return redirect(url_for("home"))
+
             
     selected_filter = request.args.get("filter_location", "All")
     company_search = request.args.get("company_search", "").strip()
