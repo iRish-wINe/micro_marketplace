@@ -360,23 +360,20 @@
                  src="{{ url_for('static', filename='uploads/' + product.image_file) }}"
                  alt="{{ product.title }}">
         {% endif %}
+<span class="loc-badge">📍 {{ product.location }}</span>
 
-        <span class="loc-badge">📍 {{ product.location }}</span>
-    </div>
+</div>
 
 
-        <img class="card-img"
-          
-                            
-                            <div class="card-body">
-                                <div class="card-brand-wrapper">
-                                    {% if vendor_logos.get(product.seller) %}
-                                        <img class="card-logo-circle" src="{{ url_for('static', filename='uploads/' + vendor_logos[product.seller]) }}" alt="logo">
-                                    {% else %}
-                                        <div class="card-logo-circle" style="display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; color:white; background:var(--primary-light);">BH</div>
-                                    {% endif %}
-                                    <div class="card-brand">🏬 {{ product.business_label }}</div>
-                                </div>
+<div class="card-body">
+    <div class="card-brand-wrapper">
+        {% if vendor_logos.get(product.seller) %}
+            <img class="card-logo-circle" src="{{ url_for('static', filename='uploads/' + vendor_logos[product.seller]) }}" alt="logo">
+                        {% else %}
+    <div class="card-logo-circle" style="display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; color:white; background:var(--primary-light);">BH</div>
+         {% endif %}
+    <div class="card-brand">🏬 {{ product.business_label }}</div>
+</div>
                                 
                                 <h4 class="card-title">{{ product.title }}</h4>
                                 <div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div>
