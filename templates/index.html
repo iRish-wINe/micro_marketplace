@@ -340,29 +340,30 @@
             <div>
                 <h3 style="margin-top: 0; font-size: 18px; color: var(--bg-abyssal); margin-bottom: 15px; font-weight:800;">🛍️ Live Marketplace Feed</h3>
                 <div class="grid" id="masterCatalogGrid">
-                    {% for product in products %}
-                        <div class="card">
-                            <!-- 👑 DYNAMIC MULTI-MEDIA RENDERING ENGINE ENGINE FIXED -->
-<div class="card">
-    <div class="card-media-wrapper" " style="background-color: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; height: 170px;"></div>
+{% for product in products %}
+    <div class="card">
 
-        {% if product.video_file %}
-            <video class="card-img"
-                   controls
-                   preload="metadata"
-                   playsinline>
-                <source src="{{ url_for('stream_video', filename=product.video_file) }}">
-                Your browser does not support video playback.
-            </video>
+        <div class="card-media-wrapper"
+             style="background-color: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; height: 170px;">
 
-        {% elif product.image_file %}
-            <img class="card-img"
-                 src="{{ url_for('static', filename='uploads/' + product.image_file) }}"
-                 alt="{{ product.title }}">
-        {% endif %}
-<span class="loc-badge">📍 {{ product.location }}</span>
+            {% if product.video_file %}
+                <video class="card-img"
+                       controls
+                       preload="metadata"
+                       playsinline>
+                    <source src="{{ url_for('stream_video', filename=product.video_file) }}">
+                    Your browser does not support video playback.
+                </video>
 
-</div>
+            {% elif product.image_file %}
+                <img class="card-img"
+                     src="{{ url_for('static', filename='uploads/' + product.image_file) }}"
+                     alt="{{ product.title }}">
+            {% endif %}
+
+            <span class="loc-badge">📍 {{ product.location }}</span>
+
+        </div>
 
 
 <div class="card-body">
