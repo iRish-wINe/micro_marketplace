@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In / Register | Biz Hub Marketplace</title>
+    <style>
+        :root {
+            --primary: #1A365D;
+            --primary-light: #2B6CB0;
+            --accent: #FF9900;
+            --bg-light: #F7FAFC;
+            --text-main: #2D3748;
+            --text-muted: #718096;
+            --border-color: #E2E8F0;
+            --radius-lg: 12px;
+            --radius-sm: 6px;
+            --danger: #E53E3E;
+            --transition: all 0.2s ease-in-out;
+        }
+
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-light); color: var(--text-main); margin: 0; padding: 40px 20px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; min-height: 100vh; justify-content: center; }
+        .auth-brand { font-size: 28px; font-weight: 800; color: var(--primary); text-decoration: none; margin-bottom: 25px; display: block; }
+        .auth-brand span { color: var(--accent); }
+
+        .auth-container { width: 100%; max-width: 450px; background: white; border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: 0 4px 12px rgba(0,0,0,0.03); padding: 30px; box-sizing: border-box; }
+        .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 2px solid var(--border-color); margin-bottom: 25px; text-align: center; }
+        .auth-tab { padding: 12px; font-size: 15px; font-weight: 700; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: var(--transition); user-select: none; }
+        .auth-tab.active { color: var(--primary-light); border-bottom-color: var(--primary-light); }
+
+        .auth-form { display: none; }
+        .auth-form.active { display: block; }
+
+        .error-banner { background: #FFF5F5; border: 1px solid #FED7D7; color: var(--danger); padding: 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; margin-bottom: 20px; line-height: 1.4; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); box-sizing: border-box; font-size: 14px; outline: none; transition: var(--transition); }
+        .form-control:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15); }
+        
+        .submit-btn { background-color: var(--primary-light); color: white; border: none; padding: 12px; cursor: pointer; border-radius: var(--radius-sm); font-size: 14px; width: 100%; font-weight: bold; transition: var(--transition); margin-top: 10px; }
+        .submit-btn:hover { background-color: var(--primary); }
+        
+        .forgot-link { display: block; text-align: right; font-size: 12px; color: var(--primary-light); text-decoration: none; margin-top: -8px; margin-bottom: 15px; font-weight: 600; }
+        .conditional-box { background: #F8FAFC; border: 1px solid var(--border-color); padding: 12px; border-radius: var(--radius-sm); margin-top: 15px; display: none; }
+    </style>
+        <!-- 👑 PWA INSTALLATION ICON ANCHORS (CACHEDB-BUSTING SYSTEM ACTIVE) -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=2">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=2">
+
+</head>
+<body>
+
+    <!-- CORE BRAND LABEL -->
+    <a href="/" class="auth-brand">🏪 Biz<span>Hub</span></a>
+
+    <div class="auth-container">
+        
+        <!-- SECURE SECTION NAVIGATION TABS -->
+        <div class="auth-tabs">
+            <div class="auth-tab {% if reg_error is not defined or not reg_error %}active{% endif %}" id="loginTab" onclick="switchAuthMode('login')">Account Sign In</div>
+            <div class="auth-tab {% if reg_error %}active{% endif %}" id="registerTab" onclick="switchAuthMode('register')">Register Profile</div>
+        </div>
+
+        <!-- 🔓 SEGMENT A: LOGIN INTERFACE MODULE -->
+        <div class="auth-form {% if reg_error is not defined or not reg_error %}active{% endif %}" id="loginForm">
+            {% if login_error %}
+                <div class="error-banner">❌ {{ login_error }}</div>
+            {% endif %}
+            {% if request.args.get('recovered') == '1' %}
+                <div class="error-banner" style="background:#F0FDF4; border-color:#BBF7D0; color:#15803D;">✓ Password reset successful! Log in below.</div>
+            {% endif %}
+
+            <form method="POST" action="/login">
+                <div class="form-group">
+                    <label>Username Handle:</label>
+                    <input type="text" name="login_user" class="form-control" placeholder="e.g. kofi_accra" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Security Key / Password:</label>
+                    <input type="password" name="login_pass" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <a href="/forgot-password" class="forgot-link">Forgot password / Recover account?</a>
+                <button type="submit" class="submit-btn">Secure Login</button>
+            </form>
+        </div>
+
+        <!-- 📝 SEGMENT B: DYNAMIC MULTI-TIER REGISTRATION MODULE -->
+        <div class="auth-form {% if reg_error %}active{% endif %}" id="registerForm">
+            {% if reg_error %}
+                <div class="error-banner">❌ {{ reg_error }}</div>
+            {% endif %}
+
+            <form method="POST" action="/register" enctype="multipart/form-data">
+
+                <div class="form-group">
+                    <label>Desired Username:</label>
+                    <input type="text" name="reg_user" class="form-control" placeholder="e.g. ama_boutique" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Email Node Address:</label>
+                    <input type="email" name="reg_email" class="form-control" placeholder="e.g. name@example.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label>Profile Password (Min 6 Characters):</label>
+                    <input type="password" name="reg_pass" class="form-control" placeholder="••••••••" required autocomplete="new-password">
+                </div>
+                
+                <div class="form-group">
+                    <label>Account Access Level:</label>
+                    <select name="role" id="roleSelector" class="form-control" onchange="evaluateRoleParameters()">
+                        <option value="Customer">Standard Customer Profile (Browse & Buy Only)</option>
+                        <option value="Vendor">General Merchant Vendor (Sell Physical Items/Phones/Wearables)</option>
+                        <option value="Fast Food">🍟 Fast Food Kitchen (Sell Meals, Pizza & Cold Drinks)</option>
+                    </select>
+                </div>
+
+                <!-- DYNAMICALLY TRIGGERED EXCLUSIVE MERCHANT DATA MATRIX -->
+                <div class="conditional-box" id="merchantContextCard">
+                    <div class="form-group">
+                        <label>Business Classification Type:</label>
+                        <select name="seller_type" id="sellerTypeSelector" class="form-control" onchange="evaluateRoleParameters()">
+                            <option value="Individual">Individual Native Trader</option>
+                            <option value="Registered Business">Registered Corporate Brand / Company</option>
+                        </select>
+                                            <!-- 🧠 OPTIONAL BRAND LOGO FIELD ADDED HERE -->
+                    <div class="form-group" id="logoUploadGroup">
+                        <label>Store / Brand Cover Logo (Optional):</label>
+                        <input type="file" name="company_logo" accept="image/*" class="form-control">
+                        <small style="font-size:11px; color: var(--text-muted); display:block; margin-top:4px; line-height:1.3;">
+                            Upload a PNG, JPG, or WEBP logo image. This will brand your catalog cards across Ghana cities instantly!
+                        </small>
+                    </div>
+
+                    </div>
+                    
+                    <div class="form-group" id="companyNameGroup" style="display:none;">
+                        <label>Official Registered Business / Shop Name:</label>
+                        <input type="text" name="company_name" class="form-control" placeholder="e.g. Armani Ventures Ghana">
+                    </div>
+
+                    <div class="form-group" id="whatsappGroup">
+                        <label style="color: #C53030;">Compulsory WhatsApp Payment Phone Line:</label>
+                        <input type="tel" name="whatsapp_number" class="form-control" placeholder="e.g. 0558272972">
+                        <small style="font-size:11px; color: var(--text-muted); display:block; margin-top:4px; line-height:1.3;">
+                            Must be an active WhatsApp number. All consumer shopping carts and payment receipts are routed here.
+                        </small>
+                    </div>
+
+                    <div class="form-group" id="catalogModeGroup">
+                        <label>Product Portfolio Focus:</label>
+                        <select name="catalog_mode" class="form-control">
+                            <option value="Focused">Single Specialized Market Range (Recommended)</option>
+                            <option value="Variety">General Variety Catalog (Sell cross-category items)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="categoriesGroup">
+                        <label>Select Product Ranges to Trade In (Hold Ctrl to select multiple):</label>
+                        <select name="vendor_categories" class="form-control" multiple style="height: 120px;">
+                            <option value="Phones & Accessories">Phones & Smart Accessories</option>
+                            <option value="Groceries">Supermarket Groceries</option>
+                            <option value="Clothing">Clothing & Footwear Fashion</option>
+                            <option value="Books">Books & Stationary</option>
+                            <option value="Health & Beauty">Health, Beauty & Cosmetics</option>
+                            <option value="Home & Kitchen">Home Appliances & Kitchenware</option>
+                            <option value="Electronics">Consumer Electronics & Tech</option>
+                            <option value="Fast Food">Fast Food & Cold Drinks</option>
+                            <option value="Sports & Outdoors">Sports & Outdoor Equipment</option>
+                            <option value="Automotive">Automotive & Vehicle Accessories</option>
+                            <option value="Toys & Games">Toys & Games</option>
+                            <option value="Pet Supplies">Pet Supplies</option>
+                            <option value="Furniture">Furniture & Home Decor</option>
+                                                    <option value="Other">Other Miscellaneous Items</option>
+                        </select>
+                    </div>
+                </div>
+
+                
+<button type="submit"
+        id="registerSubmitButton"
+        class="submit-btn"
+        style="background-color: var(--accent);">
+    Register
+</button>
+
+
+            </form>
+        </div>
+
+    </div>
+
+    <!-- UI INTERACTION CONTROL LOGIC -->
+    <script>
+        function switchAuthMode(mode) {
+            document.getElementById('loginTab').classList.remove('active');
+            document.getElementById('registerTab').classList.remove('active');
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('registerForm').classList.remove('active');
+
+            if (mode === 'login') {
+                document.getElementById('loginTab').classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else {
+                document.getElementById('registerTab').classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+            }
+            evaluateRoleParameters();
+        }
+
+        function evaluateRoleParameters() {
+            let role = document.getElementById('roleSelector').value;
+            const submitButton = document.getElementById('registerSubmitButton');
+            let merchantCard = document.getElementById('merchantContextCard');
+            let compNameGroup = document.getElementById('companyNameGroup');
+            let sellerType = document.getElementById('sellerTypeSelector').value;
+            
+            let catGroup = document.getElementById('catalogModeGroup');
+            let catsList = document.getElementById('categoriesGroup');
+            let whatsapp = document.getElementById('whatsappGroup');
+
+            if (role === 'Customer') {
+                merchantCard.style.display = 'none';
+                submitButton.textContent = 'Register';
+            } else if (role === 'Fast Food') {
+                merchantCard.style.display = 'block';
+                compNameGroup.style.display = 'block';
+                whatsapp.style.display = 'block';
+                catGroup.style.display = 'none';
+                catsList.style.display = 'none';
+            } else {
+                merchantCard.style.display = 'block';
+                catGroup.style.display = 'block';
+                catsList.style.display = 'block';
+                whatsapp.style.display = 'block';
+                
+                if (sellerType === 'Registered Business') {
+                    compNameGroup.style.display = 'block';
+                } else {
+                    compNameGroup.style.display = 'none';
+                }
+            }
+        }
+        evaluateRoleParameters();
+    </script>
+</body>
+</html>
+    

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 420" role="img" aria-labelledby="title desc">
+  <title id="title">Biz Hub</title>
+  <desc id="desc">Circular Biz Hub badge with market bag and local business growth arrow, plus the Biz Hub wordmark and tagline.</desc>
+  <g transform="translate(0,10)">
+    <circle cx="270" cy="170" r="160" fill="none" stroke="#1b8ec6" stroke-width="12"/>
+    <circle cx="270" cy="170" r="132" fill="none" stroke="#1fb9d4" stroke-width="8" opacity="0.9"/>
+    <path d="M199 140c0-40 31-72 71-72s71 32 71 72v18h-18v-18c0-30-22-52-53-52s-53 22-53 52v18h-18v-18z" fill="url(#bagFill)"/>
+    <path d="M178 148h162c8 0 15 7 15 15v77c0 27-22 49-49 49H212c-27 0-49-22-49-49v-77c0-8 7-15 15-15z" fill="url(#bagFill)"/>
+    <path d="M206 163h128v30H206z" fill="rgba(255,255,255,0.16)"/>
+    <path d="M241 174l-18 20 18 19 22-20z" fill="#f7fafc" opacity="0.9"/>
+    <path d="M276 194h64a10 10 0 0 1 8 16l-12 16a10 10 0 0 1-16 0l-12-14-6 6a10 10 0 0 1-16 0l-4-5a10 10 0 0 1 0-14l19-19a10 10 0 0 1 16 0l8 8 21-26a10 10 0 0 1 16 0l10 12a10 10 0 0 1 0 14l-37 45a10 10 0 0 1-16 0l-18-22z" fill="#f59e0b" opacity="0.9"/>
+    <path d="M250 245l54 0v18h-54z" fill="#123047" opacity="0.88"/>
+    <path d="M280 245l-45-44 18-13 31 32 48-51 18 13-58 63z" fill="#f59e0b"/>
+    <path d="M180 154c14 8 23 18 31 31" fill="none" stroke="#1b8ec6" stroke-width="12" stroke-linecap="round"/>
+    <path d="M201 220h138" stroke="#f4b942" stroke-width="10" stroke-linecap="round" opacity="0.85"/>
+    <rect x="192" y="196" width="112" height="18" rx="9" fill="#ffffff" opacity="0.18"/>
+    <g fill="none" stroke="#1b8ec6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M134 244c18-36 35-49 54-59"/>
+      <path d="M120 280c20-42 41-58 66-71"/>
+    </g>
+    <defs>
+      <linearGradient id="bagFill" x1="0%" x2="100%" y1="0%" y2="100%">
+        <stop offset="0%" stop-color="#1ab7d8"/>
+        <stop offset="100%" stop-color="#1274b5"/>
+      </linearGradient>
+    </defs>
+  </g>
+  <g transform="translate(0,0)">
+    <text x="420" y="202" font-family="Segoe UI, Arial, sans-serif" font-size="120" font-weight="800" letter-spacing="3" fill="#123047">BIZ HUB</text>
+    <text x="426" y="280" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="1.5" fill="#123047">YOUR LOCAL MARKET,</text>
+    <text x="426" y="327" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="1.5" fill="#123047">UNIFIED ONLINE.</text>
+  </g>
+</svg>

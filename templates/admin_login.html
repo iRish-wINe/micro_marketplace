@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Biz Hub Admin Login</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='biz-hub-logo.svg') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#123047">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #17202b; color: #f7fafc; display: grid; place-items: center; min-height: 100vh; margin: 0; }
+        form { width: min(360px, calc(100% - 30px)); padding: 28px; background: #243140; border: 1px solid #405163; border-radius: 8px; box-sizing: border-box; }
+        h1 { margin-top: 0; }
+        label { display: block; margin: 15px 0 6px; font-weight: bold; }
+        input { width: 100%; box-sizing: border-box; padding: 11px; border: 1px solid #405163; border-radius: 4px; background: #1d2935; color: white; }
+        button { width: 100%; margin-top: 20px; padding: 11px; border: 0; border-radius: 4px; background: #319795; color: white; font-weight: bold; cursor: pointer; }
+        .error { color: #feb2b2; font-weight: bold; margin-bottom: 12px; }
+        .hint { color: #c0cad6; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <form method="POST" action="{{ url_for('admin_login') }}">
+        <img src="{{ url_for('static', filename='biz-hub-logo.svg') }}" alt="Biz Hub - Your Local Market, Unified Online" style="width: 115%; max-width: 420px; margin: 0 -7.5% 18px;">
+        <h1>Biz Hub Admin</h1>
+        {% if admin_error %}<div class="error">{{ admin_error }}</div>{% endif %}
+        {% if request.args.get('registered') %}<p class="hint">Admin account created. Sign in below.</p>{% endif %}
+        {% if not admin_configured %}<p class="hint">Set BIZ_HUB_ADMIN_USERNAME and BIZ_HUB_ADMIN_PASSWORD before signing in.</p>{% endif %}
+        <label for="username">Admin username</label>
+        <input id="username" name="username" required>
+        <label for="password">Admin password</label>
+        <input id="password" name="password" type="password" required>
+        <button type="submit">Sign In</button>
+        {% if signup_available %}<p class="hint"><a href="{{ url_for('admin_signup') }}">Create the first admin account</a></p>{% endif %}
+    </form>
+</body>
+</html>
