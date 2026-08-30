@@ -175,7 +175,15 @@
                     </div>
                 </div>
 
-                <button type="submit" class="submit-btn" style="background-color: var(--accent);">Claim Free 2-Month Trial</button>
+                
+<button type="submit"
+        id="registerSubmitButton"
+        class="submit-btn"
+        style="background-color: var(--accent);">
+    Register
+</button>
+
+
             </form>
         </div>
 
@@ -201,6 +209,7 @@
 
         function evaluateRoleParameters() {
             let role = document.getElementById('roleSelector').value;
+            const submitButton = document.getElementById('registerSubmitButton');
             let merchantCard = document.getElementById('merchantContextCard');
             let compNameGroup = document.getElementById('companyNameGroup');
             let sellerType = document.getElementById('sellerTypeSelector').value;
@@ -211,6 +220,7 @@
 
             if (role === 'Customer') {
                 merchantCard.style.display = 'none';
+                submitButton.textContent = 'Register';
             } else if (role === 'Fast Food') {
                 merchantCard.style.display = 'block';
                 compNameGroup.style.display = 'block';

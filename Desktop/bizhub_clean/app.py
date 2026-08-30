@@ -294,10 +294,10 @@ def home():
             return redirect(url_for("home", listing_error="Invalid Media Config: You must choose exactly one option—either an Item Cover Photo OR a maximum 20-second Showcase Video loop."))
 
         if has_image:
-            filename = secure_filename(file.filename)
+           image_extension = os.path.splitext(file.filename)[1].lower()
+           filename = f"image-{uuid.uuid4().hex}{image_extension}"
         else:
-            filename = "fast-food-placeholder.svg" if is_fast_food else ""
-
+           filename = "fast-food-placeholder.svg" if is_fast_food else ""
         if has_video:
             # 🚀 FIXED THE TUPLE EXTENSION TRACKER INDEX BLOCK
             video_extension = os.path.splitext(video.filename)[1].lower()

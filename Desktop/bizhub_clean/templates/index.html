@@ -167,10 +167,11 @@
         
         .card-media-wrapper { width: 100%; height: 170px; background-color: #FFF; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 10px; }
         .card-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: var(--transition); }
-        video.card-img {
+.card-media-wrapper video.card-img {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    display: block;
 }
         .loc-badge { position: absolute; bottom: 0; left: 0; background: #ECEFF1; color: #37474F; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 2px; }
 
@@ -258,7 +259,7 @@
         </div>
     </div>
 {% endif %}
-```
+
 
 
     <div class="container">
@@ -275,6 +276,12 @@
                         <p style="margin: 5px 0 12px; font-size: 12px;">Listings: <b>{{ listing_count }}</b></p>
                         <a href="/subscription" class="btn-action btn-cart" style="text-align:center;">💎 Manage Account</a>
                     </div>
+                    
+<div id="publishingMessage"
+     style="display:none; align-items:center; justify-content:center; gap:8px; padding:10px; margin-bottom:12px; background:#F0F9FF; border:1px solid #BAE6FD; border-radius:8px; color:#0369A1; font-size:13px;">
+    ⏳ Your listing is being published. Please keep this page open...
+</div>
+
 
                     <!-- LISTING CREATION FORM BLOCK (FIXED PARAMETER PATHS) -->
                     <div class="panel-box">
@@ -284,7 +291,13 @@
                             <h3>📢 Upload Product Listing</h3>
                         {% endif %}
 
-                        <form method="POST" action="/" enctype="multipart/form-data">
+                        
+<form method="POST"
+      action="/"
+      enctype="multipart/form-data"
+      onsubmit="showPublishingMessage(this)">
+
+
                             <div class="form-group">
                                 <label>{% if session.get('role') == 'Fast Food' %}Meal / Combo Name:{% else %}Item Title / Name:{% endif %}</label>
                                 <input type="text" name="{% if session.get('role') == 'Fast Food' %}meal_name{% else %}title{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Jollof with Grilled Chicken{% else %}e.g. Smart Watch{% endif %}" class="form-control" required>
@@ -330,20 +343,31 @@
                     {% for product in products %}
                         <div class="card">
                             <!-- 👑 DYNAMIC MULTI-MEDIA RENDERING ENGINE ENGINE FIXED -->
-                            <div class="card-media-wrapper" style="background-color: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; height: 170px;">
- {% if product.video_file %}
-        <video class="card-img" controls preload="metadata">
-            <source src="{{ url_for('static', filename='uploads/' + product.video_file) }}">
-            Your browser does not support video playback.
-        </video>
+<div class="card">
+    <div class="card-media-wrapper" " style="background-color: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; height: 170px;"></div>
+
+        {% if product.video_file %}
+            <video class="card-img"
+                   controls
+                   preload="metadata"
+                   playsinline>
+                <source src="{{ url_for('stream_video', filename=product.video_file) }}">
+                Your browser does not support video playback.
+            </video>
+
+        {% elif product.image_file %}
+            <img class="card-img"
+                 src="{{ url_for('static', filename='uploads/' + product.image_file) }}"
+                 alt="{{ product.title }}">
+        {% endif %}
+
+        <span class="loc-badge">📍 {{ product.location }}</span>
+    </div>
+
+
     {% elif product.image_file %}
         <img class="card-img"
-             src="{{ url_for('static', filename='uploads/' + product.image_file) }}"
-             alt="{{ product.title }}">
-    {% endif %}
-
-    <span class="loc-badge">📍 {{ product.location }}</span>
-</div>
+          
                             
                             <div class="card-body">
                                 <div class="card-brand-wrapper">
@@ -447,6 +471,24 @@ document.addEventListener("DOMContentLoaded", function() {
         }, 3500);
     }
 });
+
+function showPublishingMessage(form) {
+    const button = form.querySelector('button[type="submit"]');
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '⏳ Publishing...';
+        button.style.opacity = '0.7';
+        button.style.cursor = 'wait';
+    }
+
+    const message = document.getElementById('publishingMessage');
+
+    if (message) {
+        message.style.display = 'flex';
+    }
+}
+
 
     </script>
 </body>
