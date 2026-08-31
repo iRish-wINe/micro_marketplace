@@ -358,7 +358,7 @@ def home():
     listing_error = request.args.get("listing_error")
     
     product_conditions = []
-    product_args = []
+    product_args = [datetime.now(timezone.utc).isoformat()]
     
     if selected_filter != "All":
         product_conditions.append("location = ?")
@@ -371,7 +371,7 @@ def home():
         product_conditions.append("category = ?")
         product_args.append(selected_category)
         
-    product_query = "SELECT * FROM products"
+    product_query = "SELECT p.*, CASE WHEN EXISTS (SELECT 1 FROM users u WHERE u.username = p.seller AND u.role IN ('Vendor', 'Fast Food') AND u.plan = 'premium' AND u.subscription_expires_at > ?) THEN 1 ELSE 0 END AS is_verified FROM products p"
     if product_conditions:
         product_query += " WHERE " + " AND ".join(product_conditions)
     product_query += " ORDER BY id DESC"
@@ -631,38 +631,8 @@ def log_payment():
 def approve_premium(user_id):
     if not is_admin():
         return redirect(url_for("admin_login"))
-
-    user = query_db(
-        "SELECT * FROM users WHERE id = ? AND (role = 'Vendor' OR role = 'Fast Food')",
-        (user_id,),
-        one=True
-    )
-    if not user:
-        return redirect(url_for("admin_dashboard"))
-
-    now = datetime.now(timezone.utc)
-    current_expiry = None
-    if user["subscription_expires_at"]:
-        try:
-            current_expiry = datetime.fromisoformat(user["subscription_expires_at"])
-        except (TypeError, ValueError):
-            current_expiry = None
-
-    # Never replace an active promotional trial with a new, shorter 30-day term.
-    # The active trial remains intact; approval simply clears any pending request.
-    if user["plan"] == "basic" and current_expiry and current_expiry > now:
-        query_db(
-            "UPDATE users SET upgrade_requested_at = NULL WHERE id = ?",
-            (user_id,)
-        )
-        return redirect(url_for("admin_dashboard"))
-
-    # No active trial remains: grant a fresh 30-day Premium subscription.
-    expiry = now + timedelta(days=30)
-    query_db(
-        "UPDATE users SET plan = 'premium', subscription_expires_at = ?, upgrade_requested_at = NULL WHERE id = ?",
-        (expiry.isoformat(), user_id)
-    )
+    expiry = datetime.now(timezone.utc) + timedelta(days=30)
+    query_db("UPDATE users SET plan = 'premium', subscription_expires_at = ?, upgrade_requested_at = NULL WHERE id = ? AND (role = 'Vendor' OR role = 'Fast Food')", (expiry.isoformat(), user_id))
     return redirect(url_for("admin_dashboard"))
 
 @app.route("/admin/delete-user/<int:user_id>", methods=["POST"])
@@ -858,7 +828,7 @@ def register():
             hashed_pwd = generate_password_hash(password)
             trial_started_at = datetime.now(timezone.utc)
             trial_expires_at = trial_started_at + timedelta(days=60) # 2-Month Promotional Package Active
-            user_plan = "basic" 
+            user_plan = "premium" if role in ["Vendor", "Fast Food"] else "basic"
             
             # 👑 EXPLICIT SAFE WRITE CONNECTOR - RE-ORDERED FOR FOREIGN KEY INTEGRITY
             conn = sqlite3.connect("marketplace.db", timeout=20)
