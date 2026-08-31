@@ -167,10 +167,11 @@
         
         .card-media-wrapper { width: 100%; height: 170px; background-color: #FFF; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 10px; }
         .card-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: var(--transition); }
-        video.card-img {
+.card-media-wrapper video.card-img {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    display: block;
 }
         .loc-badge { position: absolute; bottom: 0; left: 0; background: #ECEFF1; color: #37474F; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 2px; }
 
@@ -252,25 +253,14 @@
 {% if session.get('role') in ['Vendor', 'Fast Food'] %}
     <div class="amazon-billboard">
         <div class="billboard-text-layer">
-            {% if vendor_subscription and vendor_subscription.trial and vendor_subscription.expires_iso %}
-                <span class="billboard-promo-tag">🎁 Premium Trial Active</span>
-                <h1>⏳ Your Free Premium Trial Is Running</h1>
-                <p>Enjoy unlimited listings, showcase videos, priority marketplace placement, and your full Premium Store experience while your launch trial is active.</p>
-                <div id="trialCountdown" data-expires="{{ vendor_subscription.expires_iso }}" style="display:inline-flex; align-items:center; gap:8px; padding:9px 14px; background:rgba(255,255,255,0.12); border:1px solid rgba(245,158,11,0.55); border-radius:8px; color:white; font-size:15px; font-weight:900; letter-spacing:.3px;">
-                    ⏱️ <span id="trialCountdownValue">Calculating...</span>
-                </div>
-            {% elif vendor_subscription and vendor_subscription.name == 'Premium Store' %}
-                <span class="billboard-promo-tag">💎 Premium Store Active</span>
-                <h1>Your Premium Store Is Active</h1>
-                <p>Your account is currently on a paid Premium Store subscription. Use Manage Account to review your plan and renewal details.</p>
-            {% else %}
-                <span class="billboard-promo-tag">⚡ Trial Ended</span>
-                <h1>Your Free Premium Trial Has Ended</h1>
-                <p>Upgrade to Premium Store to restore unlimited listings, showcase videos, priority placement, and the full merchant experience.</p>
-            {% endif %}
+            <span class="billboard-promo-tag">🎁 Special Launch Promo Offer</span>
+            <h1>Claim Your 2 Months Free Premium Trial!</h1>
+            <p>Unlock unlimited market inventory listings, showcase rich high-resolution video streams, and acquire priority verification placement positions across Ghana instantly.</p>
         </div>
     </div>
 {% endif %}
+
+
 
     <div class="container">
         <div class="layout">
@@ -286,6 +276,12 @@
                         <p style="margin: 5px 0 12px; font-size: 12px;">Listings: <b>{{ listing_count }}</b></p>
                         <a href="/subscription" class="btn-action btn-cart" style="text-align:center;">💎 Manage Account</a>
                     </div>
+                    
+<div id="publishingMessage"
+     style="display:none; align-items:center; justify-content:center; gap:8px; padding:10px; margin-bottom:12px; background:#F0F9FF; border:1px solid #BAE6FD; border-radius:8px; color:#0369A1; font-size:13px;">
+    ⏳ Your listing is being published. Please keep this page open...
+</div>
+
 
                     <!-- LISTING CREATION FORM BLOCK (FIXED PARAMETER PATHS) -->
                     <div class="panel-box">
@@ -295,7 +291,13 @@
                             <h3>📢 Upload Product Listing</h3>
                         {% endif %}
 
-                        <form method="POST" action="/" enctype="multipart/form-data">
+                        
+<form method="POST"
+      action="/"
+      enctype="multipart/form-data"
+      onsubmit="showPublishingMessage(this)">
+
+
                             <div class="form-group">
                                 <label>{% if session.get('role') == 'Fast Food' %}Meal / Combo Name:{% else %}Item Title / Name:{% endif %}</label>
                                 <input type="text" name="{% if session.get('role') == 'Fast Food' %}meal_name{% else %}title{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Jollof with Grilled Chicken{% else %}e.g. Smart Watch{% endif %}" class="form-control" required>
@@ -338,33 +340,41 @@
             <div>
                 <h3 style="margin-top: 0; font-size: 18px; color: var(--bg-abyssal); margin-bottom: 15px; font-weight:800;">🛍️ Live Marketplace Feed</h3>
                 <div class="grid" id="masterCatalogGrid">
-                    {% for product in products %}
-                        <div class="card">
-                            <!-- 👑 DYNAMIC MULTI-MEDIA RENDERING ENGINE ENGINE FIXED -->
-                            <div class="card-media-wrapper" style="background-color: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; height: 170px;">
- {% if product.video_file %}
-        <video class="card-img" controls preload="metadata">
-            <source src="{{ url_for('static', filename='uploads/' + product.video_file) }}">
-            Your browser does not support video playback.
-        </video>
-    {% elif product.image_file %}
-        <img class="card-img"
-             src="{{ url_for('static', filename='uploads/' + product.image_file) }}"
-             alt="{{ product.title }}">
-    {% endif %}
+{% for product in products %}
+    <div class="card">
 
-    <span class="loc-badge">📍 {{ product.location }}</span>
+        <div class="card-media-wrapper"
+             style="background-color: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; height: 170px;">
+
+            {% if product.video_file %}
+                <video class="card-img"
+                       controls
+                       preload="metadata"
+                       playsinline>
+                    <source src="{{ url_for('stream_video', filename=product.video_file) }}">
+                    Your browser does not support video playback.
+                </video>
+
+            {% elif product.image_file %}
+                <img class="card-img"
+                     src="{{ url_for('static', filename='uploads/' + product.image_file) }}"
+                     alt="{{ product.title }}">
+            {% endif %}
+
+            <span class="loc-badge">📍 {{ product.location }}</span>
+
+        </div>
+
+
+<div class="card-body">
+    <div class="card-brand-wrapper">
+        {% if vendor_logos.get(product.seller) %}
+            <img class="card-logo-circle" src="{{ url_for('static', filename='uploads/' + vendor_logos[product.seller]) }}" alt="logo">
+                        {% else %}
+    <div class="card-logo-circle" style="display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; color:white; background:var(--primary-light);">BH</div>
+         {% endif %}
+    <div class="card-brand">🏬 {{ product.business_label }}</div>
 </div>
-                            
-                            <div class="card-body">
-                                <div class="card-brand-wrapper">
-                                    {% if vendor_logos.get(product.seller) %}
-                                        <img class="card-logo-circle" src="{{ url_for('static', filename='uploads/' + vendor_logos[product.seller]) }}" alt="logo">
-                                    {% else %}
-                                        <div class="card-logo-circle" style="display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; color:white; background:var(--primary-light);">BH</div>
-                                    {% endif %}
-                                    <div class="card-brand">🏬 {{ product.business_label }}</div>
-                                </div>
                                 
                                 <h4 class="card-title">{{ product.title }}</h4>
                                 <div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div>
@@ -419,45 +429,11 @@
     <!-- JAVASCRIPT MASTER OPERATIONS CONTROL PACK -->
     <script>
         window.addEventListener("DOMContentLoaded", function() {
-            startTrialCountdown();
             setTimeout(function() {
                 let s = document.getElementById("bizhub-splash-screen");
                 if(s) { s.style.opacity = "0"; s.style.visibility = "hidden"; }
             }, 1500);
         });
-
-
-        function startTrialCountdown() {
-            const countdown = document.getElementById("trialCountdown");
-            const value = document.getElementById("trialCountdownValue");
-            if (!countdown || !value) return;
-
-            const expiry = new Date(countdown.dataset.expires);
-            if (Number.isNaN(expiry.getTime())) {
-                value.textContent = "Trial end date unavailable";
-                return;
-            }
-
-            function update() {
-                const remaining = expiry.getTime() - Date.now();
-                if (remaining <= 0) {
-                    value.textContent = "Trial expired";
-                    countdown.style.borderColor = "rgba(239,68,68,0.65)";
-                    return;
-                }
-
-                const totalSeconds = Math.floor(remaining / 1000);
-                const days = Math.floor(totalSeconds / 86400);
-                const hours = Math.floor((totalSeconds % 86400) / 3600);
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
-                const seconds = totalSeconds % 60;
-
-                value.textContent = `${days}d ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s remaining`;
-            }
-
-            update();
-            setInterval(update, 1000);
-        }
 
         function filterCatalogCards() {
             let input = document.getElementById("liveSearchField").value.toLowerCase().trim();
@@ -492,6 +468,24 @@ document.addEventListener("DOMContentLoaded", function() {
         }, 3500);
     }
 });
+
+function showPublishingMessage(form) {
+    const button = form.querySelector('button[type="submit"]');
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '⏳ Publishing...';
+        button.style.opacity = '0.7';
+        button.style.cursor = 'wait';
+    }
+
+    const message = document.getElementById('publishingMessage');
+
+    if (message) {
+        message.style.display = 'flex';
+    }
+}
+
 
     </script>
 </body>

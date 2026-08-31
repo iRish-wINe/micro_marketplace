@@ -1,10 +1,11 @@
 import sqlite3
 import os
+import mimetypes
 import uuid
 import re
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
-from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, render_template_string
+from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, render_template_string, send_file
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import RequestEntityTooLarge
@@ -18,7 +19,7 @@ VIDEO_EXTENSIONS = {".mp4", ".webm", ".mov"}
 
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.errorhandler(RequestEntityTooLarge)
@@ -64,18 +65,8 @@ def enforce_device_standards():
             </html>
         """), 403
 
-DB_PATH = os.path.join(app.root_path, "marketplace.db")
-
-def get_db_connection():
-    conn = sqlite3.connect(DB_PATH, timeout=30)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA busy_timeout = 30000")
-    conn.execute("PRAGMA journal_mode = WAL")
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
-
 def init_db():
-    conn = get_db_connection()
+    conn = sqlite3.connect("marketplace.db", timeout=20)
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -93,6 +84,7 @@ def init_db():
             upgrade_requested_at TEXT,
             catalog_mode TEXT,
             company_logo TEXT,
+            business_location TEXT,
             registered_at TEXT
         )
     """)
@@ -165,6 +157,48 @@ def init_db():
         )
     """)
     cursor.execute("""
+        CREATE TABLE IF NOT EXISTS favorites (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customer_id INTEGER NOT NULL,
+            vendor_id INTEGER NOT NULL,
+            created_at TEXT NOT NULL,
+            UNIQUE(customer_id, vendor_id),
+            FOREIGN KEY(customer_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY(vendor_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS vendor_notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            vendor_id INTEGER NOT NULL,
+            order_id INTEGER NOT NULL,
+            product_id INTEGER,
+            customer_username TEXT NOT NULL,
+            item_name TEXT NOT NULL,
+            price REAL NOT NULL,
+            location TEXT,
+            message TEXT NOT NULL,
+            is_read INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(vendor_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS promotions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            vendor_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT,
+            discount REAL,
+            starts_at TEXT NOT NULL,
+            ends_at TEXT NOT NULL,
+            active INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(vendor_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS financial_ledger (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             transaction_type TEXT NOT NULL,
@@ -181,6 +215,14 @@ def init_db():
         cursor.execute("ALTER TABLE users ADD COLUMN registered_at TEXT")
     except sqlite3.OperationalError:
         pass  # Column already exists safely in the workspace structure, skip altering
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN business_location TEXT")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN theme TEXT NOT NULL DEFAULT 'day'")
+    except sqlite3.OperationalError:
+        pass  # Column already exists safely in the workspace structure, skip altering
 
     conn.close()
 
@@ -194,52 +236,20 @@ def normalize_whatsapp_number(number):
 
 def subscription_status(user):
     if not user:
-        return {"name": "Basic", "is_premium": False, "trial": False, "expires": None, "expires_iso": None}
-
+        return {"name": "Basic", "is_premium": False, "trial": False, "expires": None}
     now = datetime.now(timezone.utc)
-    expiry_value = user.get("subscription_expires_at")
-    trial_expiry = None
-    if expiry_value:
-        try:
-            trial_expiry = datetime.fromisoformat(expiry_value)
-            if trial_expiry.tzinfo is None:
-                trial_expiry = trial_expiry.replace(tzinfo=timezone.utc)
-        except (TypeError, ValueError):
-            trial_expiry = None
-
+    trial_expiry = datetime.fromisoformat(user["subscription_expires_at"]) if user["subscription_expires_at"] else None
     is_vendor_role = user["role"] in ["Vendor", "Fast Food"]
-    trial_active = (
-        is_vendor_role
-        and bool(user.get("trial_started_at"))
-        and trial_expiry is not None
-        and trial_expiry > now
-        and user["plan"] in ["basic", "premium"]
-    )
-    premium_active = (
-        is_vendor_role
-        and trial_expiry is not None
-        and trial_expiry > now
-        and user["plan"] == "premium"
-    )
-
+    
+    trial_active = is_vendor_role and trial_expiry and trial_expiry > now and user["plan"] == "basic"
+    premium_active = is_vendor_role and ((user["plan"] == "premium" and trial_expiry and trial_expiry > now) or trial_active)
+    
     if trial_active:
-        return {
-            "name": "Free trial",
-            "is_premium": True,
-            "trial": True,
-            "expires": trial_expiry.strftime("%d %b %Y"),
-            "expires_iso": trial_expiry.isoformat(),
-        }
+        return {"name": "Free trial", "is_premium": True, "trial": True, "expires": trial_expiry.strftime("%d %b %Y")}
     if premium_active:
-        return {
-            "name": "Premium Store",
-            "is_premium": True,
-            "trial": False,
-            "expires": trial_expiry.strftime("%d %b %Y"),
-            "expires_iso": trial_expiry.isoformat(),
-        }
-
-    return {"name": "Basic", "is_premium": False, "trial": False, "expires": None, "expires_iso": None}
+        return {"name": "Premium Store", "is_premium": True, "trial": False, "expires": trial_expiry.strftime("%d %b %Y")}
+        
+    return {"name": "Basic", "is_premium": False, "trial": False, "expires": None}
 
 def admin_configured():
     return bool(get_admin_username() and get_admin_password()) or bool(query_db("SELECT id FROM admin_users LIMIT 1"))
@@ -256,34 +266,28 @@ def admin_signup_available():
 def is_admin():
     return session.get("is_admin") is True
 
-@app.route("/health")
-def health():
-    return {"status": "ok"}, 200
-
 @app.route("/service-worker.js")
 def service_worker():
     return send_from_directory(app.static_folder, "service-worker.js", mimetype="application/javascript")
 
 def query_db(query, args=(), one=False):
     """Executes database transactions safely using row mapping structures."""
-    conn = get_db_connection()
+    conn = sqlite3.connect("marketplace.db", timeout=20)
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    try:
-        cursor.execute(query, args)
+    cursor.execute(query, args)
+    
+    # 👑 STABLE DATABASE SERIALIZATION LAYER (FIXED FETCH MATRICES)
+    if one:
+        row = cursor.fetchone()
+        res = dict(row) if row else None
+    else:
+        rows = cursor.fetchall()
+        res = [dict(r) for r in rows] if rows else []
         
-        # 👑 STABLE DATABASE SERIALIZATION LAYER (FIXED FETCH MATRICES)
-        if one:
-            row = cursor.fetchone()
-            res = dict(row) if row else None
-        else:
-            rows = cursor.fetchall()
-            res = [dict(r) for r in rows] if rows else []
-        
-        if cursor.description is None:
-            conn.commit()
-        return res
-    finally:
-        conn.close()
+    conn.commit()
+    conn.close()
+    return res
 
 def get_vendor_categories(user_id):
     return [row["category"] for row in query_db("SELECT category FROM vendor_categories WHERE user_id = ? ORDER BY category", (user_id,))]
@@ -310,10 +314,6 @@ def save_company_logo(upload):
 
 @app.route("/", methods=["GET", "POST"])
 def home():
-    # Keep Render HEAD health checks independent of page/template rendering.
-    if request.method == "HEAD":
-        return "", 200
-
     if request.method == "POST":
         if "username" not in session or session.get("role") not in ["Vendor", "Fast Food"]:
             return redirect(url_for("home"))
@@ -395,7 +395,7 @@ def home():
             if has_image and not is_fast_food:
                 file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
                 
-            b_label = session.get("company_name") if vendor_subscription["is_premium"] and session.get("company_name") else "Individual Vendor"
+            b_label = session.get("company_name") or "Individual Vendor"
             
             query_db(
                 "INSERT INTO products (title, price, description, image_file, video_file, stock_quantity, status, seller, seller_email, seller_whatsapp, location, business_label, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -407,6 +407,7 @@ def home():
     selected_filter = request.args.get("filter_location", "All")
     company_search = request.args.get("company_search", "").strip()
     selected_category = request.args.get("category", "All")
+    promo_only = request.args.get("promo") == "1"
     listing_error = request.args.get("listing_error")
     
     product_conditions = []
@@ -422,6 +423,10 @@ def home():
     if selected_category != "All":
         product_conditions.append("category = ?")
         product_args.append(selected_category)
+    if promo_only:
+        now_iso = datetime.now(timezone.utc).isoformat()
+        product_conditions.append("EXISTS (SELECT 1 FROM promotions pr JOIN users pu ON pu.id = pr.vendor_id WHERE pu.username = p.seller AND pr.active = 1 AND pr.starts_at <= ? AND pr.ends_at >= ?)")
+        product_args.extend([now_iso, now_iso])
         
     product_query = "SELECT p.*, CASE WHEN EXISTS (SELECT 1 FROM users u WHERE u.username = p.seller AND u.role IN ('Vendor', 'Fast Food') AND u.plan = 'premium' AND u.subscription_expires_at > ?) THEN 1 ELSE 0 END AS is_verified FROM products p"
     if product_conditions:
@@ -429,6 +434,14 @@ def home():
     product_query += " ORDER BY id DESC"
     
     all_products = query_db(product_query, product_args) or []
+
+    # Attach each vendor's currently active promotion to its marketplace cards.
+    vendor_promos = {}
+    now_iso = datetime.now(timezone.utc).isoformat()
+    for promo_row in (query_db("SELECT pr.*, u.username FROM promotions pr JOIN users u ON u.id = pr.vendor_id WHERE pr.active = 1 AND pr.starts_at <= ? AND pr.ends_at >= ?", (now_iso, now_iso)) or []):
+        vendor_promos[promo_row["username"]] = promo_row
+    for product in all_products:
+        product["active_promo"] = vendor_promos.get(product["seller"])
     
     vendor_logos = {}
     logo_rows = query_db("SELECT username, company_logo FROM users WHERE company_logo IS NOT NULL") or []
@@ -477,16 +490,20 @@ def home():
     vendor_subscription = {"name": "Free trial", "is_premium": False, "trial": True, "expires": "N/A"}
     listing_count = 0
     fast_food_count = 0
+    vendor_notification_count = 0
     if session.get("role") in ["Vendor", "Fast Food"]:
         vendor = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
         vendor_subscription = subscription_status(vendor)
+        if vendor:
+            unread_row = query_db("SELECT COUNT(*) AS count FROM vendor_notifications WHERE vendor_id = ? AND is_read = 0", (vendor["id"],), one=True)
+            vendor_notification_count = unread_row["count"] if unread_row else 0
         listing_count_row = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ?", (session["username"],), one=True)
         listing_count = listing_count_row["count"] if listing_count_row else 0
         if session.get("role") == "Fast Food":
             fast_food_count_row = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ? AND category = 'Fast Food'", (session["username"],), one=True)
             fast_food_count = fast_food_count_row["count"] if fast_food_count_row else 0
 
-    return render_template("index.html", products=all_products, active_filter=selected_filter, company_search=company_search, selected_category=selected_category, categories=PRODUCT_CATEGORIES, vendor_logos=vendor_logos, cart_items=cart_items, cart_total=cart_total, seller_orders=sorted(seller_orders.values(), key=lambda order: not order["priority"]), vendor_subscription=vendor_subscription, listing_count=listing_count, fast_food_count=fast_food_count, listing_error=listing_error, premium_sellers=premium_sellers)
+    return render_template("index.html", products=all_products, active_filter=selected_filter, company_search=company_search, selected_category=selected_category, categories=PRODUCT_CATEGORIES, vendor_logos=vendor_logos, cart_items=cart_items, cart_total=cart_total, seller_orders=sorted(seller_orders.values(), key=lambda order: not order["priority"]), vendor_subscription=vendor_subscription, listing_count=listing_count, fast_food_count=fast_food_count, listing_error=listing_error, premium_sellers=premium_sellers, vendor_notification_count=vendor_notification_count, promo_only=promo_only)
 @app.route("/delete-item/<int:product_id>")
 def delete_item(product_id):
     if "username" not in session:
@@ -546,6 +563,21 @@ def place_order():
     order_id = query_db("SELECT id FROM orders WHERE customer_username = ? AND created_at = ? ORDER BY id DESC LIMIT 1", (session["username"], created_at), one=True)["id"]
     for item in items:
         query_db("INSERT INTO order_items (order_id, product_id, seller, title, price, quantity) VALUES (?, ?, ?, ?, ?, 1)", (order_id, item["id"], item["seller"], item["title"], item["price"]))
+
+        vendor = query_db(
+            "SELECT id, company_name FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food')",
+            (item["seller"],),
+            one=True
+        )
+        if vendor:
+            message = (
+                f"New purchase from @{session['username']}: {item['title']} "
+                f"for GH₵{float(item['price']):.2f}. Location: {item.get('location') or 'Not specified'}."
+            )
+            query_db(
+                "INSERT INTO vendor_notifications (vendor_id, order_id, product_id, customer_username, item_name, price, location, message, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (vendor["id"], order_id, item["id"], session["username"], item["title"], float(item["price"]), item.get("location"), message, created_at)
+            )
     session.pop("cart", None)
     return redirect(url_for("order_history"))
 
@@ -561,12 +593,24 @@ def order_history():
     if "username" not in session:
         return redirect(url_for("login"))
     customer_orders = query_db("SELECT * FROM orders WHERE customer_username = ? ORDER BY id DESC", (session["username"],))
-    vendor_orders = query_db("SELECT DISTINCT o.*, oi.seller FROM orders o JOIN order_items oi ON oi.order_id = o.id WHERE oi.seller = ? ORDER BY o.id DESC", (session["username"],)) if session.get("role") in ["Vendor", "Fast Food"] else []
+    is_vendor = session.get("role") in ["Vendor", "Fast Food"]
+    vendor_orders = query_db(
+        "SELECT DISTINCT o.*, oi.seller FROM orders o JOIN order_items oi ON oi.order_id = o.id WHERE oi.seller = ? ORDER BY o.id DESC",
+        (session["username"],)
+    ) if is_vendor else []
     all_active_orders = (customer_orders or []) + (vendor_orders or [])
-    order_items = {order["id"]: query_db("SELECT * FROM order_items WHERE order_id = ?", (order["id"],)) for order in all_active_orders}
+    order_items = {order["id"]: query_db("SELECT oi.*, p.location FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id WHERE oi.order_id = ?", (order["id"],)) for order in all_active_orders}
     seller_names = {row["username"]: (row["company_name"] or row["username"]) for row in query_db("SELECT username, company_name FROM users")}
     order_sellers = {order["id"]: sorted({seller_names.get(item["seller"], item["seller"]) for item in order_items[order["id"]]}) for order in customer_orders}
-    return render_template("orders.html", customer_orders=customer_orders, vendor_orders=vendor_orders, order_items=order_items, order_sellers=order_sellers)
+    vendor_notification_count = 0
+    vendor_notifications = []
+    if is_vendor:
+        vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+        if vendor:
+            vendor_notification_count_row = query_db("SELECT COUNT(*) AS count FROM vendor_notifications WHERE vendor_id = ? AND is_read = 0", (vendor["id"],), one=True)
+            vendor_notification_count = vendor_notification_count_row["count"] if vendor_notification_count_row else 0
+            vendor_notifications = query_db("SELECT * FROM vendor_notifications WHERE vendor_id = ? ORDER BY id DESC LIMIT 30", (vendor["id"],))
+    return render_template("orders.html", customer_orders=customer_orders, vendor_orders=vendor_orders, order_items=order_items, order_sellers=order_sellers, vendor_notification_count=vendor_notification_count, vendor_notifications=vendor_notifications)
 
 @app.route("/orders/<int:order_id>/confirm", methods=["POST"])
 def confirm_order(order_id):
@@ -587,6 +631,128 @@ def cancel_order(order_id):
     if query_db("SELECT id FROM order_items WHERE order_id = ? AND seller = ?", (order_id, session["username"])):
         query_db("UPDATE orders SET status = 'Cancelled' WHERE id = ?", (order_id,))
     return redirect(url_for("order_history"))
+@app.route("/vendor/<username>")
+def vendor_profile(username):
+    vendor = query_db(
+        "SELECT * FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food')",
+        (username,), one=True
+    )
+    if not vendor:
+        return redirect(url_for("home"))
+    products = query_db(
+        "SELECT * FROM products WHERE seller = ? ORDER BY id DESC",
+        (username,)
+    )
+    categories = get_vendor_categories(vendor["id"])
+    now_iso = datetime.now(timezone.utc).isoformat()
+    promo = query_db(
+        "SELECT * FROM promotions WHERE vendor_id = ? AND active = 1 AND starts_at <= ? AND ends_at >= ? ORDER BY id DESC LIMIT 1",
+        (vendor["id"], now_iso, now_iso), one=True
+    )
+    favorite = False
+    if session.get("role") == "Customer":
+        customer = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+        if customer:
+            favorite = bool(query_db("SELECT id FROM favorites WHERE customer_id = ? AND vendor_id = ?", (customer["id"], vendor["id"]), one=True))
+    return render_template("vendor_profile.html", vendor=vendor, products=products, categories=categories, promo=promo, favorite=favorite, product_count=len(products), subscription=subscription_status(vendor))
+
+@app.route("/favorites")
+def favorites():
+    if "username" not in session or session.get("role") != "Customer":
+        return redirect(url_for("login"))
+    customer = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    vendors = []
+    if customer:
+        vendors = query_db("""
+            SELECT u.*,
+                   (SELECT COUNT(*) FROM products p WHERE p.seller = u.username) AS product_count
+            FROM favorites f
+            JOIN users u ON u.id = f.vendor_id
+            WHERE f.customer_id = ? AND u.role IN ('Vendor', 'Fast Food')
+            ORDER BY f.id DESC
+        """, (customer["id"],))
+        now_iso = datetime.now(timezone.utc).isoformat()
+        for vendor in vendors:
+            vendor["categories"] = get_vendor_categories(vendor["id"])
+            vendor["promo"] = query_db("SELECT * FROM promotions WHERE vendor_id = ? AND active = 1 AND starts_at <= ? AND ends_at >= ? ORDER BY id DESC LIMIT 1", (vendor["id"], now_iso, now_iso), one=True)
+    return render_template("favorites.html", vendors=vendors)
+
+@app.route("/favorites/toggle/<username>", methods=["POST"])
+def toggle_favorite(username):
+    if "username" not in session or session.get("role") != "Customer":
+        return redirect(url_for("login"))
+    customer = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    vendor = query_db("SELECT id FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food')", (username,), one=True)
+    if not customer or not vendor or customer["id"] == vendor["id"]:
+        return redirect(url_for("home"))
+    existing = query_db("SELECT id FROM favorites WHERE customer_id = ? AND vendor_id = ?", (customer["id"], vendor["id"]), one=True)
+    if existing:
+        query_db("DELETE FROM favorites WHERE id = ?", (existing["id"],))
+    else:
+        query_db("INSERT INTO favorites (customer_id, vendor_id, created_at) VALUES (?, ?, ?)", (customer["id"], vendor["id"], datetime.now(timezone.utc).isoformat()))
+    return redirect(request.referrer or url_for("vendor_profile", username=username))
+
+@app.route("/notifications/<int:notification_id>/read", methods=["POST"])
+def mark_notification_read(notification_id):
+    if session.get("role") not in ["Vendor", "Fast Food"]:
+        return redirect(url_for("login"))
+    vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if vendor:
+        query_db("UPDATE vendor_notifications SET is_read = 1 WHERE id = ? AND vendor_id = ?", (notification_id, vendor["id"]))
+    return redirect(request.referrer or url_for("order_history"))
+
+@app.route("/notifications/read-all", methods=["POST"])
+def mark_all_notifications_read():
+    if session.get("role") not in ["Vendor", "Fast Food"]:
+        return redirect(url_for("login"))
+    vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if vendor:
+        query_db("UPDATE vendor_notifications SET is_read = 1 WHERE vendor_id = ?", (vendor["id"],))
+    return redirect(request.referrer or url_for("order_history"))
+
+@app.route("/promotions", methods=["GET", "POST"])
+def promotions():
+    if session.get("role") not in ["Vendor", "Fast Food"]:
+        return redirect(url_for("login"))
+    vendor = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+    if not vendor:
+        return redirect(url_for("login"))
+    promo_error = None
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip() or None
+        discount_raw = request.form.get("discount", "").strip()
+        starts_at = request.form.get("starts_at", "").strip()
+        ends_at = request.form.get("ends_at", "").strip()
+        try:
+            discount = float(discount_raw) if discount_raw else None
+        except ValueError:
+            discount = None
+        if not title or not starts_at or not ends_at:
+            promo_error = "Promotion title, start date and end date are required."
+        else:
+            starts_iso = starts_at.replace("T", " ") + (":00" if len(starts_at) == 16 else "")
+            ends_iso = ends_at.replace("T", " ") + (":00" if len(ends_at) == 16 else "")
+            if ends_iso <= starts_iso:
+                promo_error = "Promotion end date must be after the start date."
+            elif discount is not None and not (0 <= discount <= 100):
+                promo_error = "Discount must be between 0 and 100 percent."
+            else:
+                query_db("UPDATE promotions SET active = 0 WHERE vendor_id = ?", (vendor["id"],))
+                query_db("INSERT INTO promotions (vendor_id, title, description, discount, starts_at, ends_at, active, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?)", (vendor["id"], title, description, discount, starts_iso, ends_iso, datetime.now(timezone.utc).isoformat()))
+                return redirect(url_for("vendor_profile", username=vendor["username"]))
+    promo_rows = query_db("SELECT * FROM promotions WHERE vendor_id = ? ORDER BY id DESC", (vendor["id"],))
+    return render_template("promotions.html", vendor=vendor, promotions=promo_rows, promo_error=promo_error)
+
+@app.route("/promotions/<int:promotion_id>/deactivate", methods=["POST"])
+def deactivate_promotion(promotion_id):
+    if session.get("role") not in ["Vendor", "Fast Food"]:
+        return redirect(url_for("login"))
+    vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if vendor:
+        query_db("UPDATE promotions SET active = 0 WHERE id = ? AND vendor_id = ?", (promotion_id, vendor["id"]))
+    return redirect(url_for("promotions"))
+
 @app.route("/subscription")
 def subscription():
     if "username" not in session:
@@ -709,6 +875,9 @@ def admin_delete_user(user_id):
             query_db("DELETE FROM orders WHERE id = ?", (order_id,))
     query_db("DELETE FROM products WHERE seller = ?", (user["username"],))
     query_db("DELETE FROM vendor_categories WHERE user_id = ?", (user["id"],))
+    query_db("DELETE FROM favorites WHERE vendor_id = ? OR customer_id = ?", (user["id"], user["id"]))
+    query_db("DELETE FROM vendor_notifications WHERE vendor_id = ?", (user["id"],))
+    query_db("DELETE FROM promotions WHERE vendor_id = ?", (user["id"],))
     query_db("DELETE FROM password_resets WHERE user_id = ?", (user["id"],))
     query_db("DELETE FROM users WHERE id = ?", (user_id,))
     return redirect(url_for("admin_dashboard"))
@@ -722,57 +891,100 @@ def admin_logout():
 def settings():
     if "username" not in session:
         return redirect(url_for("login"))
-    user = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+    current_username = session["username"]
+    user = query_db("SELECT * FROM users WHERE username = ?", (current_username,), one=True)
     if not user:
         session.clear()
         return redirect(url_for("login"))
+
     is_vendor_any = user["role"] in ["Vendor", "Fast Food"]
     vendor_categories = get_vendor_categories(user["id"]) if is_vendor_any else []
 
     if request.method == "POST":
+        new_username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip()
         whatsapp_number = normalize_whatsapp_number(request.form.get("whatsapp_number"))
         company_name = request.form.get("company_name", "").strip() or None
+        business_location = request.form.get("business_location", "").strip() or None
         new_password = request.form.get("new_password", "")
         confirm_password = request.form.get("confirm_password", "")
+        theme = request.form.get("theme", "day")
         company_logo = user["company_logo"]
         logo_upload = request.files.get("company_logo")
         catalog_mode = request.form.get("catalog_mode", "Focused")
         selected_categories = [category for category in request.form.getlist("vendor_categories") if category in VENDOR_CATEGORIES]
 
+        if not new_username:
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Username is required.")
+        if not re.fullmatch(r"[A-Za-z0-9_.-]{3,40}", new_username):
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Username must be 3-40 characters and use only letters, numbers, dots, underscores, or hyphens.")
+        if new_username != current_username:
+            existing = query_db("SELECT id FROM users WHERE username = ?", (new_username,), one=True)
+            if existing:
+                return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="That username is already in use.")
         if not email:
-            return render_template("settings.html", user=user, settings_error="Email is required.")
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Email is required.")
         if is_vendor_any and not whatsapp_number:
-            return render_template("settings.html", user=user, settings_error="Vendor accounts need a WhatsApp number for payments.")
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Vendor accounts need a WhatsApp number for payments.")
         if new_password and new_password != confirm_password:
-            return render_template("settings.html", user=user, settings_error="The new passwords do not match.")
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="The new passwords do not match.")
+        if theme not in ("day", "night"):
+            theme = "day"
         if logo_upload and logo_upload.filename:
             company_logo = save_company_logo(logo_upload)
             if not company_logo:
                 return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Upload a PNG, JPG, JPEG, WEBP, or GIF logo.")
 
-        password_hash = generate_password_hash(new_password) if new_password else user["password_hash"]
         if not is_vendor_any:
             company_name = None
+            business_location = None
             whatsapp_number = None
             catalog_mode = None
             selected_categories = []
             company_logo = None
-        elif catalog_mode not in ("Variety", "Focused") or not selected_categories:
-            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Choose whether you sell a variety or focus on a category, then select at least one product range.")
+        elif catalog_mode not in ("Variety", "Focused"):
+            catalog_mode = user.get("catalog_mode") or "Focused"
+
+        # Product ranges are optional in Settings. If none are checked, preserve the
+        # vendor's existing ranges instead of blocking unrelated changes such as theme,
+        # username, logo, business name or location.
+        if is_vendor_any and not selected_categories:
+            selected_categories = vendor_categories
+
+        password_hash = generate_password_hash(new_password) if new_password else user["password_hash"]
         query_db(
-            "UPDATE users SET email = ?, password_hash = ?, company_name = ?, whatsapp_number = ?, catalog_mode = ?, company_logo = ? WHERE username = ?",
-            (email, password_hash, company_name, whatsapp_number, catalog_mode, company_logo, session["username"])
+            "UPDATE users SET username = ?, email = ?, password_hash = ?, company_name = ?, whatsapp_number = ?, catalog_mode = ?, company_logo = ?, business_location = ?, theme = ? WHERE id = ?",
+            (new_username, email, password_hash, company_name, whatsapp_number, catalog_mode, company_logo, business_location, theme, user["id"])
         )
+
+        # Keep username-based marketplace references synchronized when a user renames their account.
+        if new_username != current_username:
+            query_db("UPDATE products SET seller = ? WHERE seller = ?", (new_username, current_username))
+            query_db("UPDATE order_items SET seller = ? WHERE seller = ?", (new_username, current_username))
+            query_db("UPDATE orders SET customer_username = ? WHERE customer_username = ?", (new_username, current_username))
+            query_db("UPDATE financial_ledger SET username = ? WHERE username = ?", (new_username, current_username))
+            query_db("UPDATE vendor_notifications SET customer_username = ? WHERE customer_username = ?", (new_username, current_username))
+
         query_db("DELETE FROM vendor_categories WHERE user_id = ?", (user["id"],))
         for category in selected_categories:
             query_db("INSERT INTO vendor_categories (user_id, category) VALUES (?, ?)", (user["id"], category))
+
+        session["username"] = new_username
         session["email"] = email
         session["company_name"] = company_name
+        session["business_location"] = business_location
         session["whatsapp_number"] = whatsapp_number
+        session["theme"] = theme
         return redirect(url_for("settings", updated="1"))
 
-    return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, updated=request.args.get("updated") == "1")
+    return render_template(
+        "settings.html",
+        user=user,
+        subscription=subscription_status(user),
+        vendor_categories=vendor_categories,
+        vendor_category_options=VENDOR_CATEGORIES,
+        updated=request.args.get("updated") == "1"
+    )
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -785,7 +997,9 @@ def login():
             session["role"] = user["role"]
             session["seller_type"] = user["seller_type"]
             session["company_name"] = user["company_name"]
+            session["business_location"] = user.get("business_location")
             session["whatsapp_number"] = user["whatsapp_number"]
+            session["theme"] = user["theme"] or "day"
             return redirect(url_for("home"))
         return render_template("login.html", login_error="Invalid username or password.")
     return render_template("login.html")
@@ -848,7 +1062,8 @@ def register():
         seller_type = request.form.get("seller_type", "Individual")
         catalog_mode = request.form.get("catalog_mode", "Focused")
         selected_categories = [category for category in request.form.getlist("vendor_categories") if category in VENDOR_CATEGORIES]
-        company_name = request.form.get("company_name")
+        company_name = request.form.get("company_name", "").strip() or None
+        business_location = request.form.get("business_location", "").strip() or None
         whatsapp_number = normalize_whatsapp_number(request.form.get("whatsapp_number"))
         
         logo_upload = request.files.get("company_logo")
@@ -880,24 +1095,15 @@ def register():
             hashed_pwd = generate_password_hash(password)
             trial_started_at = datetime.now(timezone.utc)
             trial_expires_at = trial_started_at + timedelta(days=60) # 2-Month Promotional Package Active
-            user_plan = "basic"
+            user_plan = "premium" if role in ["Vendor", "Fast Food"] else "basic"
             
             # 👑 EXPLICIT SAFE WRITE CONNECTOR - RE-ORDERED FOR FOREIGN KEY INTEGRITY
-            conn = get_db_connection()
+            conn = sqlite3.connect("marketplace.db", timeout=20)
             cursor = conn.cursor()
-            for attempt in range(4):
-                try:
-                    cursor.execute(
-                        "INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, trial_started_at, subscription_expires_at, catalog_mode, company_logo, registered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                        (username, email, hashed_pwd, role, seller_type, company_name, whatsapp_number, user_plan, trial_started_at.isoformat() if role in ["Vendor", "Fast Food"] else None, trial_expires_at.isoformat() if role in ["Vendor", "Fast Food"] else None, catalog_mode, company_logo_filename, datetime.now(timezone.utc).isoformat())
-                    )
-                    break
-                except sqlite3.OperationalError as db_error:
-                    conn.rollback()
-                    if "locked" not in str(db_error).lower() or attempt == 3:
-                        raise
-                    import time
-                    time.sleep(0.5 * (attempt + 1))
+            cursor.execute(
+                "INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, trial_started_at, subscription_expires_at, catalog_mode, company_logo, business_location, registered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (username, email, hashed_pwd, role, seller_type, company_name, whatsapp_number, user_plan, trial_started_at.isoformat() if role in ["Vendor", "Fast Food"] else None, trial_expires_at.isoformat() if role in ["Vendor", "Fast Food"] else None, catalog_mode, company_logo_filename, business_location, datetime.now(timezone.utc).isoformat())
+            )
             inserted_id = cursor.lastrowid
             
             # 🚀 CRITICAL STEP: Commit parent user record immediately so foreign keys can find it!
@@ -917,6 +1123,7 @@ def register():
             session["role"] = role
             session["seller_type"] = seller_type
             session["company_name"] = company_name
+            session["business_location"] = business_location
             session["whatsapp_number"] = whatsapp_number
             return redirect(url_for("home"))
             
@@ -932,46 +1139,23 @@ def logout():
 # 👑 MASTER VIDEO CHUNK STREAMING SYSTEM: Fixes blank video screens on mobile browsers
 @app.route("/stream-video/<filename>")
 def stream_video(filename):
-    video_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-    if not os.path.exists(video_path):
+    """Serve product videos with proper HTTP Range support for mobile browsers."""
+    # Never allow a URL path to escape the uploads directory.
+    safe_name = os.path.basename(filename)
+    video_path = os.path.join(app.config["UPLOAD_FOLDER"], safe_name)
+    if not os.path.isfile(video_path):
         return "Video not found", 404
 
-    file_size = os.path.getsize(video_path)
-    byte_range = request.headers.get("Range", None)
-
-    if not byte_range:
-        # Standard full file stream request
-        def full_stream():
-            with open(video_path, "rb") as video_file:
-                while chunk := video_file.read(40960):
-                    yield chunk
-        return app.response_class(full_stream(), mimetype="video/mp4", headers={"Content-Length": str(file_size), "Accept-Ranges": "bytes"})
-
-    # Parse requested HTTP range bytes (e.g. bytes=0-1024)
-    parsed_range = re.search(r"bytes=(\d+)-(\d*)", byte_range)
-    start_byte = int(parsed_range.group(1))
-    end_byte = int(parsed_range.group(2)) if parsed_range.group(2) else file_size - 1
-
-    chunk_length = (end_byte - start_byte) + 1
-
-    def partial_chunk_stream():
-        with open(video_path, "rb") as video_file:
-            video_file.seek(start_byte)
-            bytes_sent = 0
-            while bytes_sent < chunk_length:
-                buffer_size = min(40960, chunk_length - bytes_sent)
-                data = video_file.read(buffer_size)
-                if not data:
-                    break
-                yield data
-                bytes_sent += len(data)
-
-    headers = {
-        "Content-Range": f"bytes {start_byte}-{end_byte}/{file_size}",
-        "Accept-Ranges": "bytes",
-        "Content-Length": str(chunk_length)
-    }
-    return app.response_class(partial_chunk_stream(), status=206, mimetype="video/mp4", headers=headers)
+    # Flask/Werkzeug handles Range, Content-Range, Content-Length, 206/416,
+    # HEAD requests, and conditional requests when conditional=True.
+    video_mimetype = mimetypes.guess_type(video_path)[0] or "application/octet-stream"
+    return send_file(
+        video_path,
+        mimetype=video_mimetype,
+        conditional=True,
+        etag=True,
+        max_age=0,
+    )
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
