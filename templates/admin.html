@@ -20,52 +20,264 @@
             --transition: all 0.2s ease-in-out;
         }
 
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #F8FAFC; color: var(--text-main); margin: 0; padding-bottom: 60px; }
-        .admin-navbar { display: flex; justify-content: space-between; align-items: center; background: var(--bg-dark); padding: 15px 30px; color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .admin-brand { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; }
-        .admin-brand span { color: var(--accent); }
-        .logout-btn { background: rgba(255,255,255,0.1); color: #F8FAFC; text-decoration: none; padding: 6px 14px; border-radius: var(--radius); font-size: 13px; font-weight: 600; transition: var(--transition); }
-        .logout-btn:hover { background: var(--danger); }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: #F8FAFC;
+            color: var(--text-main);
+            margin: 0;
+            padding-bottom: 60px;
+        }
 
-        .container { width: 100%; max-width: 1300px; margin: 30px auto; padding: 0 20px; box-sizing: border-box; }
-        
+        .admin-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-dark);
+            padding: 15px 30px;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .admin-brand {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .admin-brand span {
+            color: var(--accent);
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.1);
+            color: #F8FAFC;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1300px;
+            margin: 30px auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
         /* Command Center Analytics Grid */
-        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 35px; }
-        .metric-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 15px; }
-        .metric-icon { font-size: 32px; background: #F1F5F9; padding: 10px; border-radius: var(--radius); width: 45px; height: 44px; display: flex; justify-content: center; align-items: center; }
-        .metric-info h3 { margin: 0; font-size: 24px; font-weight: 700; color: var(--primary); }
-        .metric-info p { margin: 2px 0 0 0; font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .metric-icon {
+            font-size: 32px;
+            background: #F1F5F9;
+            padding: 10px;
+            border-radius: var(--radius);
+            width: 45px;
+            height: 44px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .metric-info h3 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-info p {
+            margin: 2px 0 0 0;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
 
         /* Ledger Alignment Split Grid */
-        .admin-split { display: grid; grid-template-columns: 1fr; gap: 25px; margin-bottom: 30px; }
-        @media(min-width: 992px) { .admin-split { grid-template-columns: 2fr 1fr; } }
+        .admin-split {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
 
-        .panel-box { background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.02); overflow: hidden; margin-bottom: 30px; }
-        .panel-header { background: #F8FAFC; padding: 18px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .panel-header h2 { margin: 0; font-size: 16px; font-weight: 700; color: var(--primary); }
-        
-        .table-responsive { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
-        th { background: #F1F5F9; color: var(--text-main); font-weight: 700; padding: 12px 20px; border-bottom: 1px solid var(--border-color); }
-        td { padding: 14px 20px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
-        tr:hover { background: #F8FAFC; }
+        @media(min-width: 992px) {
+            .admin-split {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
 
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-        .badge-verified { background: #DCFCE7; color: #15803D; }
-        .badge-pending { background: #FEF3C7; color: #B45309; }
-        .badge-customer { background: #E0F2FE; color: #0369A1; }
-        .badge-vendor { background: #FEF3C7; color: #B45309; }
-        .badge-food { background: #FEE2E2; color: #B91C1C; }
+        .panel-box {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
 
-        .btn-action { font-size: 12px; font-weight: bold; border-radius: 4px; padding: 6px 12px; cursor: pointer; transition: var(--transition); border: none; display: inline-block; text-decoration: none; text-align: center; }
-        .btn-approve { background: var(--primary-light); color: white; }
-        .btn-delete { background: #FFF5F5; color: var(--danger); border: 1px solid #FED7D7; }
-        
-        .form-group { margin-bottom: 12px; padding: 0 20px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
-        .form-control { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; }
+        .panel-header {
+            background: #F8FAFC;
+            padding: 18px 25px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background: #F1F5F9;
+            color: var(--text-main);
+            font-weight: 700;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #F8FAFC;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-verified {
+            background: #DCFCE7;
+            color: #15803D;
+        }
+
+        .badge-pending {
+            background: #FEF3C7;
+            color: #B45309;
+        }
+
+        .badge-customer {
+            background: #E0F2FE;
+            color: #0369A1;
+        }
+
+        .badge-vendor {
+            background: #FEF3C7;
+            color: #B45309;
+        }
+
+        .badge-food {
+            background: #FEE2E2;
+            color: #B91C1C;
+        }
+
+        /* NEW: Active paid Premium badge */
+        .badge-premium {
+            background: #DCFCE7;
+            color: #15803D;
+        }
+
+        /* NEW: Active free-trial badge */
+        .badge-trial {
+            background: #DBEAFE;
+            color: #1D4ED8;
+        }
+
+        .btn-action {
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-approve {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        .btn-delete {
+            background: #FFF5F5;
+            color: var(--danger);
+            border: 1px solid #FED7D7;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+            padding: 0 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="admin-navbar">
@@ -74,9 +286,10 @@
     </div>
 
     <div class="container">
-        
+
         <!-- FINANCIAL COMMAND HUB SCORES -->
         <div class="metrics-grid">
+
             <div class="metric-card" style="background: linear-gradient(135deg, #1A365D 0%, #0A192F 100%); color: white;">
                 <div class="metric-icon" style="background: rgba(255,255,255,0.1);">💰</div>
                 <div class="metric-info">
@@ -84,6 +297,7 @@
                     <p style="color: #94A3B8;">Verified Revenue Earnings</p>
                 </div>
             </div>
+
             <div class="metric-card">
                 <div class="metric-icon">⏳</div>
                 <div class="metric-info">
@@ -91,6 +305,7 @@
                     <p>Unverified Pending Cash</p>
                 </div>
             </div>
+
             <div class="metric-card">
                 <div class="metric-icon">✅</div>
                 <div class="metric-info">
@@ -98,6 +313,7 @@
                     <p>Audited Transactions</p>
                 </div>
             </div>
+
             <div class="metric-card">
                 <div class="metric-icon">👥</div>
                 <div class="metric-info">
@@ -105,17 +321,21 @@
                     <p>Platform User Profiles</p>
                 </div>
             </div>
+
         </div>
 
         <div class="admin-split">
-            
+
             <!-- LEFT PANEL: LIVE REVENUE LEDGER -->
             <div class="panel-box">
+
                 <div class="panel-header">
                     <h2>📊 Live Cash Flow & MoMo Audit Stream</h2>
                 </div>
+
                 <div class="table-responsive">
                     <table>
+
                         <thead>
                             <tr>
                                 <th>Timestamp</th>
@@ -127,78 +347,138 @@
                                 <th>Action</th>
                             </tr>
                         </thead>
+
                         <tbody>
+
                             {% for entry in ledger_entries %}
+
                                 <tr>
-                                    <td><small>{{ entry.created_at[:16].replace('T', ' ') }}</small></td>
-                                    <td><b>{{ entry.transaction_type }}</b></td>
-                                    <td>@{{ entry.username }}</td>
-                                    <td style="color: #B12704; font-weight: bold;">GH₵{{ "%.2f"|format(entry.amount) }}</td>
-                                    <td><code>{{ entry.momo_reference }}</code></td>
+
+                                    <td>
+                                        <small>{{ entry.created_at[:16].replace('T', ' ') }}</small>
+                                    </td>
+
+                                    <td>
+                                        <b>{{ entry.transaction_type }}</b>
+                                    </td>
+
+                                    <td>
+                                        @{{ entry.username }}
+                                    </td>
+
+                                    <td style="color: #B12704; font-weight: bold;">
+                                        GH₵{{ "%.2f"|format(entry.amount) }}
+                                    </td>
+
+                                    <td>
+                                        <code>{{ entry.momo_reference }}</code>
+                                    </td>
+
                                     <td>
                                         <span class="badge {% if entry.status == 'Verified' %}badge-verified{% else %}badge-pending{% endif %}">
                                             {{ entry.status }}
                                         </span>
                                     </td>
+
                                     <td>
+
                                         {% if entry.status == 'Pending' %}
+
                                             <form method="POST" action="/admin/verify-transaction/{{ entry.id }}" style="margin:0;">
                                                 <button type="submit" class="btn-action btn-approve">✅ Verify</button>
                                             </form>
+
                                         {% else %}
-                                            <small style="color: var(--success); font-weight: bold;">✓ Settled</small>
+
+                                            <small style="color: var(--success); font-weight: bold;">
+                                                ✓ Settled
+                                            </small>
+
                                         {% endif %}
+
+                                    </td>
+
+                                </tr>
+
+                            {% else %}
+
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                        💸 No financial transaction logs recorded yet.
                                     </td>
                                 </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">💸 No financial transaction logs recorded yet.</td>
-                                </tr>
+
                             {% endfor %}
+
                         </tbody>
+
                     </table>
                 </div>
+
             </div>
 
             <!-- RIGHT PANEL: MANUAL AUDIT LOG INJECTOR -->
             <div class="panel-box">
+
                 <div class="panel-header">
                     <h2>📝 Log Off-Platform Payment</h2>
                 </div>
+
                 <form method="POST" action="/admin/log-payment" style="padding: 15px 0;">
+
                     <div class="form-group">
                         <label>Target Username:</label>
                         <input type="text" name="username" placeholder="e.g. kofi_store" class="form-control" required>
                     </div>
+
                     <div class="form-group">
                         <label>Amount (GH₵):</label>
                         <input type="number" name="amount" step="0.01" placeholder="0.00" class="form-control" required>
                     </div>
+
                     <div class="form-group">
                         <label>Channel Source:</label>
+
                         <select name="transaction_type" class="form-control">
                             <option value="Subscription">Premium Subscription</option>
                             <option value="Escrow Purchase">Direct Marketplace Order</option>
                         </select>
+
                     </div>
+
                     <div class="form-group">
                         <label>MoMo Ref ID (Optional):</label>
                         <input type="text" name="momo_reference" placeholder="e.g. 2918410294" class="form-control">
                     </div>
+
                     <div class="form-group" style="margin-top: 15px;">
-                        <button type="submit" class="submit-btn" style="background-color: var(--primary-light); color: white; border: none; padding: 10px; cursor: pointer; border-radius: 4px; font-size: 13px; width: 100%; font-weight: bold;">💾 Register Entry</button>
+
+                        <button
+                            type="submit"
+                            class="submit-btn"
+                            style="background-color: var(--primary-light); color: white; border: none; padding: 10px; cursor: pointer; border-radius: 4px; font-size: 13px; width: 100%; font-weight: bold;">
+                            💾 Register Entry
+                        </button>
+
                     </div>
+
                 </form>
+
             </div>
+
         </div>
 
         <!-- USERS MANAGEMENT BLOCK -->
         <div class="panel-box">
+
             <div class="panel-header">
                 <h2>📈 Master Account Profiles Manifest</h2>
             </div>
+
             <div class="table-responsive">
+
                 <table>
+
                     <thead>
                         <tr>
                             <th>User Parameters</th>
@@ -209,58 +489,125 @@
                             <th>Operational Actions</th>
                         </tr>
                     </thead>
+
                     <tbody>
+
                         {% for u in users %}
+
                             <tr>
-                                <td><b>@{{ u.username }}</b><br><small style="color: var(--text-muted);">{{ u.company_name if u.company_name else 'No Brand Label' }}</small></td>
-                                <td>{{ u.email }}</td>
+
                                 <td>
+                                    <b>@{{ u.username }}</b>
+                                    <br>
+                                    <small style="color: var(--text-muted);">
+                                        {{ u.company_name if u.company_name else 'No Brand Label' }}
+                                    </small>
+                                </td>
+
+                                <td>
+                                    {{ u.email }}
+                                </td>
+
+                                <td>
+
                                     <span class="badge {% if u.role == 'Customer' %}badge-customer{% elif u.role == 'Vendor' %}badge-vendor{% else %}badge-food{% endif %}">
                                         {{ u.role }}
                                     </span>
-                                </td>
-                                <td>{{ u.whatsapp_number if u.whatsapp_number else '—' }}</td>
-                                <td><b>{{ listing_counts.get(u.username, 0) }}</b> items</td>
-                                <td>
+
                                     {% if u.role in ['Vendor', 'Fast Food'] %}
+
+                                        {% set sub = subscription_status(u) %}
+
+                                        {% if sub.is_premium and not sub.trial %}
+
+                                            <br>
+                                            <span class="badge badge-premium" style="margin-top: 5px;">
+                                                ✓ SUBSCRIBED
+                                            </span>
+
+                                        {% elif sub.trial %}
+
+                                            <br>
+                                            <span class="badge badge-trial" style="margin-top: 5px;">
+                                                FREE TRIAL
+                                            </span>
+
+                                        {% endif %}
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+                                    {{ u.whatsapp_number if u.whatsapp_number else '—' }}
+                                </td>
+
+                                <td>
+                                    <b>{{ listing_counts.get(u.username, 0) }}</b> items
+                                </td>
+
+                                <td>
+
+                                    {% if u.role in ['Vendor', 'Fast Food'] %}
+
                                         {% set sub = subscription_status(u) %}
 
                                         {% if sub.trial %}
+
                                             <small style="display:block; color: var(--success); font-weight:bold; margin-bottom:6px;">
                                                 Active trial · {{ sub.expires }}
                                             </small>
+
                                         {% elif sub.is_premium %}
+
                                             <small style="display:block; color: var(--primary-light); font-weight:bold; margin-bottom:6px;">
                                                 Premium · {{ sub.expires }}
                                             </small>
+
                                         {% endif %}
 
                                         {% if u.upgrade_requested_at %}
-                                            <form method="POST"
-                                                  action="/admin/approve-premium/{{ u.id }}"
-                                                  style="margin:0 0 6px 0;"
-                                                  onsubmit="return confirm('Approve Premium for @{{ u.username }}? An active trial will be preserved rather than replaced with a new 30-day term.');">
+
+                                            <form
+                                                method="POST"
+                                                action="/admin/approve-premium/{{ u.id }}"
+                                                style="margin:0 0 6px 0;"
+                                                onsubmit="return confirm('Approve Premium for @{{ u.username }}? An active trial will be preserved rather than replaced with a new 30-day term.');">
+
                                                 <button type="submit" class="btn-action btn-approve">
                                                     Approve Premium
                                                 </button>
+
                                             </form>
+
                                         {% endif %}
+
                                     {% endif %}
 
-                                    <form method="POST"
-                                          action="/admin/delete-user/{{ u.id }}"
-                                          onsubmit="return confirm('Permanently wipe out @{{ u.username }} and all their listings? This cannot be undone.');"
-                                          style="margin:0;">
+                                    <form
+                                        method="POST"
+                                        action="/admin/delete-user/{{ u.id }}"
+                                        onsubmit="return confirm('Permanently wipe out @{{ u.username }} and all their listings? This cannot be undone.');"
+                                        style="margin:0;">
+
                                         <button type="submit" class="btn-action btn-delete">
                                             Wipe Account
                                         </button>
+
                                     </form>
+
                                 </td>
+
                             </tr>
+
                         {% endfor %}
+
                     </tbody>
+
                 </table>
+
             </div>
+
         </div>
 
     </div>
