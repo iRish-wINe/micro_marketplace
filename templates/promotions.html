@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promotions | Biz Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-slate-100 text-slate-900 font-sans">
+
+<header class="bg-slate-950 text-white">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+
+        <a
+            href="/vendor/{{ vendor['username'] }}"
+            class="font-black text-white no-underline"
+        >
+            ← {{ vendor['company_name'] or vendor['username'] }}
+        </a>
+
+        <a
+            href="/settings"
+            class="text-sm font-bold text-slate-300 no-underline"
+        >
+            Account
+        </a>
+
+    </div>
+</header>
+
+
+<main class="max-w-5xl mx-auto px-4 py-8">
+
+    <div class="mb-6">
+
+        <h1 class="text-3xl font-black">
+            🔥 Promotions
+        </h1>
+
+        <p class="text-slate-500 mt-1">
+            Create a promotion that appears on your vendor profile and marketplace listings.
+        </p>
+
+    </div>
+
+
+    {% if promo_error %}
+
+    <div class="mb-5 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-bold">
+        {{ promo_error }}
+    </div>
+
+    {% endif %}
+
+
+    <div class="grid lg:grid-cols-2 gap-6">
+
+        <!-- CREATE PROMOTION -->
+
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+
+            <h2 class="font-black text-lg">
+                Create New Promotion
+            </h2>
+
+
+            <form method="POST" class="mt-5 space-y-4">
+
+                <div>
+
+                    <label class="block text-xs font-black uppercase mb-1">
+                        Promo Title
+                    </label>
+
+                    <input
+                        name="title"
+                        required
+                        maxlength="120"
+                        class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                        placeholder="e.g. 10% off selected phones"
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label class="block text-xs font-black uppercase mb-1">
+                        Description
+                    </label>
+
+                    <textarea
+                        name="description"
+                        maxlength="500"
+                        rows="4"
+                        class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                        placeholder="Tell customers what is included."
+                    ></textarea>
+
+                </div>
+
+
+                <div>
+
+                    <label class="block text-xs font-black uppercase mb-1">
+                        Discount (%) — optional
+                    </label>
+
+                    <input
+                        type="number"
+                        name="discount"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                        placeholder="10"
+                    >
+
+                </div>
+
+
+                <div class="grid sm:grid-cols-2 gap-4">
+
+                    <div>
+
+                        <label class="block text-xs font-black uppercase mb-1">
+                            Starts
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            name="starts_at"
+                            required
+                            class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                        >
+
+                    </div>
+
+
+                    <div>
+
+                        <label class="block text-xs font-black uppercase mb-1">
+                            Ends
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            name="ends_at"
+                            required
+                            class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-white py-3 font-black"
+                >
+                    Publish Promotion
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- PROMOTION HISTORY -->
+
+        <section>
+
+            <h2 class="font-black text-lg mb-4">
+                Promotion History
+            </h2>
+
+
+            <div class="space-y-4">
+
+                {% for promo in promotions %}
+
+                <article class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+
+                    <div class="flex items-start justify-between gap-4">
+
+                        <div>
+
+                            <div class="flex flex-wrap gap-2 items-center">
+
+                                <h3 class="font-black">
+                                    {{ promo['title'] }}
+                                </h3>
+
+                                {% if promo['active'] %}
+
+                                <span class="text-[10px] font-black px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                                    ACTIVE
+                                </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <p class="text-sm text-slate-500 mt-2">
+                                {{ promo['description'] or 'No description.' }}
+                            </p>
+
+
+                            {% if promo['discount'] is not none %}
+
+                            <p class="font-black text-amber-700 mt-2">
+                                {{ "%.0f"|format(promo['discount']) }}% OFF
+                            </p>
+
+                            {% endif %}
+
+
+                            <p class="text-xs text-slate-400 mt-2">
+                                {{ promo['starts_at'][:16].replace('T',' ') }}
+                                →
+                                {{ promo['ends_at'][:16].replace('T',' ') }}
+                            </p>
+
+                        </div>
+
+
+                        {% if promo['active'] %}
+
+                        <form
+                            method="POST"
+                            action="/promotions/{{ promo['id'] }}/deactivate"
+                        >
+
+                            <button
+                                class="text-xs font-black px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200"
+                            >
+                                Deactivate
+                            </button>
+
+                        </form>
+
+                        {% endif %}
+
+                    </div>
+
+                </article>
+
+
+                {% else %}
+
+                <div class="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
+                    No promotions created yet.
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+</body>
+</html>
