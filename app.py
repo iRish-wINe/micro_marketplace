@@ -858,7 +858,7 @@ def register():
             hashed_pwd = generate_password_hash(password)
             trial_started_at = datetime.now(timezone.utc)
             trial_expires_at = trial_started_at + timedelta(days=60) # 2-Month Promotional Package Active
-            user_plan = "premium" if role in ["Vendor", "Fast Food"] else "basic"
+            user_plan = "basic" 
             
             # 👑 EXPLICIT SAFE WRITE CONNECTOR - RE-ORDERED FOR FOREIGN KEY INTEGRITY
             conn = sqlite3.connect("marketplace.db", timeout=20)
