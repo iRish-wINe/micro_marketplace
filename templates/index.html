@@ -373,8 +373,15 @@
                         {% else %}
     <div class="card-logo-circle" style="display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; color:white; background:var(--primary-light);">BH</div>
          {% endif %}
-    <div class="card-brand">🏬 {{ product.business_label }}</div>
+    <div class="card-brand">
+    🏬 {{ product.business_label }}
+    {% if product.is_verified %}
+        <span style="display:inline-block; margin-left:5px; padding:2px 6px; border-radius:999px; background:#DCFCE7; color:#15803D; font-size:9px; font-weight:800; text-transform:uppercase; vertical-align:middle;">
+            ✓ Verified
+        </span>
+    {% endif %}
 </div>
+
                                 
                                 <h4 class="card-title">{{ product.title }}</h4>
                                 <div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div>
