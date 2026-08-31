@@ -165,7 +165,7 @@
                 <div class="panel-header">
                     <h2>📝 Log Off-Platform Payment</h2>
                 </div>
-                                <form method="POST" action="/admin/log-payment" style="padding: 15px 0;">
+                <form method="POST" action="/admin/log-payment" style="padding: 15px 0;">
                     <div class="form-group">
                         <label>Target Username:</label>
                         <input type="text" name="username" placeholder="e.g. kofi_store" class="form-control" required>
@@ -222,8 +222,38 @@
                                 <td>{{ u.whatsapp_number if u.whatsapp_number else '—' }}</td>
                                 <td><b>{{ listing_counts.get(u.username, 0) }}</b> items</td>
                                 <td>
-                                    <form method="POST" action="/admin/delete-user/{{ u.id }}" onsubmit="return confirm('Permanently wipe out @{{ u.username }} and all their listings? This cannot be undone.');" style="margin:0;">
-                                        <button type="submit" class="btn-action btn-delete">Wipe Account</button>
+                                    {% if u.role in ['Vendor', 'Fast Food'] %}
+                                        {% set sub = subscription_status(u) %}
+
+                                        {% if sub.trial %}
+                                            <small style="display:block; color: var(--success); font-weight:bold; margin-bottom:6px;">
+                                                Active trial · {{ sub.expires }}
+                                            </small>
+                                        {% elif sub.is_premium %}
+                                            <small style="display:block; color: var(--primary-light); font-weight:bold; margin-bottom:6px;">
+                                                Premium · {{ sub.expires }}
+                                            </small>
+                                        {% endif %}
+
+                                        {% if u.upgrade_requested_at %}
+                                            <form method="POST"
+                                                  action="/admin/approve-premium/{{ u.id }}"
+                                                  style="margin:0 0 6px 0;"
+                                                  onsubmit="return confirm('Approve Premium for @{{ u.username }}? An active trial will be preserved rather than replaced with a new 30-day term.');">
+                                                <button type="submit" class="btn-action btn-approve">
+                                                    Approve Premium
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    <form method="POST"
+                                          action="/admin/delete-user/{{ u.id }}"
+                                          onsubmit="return confirm('Permanently wipe out @{{ u.username }} and all their listings? This cannot be undone.');"
+                                          style="margin:0;">
+                                        <button type="submit" class="btn-action btn-delete">
+                                            Wipe Account
+                                        </button>
                                     </form>
                                 </td>
                             </tr>
