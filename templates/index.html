@@ -227,6 +227,7 @@
             {% if session.get('username') %}
                 <span>Hello, <b>@{{ session['username'] }}</b></span>
                 <a href="/">Home</a>
+                <a href="/settings">⚙️ Settings</a>
                 <a href="/logout" class="logout" style="background:#E53E3E;">Logout</a>
             {% else %}
                 <a href="/login">Sign In / Register</a>

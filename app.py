@@ -171,6 +171,10 @@ def init_db():
         cursor.execute("ALTER TABLE users ADD COLUMN registered_at TEXT")
     except sqlite3.OperationalError:
         pass  # Column already exists safely in the workspace structure, skip altering
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN theme TEXT NOT NULL DEFAULT 'day'")
+    except sqlite3.OperationalError:
+        pass  # Column already exists safely in the workspace structure, skip altering
 
     conn.close()
 
@@ -670,36 +674,49 @@ def admin_logout():
 def settings():
     if "username" not in session:
         return redirect(url_for("login"))
-    user = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+    current_username = session["username"]
+    user = query_db("SELECT * FROM users WHERE username = ?", (current_username,), one=True)
     if not user:
         session.clear()
         return redirect(url_for("login"))
+
     is_vendor_any = user["role"] in ["Vendor", "Fast Food"]
     vendor_categories = get_vendor_categories(user["id"]) if is_vendor_any else []
 
     if request.method == "POST":
+        new_username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip()
         whatsapp_number = normalize_whatsapp_number(request.form.get("whatsapp_number"))
         company_name = request.form.get("company_name", "").strip() or None
         new_password = request.form.get("new_password", "")
         confirm_password = request.form.get("confirm_password", "")
+        theme = request.form.get("theme", "day")
         company_logo = user["company_logo"]
         logo_upload = request.files.get("company_logo")
         catalog_mode = request.form.get("catalog_mode", "Focused")
         selected_categories = [category for category in request.form.getlist("vendor_categories") if category in VENDOR_CATEGORIES]
 
+        if not new_username:
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Username is required.")
+        if not re.fullmatch(r"[A-Za-z0-9_.-]{3,40}", new_username):
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Username must be 3-40 characters and use only letters, numbers, dots, underscores, or hyphens.")
+        if new_username != current_username:
+            existing = query_db("SELECT id FROM users WHERE username = ?", (new_username,), one=True)
+            if existing:
+                return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="That username is already in use.")
         if not email:
-            return render_template("settings.html", user=user, settings_error="Email is required.")
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Email is required.")
         if is_vendor_any and not whatsapp_number:
-            return render_template("settings.html", user=user, settings_error="Vendor accounts need a WhatsApp number for payments.")
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Vendor accounts need a WhatsApp number for payments.")
         if new_password and new_password != confirm_password:
-            return render_template("settings.html", user=user, settings_error="The new passwords do not match.")
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="The new passwords do not match.")
+        if theme not in ("day", "night"):
+            theme = "day"
         if logo_upload and logo_upload.filename:
             company_logo = save_company_logo(logo_upload)
             if not company_logo:
                 return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Upload a PNG, JPG, JPEG, WEBP, or GIF logo.")
 
-        password_hash = generate_password_hash(new_password) if new_password else user["password_hash"]
         if not is_vendor_any:
             company_name = None
             whatsapp_number = None
@@ -708,19 +725,39 @@ def settings():
             company_logo = None
         elif catalog_mode not in ("Variety", "Focused") or not selected_categories:
             return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Choose whether you sell a variety or focus on a category, then select at least one product range.")
+
+        password_hash = generate_password_hash(new_password) if new_password else user["password_hash"]
         query_db(
-            "UPDATE users SET email = ?, password_hash = ?, company_name = ?, whatsapp_number = ?, catalog_mode = ?, company_logo = ? WHERE username = ?",
-            (email, password_hash, company_name, whatsapp_number, catalog_mode, company_logo, session["username"])
+            "UPDATE users SET username = ?, email = ?, password_hash = ?, company_name = ?, whatsapp_number = ?, catalog_mode = ?, company_logo = ?, theme = ? WHERE id = ?",
+            (new_username, email, password_hash, company_name, whatsapp_number, catalog_mode, company_logo, theme, user["id"])
         )
+
+        # Keep username-based marketplace references synchronized when a user renames their account.
+        if new_username != current_username:
+            query_db("UPDATE products SET seller = ? WHERE seller = ?", (new_username, current_username))
+            query_db("UPDATE order_items SET seller = ? WHERE seller = ?", (new_username, current_username))
+            query_db("UPDATE orders SET customer_username = ? WHERE customer_username = ?", (new_username, current_username))
+            query_db("UPDATE financial_ledger SET username = ? WHERE username = ?", (new_username, current_username))
+
         query_db("DELETE FROM vendor_categories WHERE user_id = ?", (user["id"],))
         for category in selected_categories:
             query_db("INSERT INTO vendor_categories (user_id, category) VALUES (?, ?)", (user["id"], category))
+
+        session["username"] = new_username
         session["email"] = email
         session["company_name"] = company_name
         session["whatsapp_number"] = whatsapp_number
+        session["theme"] = theme
         return redirect(url_for("settings", updated="1"))
 
-    return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, updated=request.args.get("updated") == "1")
+    return render_template(
+        "settings.html",
+        user=user,
+        subscription=subscription_status(user),
+        vendor_categories=vendor_categories,
+        vendor_category_options=VENDOR_CATEGORIES,
+        updated=request.args.get("updated") == "1"
+    )
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -734,6 +771,7 @@ def login():
             session["seller_type"] = user["seller_type"]
             session["company_name"] = user["company_name"]
             session["whatsapp_number"] = user["whatsapp_number"]
+            session["theme"] = user["theme"] or "day"
             return redirect(url_for("home"))
         return render_template("login.html", login_error="Invalid username or password.")
     return render_template("login.html")

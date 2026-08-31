@@ -1,131 +1,119 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-50">
+<html lang="en" class="h-full" data-theme="{{ user['theme'] or 'day' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Settings | Biz Hub</title>
-    <script src="https://tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cloudflare.com">
+    <title>Settings | Biz Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --bh-bg:#f3f4f6; --bh-card:#fff; --bh-text:#111827; --bh-muted:#6b7280; --bh-border:#e5e7eb; }
+        html[data-theme="night"] { --bh-bg:#0b1220; --bh-card:#111827; --bh-text:#f8fafc; --bh-muted:#94a3b8; --bh-border:#263244; }
+        body { background:var(--bh-bg); color:var(--bh-text); transition:background .2s,color .2s; }
+        .bh-card { background:var(--bh-card); border-color:var(--bh-border); }
+        .bh-border { border-color:var(--bh-border); }
+        .bh-text { color:var(--bh-text); }
+        .bh-muted { color:var(--bh-muted); }
+        html[data-theme="night"] .bh-input { background:#0f172a; color:#f8fafc; border-color:#334155; }
+        html[data-theme="night"] .bh-soft { background:#172033; border-color:#334155; }
+        html[data-theme="night"] header, html[data-theme="night"] footer { background:#0f172a !important; border-color:#263244 !important; }
+        html[data-theme="night"] a { color:#cbd5e1; }
+    </style>
 </head>
-<body class="flex flex-col h-full font-sans antialiased text-gray-900">
-
-    <header class="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm">
+<body class="min-h-full font-sans antialiased">
+    <header class="sticky top-0 z-40 w-full bg-white border-b shadow-sm bh-border">
         <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center flex-shrink-0">
-                    <a href="/" class="flex items-center space-x-2">
-                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 shadow-md shadow-emerald-200">
-                            <i class="fa-solid fa-shop text-white text-lg"></i>
-                        </div>
-                        <span class="text-xl font-bold tracking-tight text-gray-900">Biz<span class="text-emerald-600">Hub</span></span>
-                    </a>
-                </div>
-                <nav class="flex items-center space-x-4">
-                    <a href="/" class="text-sm font-medium text-gray-600 hover:text-gray-900 transition"><i class="fa-solid fa-house mr-1"></i> Market</a>
-                    <a href="/orders" class="text-sm font-medium text-gray-600 hover:text-gray-900 transition"><i class="fa-solid fa-box mr-1"></i> Orders</a>
+                <a href="/" class="flex items-center gap-2 no-underline">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 shadow-md text-white font-black">BH</div>
+                    <span class="text-xl font-bold tracking-tight bh-text">Biz<span class="text-emerald-600">Hub</span></span>
+                </a>
+                <nav class="flex items-center gap-4 text-sm font-medium">
+                    <a href="/" class="bh-muted hover:text-gray-900">Market</a>
+                    {% if user['role'] in ['Vendor', 'Fast Food'] %}<a href="/orders" class="bh-muted">Orders</a>{% endif %}
+                    <span class="hidden sm:inline bh-muted">@{{ user['username'] }}</span>
                 </nav>
             </div>
         </div>
     </header>
 
-    <main class="flex-grow py-8 px-4 mx-auto max-w-3xl sm:px-6 lg:px-8 w-full">
-        
-        <!-- RESPONSE FEEDBACK NOTIFICATION BLOCKS -->
+    <main class="py-8 px-4 mx-auto max-w-4xl sm:px-6 lg:px-8">
         {% if settings_error %}
-        <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm flex items-start space-x-3">
-            <div class="text-red-500 mt-0.5"><i class="fa-solid fa-circle-exclamation text-lg"></i></div>
-            <div>
-                <h3 class="text-sm font-bold text-red-800">Configuration Rejected</h3>
-                <p class="text-xs text-red-700 mt-0.5">{{ settings_error }}</p>
-            </div>
+        <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3">
+            <div class="text-red-500 font-bold">!</div>
+            <div><h3 class="text-sm font-bold text-red-800">Settings not saved</h3><p class="text-xs text-red-700 mt-1">{{ settings_error }}</p></div>
         </div>
         {% endif %}
-
         {% if updated %}
-        <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 shadow-sm flex items-start space-x-3">
-            <div class="text-emerald-500 mt-0.5"><i class="fa-solid fa-circle-check text-lg"></i></div>
-            <div>
-                <h3 class="text-sm font-bold text-emerald-800">Profile Re-indexed Safely</h3>
-                <p class="text-xs text-emerald-700 mt-0.5">Database parameters synchronized successfully across local matrices.</p>
-            </div>
+        <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-start gap-3">
+            <div class="text-emerald-600 font-bold">✓</div>
+            <div><h3 class="text-sm font-bold text-emerald-800">Settings updated</h3><p class="text-xs text-emerald-700 mt-1">Your Biz Hub account settings were saved successfully.</p></div>
         </div>
         {% endif %}
 
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center space-x-3">
-                <div class="p-2 rounded-lg bg-gray-200/60 text-gray-700"><i class="fa-solid fa-sliders text-base"></i></div>
-                <div>
-                    <h2 class="text-lg font-bold text-gray-900">Profile Configuration Center</h2>
-                    <p class="text-xs text-gray-500">Update security configurations and global user communications pathways</p>
-                </div>
-            </div>
+        <div class="mb-6">
+            <h1 class="text-2xl font-black bh-text">Account Settings</h1>
+            <p class="text-sm bh-muted mt-1">Manage your identity, business profile, WhatsApp contact and appearance.</p>
+        </div>
 
-            <form action="/settings" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
-                <!-- Core Cross-cutting Fields Module Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <form action="/settings" method="POST" enctype="multipart/form-data" class="space-y-6">
+            <section class="bh-card rounded-2xl border shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b bh-border bh-soft">
+                    <h2 class="text-lg font-bold bh-text">👤 Account Identity</h2>
+                    <p class="text-xs bh-muted mt-1">Change the public username attached to your account.</p>
+                </div>
+                <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Username Handle (Static)</label>
-                        <input type="text" value="{{ user['username'] }}" disabled class="w-full px-4 py-3 bg-gray-100 rounded-xl border border-gray-200 cursor-not-allowed text-sm font-semibold text-gray-500">
+                        <label class="block text-xs font-bold uppercase tracking-wider bh-muted mb-2">Username</label>
+                        <input name="username" value="{{ user['username'] }}" required maxlength="40" autocomplete="username" class="bh-input w-full px-4 py-3 rounded-xl border text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <p class="text-[11px] bh-muted mt-2">Changing this updates your account references, including your listings and orders.</p>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Email Address Channel <span class="text-red-500">*</span></label>
-                        <input type="email" name="email" value="{{ user['email'] }}" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm transition">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">New Security Password (Optional)</label>
-                        <input type="password" name="new_password" placeholder="Leave blank to preserve current hash" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm transition placeholder-gray-400">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Confirm Password Re-entry</label>
-                        <input type="password" name="confirm_password" placeholder="Confirm your new password string" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm transition placeholder-gray-400">
+                        <label class="block text-xs font-bold uppercase tracking-wider bh-muted mb-2">Email Address</label>
+                        <input type="email" name="email" value="{{ user['email'] }}" required autocomplete="email" class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                     </div>
                 </div>
-                <!-- MERCHANDISING PARAMETERS EXTRA FIELD MODULE GRID -->
-                {% if user['role'] in ['Vendor', 'Fast Food'] %}
-                <div class="pt-6 border-t border-gray-100 space-y-6">
-                    <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-100/70 text-xs text-amber-800 flex items-start space-x-2.5">
-                        <i class="fa-solid fa-circle-info text-amber-600 text-sm mt-0.5"></i>
-                        <p class="leading-relaxed">You are managing a <strong class="font-bold uppercase text-amber-900">{{ user['role'] }}</strong> account. Compulsory parameters below configure automatic order generation paths and secure billing clearance flags directly inside customer carts.</p>
+            </section>
+
+            {% if user['role'] in ['Vendor', 'Fast Food'] %}
+            <section class="bh-card rounded-2xl border shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b bh-border bh-soft">
+                    <h2 class="text-lg font-bold bh-text">🏪 Business Profile</h2>
+                    <p class="text-xs bh-muted mt-1">Keep the storefront identity customers see on the marketplace current.</p>
+                </div>
+                <div class="p-6 space-y-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider bh-muted mb-2">Company / Business Name</label>
+                            <input type="text" name="company_name" value="{{ user['company_name'] or '' }}" placeholder="e.g. Premium Hub Electronics" class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider bh-muted mb-2">WhatsApp Number <span class="text-red-500">*</span></label>
+                            <input type="text" name="whatsapp_number" value="{{ user['whatsapp_number'] or '' }}" placeholder="e.g. 0558272972" required class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        {% if user['seller_type'] == 'Company' or user['role'] == 'Fast Food' %}
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Registered Corporate/Enterprise Title</label>
-                            <input type="text" name="company_name" value="{{ user['company_name'] or '' }}" placeholder="e.g. Premium Hub Electronics" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm transition placeholder-gray-400">
-                        </div>
-                        {% endif %}
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Merchant Settlement WhatsApp Number <span class="text-red-500">*</span></label>
-                            <input type="text" name="whatsapp_number" value="{{ user['whatsapp_number'] or '' }}" placeholder="e.g. 0558272972" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm transition placeholder-gray-400">
-                        </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider bh-muted mb-2">Business Logo</label>
+                        <input type="file" name="company_logo" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" class="bh-input w-full text-xs bh-muted file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:font-semibold">
+                        {% if user['company_logo'] %}<p class="text-[11px] bh-muted mt-2">Current logo: <strong>{{ user['company_logo'] }}</strong></p>{% endif %}
                     </div>
 
                     {% if user['role'] == 'Vendor' %}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
                         <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Catalog Structure Focus Mode</label>
-                            <select name="catalog_mode" class="w-full px-4 py-3 bg-white rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm transition">
-                                <option value="Focused" {% if user['catalog_mode'] == 'Focused' %}selected{% endif %}>Focused (Specialized Channel Hub)</option>
-                                <option value="Variety" {% if user['catalog_mode'] == 'Variety' %}selected{% endif %}>Variety (Multi-Range Mixed Manifest)</option>
+                            <label class="block text-xs font-bold uppercase tracking-wider bh-muted mb-2">Catalog Mode</label>
+                            <select name="catalog_mode" class="bh-input w-full px-4 py-3 bg-white rounded-xl border text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="Focused" {% if user['catalog_mode'] == 'Focused' %}selected{% endif %}>Focused</option>
+                                <option value="Variety" {% if user['catalog_mode'] == 'Variety' %}selected{% endif %}>Variety</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Brand Identity Logo Upload</label>
-                            <input type="file" name="company_logo" class="w-full text-xs text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 transition">
-                            {% if user['company_logo'] %}
-                            <p class="text-[11px] text-gray-400 mt-2 flex items-center"><i class="fa-solid fa-paperclip mr-1"></i> Current Vector Asset: <span class="font-semibold text-emerald-600 ml-1 truncate max-w-[200px]">{{ user['company_logo'] }}</span></p>
-                            {% endif %}
-                        </div>
                     </div>
-
-                    <!-- Multi-Range Category Verification Check List Section -->
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-3">Assigned Commercial Product Range Channels (Select All That Apply)</label>
+                        <label class="block text-xs font-bold uppercase tracking-wider bh-muted mb-3">Product Range Channels</label>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             {% for option in vendor_category_options if option != "Fast Food" %}
-                            <label class="relative flex items-center p-3 rounded-xl border border-gray-200 cursor-pointer bg-gray-50/50 hover:bg-white transition text-xs font-semibold text-gray-700 select-none">
-                                <input type="checkbox" name="vendor_categories" value="{{ option }}" {% if option in vendor_categories %}checked{% endif %} class="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4 mr-2.5 border-gray-300">
+                            <label class="flex items-center p-3 rounded-xl border bh-border bh-soft cursor-pointer text-xs font-semibold">
+                                <input type="checkbox" name="vendor_categories" value="{{ option }}" {% if option in vendor_categories %}checked{% endif %} class="mr-2 h-4 w-4 text-emerald-600">
                                 {{ option }}
                             </label>
                             {% endfor %}
@@ -133,22 +121,57 @@
                     </div>
                     {% endif %}
                 </div>
-                {% endif %}
+            </section>
+            {% endif %}
 
-                <!-- Form Execution Dashboard Terminal Footer -->
-                <div class="pt-5 border-t border-gray-100 flex items-center justify-end space-x-3">
-                    <a href="/" class="px-5 py-3 rounded-xl border border-gray-300 font-semibold text-sm text-gray-700 hover:bg-gray-50 transition">Cancel</a>
-                    <button type="submit" class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-semibold text-sm text-white shadow-md shadow-emerald-100 transition">
-                        <i class="fa-solid fa-floppy-disk mr-1.5"></i> Save Profile Modifications
-                    </button>
+            <section class="bh-card rounded-2xl border shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b bh-border bh-soft">
+                    <h2 class="text-lg font-bold bh-text">🎨 Appearance</h2>
+                    <p class="text-xs bh-muted mt-1">Choose the interface style for your account.</p>
                 </div>
-            </form>
-        </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-2 gap-4 max-w-md">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="theme" value="day" class="peer sr-only" {% if (user['theme'] or 'day') == 'day' %}checked{% endif %}>
+                            <div class="p-4 rounded-xl border-2 bh-border peer-checked:border-emerald-500 peer-checked:bg-emerald-50/60">☀️ <strong class="text-sm">Day</strong><p class="text-xs bh-muted mt-1">Light interface</p></div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="theme" value="night" class="peer sr-only" {% if user['theme'] == 'night' %}checked{% endif %}>
+                            <div class="p-4 rounded-xl border-2 bh-border peer-checked:border-emerald-500 peer-checked:bg-slate-800">🌙 <strong class="text-sm">Night</strong><p class="text-xs bh-muted mt-1">Dark interface</p></div>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bh-card rounded-2xl border shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b bh-border bh-soft">
+                    <h2 class="text-lg font-bold bh-text">🔐 Security</h2>
+                    <p class="text-xs bh-muted mt-1">Password recovery remains handled through your registered WhatsApp channel.</p>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider bh-muted mb-2">New Password</label>
+                            <input type="password" name="new_password" autocomplete="new-password" placeholder="Leave blank to keep current password" class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider bh-muted mb-2">Confirm New Password</label>
+                            <input type="password" name="confirm_password" autocomplete="new-password" placeholder="Re-enter new password" class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+                    </div>
+                    <a href="/forgot-password" class="inline-flex items-center justify-center px-4 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm no-underline">💬 Reset Password via WhatsApp</a>
+                </div>
+            </section>
+
+            <div class="flex items-center justify-end gap-3 pb-8">
+                <a href="/" class="px-5 py-3 rounded-xl border bh-border font-semibold text-sm bh-text no-underline">Cancel</a>
+                <button type="submit" class="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold text-sm text-white shadow-md">Save Settings</button>
+            </div>
+        </form>
     </main>
 
-    <footer class="bg-white border-t border-gray-200 py-6 text-center text-xs text-gray-400 font-medium">
-        <p>&copy; 2026 Biz Hub Identity Matrix Alignment Systems.</p>
+    <footer class="bg-white border-t bh-border py-6 text-center text-xs bh-muted">
+        © 2026 Biz Hub. Account settings.
     </footer>
-
 </body>
 </html>
