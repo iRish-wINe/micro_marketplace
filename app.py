@@ -337,51 +337,29 @@ def home():
         file = request.files.get("product_image")
         video = request.files.get("product_video")
         
-        # 👑 BULLETPROOF MULTI-MEDIA FILE IDENTIFICATION MATRIX
+        # 👑 ONE-MEDIA-ONLY RULE: every listing must contain exactly one image OR one video.
         has_image = bool(file and file.filename)
         has_video = bool(video and video.filename)
-        
-        # 👑 THE MASTER BUSINESS RULE FILTER: Enforces exactly one image OR max 20s video
-        if not is_fast_food and has_image == has_video:
-            return redirect(url_for("home", listing_error="Invalid Media Config: You must choose exactly one option—either an Item Cover Photo OR a maximum 20-second Showcase Video loop."))
+        if has_image == has_video:
+            return redirect(url_for("home", listing_error="Choose exactly one item image OR one showcase video. Image + video together, or no media, is not allowed."))
+
+        filename = ""
+        video_filename = None
 
         if has_image:
-            filename = secure_filename(file.filename)
-        else:
-            filename = "fast-food-placeholder.svg" if is_fast_food else ""
+            image_extension = os.path.splitext(file.filename)[1].lower()
+            if image_extension not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
+                return redirect(url_for("home", listing_error="Item images must be PNG, JPG, JPEG, WebP, or GIF files."))
+            filename = f"product-{uuid.uuid4().hex}{image_extension}"
 
         if has_video:
-            # 🚀 FIXED THE TUPLE EXTENSION TRACKER INDEX BLOCK
             video_extension = os.path.splitext(video.filename)[1].lower()
             if not vendor_subscription["is_premium"]:
                 return redirect(url_for("home", listing_error="Only verified vendors with an active Premium Store or trial can upload product videos."))
             if video_extension not in VIDEO_EXTENSIONS:
                 return redirect(url_for("home", listing_error="Product videos must be MP4, WebM, or MOV files."))
-            
-            video_filename = f"video-{uuid.uuid4().hex}{video_extension}"
-            temp_video_path = os.path.join(app.config["UPLOAD_FOLDER"], video_filename)
-            
-            # Save the file exactly ONCE right here to analyze duration properties securely
-            video.save(temp_video_path)
 
-            # ⏱️ BACKEND BOUNDARY WALL: Verify that video runtime metadata does not exceed 20 seconds
-            try:
-                import subprocess
-                ffprobe_command = [
-                    "ffprobe", "-v", "error", "-show_entries", "format=duration",
-                    "-of", "default=noprint_wrappers=1:nokey=1", temp_video_path
-                ]
-                probe_output = subprocess.check_output(ffprobe_command).decode("utf-8").strip()
-                parsed_duration = float(probe_output)
-                
-                if parsed_duration > 20.5:
-                    os.remove(temp_video_path) # Instantly flush oversized file to save disk footprint
-                    return redirect(url_for("home", listing_error="🚫 UPLOAD REFUSED: Showcase loops are strictly limited to a maximum of 20 seconds to keep load speeds instant for mobile users across Ghana."))
-            except Exception:
-                # Fallback guard if server utilities hit lock bounds
-                pass
-        else:
-            video_filename = None
+            video_filename = f"video-{uuid.uuid4().hex}{video_extension}"
 
         try:
             stock_quantity = int(stock_quantity)
@@ -390,18 +368,41 @@ def home():
         if stock_quantity < 1:
             return redirect(url_for("home", listing_error="Stock quantity must be a whole number greater than zero."))
 
-        if title and price and description and location:
-            # Save the product image if applicable (Videos are already saved safely above!)
-            if has_image and not is_fast_food:
-                file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-                
-            b_label = session.get("company_name") or "Individual Vendor"
-            
-            query_db(
-                "INSERT INTO products (title, price, description, image_file, video_file, stock_quantity, status, seller, seller_email, seller_whatsapp, location, business_label, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (title, float(price), description, filename, video_filename, stock_quantity, "Available", session["username"], session["email"], session.get("whatsapp_number"), location, b_label, category)
-            )
-            return redirect(url_for("home"))
+        if not title or not price or not description or not location:
+            return redirect(url_for("home", listing_error="Please complete the title, price, description, location, and media fields."))
+
+        # Save media only after all validation passes, so a rejected listing cannot leave orphaned uploads.
+        if has_image:
+            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+        elif has_video:
+            video_path = os.path.join(app.config["UPLOAD_FOLDER"], video_filename)
+            video.save(video_path)
+
+            # Server-side duration guard when ffprobe is available. Client-side validation below
+            # provides immediate feedback; this guard protects direct/non-browser submissions too.
+            try:
+                import shutil, subprocess
+                ffprobe_path = shutil.which("ffprobe")
+                if ffprobe_path:
+                    ffprobe_command = [
+                        ffprobe_path, "-v", "error", "-show_entries", "format=duration",
+                        "-of", "default=noprint_wrappers=1:nokey=1", video_path
+                    ]
+                    probe_output = subprocess.check_output(ffprobe_command, stderr=subprocess.STDOUT, timeout=15).decode("utf-8").strip()
+                    parsed_duration = float(probe_output)
+                    if parsed_duration > 20.0:
+                        os.remove(video_path)
+                        return redirect(url_for("home", listing_error="🚫 UPLOAD REFUSED: Showcase videos must be 20 seconds or shorter."))
+            except (ValueError, subprocess.SubprocessError, OSError):
+                # Do not break otherwise valid uploads when ffprobe is unavailable on the host.
+                pass
+
+        b_label = session.get("company_name") or "Individual Vendor"
+        query_db(
+            "INSERT INTO products (title, price, description, image_file, video_file, stock_quantity, status, seller, seller_email, seller_whatsapp, location, business_label, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (title, float(price), description, filename, video_filename, stock_quantity, "Available", session["username"], session["email"], session.get("whatsapp_number"), location, b_label, category)
+        )
+        return redirect(url_for("home"))
 
             
     selected_filter = request.args.get("filter_location", "All")
