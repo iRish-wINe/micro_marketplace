@@ -6,6 +6,35 @@
     <title>Biz Hub - Your Local Market, Unified Online</title>
     <meta name="theme-color" content="#0B192C">
     <style>
+        .customer-hero {
+            width: 100%; max-width: 1440px; min-height: 360px; margin: 0 auto 20px;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg); overflow: hidden; position: relative;
+            display: flex; align-items: center; background: var(--bg-abyssal);
+            background-image: linear-gradient(90deg, rgba(11,25,44,.98) 0%, rgba(11,25,44,.92) 34%, rgba(11,25,44,.45) 58%, rgba(11,25,44,.08) 100%), url("{{ url_for('static', filename='uploads/bizhub-home-scene.jpg') }}?v=1");
+            background-size: cover; background-position: center; box-shadow: var(--shadow-md);
+        }
+        .customer-hero-content { max-width: 660px; padding: 48px 48px 42px; color: #fff; position: relative; z-index: 2; }
+        .customer-hero-kicker { display:inline-flex; gap:8px; align-items:center; background:var(--accent); color:var(--bg-abyssal); border-radius:999px; padding:7px 13px; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:.7px; margin-bottom:14px; }
+        .customer-hero h1 { margin:0 0 12px; font-size:clamp(32px,4vw,52px); line-height:1.04; letter-spacing:-1.5px; font-weight:900; }
+        .customer-hero h1 span { color:var(--accent); }
+        .customer-hero p { margin:0 0 22px; max-width:590px; color:#E2E8F0; font-size:15px; line-height:1.6; }
+        .customer-hero-actions { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; }
+        .customer-hero-btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:0 18px; border-radius:9px; text-decoration:none; font-weight:900; font-size:13px; transition:var(--transition); }
+        .customer-hero-btn.primary { background:var(--accent); color:var(--bg-abyssal); }
+        .customer-hero-btn.primary:hover { background:var(--accent-hover); transform:translateY(-1px); }
+        .customer-hero-btn.secondary { border:1px solid rgba(255,255,255,.6); color:#fff; background:rgba(11,25,44,.35); }
+        .customer-hero-btn.secondary:hover { border-color:var(--accent); color:var(--accent); background:rgba(11,25,44,.55); }
+        .customer-hero-trust { display:flex; flex-wrap:wrap; gap:16px; color:#F8FAFC; font-size:11px; font-weight:700; }
+        .customer-hero-trust span { display:inline-flex; align-items:center; gap:6px; }
+        @media (max-width:767px) {
+            .customer-hero { min-height:390px; background-position:63% center; border-radius:0 0 var(--radius-sm) var(--radius-sm); }
+            .customer-hero-content { padding:32px 22px 28px; }
+            .customer-hero h1 { font-size:34px; }
+            .customer-hero p { font-size:13px; }
+            .customer-hero-actions { flex-direction:column; }
+            .customer-hero-btn { width:100%; box-sizing:border-box; }
+            .customer-hero-trust { gap:10px 14px; }
+        }
         /* 👑 BIZ HUB LUXURY DESIGN SYSTEM TOKENS (AMAZON ENTERPRISE MATRIX) */
         :root {
             --bg-abyssal: #0B192C;
@@ -208,8 +237,8 @@
     </style>
     
     <!-- PWA Installation Icon Anchors -->
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=2">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=2">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3">
 </head>
 <body>
 
@@ -261,6 +290,24 @@
         </div>
     </div>
 
+    <!-- CUSTOMER BRAND HERO -->
+{% if session.get('role') not in ['Vendor', 'Fast Food'] %}
+    <section class="customer-hero" aria-label="BizHub customer introduction">
+        <div class="customer-hero-content">
+            <div class="customer-hero-kicker">🛍️ Shop local • Support local • Grow local</div>
+            <h1>Your Local Market, <span>Unified Online</span></h1>
+            <p>Discover trusted local vendors, quality products, useful deals and businesses around you — all in one easy marketplace.</p>
+            <div class="customer-hero-actions">
+                <a class="customer-hero-btn primary" href="#marketplace">🛍️ Start Shopping</a>
+                <a class="customer-hero-btn secondary" href="/?filter_location=All">🏪 Explore Vendors</a>
+            </div>
+            <div class="customer-hero-trust">
+                <span>🛡️ Trusted vendors</span><span>📍 Local & convenient</span><span>🏷️ Great deals</span><span>🔒 Secure shopping</span>
+            </div>
+        </div>
+    </section>
+{% endif %}
+
     <!-- 👑 CINEMATIC ADVERTISING BILLBOARD MATRIX GRID -->
 
 {% if session.get('role') in ['Vendor', 'Fast Food'] %}
@@ -287,8 +334,7 @@
 {% endif %}
 
 
-
-    <div class="container">
+    <div class="container" id="marketplace">
         <div class="layout">
             <!-- PANEL 1: SIDEBAR CONTAINER -->
             <div>
@@ -300,7 +346,11 @@
                             <small style="color: var(--accent); display: block; margin-bottom: 8px;">Premium Promotion Trial Active</small>
                         {% endif %}
                         <p style="margin: 5px 0 12px; font-size: 12px;">Listings: <b>{{ listing_count }}</b></p>
-                        <a href="/subscription" class="btn-action btn-cart" style="text-align:center;">💎 Manage Account</a>
+                        <div style="display:flex;flex-direction:column;gap:7px;">
+                            <a href="/vendor/{{ session['username'] }}" class="btn-action btn-cart" style="text-align:center;">🏬 My Store</a>
+                            <a href="/promotions" class="btn-action" style="text-align:center;background:#FEF3C7;color:#92400E;border-color:#FCD34D;">🔥 Manage Promotions</a>
+                            <a href="/subscription" class="btn-action btn-cart" style="text-align:center;">💎 Manage Account</a>
+                        </div>
                     </div>
 
                     <!-- LISTING CREATION FORM BLOCK (FIXED PARAMETER PATHS) -->
