@@ -1,82 +1,100 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="{{ session.get('theme') or 'day' }}">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ vendor['company_name'] or vendor['username'] }} | Biz Hub</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{{ vendor['company_name'] or vendor['username'] }} | BizHub</title>
+<meta name="theme-color" content="#0B192C">
 <style>
-:root{--bg:#f3f4f6;--card:#fff;--text:#111827;--muted:#6b7280;--border:#e5e7eb}
-html[data-theme="night"]{--bg:#0b1220;--card:#111827;--text:#f8fafc;--muted:#94a3b8;--border:#263244}
-body{background:var(--bg);color:var(--text)}.card{background:var(--card);border-color:var(--border)}.muted{color:var(--muted)}.borderx{border-color:var(--border)}
-html[data-theme="night"] input,html[data-theme="night"] textarea{background:#0f172a;color:#f8fafc;border-color:#334155}
+:root{--abyss:#0B192C;--primary:#1E3A8A;--blue:#3B82F6;--gold:#F59E0B;--gold2:#D97706;--green:#10B981;--red:#EF4444;--bg:#EAEDED;--card:#FFF;--text:#0F172A;--muted:#565959;--border:#D5D9D9;--sm:8px;--lg:12px;--shadow:0 1px 2px rgba(15,23,42,.05);--shadow2:0 4px 20px rgba(0,0,0,.08);--transition:all .25s cubic-bezier(.4,0,.2,1)}
+html[data-theme="night"]{--bg:#0B1220;--card:#111827;--text:#F8FAFC;--muted:#94A3B8;--border:#263244}
+*{box-sizing:border-box}body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);margin:0;padding-bottom:40px}.container{width:100%;max-width:1440px;margin:auto;padding:0 20px}
+.navbar{display:flex;justify-content:space-between;align-items:center;background:var(--abyss);padding:10px 30px;border-bottom:1px solid rgba(255,255,255,.08);position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}.brand{font-size:24px;font-weight:900;color:#fff;text-decoration:none}.brand span{color:var(--gold)}.hello{font-size:11px;color:#E2E8F0;font-weight:700}.brand-group{display:flex;flex-direction:column;gap:2px}.nav{display:flex;align-items:center;gap:4px}.nav a{display:inline-flex;align-items:center;gap:6px;color:#fff;text-decoration:none;font-size:12px;font-weight:700;padding:9px 10px;border-radius:6px;white-space:nowrap}.nav a:hover{background:#25344A;color:var(--gold)}.nav svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+main{max-width:1440px;margin:auto;padding:20px}.store-card,.panel,.product{background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:var(--sm)}.store-card{overflow:hidden}.store-head{padding:30px}.store-top{display:flex;align-items:center;gap:22px}.logo{width:100px;height:100px;border-radius:12px;border:1px solid var(--border);background:#F3F4F6;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}.logo img{width:100%;height:100%;object-fit:cover}.logo-fallback{font-size:25px;font-weight:900;color:#64748B}.store-info{flex:1}.store-title{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.store-title h1{font-size:30px;line-height:1.1;margin:0;font-weight:900;letter-spacing:-.8px}.muted{color:var(--muted)}.store-meta{font-size:13px;margin-top:7px}.verified{display:inline-flex;align-items:center;gap:5px;background:#DCFCE7;color:#047857;border:1px solid #A7F3D0;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:900}.verified-icon{width:15px;height:15px;background:#10B981;color:#fff;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px}.promo-badge{background:#FEF3C7;color:#B45309;border:1px solid #FCD34D;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:900}.favorite{padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-weight:800;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border)}.stat{padding:17px 20px;border-right:1px solid var(--border)}.stat:last-child{border-right:0}.stat strong{display:block;font-size:21px;font-weight:900}.stat span{font-size:10px;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.content{display:grid;grid-template-columns:300px 1fr;gap:20px;margin-top:20px}.panel{padding:20px;margin-bottom:20px}.panel h2{font-size:15px;text-transform:uppercase;color:var(--abyss);margin:0 0 14px;font-weight:900;border-bottom:1px solid var(--border);padding-bottom:9px}.tags{display:flex;flex-wrap:wrap;gap:7px}.tag{background:#F3F4F6;color:#374151;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:800}.nightfix{color:var(--text)}
+.promo-box{background:#FFFBEB;border:1px solid #FCD34D;border-radius:var(--sm);padding:18px;margin-bottom:20px}.promo-box .label{font-size:10px;font-weight:900;text-transform:uppercase;color:#B45309}.promo-box h3{margin:7px 0;font-size:19px;color:#78350F}.promo-box p{font-size:12px;color:#92400E;line-height:1.5}.discount{font-size:23px;font-weight:900;color:#B45309}.side-btn{display:block;text-align:center;text-decoration:none;padding:11px;border-radius:8px;font-size:12px;font-weight:900;margin-bottom:8px}.gold{background:var(--gold);color:var(--abyss)}.wa{background:var(--green);color:#fff}
+.products-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.products-head h2{margin:0;font-size:19px;font-weight:900}.back{font-size:12px;font-weight:800;color:var(--muted);text-decoration:none}.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:15px}.product{padding:10px;overflow:hidden}.media{height:165px;background:#000;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center}.media img,.media video{max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain}.product h3{font-size:14px;margin:10px 0 4px;font-weight:800;line-height:1.35}.price{color:#B12704;font-size:20px;font-weight:800}.location{font-size:11px;color:var(--muted);margin-top:4px}.buy{display:block;text-align:center;margin-top:10px;padding:8px;border:1px solid var(--border);border-radius:7px;color:var(--text);text-decoration:none;font-size:11px;font-weight:900}.empty{text-align:center;padding:40px;color:var(--muted);border:1px dashed var(--border);border-radius:8px}
+.contact{max-width:1440px;margin:28px auto 0;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:var(--shadow)}.contact-title{background:#F3F3F3;color:#0F1111;padding:12px 18px;font-size:13px;font-weight:800;border-bottom:1px solid var(--border)}.contact-row{display:flex;flex-wrap:wrap}.contact-row a,.contact-row span{padding:12px 18px;border-right:1px solid var(--border);font-size:12px;font-weight:700;color:#0F1111;text-decoration:none}.contact-row a:hover{color:#C7511F;text-decoration:underline}
+html[data-theme="night"] .contact-title,html[data-theme="night"] .contact-row a,html[data-theme="night"] .contact-row span{background:#172033;color:#F8FAFC}html[data-theme="night"] .tag{background:#1E293B;color:#CBD5E1}html[data-theme="night"] .logo{background:#1E293B}
+@media(max-width:900px){.content{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(2){border-right:0}.stat{border-bottom:1px solid var(--border)}}
+@media(max-width:650px){.navbar{padding:9px 12px}.brand{font-size:21px}.nav{overflow-x:auto;max-width:70vw}.nav a{padding:7px;font-size:9px;flex-direction:column;gap:2px}.nav svg{width:17px;height:17px}main{padding:12px}.store-head{padding:20px}.store-top{align-items:flex-start;flex-wrap:wrap}.logo{width:78px;height:78px}.store-title h1{font-size:23px}.favorite{width:100%}.stats{grid-template-columns:repeat(2,1fr)}.stat{padding:14px}.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.product{padding:7px}.media{height:125px}.product h3{font-size:12px}.price{font-size:15px}.contact{margin:20px 12px 0}.contact-row{display:grid;grid-template-columns:1fr}.contact-row a,.contact-row span{border-right:0;border-bottom:1px solid var(--border);padding:11px 14px}}
 </style>
 </head>
-<body class="min-h-screen font-sans antialiased">
-<header class="sticky top-0 z-40 border-b borderx shadow-sm" style="background:var(--card)">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-<a href="/" class="font-black text-xl no-underline" style="color:var(--text)">Biz<span class="text-emerald-600">Hub</span></a>
-<nav class="flex items-center gap-2 sm:gap-3 text-sm font-bold flex-wrap">
-<a href="/" class="muted no-underline inline-flex items-center gap-1.5">🛍️ Market</a>
-{% if session.get('role')=='Customer' %}<a href="/favorites" class="muted no-underline inline-flex items-center gap-1.5">⭐ Favorites</a>{% endif %}
-{% if session.get('username') %}<a href="/orders" class="muted no-underline inline-flex items-center gap-1.5">📦 Orders</a><a href="/settings" class="muted no-underline inline-flex items-center gap-1.5">⚙️ Account</a>{% else %}<a href="/login" class="muted no-underline inline-flex items-center gap-1.5">🔐 Sign In</a>{% endif %}
-</nav></div></header>
+<body>
 
-<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-<div class="card rounded-2xl border shadow-sm overflow-hidden">
-<div class="p-6 sm:p-8">
-<div class="flex flex-col sm:flex-row gap-6 sm:items-center">
-<div class="w-24 h-24 rounded-2xl border borderx overflow-hidden flex items-center justify-center bg-slate-100 shrink-0">
-{% if vendor['company_logo'] %}<img src="{{ url_for('static', filename='uploads/' + vendor['company_logo']) }}" class="w-full h-full object-cover" alt="{{ vendor['company_name'] or vendor['username'] }} logo">{% else %}<span class="text-2xl font-black text-slate-500">BH</span>{% endif %}
+<header class="navbar">
+<div class="brand-group"><a href="/" class="brand">Biz<span>Hub</span></a>{% if session.get('username') %}<span class="hello">Hey @{{ session['username'] }}</span>{% endif %}</div>
+<nav class="nav">
+<a href="/"><svg viewBox="0 0 24 24"><path d="M3 10h18M5 10v9h14v-9M4 10l1-6h14l1 6M9 19v-5h6v5"/></svg>Market</a>
+{% if session.get('role') in ['Vendor','Fast Food'] %}<a href="/vendor/{{ session['username'] }}"><svg viewBox="0 0 24 24"><path d="M3 10h18M5 10v9h14v-9M4 10l1-6h14l1 6M9 19v-5h6v5"/></svg>My Store</a>{% endif %}
+{% if session.get('role')=='Customer' %}<a href="/favorites"><svg viewBox="0 0 24 24"><path d="M20.8 8.6c0 5.5-8.8 10.4-8.8 10.4S3.2 14.1 3.2 8.6A4.6 4.6 0 0 1 12 6.2a4.6 4.6 0 0 1 8.8 2.4Z"/></svg>Favorites</a>{% endif %}
+<a href="/orders"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6zM9 7h6M9 11h6M9 15h4"/></svg>Orders</a>
+<a href="/settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 20a7 7 0 0 1 14 0M19 4l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg>Account</a>
+<a href="/logout"><svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3M13 4h7v16h-7"/></svg>Logout</a>
+</nav>
+</header>
+
+<main>
+<section class="store-card">
+<div class="store-head">
+<div class="store-top">
+<div class="logo">{% if vendor['company_logo'] %}<img src="{{ url_for('static',filename='uploads/'+vendor['company_logo']) }}" alt="{{ vendor['company_name'] or vendor['username'] }} logo">{% else %}<span class="logo-fallback">BH</span>{% endif %}</div>
+<div class="store-info">
+<div class="store-title"><h1>{{ vendor['company_name'] or vendor['username'] }}</h1>{% if subscription.is_premium %}<span class="verified"><span class="verified-icon">✓</span> Verified Store</span>{% endif %}{% if promo %}<span class="promo-badge">⚡ PROMO ACTIVE</span>{% endif %}</div>
+<div class="store-meta muted">@{{ vendor['username'] }} · {{ vendor['role'] }}</div>
+<div class="store-meta muted">📍 {{ vendor['business_location'] or 'Business location not provided' }}</div>
 </div>
-<div class="flex-1">
-<div class="flex flex-wrap items-center gap-2">
-<h1 class="text-3xl font-black">{{ vendor['company_name'] or vendor['username'] }}</h1>
-{% if subscription.is_premium %}<span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-black">𝕏 Verified Store</span>{% endif %}
-{% if promo %}<span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-black">⚡ PROMO ACTIVE</span>{% endif %}
-</div>
-<p class="muted mt-1">@{{ vendor['username'] }} · {{ vendor['role'] }}</p>
-<p class="muted mt-2">📍 {{ vendor['business_location'] or 'Business location not provided' }}</p>
-</div>
-{% if session.get('role') == 'Customer' %}
-<form method="POST" action="/favorites/toggle/{{ vendor['username'] }}">
-<button class="px-4 py-3 rounded-xl font-black text-sm border borderx {{ 'bg-amber-100 text-amber-800' if favorite else 'bg-white' }}">{{ '★ Favorited' if favorite else '☆ Add to Favorites' }}</button>
-</form>
-{% endif %}
+{% if session.get('role')=='Customer' %}<form method="POST" action="/favorites/toggle/{{ vendor['username'] }}"><button class="favorite">{{ '★ Favorited' if favorite else '☆ Add to Favorites' }}</button></form>{% endif %}
 </div>
 </div>
 
-<div class="border-t borderx grid grid-cols-2 sm:grid-cols-4">
-<div class="p-5 border-r borderx"><div class="text-2xl font-black">{{ product_count }}</div><div class="muted text-xs font-bold uppercase">Products</div></div>
-<div class="p-5 sm:border-r borderx"><div class="text-2xl font-black">{{ categories|length }}</div><div class="muted text-xs font-bold uppercase">Ranges</div></div>
-<div class="p-5 border-r borderx"><div class="text-2xl font-black">{{ subscription.name }}</div><div class="muted text-xs font-bold uppercase">Store Status</div></div>
-<div class="p-5"><div class="text-2xl font-black">{{ vendor['seller_type'] }}</div><div class="muted text-xs font-bold uppercase">Vendor Type</div></div>
+<div class="stats">
+<div class="stat"><strong>{{ product_count }}</strong><span>Products</span></div>
+<div class="stat"><strong>{{ categories|length }}</strong><span>Product Ranges</span></div>
+<div class="stat"><strong>{{ subscription.name }}</strong><span>Store Status</span></div>
+<div class="stat"><strong>{{ vendor['seller_type'] }}</strong><span>Vendor Type</span></div>
 </div>
-</div>
-
-<div class="grid lg:grid-cols-3 gap-6 mt-6">
-<div class="lg:col-span-1 space-y-6">
-<section class="card rounded-2xl border shadow-sm p-6">
-<h2 class="font-black text-lg">What We Sell</h2>
-<div class="flex flex-wrap gap-2 mt-4">{% for c in categories %}<span class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">{{ c }}</span>{% else %}<span class="muted text-sm">No product ranges configured.</span>{% endfor %}</div>
 </section>
-{% if promo %}<section class="rounded-2xl border border-amber-200 bg-amber-50 p-6"><div class="text-xs font-black uppercase text-amber-700">⚡ Current Promo</div><h2 class="text-xl font-black text-amber-950 mt-2">{{ promo['title'] }}</h2>{% if promo['description'] %}<p class="text-sm text-amber-900 mt-2">{{ promo['description'] }}</p>{% endif %}{% if promo['discount'] is not none %}<div class="text-2xl font-black text-amber-800 mt-3">{{ "%.0f"|format(promo['discount']) }}% OFF</div>{% endif %}<p class="text-xs text-amber-700 mt-2">Valid {{ promo['starts_at'][:16].replace('T',' ') }} → {{ promo['ends_at'][:16].replace('T',' ') }}</p></section>{% endif %}
-{% if session.get('username') == vendor['username'] %}<a href="/promotions" class="block text-center px-4 py-3 rounded-xl bg-amber-500 text-white font-black no-underline">⚡ Manage Promotions</a>{% endif %}
-{% if vendor['whatsapp_number'] %}<a href="https://wa.me/{{ vendor['whatsapp_number'] }}" class="block text-center px-4 py-3 rounded-xl bg-emerald-600 text-white font-black no-underline">💬 WhatsApp Vendor</a>{% endif %}
+
+<div class="content">
+<aside>
+<section class="panel"><h2>What We Sell</h2><div class="tags">{% for c in categories %}<span class="tag">{{ c }}</span>{% else %}<span class="muted">No product ranges configured.</span>{% endfor %}</div></section>
+
+{% if promo %}
+<section class="promo-box"><div class="label">⚡ Current Promo</div><h3>{{ promo['title'] }}</h3>{% if promo['description'] %}<p>{{ promo['description'] }}</p>{% endif %}{% if promo['discount'] is not none %}<div class="discount">{{ "%.0f"|format(promo['discount']) }}% OFF</div>{% endif %}<p>Valid {{ promo['starts_at'][:16].replace('T',' ') }} → {{ promo['ends_at'][:16].replace('T',' ') }}</p></section>
+{% endif %}
+
+{% if session.get('username')==vendor['username'] %}<a href="/promotions" class="side-btn gold">⚡ Manage Promotions</a>{% endif %}
+{% if vendor['whatsapp_number'] %}<a href="https://wa.me/{{ vendor['whatsapp_number'] }}" class="side-btn wa">💬 WhatsApp Vendor</a>{% endif %}
+</aside>
+
+<section>
+<div class="products-head"><h2>Current Products</h2><a href="/" class="back">← Back to Market</a></div>
+<div class="products">
+{% for product in products %}
+<article class="product">
+<div class="media">{% if product['video_file'] %}<video controls preload="metadata"><source src="{{ url_for('static',filename='uploads/'+product['video_file']) }}"></video>{% elif product['image_file'] %}<img src="{{ url_for('static',filename='uploads/'+product['image_file']) }}" alt="{{ product['title'] }}">{% endif %}</div>
+<h3>{{ product['title'] }}</h3><div class="price">GH₵ {{ "%.2f"|format(product['price']) }}</div><div class="location">📍 {{ product['location'] }}</div><a href="/add-to-cart/{{ product['id'] }}" class="buy">🛒 Add to Basket</a>
+</article>
+{% else %}<div class="empty" style="grid-column:1/-1">📭 This vendor has no current products.</div>{% endfor %}
 </div>
-<div class="lg:col-span-2">
-<div class="flex items-center justify-between mb-4"><h2 class="text-xl font-black">Current Products</h2><a href="/" class="muted text-sm font-bold no-underline">← Back to Market</a></div>
-<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-{% for product in products %}<article class="card rounded-xl border p-3 shadow-sm"><div class="h-36 bg-slate-100 rounded-lg overflow-hidden">{% if product['video_file'] %}<video controls preload="metadata" class="w-full h-full object-contain"><source src="{{ url_for('static', filename='uploads/' + product['video_file']) }}"></video>{% elif product['image_file'] %}<img src="{{ url_for('static', filename='uploads/' + product['image_file']) }}" class="w-full h-full object-contain" alt="{{ product['title'] }}">{% endif %}</div><h3 class="font-bold text-sm mt-3 line-clamp-2">{{ product['title'] }}</h3><div class="font-black text-lg text-emerald-700 mt-1">GH₵ {{ "%.2f"|format(product['price']) }}</div><p class="muted text-xs mt-1">📍 {{ product['location'] }}</p><a href="/add-to-cart/{{ product['id'] }}" class="block mt-3 text-center rounded-lg border borderx py-2 text-xs font-black no-underline" style="color:var(--text)">🛒 Add to Basket</a></article>{% else %}<div class="col-span-full card border borderx rounded-xl p-10 text-center muted">This vendor has no current products.</div>{% endfor %}
-</div></div></div>
+</section>
+</div>
 </main>
-<div style="max-width:72rem;margin:28px auto 0;padding:0 1rem 2rem;">
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;box-shadow:0 1px 2px rgba(15,23,42,0.05);">
-    <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.6px;color:var(--text);margin-bottom:8px;">Contact BizHub Operations</div>
-    <div style="display:flex;flex-wrap:wrap;gap:12px 18px;font-size:12px;font-weight:700;">
-      <a href="mailto:contactBizHub@proton.me" style="color:#1d4ed8;text-decoration:none;">📧 contactBizHub@proton.me</a>
-      <a href="https://wa.me/233558272972" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;text-decoration:none;">� 0558272972</a>
-      <span style="color:var(--text);">📞 0540901856</span>
-    </div>
-  </div>
+
+<footer class="contact">
+<div class="contact-title">Contact BizHub Operations</div>
+<div class="contact-row">
+<a href="mailto:contactBizHub@proton.me">📧 contactBizHub@proton.me</a>
+<a href="https://wa.me/233558272972" target="_blank" rel="noopener noreferrer">💬 0558272972</a>
+<span>📞 0540901856</span>
 </div>
-</body></html>
+</footer>
+
+<script>
+/* Keep the store synchronized with the theme selected elsewhere in BizHub. */
+(function(){const root=document.documentElement;try{const saved=localStorage.getItem("bizhub-theme");if(saved==="night"||saved==="day")root.dataset.theme=saved}catch(e){}})();
+</script>
+</body>
+</html>
+
