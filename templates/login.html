@@ -1617,10 +1617,10 @@
                 <div class="auth-visual-figure">
 
                     <img
-                        src="{{ url_for('static', filename='uploads/bizhub-app-login_banner.png') }}?v=2"
+                        src="{{ url_for('static', filename='uploads/bizhub-app-login_banner.svg') }}?v=2"
                         alt="BizHub customer using the marketplace"
                         loading="eager"
-                        onerror="this.parentElement.style.display='none';"
+                        onerror="this.src='{{ url_for('static', filename='uploads/bizhub-app-login_banner.png') }}';"
                     >
 
                 </div>
