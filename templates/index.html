@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biz Hub - Your Local Market, Unified Online</title>
     <meta name="theme-color" content="#0B192C">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3">
+    <link rel="mask-icon" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3" color="#0B192C">
     <style>
         .customer-hero {
             width: 100%; max-width: 1440px; min-height: 360px; margin: 0 auto 20px;
@@ -265,20 +268,34 @@
 
     <!-- MAIN BRAND HEADER (HOUSE EMOJI REMOVED COMPLETELY) -->
     <div class="navbar">
-        <a href="/" class="brand-logo">Biz<span>Hub</span></a>
+        <div class="brand-group">
+            <a href="/" class="brand-logo">Biz<span>Hub</span></a>
+            {% if session.get('username') %}
+                <span class="hello-user">Hello @{{ session['username'] }}</span>
+            {% endif %}
+        </div>
+
         <div class="nav-links">
             {% if session.get('username') %}
-                <span>Hello, <b>@{{ session['username'] }}</b></span>
-                <a href="/">🛍️ Market</a>
-                {% if session.get('role') == 'Customer' %}
-                    <a href="/favorites">⭐ Favorites</a>
-                    <a href="/orders">📦 Orders</a>
-                {% elif session.get('role') in ['Vendor', 'Fast Food'] %}
-                    <a href="/orders">📦 Orders{% if vendor_notification_count %} <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#EF4444;color:#fff;font-size:10px;font-weight:900;">{{ vendor_notification_count }}</span>{% endif %}</a>
-                    <a href="/vendor/{{ session['username'] }}">🏬 My Store</a>
-                {% endif %}
-                <a href="/settings">⚙️ Account</a>
-                <a href="/logout" class="logout" style="background:#E53E3E;">Logout</a>
+                <div class="nav-menu-wrap" id="navMenuWrap">
+                    <button type="button" class="menu-trigger" id="navMenuTrigger" aria-expanded="false">
+                        ☰ Menu
+                    </button>
+                    <div class="menu-dropdown">
+                        <a href="/">🛍️ Market</a>
+                        {% if session.get('role') == 'Customer' %}
+                            <a href="/favorites">⭐ Favorites</a>
+                        {% endif %}
+                        {% if session.get('role') == 'Customer' %}
+                            <a href="/orders">📦 Orders</a>
+                        {% elif session.get('role') in ['Vendor', 'Fast Food'] %}
+                            <a href="/orders">📦 Orders{% if vendor_notification_count %} <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#EF4444;color:#fff;font-size:10px;font-weight:900;">{{ vendor_notification_count }}</span>{% endif %}</a>
+                            <a href="/vendor/{{ session['username'] }}">🏬 My Store</a>
+                        {% endif %}
+                        <a href="/settings">⚙️ Account</a>
+                        <a href="/logout" class="logout-link">🚪 Logout</a>
+                    </div>
+                </div>
             {% else %}
                 <a href="/login">🔐 Sign In / Register</a>
             {% endif %}
@@ -511,7 +528,7 @@
         <div class="contact-footer-title">Contact BizHub Operations</div>
         <div class="contact-footer-row">
             <a href="mailto:contactBizHub@proton.me">📧 contactBizHub@proton.me</a>
-            <a href="https://wa.me/233558272972" target="_blank" rel="noopener noreferrer">� 0558272972</a>
+            <a href="https://wa.me/233558272972" target="_blank" rel="noopener noreferrer">💬 0558272972</a>
             <span>📞 0540901856</span>
         </div>
     </div>
