@@ -1,670 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biz Hub - Your Local Market, Unified Online</title>
-    <meta name="theme-color" content="#0B192C">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3">
-    <link rel="mask-icon" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3" color="#0B192C">
-    <style>
-        .customer-hero {
-            width: 100%; max-width: 1440px; min-height: 360px; margin: 0 auto 20px;
-            border-radius: 0 0 var(--radius-lg) var(--radius-lg); overflow: hidden; position: relative;
-            display: flex; align-items: center; background: var(--bg-abyssal);
-            background-image: linear-gradient(90deg, rgba(11,25,44,.98) 0%, rgba(11,25,44,.92) 34%, rgba(11,25,44,.45) 58%, rgba(11,25,44,.08) 100%), url("{{ url_for('static', filename='uploads/bizhub-home-scene.jpg') }}?v=1");
-            background-size: cover; background-position: center; box-shadow: var(--shadow-md);
-        }
-        .customer-hero-content { max-width: 660px; padding: 48px 48px 42px; color: #fff; position: relative; z-index: 2; }
-        .customer-hero-kicker { display:inline-flex; gap:8px; align-items:center; background:var(--accent); color:var(--bg-abyssal); border-radius:999px; padding:7px 13px; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:.7px; margin-bottom:14px; }
-        .customer-hero h1 { margin:0 0 12px; font-size:clamp(32px,4vw,52px); line-height:1.04; letter-spacing:-1.5px; font-weight:900; }
-        .customer-hero h1 span { color:var(--accent); }
-        .customer-hero p { margin:0 0 22px; max-width:590px; color:#E2E8F0; font-size:15px; line-height:1.6; }
-        .customer-hero-actions { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; }
-        .customer-hero-btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:0 18px; border-radius:9px; text-decoration:none; font-weight:900; font-size:13px; transition:var(--transition); }
-        .customer-hero-btn.primary { background:var(--accent); color:var(--bg-abyssal); }
-        .customer-hero-btn.primary:hover { background:var(--accent-hover); transform:translateY(-1px); }
-        .customer-hero-btn.secondary { border:1px solid rgba(255,255,255,.6); color:#fff; background:rgba(11,25,44,.35); }
-        .customer-hero-btn.secondary:hover { border-color:var(--accent); color:var(--accent); background:rgba(11,25,44,.55); }
-        .customer-hero-trust { display:flex; flex-wrap:wrap; gap:16px; color:#F8FAFC; font-size:11px; font-weight:700; }
-        .customer-hero-trust span { display:inline-flex; align-items:center; gap:6px; }
-        @media (max-width:767px) {
-            .customer-hero { min-height:390px; background-position:63% center; border-radius:0 0 var(--radius-sm) var(--radius-sm); }
-            .customer-hero-content { padding:32px 22px 28px; }
-            .customer-hero h1 { font-size:34px; }
-            .customer-hero p { font-size:13px; }
-            .customer-hero-actions { flex-direction:column; }
-            .customer-hero-btn { width:100%; box-sizing:border-box; }
-            .customer-hero-trust { gap:10px 14px; }
-        }
-        /* 👑 BIZ HUB LUXURY DESIGN SYSTEM TOKENS (AMAZON ENTERPRISE MATRIX) */
-        :root {
-            --bg-abyssal: #0B192C;
-            --primary: #1E3A8A;
-            --primary-light: #3B82F6;
-            --accent: #F59E0B;
-            --accent-hover: #D97706;
-            --success: #10B981;
-            --danger: #EF4444;
-            --bg-light: #EAEDED; 
-            --bg-card: #FFFFFF;
-            --text-main: #0F172A;
-            --text-muted: #565959; 
-            --border-color: #D5D9D9; 
-            --radius-sm: 8px;
-            --radius-lg: 12px;
-            --shadow-sm: 0 1px 2px rgba(15,23,42,0.05);
-            --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
-            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Biz Hub - Your Local Market, Unified Online</title>
+<meta name="theme-color" content="#0B192C">
+<link rel="icon" type="image/png" href="{{ url_for('static',filename='uploads/bizhub-app-icon.png') }}?v=3"><link rel="apple-touch-icon" href="{{ url_for('static',filename='uploads/bizhub-app-icon.png') }}?v=3">
+<style>
+:root{--bg-abyssal:#0B192C;--primary:#1E3A8A;--primary-light:#3B82F6;--accent:#F59E0B;--accent-hover:#D97706;--success:#10B981;--danger:#EF4444;--bg-light:#EAEDED;--bg-card:#FFF;--text-main:#0F172A;--text-muted:#565959;--border-color:#D5D9D9;--radius-sm:8px;--radius-lg:12px;--shadow-sm:0 1px 2px rgba(15,23,42,.05);--shadow-md:0 4px 20px rgba(0,0,0,.08);--transition:all .25s cubic-bezier(.4,0,.2,1)}
+*{box-sizing:border-box}body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg-light);color:var(--text-main);margin:0;padding-bottom:40px;overflow-x:hidden}.container{width:100%;max-width:1480px;margin:auto;padding:0 20px}
+#bizhub-splash-screen{position:fixed;inset:0;background:linear-gradient(135deg,var(--bg-abyssal),#020617);z-index:99999;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:opacity .4s,visibility .4s}.splash-logo{font-size:42px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:20px}.splash-logo span,.brand-logo span{color:var(--accent)}.splash-spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.1);border-top-color:var(--accent);border-radius:50%;animation:spinNode .8s linear infinite}@keyframes spinNode{to{transform:rotate(360deg)}}
 
-        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: var(--bg-light); color: var(--text-main); margin: 0; padding-bottom: 60px; overflow-x: hidden; }
-        .container { width: 100%; max-width: 1480px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
+.navbar{display:flex;justify-content:space-between;align-items:center;background:var(--bg-abyssal);padding:10px 30px;border-bottom:1px solid rgba(255,255,255,.08);position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm)}.brand-group{display:flex;flex-direction:column;gap:2px}.brand-logo{font-size:24px;font-weight:900;color:#fff;text-decoration:none;letter-spacing:-.5px}.hello-user{font-size:11px;color:#E2E8F0;font-weight:700}.nav-links{display:flex;align-items:center;gap:4px;color:#E2E8F0;font-size:12px}.nav-item{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:#fff;font-weight:700;padding:9px 10px;border-radius:6px;transition:var(--transition);white-space:nowrap}.nav-item:hover{background:#25344A;color:var(--accent)}.nav-icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.logout-link{color:#FFD7D7}.install-app-btn{display:none;align-items:center;justify-content:center;gap:6px;padding:8px 10px;border-radius:6px;border:1px solid rgba(59,130,246,.4);background:rgba(59,130,246,.1);color:#fff;font-size:11px;font-weight:800;cursor:pointer}
 
-        #bizhub-splash-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(135deg, var(--bg-abyssal) 0%, #020617 100%);
-            z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 0.4s ease-out, visibility 0.4s ease-out; opacity: 1; visibility: visible;
-        }
-        .splash-logo { font-size: 42px; font-weight: 900; color: white; letter-spacing: -1px; margin-bottom: 20px; }
-        .splash-logo span { color: var(--accent); }
-        .splash-spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spinNode 0.8s linear infinite; }
-        @keyframes spinNode { to { transform: rotate(360deg); } }
+.search-hero{background:var(--bg-abyssal);padding:15px 0;color:#fff}.search-panel{display:flex;flex-wrap:wrap;background:#fff;border-radius:var(--radius-sm);overflow:hidden;box-shadow:var(--shadow-sm);max-width:1100px;margin:auto;width:100%;border:1px solid rgba(0,0,0,.2);padding:2px}.search-panel select,.search-panel input{border:0;padding:12px 16px;font-size:14px;outline:0;color:var(--text-main)}.filter-select{background:#F3F3F3;font-weight:700;border-right:1px solid var(--border-color)!important;cursor:pointer;color:#444!important}.search-input{flex:1;min-width:240px}.search-btn{background:var(--accent);border:0;padding:0 30px;color:var(--bg-abyssal);font-weight:800;border-radius:0 var(--radius-sm) var(--radius-sm) 0;cursor:pointer;font-size:14px}.search-btn:hover{background:var(--accent-hover)}
 
-        .navbar { display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-abyssal); padding: 12px 30px; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm); }
-        .brand-logo { font-size: 24px; font-weight: 900; color: white; text-decoration: none; letter-spacing: -0.5px; }
-        .brand-logo span { color: var(--accent); }
-        .nav-links { display: flex; align-items: center; gap: 20px; color: #94A3B8; font-size: 14px; }
-        .nav-links b { color: white; }
-        .nav-links a { text-decoration: none; color: #E2E8F0; font-weight: 700; transition: var(--transition); padding: 6px 12px; border-radius: var(--radius-sm); }
-        .nav-links a:hover { color: var(--accent); background: rgba(255,255,255,0.05); }
+.customer-hero{width:100%;max-width:1440px;min-height:360px;margin:0 auto 20px;border-radius:0 0 var(--radius-lg) var(--radius-lg);overflow:hidden;position:relative;display:flex;align-items:center;background:var(--bg-abyssal);background-image:linear-gradient(90deg,rgba(11,25,44,.98),rgba(11,25,44,.92) 34%,rgba(11,25,44,.45) 58%,rgba(11,25,44,.08)),url("{{ url_for('static',filename='uploads/bizhub-home-scene.jpg') }}?v=1");background-size:cover;background-position:center;box-shadow:var(--shadow-md)}.customer-hero-content{max-width:660px;padding:48px;color:#fff;position:relative;z-index:2}.customer-hero-kicker{display:inline-flex;gap:8px;align-items:center;background:var(--accent);color:var(--bg-abyssal);border-radius:999px;padding:7px 13px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.7px;margin-bottom:14px}.customer-hero h1{margin:0 0 12px;font-size:clamp(32px,4vw,52px);line-height:1.04;letter-spacing:-1.5px;font-weight:900}.customer-hero h1 span{color:var(--accent)}.customer-hero p{margin:0 0 22px;max-width:590px;color:#E2E8F0;font-size:15px;line-height:1.6}.customer-hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px}.customer-hero-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:9px;text-decoration:none;font-weight:900;font-size:13px}.customer-hero-btn.primary{background:var(--accent);color:var(--bg-abyssal)}.customer-hero-btn.secondary{border:1px solid rgba(255,255,255,.6);color:#fff;background:rgba(11,25,44,.35)}.customer-hero-trust{display:flex;flex-wrap:wrap;gap:16px;color:#F8FAFC;font-size:11px;font-weight:700}.customer-hero-trust span{display:inline-flex;align-items:center;gap:6px}
 
-        .search-hero { background-color: var(--bg-abyssal); padding: 15px 0; color: white; }
-        .search-panel { display: flex; flex-wrap: wrap; background: white; border-radius: var(--radius-sm); overflow: hidden; box-shadow: var(--shadow-sm); max-width: 1100px; margin: 0 auto; width: 100%; border: 1px solid rgba(0,0,0,0.2); padding: 2px; box-sizing: border-box; }
-        .search-panel select, .search-panel input { border: none; padding: 12px 16px; font-size: 14px; outline: none; color: var(--text-main); box-sizing: border-box; }
-        .filter-select { background: #F3F3F3; font-weight: 700; border-right: 1px solid var(--border-color) !important; cursor: pointer; color: #444 !important; }
-        .search-input { flex-grow: 1; min-width: 240px; }
-        .search-btn { background: var(--accent); border: none; padding: 0 30px; color: var(--bg-abyssal); font-weight: 800; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; cursor: pointer; transition: var(--transition); font-size: 14px; }
-        .search-btn:hover { background: var(--accent-hover); }
+.amazon-billboard{width:100%;max-width:1440px;height:260px;margin:0 auto 20px;background:linear-gradient(180deg,#1E293B,var(--bg-light));border-radius:0 0 var(--radius-sm) var(--radius-sm);position:relative;overflow:hidden;display:flex;align-items:center;padding:0 40px}.billboard-text-layer{max-width:600px;z-index:2;color:#fff}.billboard-text-layer h1{font-size:28px;font-weight:800;margin:0 0 10px}.billboard-text-layer p{font-size:14px;margin:0 0 15px;color:#E2E8F0;line-height:1.5}.billboard-promo-tag{background:var(--accent);color:var(--bg-abyssal);padding:4px 10px;font-weight:800;font-size:11px;border-radius:4px;text-transform:uppercase;display:inline-block;margin-bottom:10px}
 
-        .amazon-billboard { width: 100%; max-width: 1440px; height: 260px; margin: 0 auto 20px auto; background: linear-gradient(180deg, #1E293B 0%, var(--bg-light) 100%); border-radius: 0 0 var(--radius-sm) var(--radius-sm); position: relative; overflow: hidden; display: flex; align-items: center; padding: 0 40px; box-sizing: border-box; }
-        .billboard-text-layer { max-width: 600px; z-index: 2; color: white; }
-        .billboard-text-layer h1 { font-size: 28px; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -0.5px; }
-        .billboard-text-layer p { font-size: 14px; margin: 0 0 15px 0; color: #E2E8F0; line-height: 1.5; }
-        .billboard-promo-tag { background: var(--accent); color: var(--bg-abyssal); padding: 4px 10px; font-weight: 800; font-size: 11px; border-radius: 4px; text-transform: uppercase; display: inline-block; margin-bottom: 10px; }
+.layout{display:grid;grid-template-columns:1fr;gap:20px;width:100%}@media(min-width:1200px){.layout{grid-template-columns:320px 1fr 320px}}.panel-box,.cart-sidebar{background:#fff;padding:20px;border-radius:var(--radius-sm);border:1px solid var(--border-color);box-shadow:var(--shadow-sm);height:fit-content;margin-bottom:20px}.panel-box h3{margin-top:0;font-size:16px;font-weight:800;border-bottom:1px solid var(--border-color);padding-bottom:8px;margin-bottom:14px;color:var(--bg-abyssal);text-transform:uppercase}.form-group{margin-bottom:12px}.form-group label{display:block;font-size:12px;font-weight:700;margin-bottom:4px}.form-control{width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:4px;font-size:13px;outline:0}.form-control:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,158,11,.15)}.submit-btn{background:#F7CA00;color:#111;border:1px solid #F0B800;padding:10px;cursor:pointer;border-radius:var(--radius-sm);font-size:13px;width:100%;font-weight:700}.submit-btn:disabled{opacity:.75;cursor:not-allowed}.listing-alert{margin:0 0 14px;padding:11px 13px;border-radius:8px;background:#FFF7ED;border:1px solid #FED7AA;color:#9A3412;font-size:12px;font-weight:700}.media-choice{border:1px solid var(--border-color);border-radius:8px;padding:10px;background:#FAFAFA}.media-status{font-size:11px;margin-top:6px;color:var(--text-muted)}.media-preview{display:none;margin-top:8px;width:100%;max-height:150px;object-fit:contain;background:#000;border-radius:6px}.media-cancel{display:none;margin-top:6px;width:100%;border:1px solid #FED7D7;background:#FFF5F5;color:#B91C1C;border-radius:6px;padding:6px 8px;font-size:11px;font-weight:700;cursor:pointer}.cancel-publish-btn{background:#FFF5F5;color:#B91C1C;border:1px solid #FECACA;border-radius:8px;padding:12px 14px;font-weight:800;font-size:13px;cursor:pointer}
 
-        .layout { display: grid; grid-template-columns: 1fr; gap: 20px; width: 100%; }
-        @media (min-width: 1200px) { .layout { grid-template-columns: 320px 1fr 320px; } }
-        
-        .panel-box { background: var(--bg-card); padding: 20px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); height: fit-content; margin-bottom: 20px; }
-        .panel-box h3 { margin-top: 0; font-size: 16px; font-weight: 800; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 14px; color: var(--bg-abyssal); text-transform: uppercase; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; }
-        .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; font-size: 13px; outline: none; transition: var(--transition); }
-        .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15); }
-        .submit-btn { background-color: #F7CA00; color: #111; border: 1px solid #F0B800; padding: 10px; cursor: pointer; border-radius: var(--radius-sm); font-size: 13px; width: 100%; font-weight: 700; transition: var(--transition); box-shadow: 0 2px 5px rgba(213,217,213,0.5); }
-        .submit-btn:hover { background-color: #F5B800; }
-        .submit-btn:disabled { opacity: .75; cursor: not-allowed; }
-        .listing-alert { margin:0 0 14px; padding:11px 13px; border-radius:8px; background:#FFF7ED; border:1px solid #FED7AA; color:#9A3412; font-size:12px; font-weight:700; }
-        .media-choice { border:1px solid var(--border-color); border-radius:8px; padding:10px; background:#FAFAFA; }
-        .media-status { font-size:11px; margin-top:6px; color:var(--text-muted); }
-        .media-preview { display:none; margin-top:8px; width:100%; max-height:150px; object-fit:contain; background:#000; border-radius:6px; }
-        .media-cancel { display:none; margin-top:6px; width:100%; border:1px solid #FED7D7; background:#FFF5F5; color:#B91C1C; border-radius:6px; padding:6px 8px; font-size:11px; font-weight:700; cursor:pointer; }
-        
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 15px; }
-        
-/* MOBILE MARKETPLACE: 2 LISTINGS PER ROW */
-@media (max-width: 767px) {}
-    .grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-    }
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:15px}.card{background:#fff;border-radius:4px;overflow:hidden;border:1px solid var(--border-color);display:flex;flex-direction:column;transition:var(--transition);padding:12px}.card:hover{border-color:#C7511F;box-shadow:var(--shadow-sm)}.card-media-wrapper{width:100%;height:170px;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:10px}.card-img{max-width:100%;max-height:100%;object-fit:contain}.card-media-wrapper video{width:100%;height:100%;object-fit:contain}.loc-badge{position:absolute;bottom:0;left:0;background:#ECEFF1;color:#37474F;font-size:10px;font-weight:700;padding:2px 6px;border-radius:2px}.card-body{display:flex;flex-direction:column;flex-grow:1}.card-brand-wrapper{display:flex;align-items:center;gap:8px;margin-bottom:4px}.card-logo-circle{width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid var(--border-color);background:#F8FAFC}.card-brand{font-size:11px;color:var(--text-muted);text-transform:uppercase;font-weight:700}.card-title{font-size:14px;font-weight:600;margin:0 0 4px;color:#0F1111;height:38px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.35}.card-price{color:#B12704;font-size:21px;font-weight:700;margin-bottom:6px}.card-text{color:var(--text-muted);font-size:12px;margin:0 0 10px;height:32px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.35}.card-metadata{font-size:11px;color:var(--text-muted);margin-bottom:12px;border-top:1px dashed var(--border-color);padding-top:6px}.card-actions{display:flex;flex-direction:column;gap:6px;margin-top:auto}.btn-action{text-align:center;text-decoration:none;padding:8px;border-radius:var(--radius-sm);font-size:12px;font-weight:700;width:100%;display:block;border:1px solid;cursor:pointer}.btn-cart{background:#fff;color:#0F1111;border-color:var(--border-color)}.btn-momo{background:#FFA41C;color:#0F1111;border-color:#FF9900}.btn-delete{background:#FFF5F5;color:var(--danger);border-color:#FED7D7}
 
-/* MOBILE BASKET NOTIFICATION */
-.basket-mobile-popup {
-    display: none;
-}
+.cart-sidebar{position:sticky;top:85px}.cart-item-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px;border-bottom:1px dashed var(--border-color);padding-bottom:6px}.cart-total-row{display:flex;justify-content:space-between;font-weight:800;font-size:15px;color:#B12704;margin-top:10px;padding-top:8px;border-top:1px solid var(--border-color)}.btn-whatsapp-checkout{background:var(--success);color:#fff;text-align:center;text-decoration:none;padding:10px;border-radius:var(--radius-sm);font-size:13px;font-weight:800;display:block;margin-top:10px;text-transform:uppercase}.clear-cart-link{display:block;color:var(--text-muted);text-align:center;font-size:12px;margin-top:16px;text-decoration:none;font-weight:600}
 
-@media (max-width: 767px) {
-    .basket-mobile-popup {
-        position: fixed;
-        top: 75px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: calc(100% - 30px);
-        max-width: 400px;
-        background: var(--bg-abyssal);
-        color: white;
-        padding: 14px 16px;
-        border-radius: 10px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 4px;
-        animation: basketPopupIn 0.3s ease-out;
-    }
+.contact-footer{margin:28px auto 0;max-width:1440px;background:#fff;border:1px solid var(--border-color);border-radius:8px;padding:0;box-shadow:var(--shadow-sm);overflow:hidden}.contact-footer-title{background:#F3F3F3;color:#0F1111;font-size:13px;font-weight:800;padding:12px 18px;border-bottom:1px solid var(--border-color)}.contact-footer-row{display:flex;flex-wrap:wrap;gap:0;align-items:center;font-size:12px;font-weight:700}.contact-footer-row a,.contact-footer-row span{color:#0F1111;text-decoration:none;padding:12px 18px;border-right:1px solid var(--border-color)}.contact-footer-row a:hover{color:#C7511F;text-decoration:underline}
 
-    .basket-mobile-popup strong {
-        font-size: 15px;
-    }
-
-    .basket-mobile-popup span {
-        font-size: 13px;
-        color: #E2E8F0;
-    }
-
-    @keyframes basketPopupIn {
-        from {
-            opacity: 0;
-            transform: translate(-50%, -15px);
-        }
-        to {
-            opacity: 1;
-            transform: translate(-50%, 0);
-        }
-    }
-}
-
-
-    .card {
-        padding: 8px;
-    }
-
-    .card-media-wrapper {
-        height: 130px;
-    }
-
-    .card-title {
-        font-size: 13px;
-    }
-
-    .card-price {
-        font-size: 14px;
-    }
-
-    .card-text {
-        font-size: 11px;
-    }
-
-    .card-actions {
-        gap: 5px;
-    }
-    .card-actions .btn-action {
-        font-size: 10px;
-        padding: 7px 5px;
-    }
-
-        .card { background-color: var(--bg-card); border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color); display: flex; flex-direction: column; transition: var(--transition); padding: 12px; box-sizing: border-box; }
-        .card:hover { border-color: #C7511F; box-shadow: var(--shadow-sm); }
-        
-        .card-media-wrapper { width: 100%; height: 170px; background-color: #FFF; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 10px; }
-        .card-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: var(--transition); }
-        video.card-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-        .loc-badge { position: absolute; bottom: 0; left: 0; background: #ECEFF1; color: #37474F; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 2px; }
-
-        .card-body { display: flex; flex-direction: column; flex-grow: 1; padding: 0; }
-        .card-brand-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-        .card-logo-circle { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); background: #F8FAFC; }
-        .card-brand { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
-        
-        .card-title { font-size: 14px; font-weight: 600; margin: 0 0 4px 0; color: #0F1111; height: 38px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.35; text-decoration: none; }
-        .card-title:hover { color: #C7511F; }
-        .card-price { color: #B12704; font-size: 21px; font-weight: 700; margin-bottom: 6px; }
-        .card-text { color: var(--text-muted); font-size: 12px; margin: 0 0 10px 0; height: 32px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.35; }
-        .card-metadata { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; border-top: 1px dashed var(--border-color); padding-top: 6px; }
-        
-        .card-actions { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
-        .btn-action { text-align: center; text-decoration: none; padding: 8px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; width: 100%; box-sizing: border-box; display: block; border: 1px solid; cursor: pointer; transition: var(--transition); }
-        .btn-cart { background: #FFF; color: #0F1111; border-color: var(--border-color); box-shadow: 0 2px 5px rgba(213,217,213,0.3); }
-        .btn-cart:hover { background: #F7FAFA; }
-        .btn-momo { background: #FFA41C; color: #0F1111; border-color: #FF9900; }
-        .btn-momo:hover { background: #F59200; }
-        .btn-delete { background-color: #FFF5F5; color: var(--danger); border-color: #FED7D7; }
-
-        .cart-sidebar { background: var(--bg-card); padding: 20px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); height: fit-content; position: sticky; top: 85px; }
-        .cart-item-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px; }
-        .cart-total-row { display: flex; justify-content: space-between; font-weight: 800; font-size: 15px; color: #B12704; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border-color); }
-        .btn-whatsapp-checkout { background-color: var(--success); color: white; text-align: center; text-decoration: none; padding: 10px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 800; display: block; margin-top: 10px; text-transform: uppercase; border: none; }
-        .clear-cart-link { display: block; color: var(--text-muted); text-align: center; font-size: 12px; margin-top: 16px; text-decoration: none; font-weight: 600; transition: var(--transition); }
-        .clear-cart-link:hover { color: var(--danger); }
-        .install-app-btn { display: none; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(59,130,246,0.4); background: rgba(59,130,246,0.10); color: #0F172A; font-size: 11px; font-weight: 800; text-decoration: none; cursor: pointer; }
-        .cancel-publish-btn { background: #FFF5F5; color: #B91C1C; border: 1px solid #FECACA; border-radius: 8px; padding: 12px 14px; font-weight: 800; font-size: 13px; cursor: pointer; }
-        .nav-links a { display: inline-flex; align-items: center; gap: 6px; }
-        .contact-footer { margin: 28px auto 0; max-width: 1480px; background: #fff; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 20px; box-shadow: var(--shadow-sm); }
-        .contact-footer-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 900; color: var(--bg-abyssal); margin-bottom: 8px; }
-        .contact-footer-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; font-size: 12px; font-weight: 700; color: var(--text-main); }
-        .contact-footer-row a { color: #1E3A8A; text-decoration: none; }
-        .contact-footer-row span { color: var(--text-main); }
-    </style>
-    
-    <!-- PWA Installation Icon Anchors -->
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3">
+.basket-mobile-popup{display:none}@media(max-width:767px){.navbar{padding:9px 12px;gap:8px}.brand-logo{font-size:21px}.hello-user{font-size:10px}.nav-links{gap:0;overflow-x:auto;max-width:72vw;scrollbar-width:none}.nav-links::-webkit-scrollbar{display:none}.nav-item{padding:7px 7px;flex-direction:column;gap:2px;font-size:8px}.nav-icon{width:17px;height:17px}.install-app-btn{padding:6px;font-size:9px}.customer-hero{min-height:390px;background-position:63% center;border-radius:0 0 var(--radius-sm) var(--radius-sm)}.customer-hero-content{padding:32px 22px 28px}.customer-hero h1{font-size:34px}.customer-hero p{font-size:13px}.customer-hero-actions{flex-direction:column}.customer-hero-btn{width:100%;box-sizing:border-box}.customer-hero-trust{gap:10px 14px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{padding:8px}.card-media-wrapper{height:130px}.card-title{font-size:13px}.card-price{font-size:14px}.card-text{font-size:11px}.card-actions{gap:5px}.card-actions .btn-action{font-size:10px;padding:7px 5px}.cart-sidebar{position:static}.contact-footer{margin-left:12px;margin-right:12px}.contact-footer-row{display:grid;grid-template-columns:1fr}.contact-footer-row a,.contact-footer-row span{border-right:0;border-bottom:1px solid var(--border-color);padding:11px 14px}.basket-mobile-popup{position:fixed;top:75px;left:50%;transform:translateX(-50%);width:calc(100% - 30px);max-width:400px;background:var(--bg-abyssal);color:#fff;padding:14px 16px;border-radius:10px;box-shadow:0 8px 25px rgba(0,0,0,.25);z-index:9999;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;animation:basketPopupIn .3s ease-out}.basket-mobile-popup strong{font-size:15px}.basket-mobile-popup span{font-size:13px;color:#E2E8F0}@keyframes basketPopupIn{from{opacity:0;transform:translate(-50%,-15px)}to{opacity:1;transform:translate(-50%,0)}}}
+</style>
 </head>
 <body>
 
-    <div id="bizhub-splash-screen">
-        <div class="splash-logo">Biz<span>Hub</span></div>
-        <div class="splash-spinner"></div>
+<div id="bizhub-splash-screen"><div class="splash-logo">Biz<span>Hub</span></div><div class="splash-spinner"></div></div>
+
+{% if request.args.get('cart_added') == '1' %}<div id="basketMobilePopup" class="basket-mobile-popup">🛒 <strong>Added to Basket!</strong><span>Scroll down to view your basket</span></div>{% endif %}
+
+<div class="navbar">
+    <div class="brand-group"><a href="/" class="brand-logo">Biz<span>Hub</span></a>{% if session.get('username') %}<span class="hello-user">Hey @{{ session['username'] }}</span>{% endif %}</div>
+    <div class="nav-links">
+        {% if session.get('username') %}
+        <a href="/" class="nav-item" title="Market"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 10h18M5 10v9h14v-9M4 10l1-6h14l1 6M9 19v-5h6v5"/></svg><span>Market</span></a>
+        {% if session.get('role') in ['Vendor','Fast Food'] %}<a href="/vendor/{{ session['username'] }}" class="nav-item" title="My Store"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 10h18M5 10v9h14v-9M4 10l1-6h14l1 6M9 19v-5h6v5"/></svg><span>My Store</span></a>{% endif %}
+        {% if session.get('role') == 'Customer' %}<a href="/favorites" class="nav-item" title="Favorites"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M20.8 8.6c0 5.5-8.8 10.4-8.8 10.4S3.2 14.1 3.2 8.6A4.6 4.6 0 0 1 12 6.2a4.6 4.6 0 0 1 8.8 2.4Z"/></svg><span>Favorites</span></a>{% endif %}
+        <a href="/orders" class="nav-item" title="Orders"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M6 3h12v18H6zM9 7h6M9 11h6M9 15h4"/></svg><span>Orders{% if vendor_notification_count and session.get('role') in ['Vendor','Fast Food'] %} ({{ vendor_notification_count }}){% endif %}</span></a>
+        <a href="/settings" class="nav-item" title="Account"><svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 20a7 7 0 0 1 14 0M19 4l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg><span>Account</span></a>
+        <a href="/logout" class="nav-item logout-link" title="Logout"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3M13 4h7v16h-7"/></svg><span>Logout</span></a>
+        {% else %}<a href="/login" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M15 8V5H4v14h11v-3M11 12h10M17 8l4 4-4 4"/></svg><span>Sign In</span></a>{% endif %}
+        <button id="installAppBtn" type="button" class="install-app-btn">📲 Install</button>
     </div>
-
-{% if request.args.get('cart_added') == '1' %}
-    <div id="basketMobilePopup" class="basket-mobile-popup">
-        🛒 <strong>Added to Basket!</strong>
-        <span>Scroll down to view your basket</span>
-    </div>
-{% endif %}
-
-
-    <!-- MAIN BRAND HEADER (HOUSE EMOJI REMOVED COMPLETELY) -->
-    <div class="navbar">
-        <div class="brand-group">
-            <a href="/" class="brand-logo">Biz<span>Hub</span></a>
-            {% if session.get('username') %}
-                <span class="hello-user">Hello @{{ session['username'] }}</span>
-            {% endif %}
-        </div>
-
-        <div class="nav-links">
-            {% if session.get('username') %}
-                <div class="nav-menu-wrap" id="navMenuWrap">
-                    <button type="button" class="menu-trigger" id="navMenuTrigger" aria-expanded="false">
-                        ☰ Menu
-                    </button>
-                    <div class="menu-dropdown">
-                        <a href="/">🛍️ Market</a>
-                        {% if session.get('role') == 'Customer' %}
-                            <a href="/favorites">⭐ Favorites</a>
-                        {% endif %}
-                        {% if session.get('role') == 'Customer' %}
-                            <a href="/orders">📦 Orders</a>
-                        {% elif session.get('role') in ['Vendor', 'Fast Food'] %}
-                            <a href="/orders">📦 Orders{% if vendor_notification_count %} <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#EF4444;color:#fff;font-size:10px;font-weight:900;">{{ vendor_notification_count }}</span>{% endif %}</a>
-                            <a href="/vendor/{{ session['username'] }}">🏬 My Store</a>
-                        {% endif %}
-                        <a href="/settings">⚙️ Account</a>
-                        <a href="/logout" class="logout-link">🚪 Logout</a>
-                    </div>
-                </div>
-            {% else %}
-                <a href="/login">🔐 Sign In / Register</a>
-            {% endif %}
-            <button id="installAppBtn" type="button" class="install-app-btn" aria-label="Install BizHub app" title="Install app">📲 Install App</button>
-        </div>
-    </div>
-    <div class="search-hero">
-        <div class="container">
-            <form method="GET" action="/" class="search-panel">
-                <input type="text" id="liveSearchField" onkeyup="filterCatalogCards()" placeholder="Search local products, fashion wear, or electronics instantly..." class="search-input">
-                <select name="filter_location" class="filter-select" onchange="this.form.submit()">
-                    {% for city in ['🌍 All Cities (Ghana)', 'Abirem', 'Aburi', 'Accra', 'Ada', 'Aflao', 'Agona Swedru', 'Akim Achiase', 'Akim Oda', 'Asamankese', 'Axim', 'Bandai', 'Bimbila', 'Cape Coast', 'Damongo', 'Elmina', 'Ho', 'Hohoe', 'Jasikan', 'Kasoa', 'Keta', 'Kintampo', 'Koforidua', 'Kumasi', 'Kwahu', 'Mankessim', 'Nkawkaw', 'Nsawam', 'Obuase', 'Sehwi', 'Suhum', 'Sunyani', 'Takoradi', 'Tamale', 'Tarkwa', 'Tema'] %}
-                        <option value="{{ 'All' if city == '🌍 All Cities (Ghana)' else city }}" {% if active_filter == city or (active_filter == 'All' and city == '🌍 All Cities (Ghana)') %}selected{% endif %}>{{ city }}</option>
-                    {% endfor %}
-                </select>
-                <button type="submit" class="search-btn">Search</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- CUSTOMER BRAND HERO -->
-{% if session.get('role') not in ['Vendor', 'Fast Food'] %}
-    <section class="customer-hero" aria-label="BizHub customer introduction">
-        <div class="customer-hero-content">
-            <div class="customer-hero-kicker">🛍️ Shop local • Support local • Grow local</div>
-            <h1>Your Local Market, <span>Unified Online</span></h1>
-            <p>Discover trusted local vendors, quality products, useful deals and businesses around you — all in one easy marketplace.</p>
-            <div class="customer-hero-actions">
-                <a class="customer-hero-btn primary" href="#marketplace">🛍️ Start Shopping</a>
-                <a class="customer-hero-btn secondary" href="/?filter_location=All">🏪 Explore Vendors</a>
-            </div>
-            <div class="customer-hero-trust">
-                <span>🛡️ Trusted vendors</span><span>📍 Local & convenient</span><span>🏷️ Great deals</span><span>🔒 Secure shopping</span>
-            </div>
-        </div>
-    </section>
-{% endif %}
-
-    <!-- 👑 CINEMATIC ADVERTISING BILLBOARD MATRIX GRID -->
-
-{% if session.get('role') in ['Vendor', 'Fast Food'] %}
-    <div class="amazon-billboard">
-        <div class="billboard-text-layer">
-            {% if vendor_subscription and vendor_subscription.trial and vendor_subscription.expires_iso %}
-                <span class="billboard-promo-tag">🎁 Premium Trial Active</span>
-                <h1>⏳ Your Free Premium Trial Is Running</h1>
-                <p>Enjoy unlimited listings, showcase videos, priority marketplace placement, and your full Premium Store experience while your launch trial is active.</p>
-                <div id="trialCountdown" data-expires="{{ vendor_subscription.expires_iso }}" style="display:inline-flex; align-items:center; gap:8px; padding:9px 14px; background:rgba(255,255,255,0.12); border:1px solid rgba(245,158,11,0.55); border-radius:8px; color:white; font-size:15px; font-weight:900; letter-spacing:.3px;">
-                    ⏱️ <span id="trialCountdownValue">Calculating...</span>
-                </div>
-            {% elif vendor_subscription and vendor_subscription.name == 'Premium Store' %}
-                <span class="billboard-promo-tag">💎 Premium Store Active</span>
-                <h1>🎉 Congrats, You're on the Next Level !</h1>
-                <p>Your account is currently on a paid Premium Store subscription. Use Manage Account to review your plan and renewal details.</p>
-            {% else %}
-                <span class="billboard-promo-tag">⚡ Trial Ended</span>
-                <h1>Your Free Premium Trial Has Ended</h1>
-                <p>Upgrade to Premium Store to restore unlimited listings, showcase videos, priority placement, and the full merchant experience.</p>
-            {% endif %}
-        </div>
-    </div>
-{% endif %}
-
-
-    <div class="container" id="marketplace">
-        <div class="layout">
-            <!-- PANEL 1: SIDEBAR CONTAINER -->
-            <div>
-                {% if session.get('username') and session.get('role') in ['Vendor', 'Fast Food'] %}
-                    <div class="panel-box">
-                        <h3>👑 Store Settings</h3>
-                        <p style="margin: 0 0 5px; font-size: 13px;">Plan: <b>{{ vendor_subscription.name if vendor_subscription else 'Free Trial' }}</b></p>
-                        {% if vendor_subscription and vendor_subscription.trial %}
-                            <small style="color: var(--accent); display: block; margin-bottom: 8px;">Premium Promotion Trial Active</small>
-                        {% endif %}
-                        <p style="margin: 5px 0 12px; font-size: 12px;">Listings: <b>{{ listing_count }}</b></p>
-                        <div style="display:flex;flex-direction:column;gap:7px;">
-                            <a href="/vendor/{{ session['username'] }}" class="btn-action btn-cart" style="text-align:center;">🏬 My Store</a>
-                            <a href="/promotions" class="btn-action" style="text-align:center;background:#FEF3C7;color:#92400E;border-color:#FCD34D;">⚡ Manage Promotions</a>
-                            <a href="/subscription" class="btn-action btn-cart" style="text-align:center;">💎 Manage Account</a>
-                        </div>
-                    </div>
-
-                    <!-- LISTING CREATION FORM BLOCK (FIXED PARAMETER PATHS) -->
-                    <div class="panel-box">
-                        {% if session.get('role') == 'Fast Food' %}
-                            <h3 style="color: #C53030; border-bottom: 2px solid #FED7D7;">🍕 Publish Hot Meal Deal</h3>
-                        {% else %}
-                            <h3>📢 Upload Product Listing</h3>
-                        {% endif %}
-
-                        {% if listing_error %}<div class="listing-alert">{{ listing_error }}</div>{% endif %}
-                        <form id="listingForm" method="POST" action="/" enctype="multipart/form-data">
-                            <div class="form-group">
-                                <label>{% if session.get('role') == 'Fast Food' %}Meal / Combo Name:{% else %}Item Title / Name:{% endif %}</label>
-                                <input type="text" name="{% if session.get('role') == 'Fast Food' %}meal_name{% else %}title{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Jollof with Grilled Chicken{% else %}e.g. Smart Watch{% endif %}" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Price (GH₵):</label>
-                                <input type="number" name="price" step="0.01" class="form-control" placeholder="0.00" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Preparation / Dispatch City:</label>
-                                <select name="location" class="form-control">
-                                    {% for city in ['Abirem', 'Aburi', 'Accra', 'Ada', 'Aflao', 'Agona Swedru', 'Akim Achiase', 'Akim Oda', 'Asamankese', 'Axim', 'Bandai', 'Bimbila', 'Cape Coast', 'Damongo', 'Elmina', 'Ho', 'Hohoe', 'Jasikan', 'Kasoa', 'Keta', 'Kintampo', 'Koforidua', 'Kumasi', 'Kwahu', 'Mankessim', 'Nkawkaw', 'Nsawam', 'Obuase', 'Sehwi', 'Suhum', 'Sunyani', 'Takoradi', 'Tamale', 'Tarkwa', 'Tema'] %}
-                                        <option value="{{ city }}">{{ city }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>{% if session.get('role') == 'Fast Food' %}Ingredients / Delivery Package Notes:{% else %}Product Description:{% endif %}</label>
-                                <textarea name="{% if session.get('role') == 'Fast Food' %}meal_description{% else %}description{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Served hot with pepper sauce, salad, and a free drink.{% else %}Enter details...{% endif %}" class="form-control" required></textarea>
-                            </div>
-                            
-                            <div class="form-group media-choice" id="imageChoice">
-                                <label>Item Cover Photo (Image Option):</label>
-                                <input id="productImage" type="file" name="product_image" accept="image/*" class="form-control">
-                                <img id="imagePreview" class="media-preview" alt="Selected item image preview">
-                                <button id="cancelImage" type="button" class="media-cancel">Cancel Image → Choose Video</button>
-                            </div>
-                            <div class="form-group media-choice" id="videoChoice">
-                                <label>📦 Item Showcase Video (Premium/Trial Option):</label>
-                                <input id="productVideo" type="file" name="product_video" accept="video/mp4,video/webm,video/quicktime" class="form-control">
-                                <video id="videoPreview" class="media-preview" controls playsinline preload="metadata"></video>
-                                <button id="cancelVideo" type="button" class="media-cancel">Cancel Video → Choose Image</button>
-                                <div id="mediaStatus" class="media-status">Choose exactly one: Image OR Video. Videos must be 20 seconds or shorter.</div>
-                            </div>
-                            <div style="display:flex; gap:8px; margin-top: 10px;">
-                                <button type="submit" class="submit-btn {% if session.get('role') == 'Fast Food' %}btn-ff-override{% endif %}" style="flex:1; margin-top: 0;">
-                                    {% if session.get('role') == 'Fast Food' %}🚀 Launch Meal Live{% else %}Publish Item{% endif %}
-                                </button>
-                                <button type="button" id="cancelPublishBtn" class="cancel-publish-btn">Cancel Publishing</button>
-                            </div>
-                        </form>
-                    </div>
-
-                {% endif %}
-            </div>
-            <!-- PANEL 2: MAIN Amazon FEED GRID -->
-            <div>
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
-                    <h3 style="margin:0; font-size:18px; color:var(--bg-abyssal); font-weight:800;">🛍️ Live Marketplace Feed</h3>
-                    {% if session.get('role') == 'Customer' %}<a href="/?promo=1" style="font-size:12px;font-weight:800;color:#B45309;text-decoration:none;background:#FEF3C7;border:1px solid #FCD34D;padding:7px 10px;border-radius:8px;">⚡ Vendors Running Promotions</a>{% endif %}
-                </div>
-                <div class="grid" id="masterCatalogGrid">
-                    {% for product in products %}
-                        <div class="card">
-                            <!-- 👑 DYNAMIC MULTI-MEDIA RENDERING ENGINE ENGINE FIXED -->
-                            <div class="card-media-wrapper" style="background-color: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; height: 170px;">
- {% if product.video_file %}
-        <video class="card-img" controls preload="metadata">
-            <source src="{{ url_for('stream_video', filename=product.video_file) }}">
-            Your browser does not support video playback.
-        </video>
-    {% elif product.image_file %}
-        <img class="card-img"
-             src="{{ url_for('static', filename='uploads/' + product.image_file) }}"
-             alt="{{ product.title }}">
-    {% endif %}
-
-    <span class="loc-badge">📍 {{ product.location }}</span>
 </div>
-                            
-                            <div class="card-body">
-                                <div class="card-brand-wrapper">
-                                    {% if vendor_logos.get(product.seller) %}
-                                        <img class="card-logo-circle" src="{{ url_for('static', filename='uploads/' + vendor_logos[product.seller]) }}" alt="logo">
-                                    {% else %}
-                                        <div class="card-logo-circle" style="display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; color:white; background:var(--primary-light);">BH</div>
-                                    {% endif %}
-                                    <a href="/vendor/{{ product.seller }}" class="card-brand" style="text-decoration:none;">🏬 {{ product.business_label }}</a>
-                                </div>
-                                {% if product.active_promo %}
-                                    <a href="/vendor/{{ product.seller }}" style="display:inline-block;width:max-content;max-width:100%;margin:0 0 5px;padding:3px 7px;border-radius:999px;background:#FEF3C7;color:#B45309;font-size:9px;font-weight:900;text-decoration:none;">⚡ PROMO ACTIVE</a>
-                                {% endif %}
-                                <h4 class="card-title">{{ product.title }}</h4>
-                                <div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div>
-                                <p class="card-text">{{ product.description }}</p>
-                                <div class="card-metadata">Owner: @{{ product.seller }}</div>
-                                
-                                <div class="card-actions">
-                                    {% if session.get('username') == product.seller %}
-                                        <a href="/delete-item/{{ product.id }}" class="btn-action btn-delete">🗑️ Delete</a>
-                                    {% else %}
-                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hi%20{{ product.seller }},%20I%20want%20to%20ask%20about%20your%20{{ product.title }}%20on%20biz%20hub" class="btn-action btn-cart">❓ Inquiry</a>
-                                        {% if product.active_promo %}
-                                            <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hello%20{{ product.business_label or product.seller }},%20I%20saw%20your%20{{ product.title }}%20promo%20on%20biz%20hub%20and%20I'd%20love%20to%20ask%20about%20it" class="btn-action btn-cart">⚡ Find out about promo</a>
-                                        {% endif %}
-                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hi%20{{ product.seller }},%20I%20want%20to%20buy%20your%20{{ product.title }}%20on%20biz%20hub.%20Let's%20arrange%20for%20payment%20and%20delivery" class="btn-action btn-momo">💬 Quick Buy</a>
-                                        <a href="/add-to-cart/{{ product.id }}" class="btn-action btn-cart">🛒 Add to Basket</a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    {% else %}
-                        <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); background: white; border-radius: 4px; border: 1px dashed var(--border-color);">
-                            📭 No matching items found.
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
 
-            <!-- PANEL 3: BASKET -->
-            <div class="cart-sidebar">
-                <h3>🛒 Shopping Basket ({{ session.get('cart', [])|length }})</h3>
-                {% if cart_items %}
-                    {% for item in cart_items %}
-                        <div class="cart-item-row">
-                            <span>• {{ item.title }}</span>
-                            <b>GH₵{{ "%.2f"|format(item.price) }}</b>
-                        </div>
-                    {% endfor %}
-                    <div class="cart-total-row">
-                        <span>Total:</span>
-                        <span>GH₵ {{ "%.2f"|format(cart_total) }}</span>
-                    </div>
-                    {% for order in seller_orders %}
-                        <a href="whatsapp://send?phone={{ order.number }}&text={{ order.whatsapp_text }}" class="btn-whatsapp-checkout">💬 Pay Vendor @{{ order.seller }}</a>
-                    {% endfor %}
-                    <a href="/clear-cart" class="clear-cart-link">Empty Basket</a>
-                {% else %}
-                    <p style="color:var(--text-muted); font-size:13px; text-align:center;">Basket is empty.</p>
-                {% endif %}
-            </div>
+<div class="search-hero"><div class="container"><form method="GET" action="/" class="search-panel"><input type="text" id="liveSearchField" onkeyup="filterCatalogCards()" placeholder="Search local products, fashion wear, or electronics instantly..." class="search-input"><select name="filter_location" class="filter-select" onchange="this.form.submit()">{% for city in ['🌍 All Cities (Ghana)','Abirem','Aburi','Accra','Ada','Aflao','Agona Swedru','Akim Achiase','Akim Oda','Asamankese','Axim','Bandai','Bimbila','Cape Coast','Damongo','Elmina','Ho','Hohoe','Jasikan','Kasoa','Keta','Kintampo','Koforidua','Kumasi','Kwahu','Mankessim','Nkawkaw','Nsawam','Obuase','Sehwi','Suhum','Sunyani','Takoradi','Tamale','Tarkwa','Tema'] %}<option value="{{ 'All' if city == '🌍 All Cities (Ghana)' else city }}" {% if active_filter == city or (active_filter == 'All' and city == '🌍 All Cities (Ghana)') %}selected{% endif %}>{{ city }}</option>{% endfor %}</select><button type="submit" class="search-btn">Search</button></form></div></div>
 
-        </div>
-    </div>
+{% if session.get('role') not in ['Vendor','Fast Food'] %}
+<section class="customer-hero" aria-label="BizHub customer introduction"><div class="customer-hero-content"><div class="customer-hero-kicker">🛍️ Shop local • Support local • Grow local</div><h1>Your Local Market, <span>Unified Online</span></h1><p>Discover trusted local vendors, quality products, useful deals and businesses around you — all in one easy marketplace.</p><div class="customer-hero-actions"><a class="customer-hero-btn primary" href="#marketplace">🛍️ Start Shopping</a><a class="customer-hero-btn secondary" href="/?filter_location=All">🏪 Explore Vendors</a></div><div class="customer-hero-trust"><span>🛡️ Trusted vendors</span><span>📍 Local & convenient</span><span>🏷️ Great deals</span><span>🔒 Secure shopping</span></div></div></section>
+{% endif %}
 
-    <div class="contact-footer">
-        <div class="contact-footer-title">Contact BizHub Operations</div>
-        <div class="contact-footer-row">
-            <a href="mailto:contactBizHub@proton.me">📧 contactBizHub@proton.me</a>
-            <a href="https://wa.me/233558272972" target="_blank" rel="noopener noreferrer">💬 0558272972</a>
-            <span>📞 0540901856</span>
-        </div>
-    </div>
+{% if session.get('role') in ['Vendor','Fast Food'] %}
+<div class="amazon-billboard"><div class="billboard-text-layer">
+{% if vendor_subscription and vendor_subscription.trial and vendor_subscription.expires_iso %}<span class="billboard-promo-tag">🎁 Premium Trial Active</span><h1>⏳ Your Free Premium Trial Is Running</h1><p>Enjoy unlimited listings, showcase videos, priority marketplace placement, and your full Premium Store experience while your launch trial is active.</p><div id="trialCountdown" data-expires="{{ vendor_subscription.expires_iso }}" style="display:inline-flex;align-items:center;gap:8px;padding:9px 14px;background:rgba(255,255,255,.12);border:1px solid rgba(245,158,11,.55);border-radius:8px;color:#fff;font-size:15px;font-weight:900">⏱️ <span id="trialCountdownValue">Calculating...</span></div>
+{% elif vendor_subscription and vendor_subscription.name == 'Premium Store' %}<span class="billboard-promo-tag">💎 Premium Store Active</span><h1>🎉 Congrats, You're on the Next Level!</h1><p>Your account is currently on a paid Premium Store subscription. Use Manage Account to review your plan and renewal details.</p>
+{% else %}<span class="billboard-promo-tag">⚡ Trial Ended</span><h1>Your Free Premium Trial Has Ended</h1><p>Upgrade to Premium Store to restore unlimited listings, showcase videos, priority placement, and the full merchant experience.</p>{% endif %}
+</div></div>
+{% endif %}
 
-    <!-- JAVASCRIPT MASTER OPERATIONS CONTROL PACK -->
-    <script>
-        window.addEventListener("DOMContentLoaded", function() {
-            startTrialCountdown();
-            setupListingMediaControls();
-            setupInstallPrompt();
-            setTimeout(function() {
-                let s = document.getElementById("bizhub-splash-screen");
-                if(s) { s.style.opacity = "0"; s.style.visibility = "hidden"; }
-            }, 1500);
-        });
+<div class="container" id="marketplace"><div class="layout">
+<div>
+{% if session.get('username') and session.get('role') in ['Vendor','Fast Food'] %}
+<div class="panel-box"><h3>👑 Store Settings</h3><p style="margin:0 0 5px;font-size:13px">Plan: <b>{{ vendor_subscription.name if vendor_subscription else 'Free Trial' }}</b></p>{% if vendor_subscription and vendor_subscription.trial %}<small style="color:var(--accent);display:block;margin-bottom:8px">Premium Promotion Trial Active</small>{% endif %}<p style="margin:5px 0 12px;font-size:12px">Listings: <b>{{ listing_count }}</b></p><div style="display:flex;flex-direction:column;gap:7px"><a href="/vendor/{{ session['username'] }}" class="btn-action btn-cart">🏬 My Store</a><a href="/promotions" class="btn-action" style="background:#FEF3C7;color:#92400E;border-color:#FCD34D">⚡ Manage Promotions</a><a href="/subscription" class="btn-action btn-cart">💎 Manage Account</a></div></div>
+<div class="panel-box"><h3>{% if session.get('role') == 'Fast Food' %}🍕 Publish Hot Meal Deal{% else %}📢 Upload Product Listing{% endif %}</h3>{% if listing_error %}<div class="listing-alert">{{ listing_error }}</div>{% endif %}<form id="listingForm" method="POST" action="/" enctype="multipart/form-data"><div class="form-group"><label>{% if session.get('role') == 'Fast Food' %}Meal / Combo Name:{% else %}Item Title / Name:{% endif %}</label><input type="text" name="{% if session.get('role') == 'Fast Food' %}meal_name{% else %}title{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Jollof with Grilled Chicken{% else %}e.g. Smart Watch{% endif %}" class="form-control" required></div><div class="form-group"><label>Price (GH₵):</label><input type="number" name="price" step="0.01" class="form-control" placeholder="0.00" required></div><div class="form-group"><label>Preparation / Dispatch City:</label><select name="location" class="form-control">{% for city in ['Abirem','Aburi','Accra','Ada','Aflao','Agona Swedru','Akim Achiase','Akim Oda','Asamankese','Axim','Bandai','Bimbila','Cape Coast','Damongo','Elmina','Ho','Hohoe','Jasikan','Kasoa','Keta','Kintampo','Koforidua','Kumasi','Kwahu','Mankessim','Nkawkaw','Nsawam','Obuase','Sehwi','Suhum','Sunyani','Takoradi','Tamale','Tarkwa','Tema'] %}<option value="{{ city }}">{{ city }}</option>{% endfor %}</select></div><div class="form-group"><label>{% if session.get('role') == 'Fast Food' %}Ingredients / Delivery Package Notes:{% else %}Product Description:{% endif %}</label><textarea name="{% if session.get('role') == 'Fast Food' %}meal_description{% else %}description{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Served hot with pepper sauce, salad, and a free drink.{% else %}Enter details...{% endif %}" class="form-control" required></textarea></div><div class="form-group media-choice"><label>Item Cover Photo (Image Option):</label><input id="productImage" type="file" name="product_image" accept="image/*" class="form-control"><img id="imagePreview" class="media-preview" alt="Selected item image preview"><button id="cancelImage" type="button" class="media-cancel">Cancel Image → Choose Video</button></div><div class="form-group media-choice"><label>📦 Item Showcase Video (Premium/Trial Option):</label><input id="productVideo" type="file" name="product_video" accept="video/mp4,video/webm,video/quicktime" class="form-control"><video id="videoPreview" class="media-preview" controls playsinline preload="metadata"></video><button id="cancelVideo" type="button" class="media-cancel">Cancel Video → Choose Image</button><div id="mediaStatus" class="media-status">Choose exactly one: Image OR Video. Videos must be 20 seconds or shorter.</div></div><div style="display:flex;gap:8px;margin-top:10px"><button type="submit" class="submit-btn" style="flex:1;margin-top:0">{% if session.get('role') == 'Fast Food' %}🚀 Launch Meal Live{% else %}Publish Item{% endif %}</button><button type="button" id="cancelPublishBtn" class="cancel-publish-btn">Cancel Publishing</button></div></form></div>
+{% endif %}
+</div>
 
-        function setupInstallPrompt() {
-            const installBtn = document.getElementById("installAppBtn");
-            if (!installBtn) return;
-            let deferredPrompt = null;
+<div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:15px"><h3 style="margin:0;font-size:18px;color:var(--bg-abyssal);font-weight:800">🛍️ Live Marketplace Feed</h3>{% if session.get('role') == 'Customer' %}<a href="/?promo=1" style="font-size:12px;font-weight:800;color:#B45309;text-decoration:none;background:#FEF3C7;border:1px solid #FCD34D;padding:7px 10px;border-radius:8px">⚡ Vendors Running Promotions</a>{% endif %}</div>
+<div class="grid" id="masterCatalogGrid">{% for product in products %}<div class="card"><div class="card-media-wrapper">{% if product.video_file %}<video class="card-img" controls preload="metadata"><source src="{{ url_for('stream_video',filename=product.video_file) }}">Your browser does not support video playback.</video>{% elif product.image_file %}<img class="card-img" src="{{ url_for('static',filename='uploads/'+product.image_file) }}" alt="{{ product.title }}">{% endif %}<span class="loc-badge">📍 {{ product.location }}</span></div><div class="card-body"><div class="card-brand-wrapper">{% if vendor_logos.get(product.seller) %}<img class="card-logo-circle" src="{{ url_for('static',filename='uploads/'+vendor_logos[product.seller]) }}" alt="logo">{% else %}<div class="card-logo-circle" style="display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:bold;color:#fff;background:var(--primary-light)">BH</div>{% endif %}<a href="/vendor/{{ product.seller }}" class="card-brand" style="text-decoration:none">🏬 {{ product.business_label }}</a></div>{% if product.active_promo %}<a href="/vendor/{{ product.seller }}" style="display:inline-block;width:max-content;max-width:100%;margin:0 0 5px;padding:3px 7px;border-radius:999px;background:#FEF3C7;color:#B45309;font-size:9px;font-weight:900;text-decoration:none">⚡ PROMO ACTIVE</a>{% endif %}<h4 class="card-title">{{ product.title }}</h4><div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div><p class="card-text">{{ product.description }}</p><div class="card-metadata">Owner: @{{ product.seller }}</div><div class="card-actions">{% if session.get('username') == product.seller %}<a href="/delete-item/{{ product.id }}" class="btn-action btn-delete">🗑️ Delete</a>{% else %}<a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hi%20{{ product.seller }},%20I%20want%20to%20ask%20about%20your%20{{ product.title }}%20on%20biz%20hub" class="btn-action btn-cart">❓ Inquiry</a>{% if product.active_promo %}<a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hello%20{{ product.business_label or product.seller }},%20I%20saw%20your%20{{ product.title }}%20promo%20on%20biz%20hub%20and%20I'd%20love%20to%20ask%20about%20it" class="btn-action btn-cart">⚡ Find out about promo</a>{% endif %}<a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hi%20{{ product.seller }},%20I%20want%20to%20buy%20your%20{{ product.title }}%20on%20biz%20hub.%20Let's%20arrange%20for%20payment%20and%20delivery" class="btn-action btn-momo">💬 Quick Buy</a><a href="/add-to-cart/{{ product.id }}" class="btn-action btn-cart">🛒 Add to Basket</a>{% endif %}</div></div></div>{% else %}<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text-muted);background:#fff;border-radius:4px;border:1px dashed var(--border-color)">📭 No matching items found.</div>{% endfor %}</div></div>
 
-            installBtn.addEventListener("click", async function() {
-                if (!deferredPrompt) return;
-                deferredPrompt.prompt();
-                await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                installBtn.style.display = "none";
-            });
+<div class="cart-sidebar"><h3>🛒 Shopping Basket ({{ session.get('cart',[])|length }})</h3>{% if cart_items %}{% for item in cart_items %}<div class="cart-item-row"><span>• {{ item.title }}</span><b>GH₵{{ "%.2f"|format(item.price) }}</b></div>{% endfor %}<div class="cart-total-row"><span>Total:</span><span>GH₵ {{ "%.2f"|format(cart_total) }}</span></div>{% for order in seller_orders %}<a href="whatsapp://send?phone={{ order.number }}&text={{ order.whatsapp_text }}" class="btn-whatsapp-checkout">💬 Pay Vendor @{{ order.seller }}</a>{% endfor %}<a href="/clear-cart" class="clear-cart-link">Empty Basket</a>{% else %}<p style="color:var(--text-muted);font-size:13px;text-align:center">Basket is empty.</p>{% endif %}</div>
+</div></div>
 
-            window.addEventListener("beforeinstallprompt", function(event) {
-                event.preventDefault();
-                deferredPrompt = event;
-                installBtn.style.display = "inline-flex";
-            });
+<div class="contact-footer"><div class="contact-footer-title">Contact BizHub Operations</div><div class="contact-footer-row"><a href="mailto:contactBizHub@proton.me">📧 contactBizHub@proton.me</a><a href="https://wa.me/233558272972" target="_blank" rel="noopener noreferrer">💬 0558272972</a><span>📞 0540901856</span></div></div>
 
-            window.addEventListener("appinstalled", function() {
-                installBtn.style.display = "none";
-            });
-        }
-
-
-        function startTrialCountdown() {
-            const countdown = document.getElementById("trialCountdown");
-            const value = document.getElementById("trialCountdownValue");
-            if (!countdown || !value) return;
-
-            const expiry = new Date(countdown.dataset.expires);
-            if (Number.isNaN(expiry.getTime())) {
-                value.textContent = "Trial end date unavailable";
-                return;
-            }
-
-            function update() {
-                const remaining = expiry.getTime() - Date.now();
-                if (remaining <= 0) {
-                    value.textContent = "Trial expired";
-                    countdown.style.borderColor = "rgba(239,68,68,0.65)";
-                    return;
-                }
-
-                const totalSeconds = Math.floor(remaining / 1000);
-                const days = Math.floor(totalSeconds / 86400);
-                const hours = Math.floor((totalSeconds % 86400) / 3600);
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
-                const seconds = totalSeconds % 60;
-
-                value.textContent = `${days}d ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s remaining`;
-            }
-
-            update();
-            setInterval(update, 1000);
-        }
-
-        function setupListingMediaControls() {
-            const form=document.getElementById("listingForm"), imageInput=document.getElementById("productImage"), videoInput=document.getElementById("productVideo"), imagePreview=document.getElementById("imagePreview"), videoPreview=document.getElementById("videoPreview"), cancelImage=document.getElementById("cancelImage"), cancelVideo=document.getElementById("cancelVideo"), status=document.getElementById("mediaStatus"), cancelPublishBtn=document.getElementById("cancelPublishBtn");
-            const publishButton=form ? form.querySelector('button[type="submit"]') : null;
-            if(!form||!imageInput||!videoInput) return;
-            let imageUrl=null, videoUrl=null, videoDurationValid=true;
-            function clearImage(){ imageInput.value=""; imagePreview.removeAttribute("src"); imagePreview.style.display="none"; cancelImage.style.display="none"; if(imageUrl){URL.revokeObjectURL(imageUrl);imageUrl=null;} }
-            function clearVideo(){ videoInput.value=""; videoPreview.pause(); videoPreview.removeAttribute("src"); videoPreview.load(); videoPreview.style.display="none"; cancelVideo.style.display="none"; videoDurationValid=true; if(videoUrl){URL.revokeObjectURL(videoUrl);videoUrl=null;} }
-            imageInput.addEventListener("change",function(){ if(!this.files.length)return; clearVideo(); const f=this.files[0]; if(!f.type.startsWith("image/")){clearImage();status.textContent="Please choose an image file.";return;} imageUrl=URL.createObjectURL(f);imagePreview.src=imageUrl;imagePreview.style.display="block";cancelImage.style.display="block";status.textContent="Image selected. Video is cleared."; });
-            videoInput.addEventListener("change",function(){ if(!this.files.length)return; clearImage(); const f=this.files[0]; if(!f.type.startsWith("video/")){clearVideo();status.textContent="Please choose a video file.";return;} videoUrl=URL.createObjectURL(f);videoDurationValid=true;videoPreview.src=videoUrl;videoPreview.style.display="block";cancelVideo.style.display="block";status.textContent="Checking video duration…"; videoPreview.onloadedmetadata=function(){if(videoPreview.duration>20){videoDurationValid=false;clearVideo();status.textContent="Video rejected: maximum duration is 20 seconds.";}else{status.textContent=`Video selected (${videoPreview.duration.toFixed(1)}s). Image is cleared.`;}}; videoPreview.onerror=function(){videoDurationValid=false;clearVideo();status.textContent="Video could not be read. Please choose a valid MP4, WebM, or MOV file.";}; });
-            cancelImage.addEventListener("click",function(){clearImage();status.textContent="Image cancelled. Choose a video or select an image again.";});
-            cancelVideo.addEventListener("click",function(){clearVideo();status.textContent="Video cancelled. Choose an image or select a video again.";});
-            if (cancelPublishBtn) {
-                cancelPublishBtn.addEventListener("click", function() {
-                    form.reset();
-                    clearImage();
-                    clearVideo();
-                    status.textContent = "Publishing cancelled. You can start again.";
-                    if (publishButton) {
-                        publishButton.disabled = false;
-                        publishButton.innerHTML = publishButton.dataset.defaultText || publishButton.textContent;
-                    }
-                });
-            }
-            if (publishButton) {
-                publishButton.dataset.defaultText = publishButton.innerHTML;
-            }
-            form.addEventListener("submit",function(e){const hi=imageInput.files.length>0,hv=videoInput.files.length>0;if(hi===hv){e.preventDefault();status.textContent="Choose exactly one: Image OR Video.";return;}if(hv&&!videoDurationValid){e.preventDefault();status.textContent="Video must be 20 seconds or shorter.";return;}if(publishButton){publishButton.disabled=true;publishButton.innerHTML="⏳ Publishing…";}});
-        }
-
-        function filterCatalogCards() {
-            let input = document.getElementById("liveSearchField").value.toLowerCase().trim();
-            let cards = document.getElementsByClassName("card");
-            
-            for (let i = 0; i < cards.length; i++) {
-                // 🧠 SAFE INJECTION CHANNELS: Safely extracts text without breaking on empty entries
-                let titleElement = cards[i].querySelector(".card-title");
-                if (titleElement) {
-                    let titleText = (titleElement.textContent || titleElement.innerText || "").toLowerCase();
-                    if (titleText.indexOf(input) > -1) { 
-                        cards[i].style.display = ""; 
-                    } else { 
-                        cards[i].style.display = "none"; 
-                    }
-                }
-            }
-        }
-
-// Automatically hide the mobile basket notification//
-document.addEventListener("DOMContentLoaded", function() {
-    const basketPopup = document.getElementById("basketMobilePopup");
-
-    if (basketPopup) {
-        setTimeout(function() {
-            basketPopup.style.transition = "opacity 0.4s ease";
-            basketPopup.style.opacity = "0";
-
-            setTimeout(function() {
-                basketPopup.remove();
-            }, 400);
-        }, 3500);
-    }
-});
-
-    </script>
+<script>
+window.addEventListener("DOMContentLoaded",()=>{startTrialCountdown();setupListingMediaControls();setupInstallPrompt();setTimeout(()=>{const s=document.getElementById("bizhub-splash-screen");if(s){s.style.opacity="0";s.style.visibility="hidden"}},1500)});
+function setupInstallPrompt(){const b=document.getElementById("installAppBtn");if(!b)return;let p=null;b.onclick=async()=>{if(!p)return;p.prompt();await p.userChoice;p=null;b.style.display="none"};window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();p=e;b.style.display="inline-flex"});window.addEventListener("appinstalled",()=>b.style.display="none")}
+function startTrialCountdown(){const c=document.getElementById("trialCountdown"),v=document.getElementById("trialCountdownValue");if(!c||!v)return;const e=new Date(c.dataset.expires);if(Number.isNaN(e.getTime())){v.textContent="Trial end date unavailable";return}function u(){let r=e-Date.now();if(r<=0){v.textContent="Trial expired";return}let s=Math.floor(r/1000),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),x=s%60;v.textContent=`${d}d ${String(h).padStart(2,"0")}h ${String(m).padStart(2,"0")}m ${String(x).padStart(2,"0")}s remaining`}u();setInterval(u,1000)}
+function setupListingMediaControls(){const f=document.getElementById("listingForm"),i=document.getElementById("productImage"),v=document.getElementById("productVideo"),ip=document.getElementById("imagePreview"),vp=document.getElementById("videoPreview"),ci=document.getElementById("cancelImage"),cv=document.getElementById("cancelVideo"),st=document.getElementById("mediaStatus"),cp=document.getElementById("cancelPublishBtn");if(!f||!i||!v)return;let iu=null,vu=null,valid=true;function clearI(){i.value="";ip.removeAttribute("src");ip.style.display="none";ci.style.display="none";if(iu){URL.revokeObjectURL(iu);iu=null}}function clearV(){v.value="";vp.pause();vp.removeAttribute("src");vp.load();vp.style.display="none";cv.style.display="none";valid=true;if(vu){URL.revokeObjectURL(vu);vu=null}}i.onchange=function(){if(!this.files.length)return;clearV();const x=this.files[0];if(!x.type.startsWith("image/")){clearI();st.textContent="Please choose an image file.";return}iu=URL.createObjectURL(x);ip.src=iu;ip.style.display="block";ci.style.display="block";st.textContent="Image selected. Video is cleared."};v.onchange=function(){if(!this.files.length)return;clearI();const x=this.files[0];if(!x.type.startsWith("video/")){clearV();st.textContent="Please choose a video file.";return}vu=URL.createObjectURL(x);vp.src=vu;vp.style.display="block";cv.style.display="block";st.textContent="Checking video duration…";vp.onloadedmetadata=()=>{if(vp.duration>20){valid=false;clearV();st.textContent="Video rejected: maximum duration is 20 seconds."}else st.textContent=`Video selected (${vp.duration.toFixed(1)}s). Image is cleared.`};vp.onerror=()=>{valid=false;clearV();st.textContent="Video could not be read. Please choose a valid MP4, WebM, or MOV file."}};ci.onclick=()=>{clearI();st.textContent="Image cancelled. Choose a video or select an image again."};cv.onclick=()=>{clearV();st.textContent="Video cancelled. Choose an image or select a video again."};cp?.addEventListener("click",()=>{f.reset();clearI();clearV();st.textContent="Publishing cancelled. You can start again."});f.addEventListener("submit",e=>{let hi=i.files.length>0,hv=v.files.length>0;if(hi===hv){e.preventDefault();st.textContent="Choose exactly one: Image OR Video.";return}if(hv&&!valid){e.preventDefault();st.textContent="Video must be 20 seconds or shorter.";return}const b=f.querySelector('button[type="submit"]');if(b){b.disabled=true;b.innerHTML="⏳ Publishing…"}})}
+function filterCatalogCards(){const q=document.getElementById("liveSearchField").value.toLowerCase().trim();document.querySelectorAll(".card").forEach(c=>{const t=c.querySelector(".card-title");c.style.display=t&&(t.textContent||"").toLowerCase().includes(q)?"":"none"})}
+document.addEventListener("DOMContentLoaded",()=>{const p=document.getElementById("basketMobilePopup");if(p)setTimeout(()=>{p.style.transition="opacity .4s";p.style.opacity="0";setTimeout(()=>p.remove(),400)},3500)});
+</script>
 </body>
 </html>
+
