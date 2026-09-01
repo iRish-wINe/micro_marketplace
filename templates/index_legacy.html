@@ -218,7 +218,7 @@
         <div class="splash-spinner"></div>
     </div>
 
-{% if cart_added %}
+{% if request.args.get('cart_added') == '1' %}
     <div id="basketMobilePopup" class="basket-mobile-popup">
         🛒 <strong>Added to Basket!</strong>
         <span>Scroll down to view your basket</span>
@@ -235,12 +235,10 @@
                 <a href="/">Market</a>
                 {% if session.get('role') == 'Customer' %}
                     <a href="/favorites">⭐ Favorites</a>
-                    <a href="/notifications">🔔 Notifications{% if customer_notification_count %} <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#EF4444;color:#fff;font-size:10px;font-weight:900;">{{ customer_notification_count }}</span>{% endif %}</a>
                     <a href="/orders">Orders</a>
                 {% elif session.get('role') in ['Vendor', 'Fast Food'] %}
                     <a href="/orders">🔔 Orders{% if vendor_notification_count %} <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#EF4444;color:#fff;font-size:10px;font-weight:900;">{{ vendor_notification_count }}</span>{% endif %}</a>
                     <a href="/vendor/{{ session['username'] }}">My Store</a>
-                    {% if vendor_subscription and vendor_subscription.is_premium %}<a href="/delivery/services">🚚 Find Delivery</a>{% endif %}
                 {% endif %}
                 <a href="/settings">Account</a>
                 <a href="/logout" class="logout" style="background:#E53E3E;">Logout</a>
@@ -302,8 +300,11 @@
                             <small style="color: var(--accent); display: block; margin-bottom: 8px;">Premium Promotion Trial Active</small>
                         {% endif %}
                         <p style="margin: 5px 0 12px; font-size: 12px;">Listings: <b>{{ listing_count }}</b></p>
-                        <a href="/subscription" class="btn-action btn-cart" style="text-align:center;">💎 Manage Account</a>
-                        {% if vendor_subscription and vendor_subscription.is_premium %}<a href="/promotions" class="btn-action btn-momo" style="text-align:center;margin-top:6px;">🔥 Manage Promotions</a><a href="/delivery/services" class="btn-action btn-cart" style="text-align:center;margin-top:6px;">🚚 Find a Delivery Service</a>{% endif %}
+                        <div style="display:flex;flex-direction:column;gap:7px;">
+                            <a href="/vendor/{{ session['username'] }}" class="btn-action btn-cart" style="text-align:center;">🏬 My Store</a>
+                            <a href="/promotions" class="btn-action" style="text-align:center;background:#FEF3C7;color:#92400E;border-color:#FCD34D;">🔥 Manage Promotions</a>
+                            <a href="/subscription" class="btn-action btn-cart" style="text-align:center;">💎 Manage Account</a>
+                        </div>
                     </div>
 
                     <!-- LISTING CREATION FORM BLOCK (FIXED PARAMETER PATHS) -->
@@ -365,43 +366,12 @@
                     {% if session.get('role') == 'Customer' %}<a href="/?promo=1" style="font-size:12px;font-weight:800;color:#B45309;text-decoration:none;background:#FEF3C7;border:1px solid #FCD34D;padding:7px 10px;border-radius:8px;">🔥 Vendors Running Promotions</a>{% endif %}
                 </div>
                 <div class="grid" id="masterCatalogGrid">
-                    {% if todays_deals %}
-                    <section style="margin-bottom:22px;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><h3 style="margin:0;font-size:18px;color:var(--bg-abyssal);font-weight:800;">🔥 Today's Deals</h3><a href="/?promo=1" style="font-size:12px;font-weight:800;color:#B45309;text-decoration:none;">View all deals →</a></div>
-                        <div class="grid">
-                        {% for product in todays_deals[:6] %}
-                            <div class="card">
-                                <div class="card-media-wrapper" style="background:#000;">{% if product.video_file %}<video class="card-img" autoplay muted playsinline loop controls preload="metadata"><source src="{{ url_for('stream_video', filename=product.video_file) }}"></video>{% else %}<img class="card-img" src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}">{% endif %}</div>
-                                <div class="card-body"><div class="card-brand-wrapper"><a href="/vendor/{{ product.seller }}" class="card-brand">🏬 {{ product.business_label }}</a></div><span style="display:inline-block;width:max-content;padding:3px 7px;border-radius:999px;background:#FEF3C7;color:#B45309;font-size:9px;font-weight:900;">⚡ PROMOTION</span><h4 class="card-title">{{ product.title }}</h4><div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div><div class="card-actions"><a href="/add-to-cart/{{ product.id }}" class="btn-action btn-cart">🛒 Add to Basket</a></div></div>
-                            </div>
-                        {% endfor %}
-                        </div>
-                    </section>
-                    {% endif %}
-
-                    {% if fast_food_products %}
-                    <section style="margin-bottom:22px;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><h3 style="margin:0;font-size:18px;color:#C53030;font-weight:900;">🍔 Fast Food Near You</h3><span style="font-size:11px;color:var(--text-muted);">Menus from local food vendors</span></div>
-                        <div class="grid">
-                        {% for product in fast_food_products[:8] %}
-                            <div class="card">
-                                <div class="card-media-wrapper" style="background:#000;">{% if product.video_file %}<video class="card-img" autoplay muted playsinline loop controls preload="metadata"><source src="{{ url_for('stream_video', filename=product.video_file) }}"></video>{% elif product.image_file %}<img class="card-img" src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}">{% endif %}</div>
-                                <div class="card-body"><div class="card-brand-wrapper"><a href="/vendor/{{ product.seller }}" class="card-brand">🍽️ {{ product.business_label }}</a></div><h4 class="card-title">{{ product.title }}</h4><div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div><p class="card-text">{{ product.description }}</p><div class="card-actions"><a href="/vendor/{{ product.seller }}" class="btn-action btn-momo">🍔 View Menu</a><a href="/add-to-cart/{{ product.id }}" class="btn-action btn-cart">🛒 Add to Basket</a></div></div>
-                            </div>
-                        {% endfor %}
-                        </div>
-                    </section>
-                    {% endif %}
-
-                    <section>
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><h3 style="margin:0;font-size:18px;color:var(--bg-abyssal);font-weight:800;">🛍️ Recommended Products</h3></div>
-                    <div class="grid">
-                    {% for product in marketplace_products %}
+                    {% for product in products %}
                         <div class="card">
                             <!-- 👑 DYNAMIC MULTI-MEDIA RENDERING ENGINE ENGINE FIXED -->
                             <div class="card-media-wrapper" style="background-color: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; height: 170px;">
  {% if product.video_file %}
-        <video class="card-img" autoplay muted playsinline loop controls preload="metadata">
+        <video class="card-img" controls preload="metadata">
             <source src="{{ url_for('stream_video', filename=product.video_file) }}">
             Your browser does not support video playback.
         </video>
@@ -447,8 +417,7 @@
                             📭 No matching items found.
                         </div>
                     {% endfor %}
-                    </div>
-                    </section>
+                </div>
             </div>
 
             <!-- PANEL 3: BASKET -->
@@ -477,18 +446,12 @@
         </div>
     </div>
 
-    <div style="text-align:center;margin-top:28px;font-size:12px;color:var(--text-muted);">
-        {% if session.get('role') != 'Delivery Service' %}<a href="/delivery/register" style="color:var(--primary);font-weight:800;text-decoration:none;">🚚 Register as a Delivery Service</a>{% endif %}
-    </div>
-
     <!-- JAVASCRIPT MASTER OPERATIONS CONTROL PACK -->
     <script>
         window.addEventListener("DOMContentLoaded", function() {
             startTrialCountdown();
             setupListingMediaControls();
-            const basketPopup = document.getElementById("basketMobilePopup");
-            if (basketPopup) setTimeout(function(){ basketPopup.style.opacity = "0"; basketPopup.style.visibility = "hidden"; }, 4000);
-            setTimeout(function(){
+            setTimeout(function() {
                 let s = document.getElementById("bizhub-splash-screen");
                 if(s) { s.style.opacity = "0"; s.style.visibility = "hidden"; }
             }, 1500);

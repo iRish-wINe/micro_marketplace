@@ -52,7 +52,7 @@
 
         <div class="mb-6">
             <h1 class="text-2xl font-black bh-text">Account Settings</h1>
-            <p class="text-sm bh-muted mt-1">Manage your identity, business profile, WhatsApp contact, business location and appearance.</p>
+            <p class="text-sm bh-muted mt-1">Manage your identity, business profile, WhatsApp contact and appearance.</p>
         </div>
 
         <form action="/settings" method="POST" enctype="multipart/form-data" class="space-y-6">
@@ -93,20 +93,9 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider bh-muted mb-2">Company / Business Location</label>
-                        <input type="text" name="business_location" value="{{ user['business_location'] or '' }}" placeholder="e.g. Accra, Ghana" maxlength="120" class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                        <p class="text-[11px] bh-muted mt-2">Your permanent business profile location. Product listing locations remain separate.</p>
-                    </div>
-
-                    <div>
                         <label class="block text-xs font-bold uppercase tracking-wider bh-muted mb-2">Business Logo</label>
                         <input type="file" name="company_logo" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" class="bh-input w-full text-xs bh-muted file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:font-semibold">
                         {% if user['company_logo'] %}<p class="text-[11px] bh-muted mt-2">Current logo: <strong>{{ user['company_logo'] }}</strong></p>{% endif %}
-                    </div>
-
-                    <div class="flex flex-wrap gap-3 pt-2 border-t bh-border">
-                        <a href="/vendor/{{ user['username'] }}" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold no-underline">🏪 View My Store</a>
-                        <a href="/promotions" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold no-underline">🔥 Manage Promotions</a>
                     </div>
 
                     {% if user['role'] == 'Vendor' %}

@@ -9,12 +9,21 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import RequestEntityTooLarge
 app = Flask(__name__)
-app.secret_key = "commercial_marketplace_super_secret_token"
+app.secret_key = os.environ.get("BIZ_HUB_SECRET_KEY", "commercial_marketplace_super_secret_token")
 LOCAL_ADMIN_USERNAME = "Stapps Of Faith"
 LOCAL_ADMIN_PASSWORD = "RICHARD10"
 PRODUCT_CATEGORIES = ["Phones & Accessories", "Groceries", "Clothing", "Books", "Health & Beauty", "Beauty & Personal Care", "Home & Kitchen", "Electronics", "Fast Food", "Other"]
 VENDOR_CATEGORIES = PRODUCT_CATEGORIES + ["Health & Beauty", "Fast Food"]
 VIDEO_EXTENSIONS = {".mp4", ".webm", ".mov"}
+DELIVERY_TYPES = ["Motorcycle", "Car", "Van", "Bicycle", "Other"]
+NOTIFICATION_TYPES = {
+    "favorite": "Favorite-store activity",
+    "product": "New product",
+    "promotion": "Favorite-store promotion",
+    "order": "Order update",
+    "delivery": "Delivery activity",
+    "announcement": "BizHub announcement",
+}
 
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -208,6 +217,35 @@ def init_db():
             created_at TEXT NOT NULL
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            recipient_id INTEGER NOT NULL,
+            notification_type TEXT NOT NULL,
+            title TEXT NOT NULL,
+            message TEXT NOT NULL,
+            link TEXT,
+            is_read INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(recipient_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS delivery_services (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL UNIQUE,
+            service_name TEXT NOT NULL,
+            logo_file TEXT,
+            operating_location TEXT NOT NULL,
+            phone_number TEXT NOT NULL,
+            service_area TEXT NOT NULL,
+            delivery_type TEXT NOT NULL DEFAULT 'Motorcycle',
+            availability TEXT NOT NULL DEFAULT 'Offline',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
     conn.commit()
         # 👑 PRODUCTION STRUCTURAL SCHEMA HOTFIX: Safe Column Alteration Injections
     try:
@@ -222,6 +260,17 @@ def init_db():
         cursor.execute("ALTER TABLE users ADD COLUMN theme TEXT NOT NULL DEFAULT 'day'")
     except sqlite3.OperationalError:
         pass  # Column already exists safely in the workspace structure, skip altering
+    # New promotion fields are additive migrations so existing databases keep working.
+    for statement in (
+        "ALTER TABLE promotions ADD COLUMN product_id INTEGER",
+        "ALTER TABLE promotions ADD COLUMN promo_price REAL",
+        "ALTER TABLE promotions ADD COLUMN image_file TEXT",
+        "ALTER TABLE promotions ADD COLUMN video_file TEXT",
+    ):
+        try:
+            cursor.execute(statement)
+        except sqlite3.OperationalError:
+            pass
 
     conn.close()
 
@@ -235,20 +284,50 @@ def normalize_whatsapp_number(number):
 
 def subscription_status(user):
     if not user:
-        return {"name": "Basic", "is_premium": False, "trial": False, "expires": None}
+        return {"name": "Basic", "is_premium": False, "trial": False, "expires": None, "expires_iso": None}
     now = datetime.now(timezone.utc)
-    trial_expiry = datetime.fromisoformat(user["subscription_expires_at"]) if user["subscription_expires_at"] else None
-    is_vendor_role = user["role"] in ["Vendor", "Fast Food"]
-    
-    trial_active = is_vendor_role and trial_expiry and trial_expiry > now and user["plan"] == "basic"
-    premium_active = is_vendor_role and ((user["plan"] == "premium" and trial_expiry and trial_expiry > now) or trial_active)
-    
+    expiry_raw = user.get("subscription_expires_at")
+    expiry = None
+    if expiry_raw:
+        try:
+            expiry = datetime.fromisoformat(expiry_raw)
+            if expiry.tzinfo is None:
+                expiry = expiry.replace(tzinfo=timezone.utc)
+        except ValueError:
+            expiry = None
+    is_vendor_role = user.get("role") in ["Vendor", "Fast Food"]
+    trial_active = bool(is_vendor_role and expiry and expiry > now and user.get("plan") == "basic")
+    premium_active = bool(is_vendor_role and expiry and expiry > now and user.get("plan") == "premium")
     if trial_active:
-        return {"name": "Free trial", "is_premium": True, "trial": True, "expires": trial_expiry.strftime("%d %b %Y")}
+        return {"name": "Free trial", "is_premium": True, "trial": True, "expires": expiry.strftime("%d %b %Y"), "expires_iso": expiry.isoformat()}
     if premium_active:
-        return {"name": "Premium Store", "is_premium": True, "trial": False, "expires": trial_expiry.strftime("%d %b %Y")}
-        
-    return {"name": "Basic", "is_premium": False, "trial": False, "expires": None}
+        return {"name": "Premium Store", "is_premium": True, "trial": False, "expires": expiry.strftime("%d %b %Y"), "expires_iso": expiry.isoformat()}
+    return {"name": "Basic", "is_premium": False, "trial": False, "expires": None, "expires_iso": None}
+
+def is_premium_vendor(user):
+    return bool(user and user.get("role") in ["Vendor", "Fast Food"] and subscription_status(user)["is_premium"])
+
+def create_notification(recipient_id, notification_type, title, message, link=None):
+    if not recipient_id or notification_type not in NOTIFICATION_TYPES:
+        return
+    query_db(
+        "INSERT INTO notifications (recipient_id, notification_type, title, message, link, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+        (recipient_id, notification_type, title, message, link, datetime.now(timezone.utc).isoformat())
+    )
+
+def notify_favorite_customers(vendor_id, notification_type, title, message, link=None):
+    rows = query_db("SELECT customer_id FROM favorites WHERE vendor_id = ?", (vendor_id,)) or []
+    for row in rows:
+        create_notification(row["customer_id"], notification_type, title, message, link)
+
+def get_delivery_service(user_id):
+    return query_db("SELECT * FROM delivery_services WHERE user_id = ?", (user_id,), one=True)
+
+def delivery_access_allowed():
+    if session.get("role") not in ["Vendor", "Fast Food"]:
+        return False
+    vendor = query_db("SELECT * FROM users WHERE username = ?", (session.get("username"),), one=True)
+    return is_premium_vendor(vendor)
 
 def admin_configured():
     return bool(get_admin_username() and get_admin_password()) or bool(query_db("SELECT id FROM admin_users LIMIT 1"))
@@ -400,6 +479,9 @@ def home():
                 "INSERT INTO products (title, price, description, image_file, video_file, stock_quantity, status, seller, seller_email, seller_whatsapp, location, business_label, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (title, float(price), description, filename, video_filename, stock_quantity, "Available", session["username"], session["email"], session.get("whatsapp_number"), location, b_label, category)
             )
+            vendor_user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+            if vendor_user:
+                notify_favorite_customers(vendor_user["id"], "product", f"{b_label} added a new item", title, url_for("vendor_profile", username=session["username"]))
             return redirect(url_for("home"))
 
             
@@ -446,6 +528,16 @@ def home():
     logo_rows = query_db("SELECT username, company_logo FROM users WHERE company_logo IS NOT NULL") or []
     for row in logo_rows:
         vendor_logos[row["username"]] = row["company_logo"]
+    fast_food_products = [p for p in all_products if p.get("category") == "Fast Food"]
+    marketplace_products = [p for p in all_products if p.get("category") != "Fast Food"]
+    todays_deals = [p for p in all_products if p.get("active_promo")][:12]
+
+    customer_notification_count = 0
+    if session.get("role") == "Customer":
+        customer_user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+        if customer_user:
+            row = query_db("SELECT COUNT(*) AS count FROM notifications WHERE recipient_id = ? AND is_read = 0", (customer_user["id"],), one=True)
+            customer_notification_count = row["count"] if row else 0
 
     cart_items = []
     cart_total = 0.0
@@ -502,7 +594,7 @@ def home():
             fast_food_count_row = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ? AND category = 'Fast Food'", (session["username"],), one=True)
             fast_food_count = fast_food_count_row["count"] if fast_food_count_row else 0
 
-    return render_template("index.html", products=all_products, active_filter=selected_filter, company_search=company_search, selected_category=selected_category, categories=PRODUCT_CATEGORIES, vendor_logos=vendor_logos, cart_items=cart_items, cart_total=cart_total, seller_orders=sorted(seller_orders.values(), key=lambda order: not order["priority"]), vendor_subscription=vendor_subscription, listing_count=listing_count, fast_food_count=fast_food_count, listing_error=listing_error, premium_sellers=premium_sellers, vendor_notification_count=vendor_notification_count, promo_only=promo_only)
+    return render_template("index.html", products=all_products, marketplace_products=marketplace_products, fast_food_products=fast_food_products, todays_deals=todays_deals, active_filter=selected_filter, company_search=company_search, selected_category=selected_category, categories=PRODUCT_CATEGORIES, vendor_logos=vendor_logos, cart_items=cart_items, cart_total=cart_total, seller_orders=sorted(seller_orders.values(), key=lambda order: not order["priority"]), vendor_subscription=vendor_subscription, listing_count=listing_count, fast_food_count=fast_food_count, listing_error=listing_error, premium_sellers=premium_sellers, vendor_notification_count=vendor_notification_count, customer_notification_count=customer_notification_count, promo_only=promo_only, cart_added=request.args.get("cart_added") == "1")
 @app.route("/delete-item/<int:product_id>")
 def delete_item(product_id):
     if "username" not in session:
@@ -525,7 +617,7 @@ def add_to_cart(product_id):
     if product_id not in current_cart:
         current_cart.append(product_id)
         session["cart"] = current_cart
-    return redirect(url_for("home"))
+    return redirect(url_for("home", cart_added="1"))
 
 @app.route("/mark-sold/<int:product_id>", methods=["POST"])
 def mark_sold(product_id):
@@ -585,31 +677,84 @@ def mark_payment_sent(order_id):
     if "username" not in session:
         return redirect(url_for("login"))
     query_db("UPDATE orders SET payment_status = 'Marked paid' WHERE id = ? AND customer_username = ? AND status = 'Pending'", (order_id, session["username"]))
+    customer = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if customer:
+        create_notification(customer["id"], "order", "Payment marked", f"Order #{order_id} was marked as paid and is awaiting vendor confirmation.", url_for("order_history"))
     return redirect(url_for("order_history"))
 
 @app.route("/orders")
 def order_history():
     if "username" not in session:
         return redirect(url_for("login"))
-    customer_orders = query_db("SELECT * FROM orders WHERE customer_username = ? ORDER BY id DESC", (session["username"],))
-    is_vendor = session.get("role") in ["Vendor", "Fast Food"]
-    vendor_orders = query_db(
-        "SELECT DISTINCT o.*, oi.seller FROM orders o JOIN order_items oi ON oi.order_id = o.id WHERE oi.seller = ? ORDER BY o.id DESC",
-        (session["username"],)
-    ) if is_vendor else []
-    all_active_orders = (customer_orders or []) + (vendor_orders or [])
-    order_items = {order["id"]: query_db("SELECT oi.*, p.location FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id WHERE oi.order_id = ?", (order["id"],)) for order in all_active_orders}
-    seller_names = {row["username"]: (row["company_name"] or row["username"]) for row in query_db("SELECT username, company_name FROM users")}
-    order_sellers = {order["id"]: sorted({seller_names.get(item["seller"], item["seller"]) for item in order_items[order["id"]]}) for order in customer_orders}
+    user = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+    if not user:
+        session.clear()
+        return redirect(url_for("login"))
+    is_vendor = user["role"] in ["Vendor", "Fast Food"]
+    if is_vendor:
+        raw_orders = query_db("SELECT DISTINCT o.* FROM orders o JOIN order_items oi ON oi.order_id = o.id WHERE oi.seller = ? ORDER BY o.id DESC", (user["username"],)) or []
+    else:
+        raw_orders = query_db("SELECT * FROM orders WHERE customer_username = ? ORDER BY id DESC", (user["username"],)) or []
+
+    orders = []
+    for order in raw_orders:
+        if is_vendor:
+            items = query_db("""SELECT oi.*, p.image_file AS image, p.location, p.seller AS seller_username, u.company_name AS vendor_company
+                               FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id
+                               LEFT JOIN users u ON u.username = oi.seller
+                               WHERE oi.order_id = ? AND oi.seller = ?""", (order["id"], user["username"])) or []
+            customer = query_db("SELECT username, whatsapp_number FROM users WHERE username = ?", (order["customer_username"],), one=True)
+            total = sum(float(item["price"]) * int(item["quantity"]) for item in items)
+            location = next((item.get("location") for item in items if item.get("location")), None)
+            order_view = dict(order)
+            order_view.update({"items": [{"name": i["title"], "price": i["price"], "quantity": i["quantity"], "image": i.get("image"), "vendor_name": i.get("vendor_company") or i["seller"], "vendor_id": i["seller"]} for i in items], "total": total, "location": location, "customer_whatsapp": customer.get("whatsapp_number") if customer else None})
+        else:
+            items = query_db("""SELECT oi.*, p.image_file AS image, p.location, u.id AS vendor_id, COALESCE(u.company_name, u.username) AS vendor_name
+                               FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id
+                               LEFT JOIN users u ON u.username = oi.seller
+                               WHERE oi.order_id = ?""", (order["id"],)) or []
+            order_view = dict(order)
+            order_view.update({"items": [{"name": i["title"], "price": i["price"], "quantity": i["quantity"], "image": i.get("image"), "vendor_name": i.get("vendor_name") or i["seller"], "vendor_id": i.get("vendor_id") or i["seller"]} for i in items], "location": next((i.get("location") for i in items if i.get("location")), None)})
+        orders.append(order_view)
+
     vendor_notification_count = 0
     vendor_notifications = []
     if is_vendor:
-        vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
-        if vendor:
-            vendor_notification_count_row = query_db("SELECT COUNT(*) AS count FROM vendor_notifications WHERE vendor_id = ? AND is_read = 0", (vendor["id"],), one=True)
-            vendor_notification_count = vendor_notification_count_row["count"] if vendor_notification_count_row else 0
-            vendor_notifications = query_db("SELECT * FROM vendor_notifications WHERE vendor_id = ? ORDER BY id DESC LIMIT 30", (vendor["id"],))
-    return render_template("orders.html", customer_orders=customer_orders, vendor_orders=vendor_orders, order_items=order_items, order_sellers=order_sellers, vendor_notification_count=vendor_notification_count, vendor_notifications=vendor_notifications)
+        vendor_notification_count_row = query_db("SELECT COUNT(*) AS count FROM vendor_notifications WHERE vendor_id = ? AND is_read = 0", (user["id"],), one=True)
+        vendor_notification_count = vendor_notification_count_row["count"] if vendor_notification_count_row else 0
+        vendor_notifications = query_db("SELECT * FROM vendor_notifications WHERE vendor_id = ? ORDER BY id DESC LIMIT 30", (user["id"],)) or []
+
+    customer_notification_count = 0
+    if not is_vendor:
+        row = query_db("SELECT COUNT(*) AS count FROM notifications WHERE recipient_id = ? AND is_read = 0", (user["id"],), one=True)
+        customer_notification_count = row["count"] if row else 0
+
+    return render_template("orders.html", user=user, orders=orders, notifications=vendor_notifications, unread_notifications_count=vendor_notification_count, customer_notification_count=customer_notification_count, customer_orders=orders if not is_vendor else [], vendor_orders=orders if is_vendor else [], order_items={o["id"]: [] for o in orders}, order_sellers={})
+
+@app.route("/orders/notifications/read-all", methods=["POST"])
+def mark_all_order_notifications_read():
+    return mark_all_notifications_read()
+
+@app.route("/orders/notifications/<int:notification_id>/read", methods=["POST"])
+def mark_order_notification_read(notification_id):
+    return mark_notification_read(notification_id)
+
+@app.route("/orders/<int:order_id>/status", methods=["POST"])
+def update_order_status(order_id):
+    if session.get("role") not in ["Vendor", "Fast Food"]:
+        return redirect(url_for("login"))
+    allowed = {"Confirmed", "Processing", "Completed", "Cancelled"}
+    status = request.form.get("status", "").strip()
+    if status not in allowed:
+        return redirect(url_for("order_history"))
+    order = query_db("SELECT * FROM orders WHERE id = ?", (order_id,), one=True)
+    owns = query_db("SELECT id FROM order_items WHERE order_id = ? AND seller = ? LIMIT 1", (order_id, session["username"]), one=True)
+    if order and owns:
+        query_db("UPDATE orders SET status = ? WHERE id = ?", (status, order_id))
+        customer = query_db("SELECT id FROM users WHERE username = ?", (order["customer_username"],), one=True)
+        if customer:
+            create_notification(customer["id"], "order", f"Order #{order_id} updated", f"Your order status is now {status}.", url_for("order_history"))
+    return redirect(url_for("order_history"))
 
 @app.route("/orders/<int:order_id>/confirm", methods=["POST"])
 def confirm_order(order_id):
@@ -621,14 +766,22 @@ def confirm_order(order_id):
         for item in order_items:
             query_db("UPDATE products SET stock_quantity = MAX(stock_quantity - ?, 0), status = CASE WHEN stock_quantity <= ? THEN 'Sold' ELSE 'Available' END WHERE id = ?", (item["quantity"], item["quantity"], item["product_id"]))
         query_db("UPDATE orders SET status = 'Confirmed', payment_status = 'Confirmed' WHERE id = ?", (order_id,))
+        customer = query_db("SELECT id FROM users WHERE username = ?", (order["customer_username"],), one=True)
+        if customer:
+            create_notification(customer["id"], "order", "Order confirmed", f"Order #{order_id} has been confirmed by the vendor.", url_for("order_history"))
     return redirect(url_for("order_history"))
 
 @app.route("/orders/<int:order_id>/cancel", methods=["POST"])
 def cancel_order(order_id):
     if session.get("role") not in ["Vendor", "Fast Food"]:
         return redirect(url_for("login"))
+    order = query_db("SELECT * FROM orders WHERE id = ?", (order_id,), one=True)
     if query_db("SELECT id FROM order_items WHERE order_id = ? AND seller = ?", (order_id, session["username"])):
         query_db("UPDATE orders SET status = 'Cancelled' WHERE id = ?", (order_id,))
+        if order:
+            customer = query_db("SELECT id FROM users WHERE username = ?", (order["customer_username"],), one=True)
+            if customer:
+                create_notification(customer["id"], "order", "Order cancelled", f"Order #{order_id} was cancelled by the vendor.", url_for("order_history"))
     return redirect(url_for("order_history"))
 @app.route("/vendor/<username>")
 def vendor_profile(username):
@@ -689,6 +842,7 @@ def toggle_favorite(username):
         query_db("DELETE FROM favorites WHERE id = ?", (existing["id"],))
     else:
         query_db("INSERT INTO favorites (customer_id, vendor_id, created_at) VALUES (?, ?, ?)", (customer["id"], vendor["id"], datetime.now(timezone.utc).isoformat()))
+        create_notification(vendor["id"], "favorite", "New Favorite", f"@{session['username']} added your store to their favorites.", url_for("vendor_profile", username=username))
     return redirect(request.referrer or url_for("vendor_profile", username=username))
 
 @app.route("/notifications/<int:notification_id>/read", methods=["POST"])
@@ -709,6 +863,36 @@ def mark_all_notifications_read():
         query_db("UPDATE vendor_notifications SET is_read = 1 WHERE vendor_id = ?", (vendor["id"],))
     return redirect(request.referrer or url_for("order_history"))
 
+@app.route("/notifications")
+def notifications():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    user = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+    if not user:
+        session.clear()
+        return redirect(url_for("login"))
+    rows = query_db("SELECT * FROM notifications WHERE recipient_id = ? ORDER BY id DESC LIMIT 80", (user["id"],)) or []
+    unread = sum(1 for row in rows if not row["is_read"])
+    return render_template("notifications.html", user=user, notifications=rows, unread_count=unread)
+
+@app.route("/notifications/<int:notification_id>/read-customer", methods=["POST"])
+def mark_customer_notification_read(notification_id):
+    if "username" not in session:
+        return redirect(url_for("login"))
+    user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if user:
+        query_db("UPDATE notifications SET is_read = 1 WHERE id = ? AND recipient_id = ?", (notification_id, user["id"]))
+    return redirect(request.referrer or url_for("notifications"))
+
+@app.route("/notifications/customer/read-all", methods=["POST"])
+def mark_all_customer_notifications_read():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if user:
+        query_db("UPDATE notifications SET is_read = 1 WHERE recipient_id = ?", (user["id"],))
+    return redirect(request.referrer or url_for("notifications"))
+
 @app.route("/promotions", methods=["GET", "POST"])
 def promotions():
     if session.get("role") not in ["Vendor", "Fast Food"]:
@@ -716,17 +900,37 @@ def promotions():
     vendor = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
     if not vendor:
         return redirect(url_for("login"))
+    subscription = subscription_status(vendor)
+    if not subscription["is_premium"]:
+        return redirect(url_for("subscription", feature="promotions"))
     promo_error = None
     if request.method == "POST":
         title = request.form.get("title", "").strip()
         description = request.form.get("description", "").strip() or None
         discount_raw = request.form.get("discount", "").strip()
+        promo_price_raw = request.form.get("promo_price", "").strip()
+        product_id_raw = request.form.get("product_id", "").strip()
         starts_at = request.form.get("starts_at", "").strip()
         ends_at = request.form.get("ends_at", "").strip()
+        promo_image = request.files.get("promo_image")
+        promo_video = request.files.get("promo_video")
         try:
             discount = float(discount_raw) if discount_raw else None
         except ValueError:
             discount = None
+        try:
+            promo_price = float(promo_price_raw) if promo_price_raw else None
+        except ValueError:
+            promo_price = None
+        try:
+            product_id = int(product_id_raw) if product_id_raw else None
+        except ValueError:
+            product_id = None
+        if product_id:
+            product = query_db("SELECT * FROM products WHERE id = ? AND seller = ?", (product_id, vendor["username"]), one=True)
+            if not product:
+                product_id = None
+                promo_error = "Choose one of your own products."
         if not title or not starts_at or not ends_at:
             promo_error = "Promotion title, start date and end date are required."
         else:
@@ -736,12 +940,42 @@ def promotions():
                 promo_error = "Promotion end date must be after the start date."
             elif discount is not None and not (0 <= discount <= 100):
                 promo_error = "Discount must be between 0 and 100 percent."
+            elif promo_price is not None and promo_price < 0:
+                promo_error = "Promotional price cannot be negative."
+            if promo_video and promo_video.filename:
+                ext = os.path.splitext(promo_video.filename)[1].lower()
+                if ext not in VIDEO_EXTENSIONS:
+                    promo_error = "Promotion videos must be MP4, WebM, or MOV files."
+                else:
+                    video_filename = f"promo-video-{uuid.uuid4().hex}{ext}"
+                    video_path = os.path.join(app.config["UPLOAD_FOLDER"], video_filename)
+                    promo_video.save(video_path)
+                    try:
+                        import subprocess
+                        duration = float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", video_path]).decode().strip())
+                        if duration > 20.5:
+                            os.remove(video_path)
+                            video_filename = None
+                            promo_error = "Promotion videos are limited to 20 seconds."
+                    except Exception:
+                        pass
             else:
+                video_filename = None
+            image_filename = None
+            if promo_image and promo_image.filename:
+                image_filename = save_company_logo(promo_image)
+                if image_filename:
+                    image_filename = "promo-" + image_filename[len("company-"):] if image_filename.startswith("company-") else image_filename
+                else:
+                    promo_error = "Promotion images must be PNG, JPG, JPEG, WEBP, or GIF."
+            if not promo_error:
                 query_db("UPDATE promotions SET active = 0 WHERE vendor_id = ?", (vendor["id"],))
-                query_db("INSERT INTO promotions (vendor_id, title, description, discount, starts_at, ends_at, active, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?)", (vendor["id"], title, description, discount, starts_iso, ends_iso, datetime.now(timezone.utc).isoformat()))
-                return redirect(url_for("vendor_profile", username=vendor["username"]))
-    promo_rows = query_db("SELECT * FROM promotions WHERE vendor_id = ? ORDER BY id DESC", (vendor["id"],))
-    return render_template("promotions.html", vendor=vendor, promotions=promo_rows, promo_error=promo_error)
+                query_db("INSERT INTO promotions (vendor_id, product_id, title, description, discount, promo_price, image_file, video_file, starts_at, ends_at, active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)", (vendor["id"], product_id, title, description, discount, promo_price, image_filename, video_filename, starts_iso, ends_iso, datetime.now(timezone.utc).isoformat()))
+                notify_favorite_customers(vendor["id"], "promotion", f"{vendor['company_name'] or vendor['username']} has a new promotion", title, url_for("vendor_profile", username=vendor["username"]))
+                return redirect(url_for("promotions", saved="1"))
+    promo_rows = query_db("SELECT pr.*, p.title AS product_title FROM promotions pr LEFT JOIN products p ON p.id = pr.product_id WHERE pr.vendor_id = ? ORDER BY pr.id DESC", (vendor["id"],))
+    products = query_db("SELECT id, title, price FROM products WHERE seller = ? ORDER BY id DESC", (vendor["username"],)) or []
+    return render_template("promotions.html", vendor=vendor, promotions=promo_rows, products=products, subscription=subscription, promo_error=promo_error, saved=request.args.get("saved") == "1")
 
 @app.route("/promotions/<int:promotion_id>/deactivate", methods=["POST"])
 def deactivate_promotion(promotion_id):
@@ -751,6 +985,76 @@ def deactivate_promotion(promotion_id):
     if vendor:
         query_db("UPDATE promotions SET active = 0 WHERE id = ? AND vendor_id = ?", (promotion_id, vendor["id"]))
     return redirect(url_for("promotions"))
+
+@app.route("/delivery/register", methods=["GET", "POST"])
+def delivery_register():
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+        service_name = request.form.get("service_name", "").strip()
+        operating_location = request.form.get("operating_location", "").strip()
+        phone_number = normalize_whatsapp_number(request.form.get("phone_number"))
+        service_area = request.form.get("service_area", "").strip()
+        delivery_type = request.form.get("delivery_type", "Motorcycle")
+        logo_upload = request.files.get("logo")
+        if not all([username, email, password, service_name, operating_location, phone_number, service_area]):
+            return render_template("delivery_register.html", error="Name, username, email, password, location, service area and phone number are required.", delivery_types=DELIVERY_TYPES)
+        if delivery_type not in DELIVERY_TYPES:
+            delivery_type = "Other"
+        logo = save_company_logo(logo_upload) if logo_upload and logo_upload.filename else None
+        try:
+            user_id = query_db("INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, registered_at) VALUES (?, ?, ?, 'Delivery Service', 'Delivery Service', ?, ?, 'basic', ?)", (username, email, generate_password_hash(password), service_name, phone_number, datetime.now(timezone.utc).isoformat()))
+            user = query_db("SELECT id FROM users WHERE username = ?", (username,), one=True)
+            if not user:
+                raise sqlite3.IntegrityError
+            query_db("INSERT INTO delivery_services (user_id, service_name, logo_file, operating_location, phone_number, service_area, delivery_type, availability, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'Offline', ?, ?)", (user["id"], service_name, logo, operating_location, phone_number, service_area, delivery_type, datetime.now(timezone.utc).isoformat(), datetime.now(timezone.utc).isoformat()))
+        except sqlite3.IntegrityError:
+            return render_template("delivery_register.html", error="That username is already in use.", delivery_types=DELIVERY_TYPES)
+        session.clear()
+        session.update(username=username, email=email, role="Delivery Service", seller_type="Delivery Service", company_name=service_name, whatsapp_number=phone_number, theme="day")
+        return redirect(url_for("delivery_dashboard"))
+    return render_template("delivery_register.html", delivery_types=DELIVERY_TYPES)
+
+@app.route("/delivery")
+def delivery_dashboard():
+    if session.get("role") != "Delivery Service":
+        return redirect(url_for("delivery_register"))
+    user = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+    service = get_delivery_service(user["id"]) if user else None
+    return render_template("delivery_dashboard.html", user=user, service=service, delivery_types=DELIVERY_TYPES)
+
+@app.route("/delivery/availability", methods=["POST"])
+def delivery_availability():
+    if session.get("role") != "Delivery Service":
+        return redirect(url_for("login"))
+    availability = request.form.get("availability", "Offline")
+    if availability not in ("Available", "Offline"):
+        availability = "Offline"
+    user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if user:
+        query_db("UPDATE delivery_services SET availability = ?, updated_at = ? WHERE user_id = ?", (availability, datetime.now(timezone.utc).isoformat(), user["id"]))
+    return redirect(url_for("delivery_dashboard"))
+
+@app.route("/delivery/services")
+def delivery_services():
+    if not delivery_access_allowed():
+        return redirect(url_for("subscription", feature="delivery"))
+    location = request.args.get("location", "").strip()
+    rows = query_db("SELECT ds.*, u.username FROM delivery_services ds JOIN users u ON u.id = ds.user_id WHERE ds.availability = 'Available' AND (? = '' OR ds.operating_location = ? OR ds.service_area LIKE ?) ORDER BY ds.operating_location, ds.service_name", (location, location, f"%{location}%")) or []
+    return render_template("delivery_services.html", services=rows, location=location)
+
+@app.route("/delivery/contact/<int:service_id>", methods=["POST"])
+def contact_delivery(service_id):
+    if not delivery_access_allowed():
+        return redirect(url_for("subscription", feature="delivery"))
+    service = query_db("SELECT ds.*, u.id AS user_id FROM delivery_services ds JOIN users u ON u.id = ds.user_id WHERE ds.id = ? AND ds.availability = 'Available'", (service_id,), one=True)
+    if not service:
+        return redirect(url_for("delivery_services"))
+    vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if vendor:
+        create_notification(service["user_id"], "delivery", f"Delivery request from @{session['username']}", f"A subscribed BizHub vendor is contacting {service['service_name']} for delivery service.", url_for("delivery_dashboard"))
+    return redirect("https://wa.me/" + normalize_whatsapp_number(service["phone_number"]) + "?text=" + quote(f"Hello {service['service_name']}, I found your delivery service on BizHub. I would like to arrange delivery."))
 
 @app.route("/subscription")
 def subscription():
@@ -1052,11 +1356,13 @@ def register():
         email = request.form.get("reg_email", "").strip()
         password = request.form.get("reg_pass", "")
         submitted_role = request.form.get("role", "").strip()
-        role_aliases = {"customer": "Customer", "vendor": "Vendor", "fast food": "Fast Food"}
+        role_aliases = {"customer": "Customer", "vendor": "Vendor", "fast food": "Fast Food", "delivery service": "Delivery Service"}
         role = role_aliases.get(submitted_role.lower(), submitted_role)
         
         if not username or not email or not password:
             return render_template("login.html", reg_error="Username, email, and password are required.")
+        if role == "Delivery Service":
+            return redirect(url_for("delivery_register"))
             
         seller_type = request.form.get("seller_type", "Individual")
         catalog_mode = request.form.get("catalog_mode", "Focused")
@@ -1124,6 +1430,7 @@ def register():
             session["company_name"] = company_name
             session["business_location"] = business_location
             session["whatsapp_number"] = whatsapp_number
+            session["theme"] = "day"
             return redirect(url_for("home"))
             
         except sqlite3.IntegrityError:
@@ -1144,6 +1451,8 @@ def stream_video(filename):
 
     file_size = os.path.getsize(video_path)
     byte_range = request.headers.get("Range", None)
+    extension = os.path.splitext(filename)[1].lower()
+    mime_type = {".mp4": "video/mp4", ".webm": "video/webm", ".mov": "video/quicktime"}.get(extension, "application/octet-stream")
 
     if not byte_range:
         # Standard full file stream request
@@ -1151,12 +1460,19 @@ def stream_video(filename):
             with open(video_path, "rb") as video_file:
                 while chunk := video_file.read(40960):
                     yield chunk
-        return app.response_class(full_stream(), mimetype="video/mp4", headers={"Content-Length": str(file_size), "Accept-Ranges": "bytes"})
+        return app.response_class(full_stream(), mimetype=mime_type, headers={"Content-Length": str(file_size), "Accept-Ranges": "bytes"})
 
     # Parse requested HTTP range bytes (e.g. bytes=0-1024)
     parsed_range = re.search(r"bytes=(\d+)-(\d*)", byte_range)
+    if not parsed_range:
+        return "Invalid range", 416
     start_byte = int(parsed_range.group(1))
+    if start_byte >= file_size:
+        return "Range not satisfiable", 416
     end_byte = int(parsed_range.group(2)) if parsed_range.group(2) else file_size - 1
+    end_byte = min(end_byte, file_size - 1)
+    if end_byte < start_byte:
+        return "Range not satisfiable", 416
 
     chunk_length = (end_byte - start_byte) + 1
 
@@ -1177,7 +1493,7 @@ def stream_video(filename):
         "Accept-Ranges": "bytes",
         "Content-Length": str(chunk_length)
     }
-    return app.response_class(partial_chunk_stream(), status=206, mimetype="video/mp4", headers=headers)
+    return app.response_class(partial_chunk_stream(), status=206, mimetype=mime_type, headers=headers)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
