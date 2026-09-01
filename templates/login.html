@@ -1,327 +1,1298 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In / Register | Biz Hub Marketplace</title>
-    <style>
-        :root {
-            --primary: #1A365D;
-            --primary-light: #2B6CB0;
-            --accent: #FF9900;
-            --bg-light: #F7FAFC;
-            --text-main: #2D3748;
-            --text-muted: #718096;
-            --border-color: #E2E8F0;
-            --radius-lg: 12px;
-            --radius-sm: 6px;
-            --danger: #E53E3E;
-            --transition: all 0.2s ease-in-out;
+
+```
+<style>
+    :root {
+        --primary: #1A365D;
+        --primary-light: #2B6CB0;
+        --accent: #FF9900;
+        --whatsapp: #25D366;
+        --whatsapp-dark: #128C7E;
+        --bg-light: #F7FAFC;
+        --text-main: #2D3748;
+        --text-muted: #718096;
+        --border-color: #E2E8F0;
+        --radius-lg: 12px;
+        --radius-sm: 6px;
+        --danger: #E53E3E;
+        --transition: all 0.2s ease-in-out;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background: var(--bg-light);
+        color: var(--text-main);
+        margin: 0;
+        padding: 40px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        justify-content: center;
+    }
+
+    .auth-shell {
+        width: 100%;
+        max-width: 1120px;
+        min-height: 650px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(400px, .95fr);
+        background: #fff;
+        border: 1px solid var(--border-color);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 16px 50px rgba(15, 23, 42, .10);
+    }
+
+    .auth-visual {
+        min-height: 650px;
+        padding: 42px;
+        display: flex;
+        align-items: flex-end;
+        position: relative;
+        overflow: hidden;
+        background:
+            linear-gradient(
+                90deg,
+                rgba(11,25,44,.92) 0%,
+                rgba(11,25,44,.78) 26%,
+                rgba(11,25,44,.35) 52%,
+                rgba(11,25,44,.10) 100%
+            );
+        color: #fff;
+    }
+
+    .auth-visual::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(
+                180deg,
+                rgba(11,25,44,.20),
+                rgba(11,25,44,.74)
+            ),
+            url("{{ url_for('static', filename='uploads/bizhub-app-login_banner.png') }}?v=2");
+        background-size: cover;
+        background-position: center;
+        transform: scale(1.04);
+    }
+
+    .auth-visual-copy {
+        max-width: 470px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .auth-visual-copy .kicker {
+        display: inline-block;
+        background: var(--accent);
+        color: #0B192C;
+        padding: 6px 11px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .7px;
+        margin-bottom: 12px;
+    }
+
+    .auth-visual-copy h1 {
+        margin: 0 0 10px;
+        font-size: 42px;
+        line-height: 1.04;
+        letter-spacing: -1px;
+    }
+
+    .auth-visual-copy h1 span {
+        color: var(--accent);
+    }
+
+    .auth-visual-copy p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.55;
+        color: #E2E8F0;
+    }
+
+    .auth-visual-figure {
+        position: absolute;
+        right: 48px;
+        bottom: 28px;
+        width: min(46%, 440px);
+        height: 280px;
+        z-index: 1;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 18px 38px rgba(11,25,44,.28);
+        border: 2px solid rgba(255,255,255,.18);
+        background: #dfe7ee;
+    }
+
+    .auth-visual-figure img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .auth-form-panel {
+        padding: 38px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: #fff;
+    }
+
+    .auth-brand {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--primary);
+        text-decoration: none;
+        margin: 0 0 20px;
+        display: block;
+    }
+
+    .auth-brand span {
+        color: var(--accent);
+    }
+
+    .auth-container {
+        width: 100%;
+        max-width: 450px;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        padding: 30px;
+    }
+
+    .auth-tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-bottom: 2px solid var(--border-color);
+        margin-bottom: 25px;
+        text-align: center;
+    }
+
+    .auth-tab {
+        padding: 12px;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-muted);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: var(--transition);
+        user-select: none;
+    }
+
+    .auth-tab.active {
+        color: var(--primary-light);
+        border-bottom-color: var(--primary-light);
+    }
+
+    .auth-form {
+        display: none;
+    }
+
+    .auth-form.active {
+        display: block;
+    }
+
+    .error-banner {
+        background: #FFF5F5;
+        border: 1px solid #FED7D7;
+        color: var(--danger);
+        padding: 12px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        line-height: 1.4;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: var(--text-main);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        outline: none;
+        transition: var(--transition);
+        background: #fff;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-light);
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+    }
+
+    .submit-btn {
+        background-color: var(--primary-light);
+        color: white;
+        border: none;
+        padding: 12px;
+        cursor: pointer;
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        width: 100%;
+        font-weight: bold;
+        transition: var(--transition);
+        margin-top: 10px;
+    }
+
+    .submit-btn:hover {
+        background-color: var(--primary);
+    }
+
+    .forgot-link {
+        display: block;
+        text-align: right;
+        font-size: 12px;
+        color: var(--primary-light);
+        text-decoration: none;
+        margin-top: -8px;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .conditional-box {
+        background: #F8FAFC;
+        border: 1px solid var(--border-color);
+        padding: 12px;
+        border-radius: var(--radius-sm);
+        margin-top: 15px;
+        display: none;
+    }
+
+    .password-wrap {
+        position: relative;
+    }
+
+    .password-wrap .form-control {
+        padding-right: 42px;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 16px;
+        padding: 0;
+    }
+
+    /* =========================================================
+       BIZHUB CONTACT FOOTER
+       ========================================================= */
+
+    .bizhub-footer {
+        margin-top: 22px;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid #d9e2f2;
+        border-radius: 14px;
+        padding: 14px 16px;
+        box-shadow: 0 4px 12px rgba(26,54,93,0.08);
+    }
+
+    .bizhub-footer-title {
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #1a365d;
+        margin-bottom: 10px;
+    }
+
+    .bizhub-footer-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        font-size: 12px;
+    }
+
+    .bizhub-footer-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #f6f9ff;
+        border: 1px solid #dfeafc;
+        border-radius: 10px;
+        padding: 9px 10px;
+        min-height: 42px;
+    }
+
+    .bizhub-footer-icon {
+        width: 24px;
+        height: 24px;
+        min-width: 24px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(
+            180deg,
+            #e9f2ff 0%,
+            #dfeafc 100%
+        );
+        color: #1a365d;
+        font-size: 12px;
+        border: 1px solid rgba(26,54,93,0.12);
+    }
+
+    .bizhub-footer-list a,
+    .bizhub-footer-list span {
+        color: #0f172a;
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .bizhub-footer-list a:hover {
+        color: var(--primary-light);
+    }
+
+    /* MAIN WHATSAPP CONTACT */
+    .bizhub-whatsapp-item {
+        background: linear-gradient(
+            135deg,
+            #25D366 0%,
+            #20C85A 55%,
+            #16B94D 100%
+        );
+        border: 1px solid #19B84E;
+        box-shadow:
+            0 7px 18px rgba(37, 211, 102, .24),
+            inset 0 1px 0 rgba(255,255,255,.20);
+        padding: 11px 12px;
+        min-height: 52px;
+        transform: translateZ(0);
+    }
+
+    .bizhub-whatsapp-item:hover {
+        background: linear-gradient(
+            135deg,
+            #20C85A 0%,
+            #16B94D 100%
+        );
+        box-shadow:
+            0 9px 22px rgba(37, 211, 102, .30);
+    }
+
+    .bizhub-whatsapp-icon {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,.96);
+        color: #128C7E;
+        font-size: 17px;
+        border: 1px solid rgba(255,255,255,.75);
+        box-shadow: 0 2px 7px rgba(0,0,0,.10);
+    }
+
+    .bizhub-whatsapp-content {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        line-height: 1.2;
+    }
+
+    .bizhub-whatsapp-label {
+        color: rgba(255,255,255,.82) !important;
+        font-size: 9px;
+        font-weight: 900 !important;
+        text-transform: uppercase;
+        letter-spacing: .10em;
+        margin-bottom: 2px;
+    }
+
+    .bizhub-whatsapp-number {
+        color: #fff !important;
+        font-size: 14px;
+        font-weight: 900 !important;
+        letter-spacing: .2px;
+    }
+
+    .bizhub-whatsapp-arrow {
+        margin-left: auto;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 900;
+        opacity: .9;
+    }
+
+    @media (max-width: 820px) {
+        body {
+            padding: 18px 12px;
+            justify-content: flex-start;
         }
 
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-light); color: var(--text-main); margin: 0; padding: 40px 20px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; min-height: 100vh; justify-content: center; }
-        body { background: #F7FAFC; }
-        .auth-shell { width:100%; max-width:1120px; min-height:650px; display:grid; grid-template-columns:minmax(0,1.05fr) minmax(400px,.95fr); background:#fff; border:1px solid var(--border-color); border-radius:18px; overflow:hidden; box-shadow:0 16px 50px rgba(15,23,42,.10); }
-        .auth-visual { min-height:650px; padding:42px; box-sizing:border-box; display:flex; align-items:flex-end; position:relative; overflow:hidden; background:linear-gradient(90deg, rgba(11,25,44,.92) 0%, rgba(11,25,44,.78) 26%, rgba(11,25,44,.35) 52%, rgba(11,25,44,.10) 100%); color:#fff; }
-        .auth-visual::before { content:""; position:absolute; inset:0; background-image:linear-gradient(180deg,rgba(11,25,44,.20),rgba(11,25,44,.74)),url("{{ url_for('static', filename='uploads/bizhub-login-banner.svg') }}?v=1"); background-size:cover; background-position:center; transform:scale(1.04); }
-        .auth-visual-copy { max-width:470px; position:relative; z-index:1; }
-        .auth-visual-copy .kicker { display:inline-block; background:var(--accent); color:#0B192C; padding:6px 11px; border-radius:999px; font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.7px; margin-bottom:12px; }
-        .auth-visual-copy h1 { margin:0 0 10px; font-size:42px; line-height:1.04; letter-spacing:-1px; }
-        .auth-visual-copy h1 span { color:var(--accent); }
-        .auth-visual-copy p { margin:0; font-size:14px; line-height:1.55; color:#E2E8F0; }
-        .auth-visual-figure { position:absolute; right:48px; bottom:28px; width:min(46%, 440px); z-index:1; border-radius:18px; overflow:hidden; box-shadow:0 18px 38px rgba(11,25,44,.28); border:2px solid rgba(255,255,255,.18); background:#dfe7ee; }
-        .auth-visual-figure img { display:block; width:100%; height:100%; max-height:520px; object-fit:cover; }
-        .auth-form-panel { padding:38px; display:flex; flex-direction:column; justify-content:center; box-sizing:border-box; background:#fff; }
-        .auth-brand { font-size: 28px; font-weight: 800; color: var(--primary); text-decoration: none; margin:0 0 20px; display: block; }
-        .auth-brand span { color: var(--accent); }
-
-        .auth-container { width: 100%; max-width: 450px; background: white; border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: 0 4px 12px rgba(0,0,0,0.03); padding: 30px; box-sizing: border-box; }
-        .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 2px solid var(--border-color); margin-bottom: 25px; text-align: center; }
-        .auth-tab { padding: 12px; font-size: 15px; font-weight: 700; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: var(--transition); user-select: none; }
-        .auth-tab.active { color: var(--primary-light); border-bottom-color: var(--primary-light); }
-
-        .auth-form { display: none; }
-        .auth-form.active { display: block; }
-
-        .error-banner { background: #FFF5F5; border: 1px solid #FED7D7; color: var(--danger); padding: 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; margin-bottom: 20px; line-height: 1.4; }
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
-        .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); box-sizing: border-box; font-size: 14px; outline: none; transition: var(--transition); }
-        .form-control:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15); }
-        
-        .submit-btn { background-color: var(--primary-light); color: white; border: none; padding: 12px; cursor: pointer; border-radius: var(--radius-sm); font-size: 14px; width: 100%; font-weight: bold; transition: var(--transition); margin-top: 10px; }
-        .submit-btn:hover { background-color: var(--primary); }
-        
-        .forgot-link { display: block; text-align: right; font-size: 12px; color: var(--primary-light); text-decoration: none; margin-top: -8px; margin-bottom: 15px; font-weight: 600; }
-        .conditional-box { background: #F8FAFC; border: 1px solid var(--border-color); padding: 12px; border-radius: var(--radius-sm); margin-top: 15px; display: none; }
-        .password-wrap { position: relative; }
-        .password-wrap .form-control { padding-right: 42px; }
-        .password-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); border: none; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 0; }
-        .bizhub-footer { margin-top: 22px; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border: 1px solid #d9e2f2; border-radius: 12px; padding: 14px 16px; box-shadow: 0 4px 12px rgba(26,54,93,0.08); }
-        .bizhub-footer-title { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.12em; color: #1a365d; margin-bottom: 10px; }
-        .bizhub-footer-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 12px; }
-        .bizhub-footer-item { display:flex; align-items:center; gap:10px; background: #f6f9ff; border:1px solid #dfeafc; border-radius: 10px; padding: 9px 10px; }
-        .bizhub-footer-icon { width: 24px; height: 24px; border-radius: 50%; display:inline-flex; align-items:center; justify-content:center; background: linear-gradient(180deg, #e9f2ff 0%, #dfeafc 100%); color: #1a365d; font-size: 12px; border:1px solid rgba(26,54,93,0.12); }
-        .bizhub-footer-list a, .bizhub-footer-list span { color: #0f172a; text-decoration: none; font-weight: 700; }
-        .bizhub-footer-list a:hover { color: var(--primary-light); }
-        @media (max-width: 820px) {
-            body { padding:18px 12px; justify-content:flex-start; }
-            .auth-shell { grid-template-columns:1fr; min-height:0; border-radius:14px; }
-            .auth-visual { min-height:260px; padding:26px 22px; background-position:center; }
-            .auth-visual-copy h1 { font-size:32px; }
-            .auth-form-panel { padding:24px 18px 28px; }
+        .auth-shell {
+            grid-template-columns: 1fr;
+            min-height: 0;
+            border-radius: 14px;
         }
-    </style>
-        <!-- 👑 PWA INSTALLATION ICON ANCHORS (CACHEDB-BUSTING SYSTEM ACTIVE) -->
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3">
+
+        .auth-visual {
+            min-height: 300px;
+            padding: 26px 22px;
+        }
+
+        .auth-visual-copy h1 {
+            font-size: 32px;
+        }
+
+        .auth-visual-figure {
+            right: 22px;
+            bottom: 20px;
+            width: 42%;
+            height: 145px;
+        }
+
+        .auth-form-panel {
+            padding: 24px 18px 28px;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .auth-visual {
+            min-height: 330px;
+            align-items: flex-start;
+            padding-top: 26px;
+        }
+
+        .auth-visual-copy {
+            max-width: 100%;
+        }
+
+        .auth-visual-copy h1 {
+            font-size: 30px;
+        }
+
+        .auth-visual-copy p {
+            max-width: 330px;
+        }
+
+        .auth-visual-figure {
+            left: 22px;
+            right: 22px;
+            bottom: 18px;
+            width: auto;
+            height: 125px;
+        }
+
+        .auth-container {
+            padding: 24px 20px;
+        }
+    }
+</style>
+
+<!-- PWA INSTALLATION ICONS -->
+<link rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3">
+
+<link rel="apple-touch-icon"
+      href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3">
+```
 
 </head>
+
 <body>
 
-    <div class="auth-shell">
-        <section class="auth-visual" aria-label="BizHub welcome">
-            <div class="auth-visual-copy">
-                <div class="kicker">Shop local. Connect better.</div>
-                <h1>Welcome back<br>to <span>BizHub</span></h1>
-                <p>Your Local Market, Unified Online. Discover businesses around you, shop with confidence, and keep local commerce moving.</p>
-            </div>
-            <div class="auth-visual-figure">
-                <img src="{{ url_for('static', filename='uploads/bizhub-login-banner.svg') }}?v=1" alt="BizHub customer using the app" onerror="this.style.display='none';">
-            </div>
-        </section>
-        <main class="auth-form-panel">
+```
+<div class="auth-shell">
 
-    <!-- CORE BRAND LABEL -->
-    <div class="auth-brand-wrap" style="text-align:center; margin-bottom: 18px;">
-        <a href="/" class="auth-brand" aria-label="BizHub Home" style="display:block; font-size: 30px; font-weight: 900; letter-spacing: -0.8px; color: var(--primary); text-decoration: none;">Biz<span style="color: var(--accent);">Hub</span></a>
-        <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; color: var(--text-muted); margin-top: 6px;">Your Local Market, Unified Online</div>
-    </div>
+    <!-- =====================================================
+         LOGIN HERO / VISUAL
+         ===================================================== -->
+    <section class="auth-visual" aria-label="BizHub welcome">
 
-    <div class="auth-container">
-        
-        <!-- SECURE SECTION NAVIGATION TABS -->
-        <div class="auth-tabs">
-            <div class="auth-tab {% if reg_error is not defined or not reg_error %}active{% endif %}" id="loginTab" onclick="switchAuthMode('login')">Account Sign In</div>
-            <div class="auth-tab {% if reg_error %}active{% endif %}" id="registerTab" onclick="switchAuthMode('register')">Register Profile</div>
+        <div class="auth-visual-copy">
+            <div class="kicker">Shop local. Connect better.</div>
+
+            <h1>
+                Welcome back<br>
+                to <span>BizHub</span>
+            </h1>
+
+            <p>
+                Your Local Market, Unified Online.
+                Discover businesses around you, shop with confidence,
+                and keep local commerce moving.
+            </p>
         </div>
 
-        <!-- 🔓 SEGMENT A: LOGIN INTERFACE MODULE -->
-        <div class="auth-form {% if reg_error is not defined or not reg_error %}active{% endif %}" id="loginForm">
-            {% if login_error %}
-                <div class="error-banner">❌ {{ login_error }}</div>
-            {% endif %}
-            {% if request.args.get('recovered') == '1' %}
-                <div class="error-banner" style="background:#F0FDF4; border-color:#BBF7D0; color:#15803D;">✓ Password reset successful! Log in below.</div>
-            {% endif %}
-
-            <form method="POST" action="/login">
-                <div class="form-group">
-                    <label>Username Handle:</label>
-                    <input type="text" name="login_user" class="form-control" placeholder="e.g. kofi_accra" required autocomplete="username">
-                </div>
-                <div class="form-group">
-                    <label>Security Key / Password:</label>
-                    <div class="password-wrap">
-                        <input type="password" name="login_pass" class="form-control" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
-                        <button type="button" class="password-toggle" data-target="loginPassword" aria-label="Show password">👁️</button>
-                    </div>
-                </div>
-                <a href="/forgot-password" class="forgot-link">Forgot password / Recover account?</a>
-                <button type="submit" class="submit-btn">Secure Login</button>
-            </form>
+        <div class="auth-visual-figure">
+            <img
+                src="{{ url_for('static', filename='uploads/bizhub-app-login_banner.png') }}?v=2"
+                alt="BizHub customer using the app"
+                onerror="this.style.display='none';"
+            >
         </div>
 
-        <!-- 📝 SEGMENT B: DYNAMIC MULTI-TIER REGISTRATION MODULE -->
-        <div class="auth-form {% if reg_error %}active{% endif %}" id="registerForm">
-            {% if reg_error %}
-                <div class="error-banner">❌ {{ reg_error }}</div>
-            {% endif %}
+    </section>
 
-            <form method="POST" action="/register" enctype="multipart/form-data">
+    <!-- =====================================================
+         AUTHENTICATION PANEL
+         ===================================================== -->
+    <main class="auth-form-panel">
 
-                <div class="form-group">
-                    <label>Desired Username:</label>
-                    <input type="text" name="reg_user" class="form-control" placeholder="e.g. ama_boutique" required autocomplete="username">
+        <!-- CORE BRAND LABEL -->
+        <div
+            class="auth-brand-wrap"
+            style="text-align:center; margin-bottom:18px;"
+        >
+            <a
+                href="/"
+                class="auth-brand"
+                aria-label="BizHub Home"
+                style="
+                    display:block;
+                    font-size:30px;
+                    font-weight:900;
+                    letter-spacing:-0.8px;
+                    color:var(--primary);
+                    text-decoration:none;
+                "
+            >
+                Biz<span style="color:var(--accent);">Hub</span>
+            </a>
+
+            <div
+                style="
+                    font-size:12px;
+                    font-weight:700;
+                    letter-spacing:0.4px;
+                    text-transform:uppercase;
+                    color:var(--text-muted);
+                    margin-top:6px;
+                "
+            >
+                Your Local Market, Unified Online
+            </div>
+        </div>
+
+        <div class="auth-container">
+
+            <!-- SECURE SECTION NAVIGATION TABS -->
+            <div class="auth-tabs">
+
+                <div
+                    class="auth-tab {% if reg_error is not defined or not reg_error %}active{% endif %}"
+                    id="loginTab"
+                    onclick="switchAuthMode('login')"
+                >
+                    Account Sign In
                 </div>
-                <div class="form-group">
-                    <label>Email Node Address:</label>
-                    <input type="email" name="reg_email" class="form-control" placeholder="e.g. name@example.com" required autocomplete="email">
+
+                <div
+                    class="auth-tab {% if reg_error %}active{% endif %}"
+                    id="registerTab"
+                    onclick="switchAuthMode('register')"
+                >
+                    Register Profile
                 </div>
-                <div class="form-group">
-                    <label>Profile Password (Min 6 Characters):</label>
-                    <div class="password-wrap">
-                        <input type="password" name="reg_pass" class="form-control" id="regPassword" placeholder="••••••••" required autocomplete="new-password">
-                        <button type="button" class="password-toggle" data-target="regPassword" aria-label="Show password">👁️</button>
+
+            </div>
+
+            <!-- =================================================
+                 LOGIN FORM
+                 ================================================= -->
+            <div
+                class="auth-form {% if reg_error is not defined or not reg_error %}active{% endif %}"
+                id="loginForm"
+            >
+
+                {% if login_error %}
+                    <div class="error-banner">
+                        ❌ {{ login_error }}
                     </div>
-                </div>
-                <div class="form-group">
-                    <label>Confirm Password:</label>
-                    <div class="password-wrap">
-                        <input type="password" name="reg_pass_confirm" class="form-control" id="regPasswordConfirm" placeholder="Re-enter password" required autocomplete="new-password">
-                        <button type="button" class="password-toggle" data-target="regPasswordConfirm" aria-label="Show password">👁️</button>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>Account Access Level:</label>
-                    <select name="role" id="roleSelector" class="form-control" onchange="evaluateRoleParameters()">
-                        <option value="Customer">Standard Customer Profile (Browse & Buy Only)</option>
-                        <option value="Vendor">General Merchant Vendor (Sell Physical Items/Phones/Wearables)</option>
-                        <option value="Fast Food">🍟 Fast Food Kitchen (Sell Meals, Pizza & Cold Drinks)</option>
-                    </select>
-                </div>
+                {% endif %}
 
-                <!-- DYNAMICALLY TRIGGERED EXCLUSIVE MERCHANT DATA MATRIX -->
-                <div class="conditional-box" id="merchantContextCard">
+                {% if request.args.get('recovered') == '1' %}
+                    <div
+                        class="error-banner"
+                        style="
+                            background:#F0FDF4;
+                            border-color:#BBF7D0;
+                            color:#15803D;
+                        "
+                    >
+                        ✓ Password reset successful! Log in below.
+                    </div>
+                {% endif %}
+
+                <form method="POST" action="/login">
+
                     <div class="form-group">
-                        <label>Business Classification Type:</label>
-                        <select name="seller_type" id="sellerTypeSelector" class="form-control" onchange="evaluateRoleParameters()">
-                            <option value="Individual">Individual Native Trader</option>
-                            <option value="Registered Business">Registered Corporate Brand / Company</option>
+                        <label>Username Handle:</label>
+
+                        <input
+                            type="text"
+                            name="login_user"
+                            class="form-control"
+                            placeholder="e.g. kofi_accra"
+                            required
+                            autocomplete="username"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label>Security Key / Password:</label>
+
+                        <div class="password-wrap">
+                            <input
+                                type="password"
+                                name="login_pass"
+                                class="form-control"
+                                id="loginPassword"
+                                placeholder="••••••••"
+                                required
+                                autocomplete="current-password"
+                            >
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                data-target="loginPassword"
+                                aria-label="Show password"
+                            >
+                                👁️
+                            </button>
+                        </div>
+                    </div>
+
+                    <a
+                        href="/forgot-password"
+                        class="forgot-link"
+                    >
+                        Forgot password / Recover account?
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="submit-btn"
+                    >
+                        Secure Login
+                    </button>
+
+                </form>
+            </div>
+
+            <!-- =================================================
+                 REGISTRATION FORM
+                 ================================================= -->
+            <div
+                class="auth-form {% if reg_error %}active{% endif %}"
+                id="registerForm"
+            >
+
+                {% if reg_error %}
+                    <div class="error-banner">
+                        ❌ {{ reg_error }}
+                    </div>
+                {% endif %}
+
+                <form
+                    method="POST"
+                    action="/register"
+                    enctype="multipart/form-data"
+                >
+
+                    <div class="form-group">
+                        <label>Desired Username:</label>
+
+                        <input
+                            type="text"
+                            name="reg_user"
+                            class="form-control"
+                            placeholder="e.g. ama_boutique"
+                            required
+                            autocomplete="username"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email Node Address:</label>
+
+                        <input
+                            type="email"
+                            name="reg_email"
+                            class="form-control"
+                            placeholder="e.g. name@example.com"
+                            required
+                            autocomplete="email"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label>Profile Password (Min 6 Characters):</label>
+
+                        <div class="password-wrap">
+                            <input
+                                type="password"
+                                name="reg_pass"
+                                class="form-control"
+                                id="regPassword"
+                                placeholder="••••••••"
+                                required
+                                autocomplete="new-password"
+                            >
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                data-target="regPassword"
+                                aria-label="Show password"
+                            >
+                                👁️
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Confirm Password:</label>
+
+                        <div class="password-wrap">
+                            <input
+                                type="password"
+                                name="reg_pass_confirm"
+                                class="form-control"
+                                id="regPasswordConfirm"
+                                placeholder="Re-enter password"
+                                required
+                                autocomplete="new-password"
+                            >
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                data-target="regPasswordConfirm"
+                                aria-label="Show password"
+                            >
+                                👁️
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Account Access Level:</label>
+
+                        <select
+                            name="role"
+                            id="roleSelector"
+                            class="form-control"
+                            onchange="evaluateRoleParameters()"
+                        >
+                            <option value="Customer">
+                                Standard Customer Profile (Browse & Buy Only)
+                            </option>
+
+                            <option value="Vendor">
+                                General Merchant Vendor (Sell Physical Items/Phones/Wearables)
+                            </option>
+
+                            <option value="Fast Food">
+                                🍟 Fast Food Kitchen (Sell Meals, Pizza & Cold Drinks)
+                            </option>
                         </select>
-                                            <!-- 🧠 OPTIONAL BRAND LOGO FIELD ADDED HERE -->
-                    <div class="form-group" id="logoUploadGroup">
-                        <label>Store / Brand Cover Logo (Optional):</label>
-                        <input type="file" name="company_logo" accept="image/*" class="form-control">
-                        <small style="font-size:11px; color: var(--text-muted); display:block; margin-top:4px; line-height:1.3;">
-                            Upload a PNG, JPG, or WEBP logo image. This will brand your catalog cards across Ghana cities instantly!
-                        </small>
                     </div>
 
-                    </div>
-                    
-                    <div class="form-group" id="companyNameGroup" style="display:none;">
-                        <label>Official Registered Business / Shop Name:</label>
-                        <input type="text" name="company_name" class="form-control" placeholder="e.g. Armani Ventures Ghana">
+                    <!-- DYNAMIC MERCHANT DATA MATRIX -->
+                    <div
+                        class="conditional-box"
+                        id="merchantContextCard"
+                    >
+
+                        <div class="form-group">
+                            <label>Business Classification Type:</label>
+
+                            <select
+                                name="seller_type"
+                                id="sellerTypeSelector"
+                                class="form-control"
+                                onchange="evaluateRoleParameters()"
+                            >
+                                <option value="Individual">
+                                    Individual Native Trader
+                                </option>
+
+                                <option value="Registered Business">
+                                    Registered Corporate Brand / Company
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- OPTIONAL BRAND LOGO -->
+                        <div
+                            class="form-group"
+                            id="logoUploadGroup"
+                        >
+                            <label>
+                                Store / Brand Cover Logo (Optional):
+                            </label>
+
+                            <input
+                                type="file"
+                                name="company_logo"
+                                accept="image/*"
+                                class="form-control"
+                            >
+
+                            <small
+                                style="
+                                    font-size:11px;
+                                    color:var(--text-muted);
+                                    display:block;
+                                    margin-top:4px;
+                                    line-height:1.3;
+                                "
+                            >
+                                Upload a PNG, JPG, or WEBP logo image.
+                                This will brand your catalog cards across
+                                Ghana cities instantly!
+                            </small>
+                        </div>
+
+                        <div
+                            class="form-group"
+                            id="companyNameGroup"
+                            style="display:none;"
+                        >
+                            <label>
+                                Official Registered Business / Shop Name:
+                            </label>
+
+                            <input
+                                type="text"
+                                name="company_name"
+                                class="form-control"
+                                placeholder="e.g. Armani Ventures Ghana"
+                            >
+                        </div>
+
+                        <div
+                            class="form-group"
+                            id="whatsappGroup"
+                        >
+                            <label style="color:#C53030;">
+                                Compulsory WhatsApp Payment Phone Line:
+                            </label>
+
+                            <input
+                                type="tel"
+                                name="whatsapp_number"
+                                class="form-control"
+                                placeholder="e.g. 0558272972"
+                            >
+
+                            <small
+                                style="
+                                    font-size:11px;
+                                    color:var(--text-muted);
+                                    display:block;
+                                    margin-top:4px;
+                                    line-height:1.3;
+                                "
+                            >
+                                Must be an active WhatsApp number.
+                                All consumer shopping carts and payment
+                                receipts are routed here.
+                            </small>
+                        </div>
+
+                        <div
+                            class="form-group"
+                            id="catalogModeGroup"
+                        >
+                            <label>Product Portfolio Focus:</label>
+
+                            <select
+                                name="catalog_mode"
+                                class="form-control"
+                            >
+                                <option value="Focused">
+                                    Single Specialized Market Range (Recommended)
+                                </option>
+
+                                <option value="Variety">
+                                    General Variety Catalog (Sell cross-category items)
+                                </option>
+                            </select>
+                        </div>
+
+                        <div
+                            class="form-group"
+                            id="categoriesGroup"
+                        >
+                            <label>
+                                Select Product Ranges to Trade In
+                                (Hold Ctrl to select multiple):
+                            </label>
+
+                            <select
+                                name="vendor_categories"
+                                class="form-control"
+                                multiple
+                                style="height:120px;"
+                            >
+                                <option value="Phones & Accessories">
+                                    Phones & Smart Accessories
+                                </option>
+
+                                <option value="Groceries">
+                                    Supermarket Groceries
+                                </option>
+
+                                <option value="Clothing">
+                                    Clothing & Footwear Fashion
+                                </option>
+
+                                <option value="Books">
+                                    Books & Stationary
+                                </option>
+
+                                <option value="Health & Beauty">
+                                    Health, Beauty & Cosmetics
+                                </option>
+
+                                <option value="Home & Kitchen">
+                                    Home Appliances & Kitchenware
+                                </option>
+
+                                <option value="Electronics">
+                                    Consumer Electronics & Tech
+                                </option>
+
+                                <option value="Fast Food">
+                                    Fast Food & Cold Drinks
+                                </option>
+
+                                <option value="Sports & Outdoors">
+                                    Sports & Outdoor Equipment
+                                </option>
+
+                                <option value="Automotive">
+                                    Automotive & Vehicle Accessories
+                                </option>
+
+                                <option value="Toys & Games">
+                                    Toys & Games
+                                </option>
+
+                                <option value="Pet Supplies">
+                                    Pet Supplies
+                                </option>
+
+                                <option value="Furniture">
+                                    Furniture & Home Decor
+                                </option>
+
+                                <option value="Other">
+                                    Other Miscellaneous Items
+                                </option>
+                            </select>
+                        </div>
+
                     </div>
 
-                    <div class="form-group" id="whatsappGroup">
-                        <label style="color: #C53030;">Compulsory WhatsApp Payment Phone Line:</label>
-                        <input type="tel" name="whatsapp_number" class="form-control" placeholder="e.g. 0558272972">
-                        <small style="font-size:11px; color: var(--text-muted); display:block; margin-top:4px; line-height:1.3;">
-                            Must be an active WhatsApp number. All consumer shopping carts and payment receipts are routed here.
-                        </small>
-                    </div>
+                    <button
+                        id="registerSubmitButton"
+                        type="submit"
+                        class="submit-btn"
+                        style="background-color:var(--accent);"
+                    >
+                        Register
+                    </button>
 
-                    <div class="form-group" id="catalogModeGroup">
-                        <label>Product Portfolio Focus:</label>
-                        <select name="catalog_mode" class="form-control">
-                            <option value="Focused">Single Specialized Market Range (Recommended)</option>
-                            <option value="Variety">General Variety Catalog (Sell cross-category items)</option>
-                        </select>
-                    </div>
+                </form>
+            </div>
 
-                    <div class="form-group" id="categoriesGroup">
-                        <label>Select Product Ranges to Trade In (Hold Ctrl to select multiple):</label>
-                        <select name="vendor_categories" class="form-control" multiple style="height: 120px;">
-                            <option value="Phones & Accessories">Phones & Smart Accessories</option>
-                            <option value="Groceries">Supermarket Groceries</option>
-                            <option value="Clothing">Clothing & Footwear Fashion</option>
-                            <option value="Books">Books & Stationary</option>
-                            <option value="Health & Beauty">Health, Beauty & Cosmetics</option>
-                            <option value="Home & Kitchen">Home Appliances & Kitchenware</option>
-                            <option value="Electronics">Consumer Electronics & Tech</option>
-                            <option value="Fast Food">Fast Food & Cold Drinks</option>
-                            <option value="Sports & Outdoors">Sports & Outdoor Equipment</option>
-                            <option value="Automotive">Automotive & Vehicle Accessories</option>
-                            <option value="Toys & Games">Toys & Games</option>
-                            <option value="Pet Supplies">Pet Supplies</option>
-                            <option value="Furniture">Furniture & Home Decor</option>
-                                                    <option value="Other">Other Miscellaneous Items</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button id="registerSubmitButton" type="submit" class="submit-btn" style="background-color: var(--accent);">Register</button>
-            </form>
         </div>
 
-    </div>
+        <!-- =====================================================
+             BIZHUB CONTACT FOOTER
+             ===================================================== -->
+        <div class="bizhub-footer">
 
-    <div class="bizhub-footer">
-        <div class="bizhub-footer-title">Contact BizHub Operations</div>
-        <ul class="bizhub-footer-list">
-            <li class="bizhub-footer-item"><span class="bizhub-footer-icon">✉</span><a href="mailto:contactBizHub@proton.me">contactBizHub@proton.me</a></li>
-            <li class="bizhub-footer-item"><span class="bizhub-footer-icon">�</span><a href="https://wa.me/233558272972" target="_blank" rel="noopener noreferrer">0558272972</a></li>
-            <li class="bizhub-footer-item"><span class="bizhub-footer-icon">📞</span><span>0540901856</span></li>
-        </ul>
-    </div>
+            <div class="bizhub-footer-title">
+                Contact BizHub Operations
+            </div>
 
-        </main>
-    </div>
+            <ul class="bizhub-footer-list">
 
-    <!-- UI INTERACTION CONTROL LOGIC -->
-    <script>
-        document.querySelectorAll('.password-toggle').forEach(function(button) {
-            button.addEventListener('click', function() {
-                const target = document.getElementById(this.dataset.target);
-                if (!target) return;
-                const isPassword = target.type === 'password';
-                target.type = isPassword ? 'text' : 'password';
-                this.textContent = isPassword ? '🙈' : '👁️';
-                this.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
-            });
+                <!-- MAIN WHATSAPP -->
+                <li class="bizhub-footer-item bizhub-whatsapp-item">
+
+                    <span class="bizhub-whatsapp-icon">
+                        ☎
+                    </span>
+
+                    <a
+                        href="https://wa.me/233558272972"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="bizhub-whatsapp-content"
+                    >
+                        <span class="bizhub-whatsapp-label">
+                            WhatsApp Support & Payments
+                        </span>
+
+                        <span class="bizhub-whatsapp-number">
+                            0558272972
+                        </span>
+                    </a>
+
+                    <span class="bizhub-whatsapp-arrow">
+                        ›
+                    </span>
+
+                </li>
+
+                <!-- EMAIL -->
+                <li class="bizhub-footer-item">
+
+                    <span class="bizhub-footer-icon">
+                        ✉
+                    </span>
+
+                    <a href="mailto:contactBizHub@proton.me">
+                        contactBizHub@proton.me
+                    </a>
+
+                </li>
+
+                <!-- SECONDARY PHONE -->
+                <li class="bizhub-footer-item">
+
+                    <span class="bizhub-footer-icon">
+                        📞
+                    </span>
+
+                    <span>
+                        0540901856
+                    </span>
+
+                </li>
+
+            </ul>
+
+        </div>
+
+    </main>
+</div>
+
+<!-- =========================================================
+     UI INTERACTION CONTROL LOGIC
+     ========================================================= -->
+<script>
+
+    /* PASSWORD VISIBILITY */
+    document.querySelectorAll('.password-toggle').forEach(function(button) {
+
+        button.addEventListener('click', function() {
+
+            const target =
+                document.getElementById(this.dataset.target);
+
+            if (!target) return;
+
+            const isPassword =
+                target.type === 'password';
+
+            target.type =
+                isPassword ? 'text' : 'password';
+
+            this.textContent =
+                isPassword ? '🙈' : '👁️';
+
+            this.setAttribute(
+                'aria-label',
+                isPassword
+                    ? 'Hide password'
+                    : 'Show password'
+            );
         });
+    });
 
-        function switchAuthMode(mode) {
-            document.getElementById('loginTab').classList.remove('active');
-            document.getElementById('registerTab').classList.remove('active');
-            document.getElementById('loginForm').classList.remove('active');
-            document.getElementById('registerForm').classList.remove('active');
 
-            if (mode === 'login') {
-                document.getElementById('loginTab').classList.add('active');
-                document.getElementById('loginForm').classList.add('active');
-            } else {
-                document.getElementById('registerTab').classList.add('active');
-                document.getElementById('registerForm').classList.add('active');
-            }
-            evaluateRoleParameters();
+    /* AUTH MODE SWITCHING */
+    function switchAuthMode(mode) {
+
+        document
+            .getElementById('loginTab')
+            .classList.remove('active');
+
+        document
+            .getElementById('registerTab')
+            .classList.remove('active');
+
+        document
+            .getElementById('loginForm')
+            .classList.remove('active');
+
+        document
+            .getElementById('registerForm')
+            .classList.remove('active');
+
+
+        if (mode === 'login') {
+
+            document
+                .getElementById('loginTab')
+                .classList.add('active');
+
+            document
+                .getElementById('loginForm')
+                .classList.add('active');
+
+        } else {
+
+            document
+                .getElementById('registerTab')
+                .classList.add('active');
+
+            document
+                .getElementById('registerForm')
+                .classList.add('active');
         }
 
-        function updateRegisterButtonText() {
-            const role = document.getElementById('roleSelector').value;
-            const submitButton = document.getElementById('registerSubmitButton');
-            if (!submitButton) return;
-            submitButton.textContent = role === 'Customer' ? 'Register' : 'Claim Free 2-Month Trial';
-        }
-
-        function evaluateRoleParameters() {
-            let role = document.getElementById('roleSelector').value;
-            let merchantCard = document.getElementById('merchantContextCard');
-            let compNameGroup = document.getElementById('companyNameGroup');
-            let sellerType = document.getElementById('sellerTypeSelector').value;
-            
-            let catGroup = document.getElementById('catalogModeGroup');
-            let catsList = document.getElementById('categoriesGroup');
-            let whatsapp = document.getElementById('whatsappGroup');
-
-            if (role === 'Customer') {
-                merchantCard.style.display = 'none';
-            } else if (role === 'Fast Food') {
-                merchantCard.style.display = 'block';
-                compNameGroup.style.display = 'block';
-                whatsapp.style.display = 'block';
-                catGroup.style.display = 'none';
-                catsList.style.display = 'none';
-            } else {
-                merchantCard.style.display = 'block';
-                catGroup.style.display = 'block';
-                catsList.style.display = 'block';
-                whatsapp.style.display = 'block';
-                
-                if (sellerType === 'Registered Business') {
-                    compNameGroup.style.display = 'block';
-                } else {
-                    compNameGroup.style.display = 'none';
-                }
-            }
-            updateRegisterButtonText();
-        }
-        document.getElementById('roleSelector').addEventListener('change', evaluateRoleParameters);
         evaluateRoleParameters();
-    </script>
+    }
+
+
+    /* REGISTRATION BUTTON */
+    function updateRegisterButtonText() {
+
+        const role =
+            document.getElementById('roleSelector').value;
+
+        const submitButton =
+            document.getElementById('registerSubmitButton');
+
+        if (!submitButton) return;
+
+        submitButton.textContent =
+            role === 'Customer'
+                ? 'Register'
+                : 'Claim Free 2-Month Trial';
+    }
+
+
+    /* ROLE-SPECIFIC REGISTRATION PARAMETERS */
+    function evaluateRoleParameters() {
+
+        const role =
+            document.getElementById('roleSelector').value;
+
+        const merchantCard =
+            document.getElementById('merchantContextCard');
+
+        const compNameGroup =
+            document.getElementById('companyNameGroup');
+
+        const sellerType =
+            document.getElementById('sellerTypeSelector').value;
+
+        const catGroup =
+            document.getElementById('catalogModeGroup');
+
+        const catsList =
+            document.getElementById('categoriesGroup');
+
+        const whatsapp =
+            document.getElementById('whatsappGroup');
+
+
+        if (role === 'Customer') {
+
+            merchantCard.style.display = 'none';
+
+        } else if (role === 'Fast Food') {
+
+            merchantCard.style.display = 'block';
+
+            compNameGroup.style.display = 'block';
+
+            whatsapp.style.display = 'block';
+
+            catGroup.style.display = 'none';
+
+            catsList.style.display = 'none';
+
+        } else {
+
+            merchantCard.style.display = 'block';
+
+            catGroup.style.display = 'block';
+
+            catsList.style.display = 'block';
+
+            whatsapp.style.display = 'block';
+
+
+            if (sellerType === 'Registered Business') {
+
+                compNameGroup.style.display = 'block';
+
+            } else {
+
+                compNameGroup.style.display = 'none';
+            }
+        }
+
+        updateRegisterButtonText();
+    }
+
+
+    const roleSelector =
+        document.getElementById('roleSelector');
+
+    if (roleSelector) {
+        roleSelector.addEventListener(
+            'change',
+            evaluateRoleParameters
+        );
+    }
+
+    evaluateRoleParameters();
+
+</script>
+```
+
 </body>
 </html>
-    
