@@ -51,6 +51,14 @@
         
         .forgot-link { display: block; text-align: right; font-size: 12px; color: var(--primary-light); text-decoration: none; margin-top: -8px; margin-bottom: 15px; font-weight: 600; }
         .conditional-box { background: #F8FAFC; border: 1px solid var(--border-color); padding: 12px; border-radius: var(--radius-sm); margin-top: 15px; display: none; }
+        .password-wrap { position: relative; }
+        .password-wrap .form-control { padding-right: 42px; }
+        .password-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); border: none; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 0; }
+        .bizhub-footer { margin-top: 22px; background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; }
+        .bizhub-footer-title { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.6px; color: var(--primary); margin-bottom: 8px; }
+        .bizhub-footer-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 12px; }
+        .bizhub-footer-list a { color: var(--primary-light); text-decoration: none; font-weight: 700; }
+        .bizhub-footer-list span { color: var(--text-main); font-weight: 700; }
         @media (max-width: 820px) {
             body { padding:18px 12px; justify-content:flex-start; }
             .auth-shell { grid-template-columns:1fr; min-height:0; border-radius:14px; }
@@ -77,7 +85,10 @@
         <main class="auth-form-panel">
 
     <!-- CORE BRAND LABEL -->
-    <a href="/" class="auth-brand" aria-label="BizHub Home"><img src="{{ url_for('static', filename='biz-hub-logo.svg') }}" alt="BizHub logo" style="width: 180px; height: auto; display: block; margin: 0 auto;"></a>
+    <div class="auth-brand-wrap" style="text-align:center; margin-bottom: 18px;">
+        <a href="/" class="auth-brand" aria-label="BizHub Home" style="display:block; font-size: 30px; font-weight: 900; letter-spacing: -0.8px; color: var(--primary); text-decoration: none;">Biz<span style="color: var(--accent);">Hub</span></a>
+        <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; color: var(--text-muted); margin-top: 6px;">Your Local Market, Unified Online</div>
+    </div>
 
     <div class="auth-container">
         
@@ -103,7 +114,10 @@
                 </div>
                 <div class="form-group">
                     <label>Security Key / Password:</label>
-                    <input type="password" name="login_pass" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                    <div class="password-wrap">
+                        <input type="password" name="login_pass" class="form-control" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+                        <button type="button" class="password-toggle" data-target="loginPassword" aria-label="Show password">👁️</button>
+                    </div>
                 </div>
                 <a href="/forgot-password" class="forgot-link">Forgot password / Recover account?</a>
                 <button type="submit" class="submit-btn">Secure Login</button>
@@ -128,7 +142,17 @@
                 </div>
                 <div class="form-group">
                     <label>Profile Password (Min 6 Characters):</label>
-                    <input type="password" name="reg_pass" class="form-control" placeholder="••••••••" required autocomplete="new-password">
+                    <div class="password-wrap">
+                        <input type="password" name="reg_pass" class="form-control" id="regPassword" placeholder="••••••••" required autocomplete="new-password">
+                        <button type="button" class="password-toggle" data-target="regPassword" aria-label="Show password">👁️</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password:</label>
+                    <div class="password-wrap">
+                        <input type="password" name="reg_pass_confirm" class="form-control" id="regPasswordConfirm" placeholder="Re-enter password" required autocomplete="new-password">
+                        <button type="button" class="password-toggle" data-target="regPasswordConfirm" aria-label="Show password">👁️</button>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -207,11 +231,31 @@
 
     </div>
 
+    <div class="bizhub-footer">
+        <div class="bizhub-footer-title">Contact BizHub Operations</div>
+        <ul class="bizhub-footer-list">
+            <li><a href="mailto:contactBizHub@proton.me">📧 contactBizHub@proton.me</a></li>
+            <li><a href="https://wa.me/233558272972" target="_blank" rel="noopener noreferrer">💬 0558272972</a></li>
+            <li><span>📞 0540901856</span></li>
+        </ul>
+    </div>
+
         </main>
     </div>
 
     <!-- UI INTERACTION CONTROL LOGIC -->
     <script>
+        document.querySelectorAll('.password-toggle').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const target = document.getElementById(this.dataset.target);
+                if (!target) return;
+                const isPassword = target.type === 'password';
+                target.type = isPassword ? 'text' : 'password';
+                this.textContent = isPassword ? '🙈' : '👁️';
+                this.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+            });
+        });
+
         function switchAuthMode(mode) {
             document.getElementById('loginTab').classList.remove('active');
             document.getElementById('registerTab').classList.remove('active');

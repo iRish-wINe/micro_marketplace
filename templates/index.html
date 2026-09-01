@@ -236,6 +236,12 @@
         .clear-cart-link:hover { color: var(--danger); }
         .install-app-btn { display: none; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(59,130,246,0.4); background: rgba(59,130,246,0.10); color: #0F172A; font-size: 11px; font-weight: 800; text-decoration: none; cursor: pointer; }
         .cancel-publish-btn { background: #FFF5F5; color: #B91C1C; border: 1px solid #FECACA; border-radius: 8px; padding: 12px 14px; font-weight: 800; font-size: 13px; cursor: pointer; }
+        .nav-links a { display: inline-flex; align-items: center; gap: 6px; }
+        .contact-footer { margin: 28px auto 0; max-width: 1480px; background: #fff; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 20px; box-shadow: var(--shadow-sm); }
+        .contact-footer-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 900; color: var(--bg-abyssal); margin-bottom: 8px; }
+        .contact-footer-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; font-size: 12px; font-weight: 700; color: var(--text-main); }
+        .contact-footer-row a { color: #1E3A8A; text-decoration: none; }
+        .contact-footer-row span { color: var(--text-main); }
     </style>
     
     <!-- PWA Installation Icon Anchors -->
@@ -263,18 +269,18 @@
         <div class="nav-links">
             {% if session.get('username') %}
                 <span>Hello, <b>@{{ session['username'] }}</b></span>
-                <a href="/">Market</a>
+                <a href="/">🛍️ Market</a>
                 {% if session.get('role') == 'Customer' %}
                     <a href="/favorites">⭐ Favorites</a>
-                    <a href="/orders">Orders</a>
+                    <a href="/orders">📦 Orders</a>
                 {% elif session.get('role') in ['Vendor', 'Fast Food'] %}
-                    <a href="/orders">🔔 Orders{% if vendor_notification_count %} <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#EF4444;color:#fff;font-size:10px;font-weight:900;">{{ vendor_notification_count }}</span>{% endif %}</a>
-                    <a href="/vendor/{{ session['username'] }}">My Store</a>
+                    <a href="/orders">📦 Orders{% if vendor_notification_count %} <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#EF4444;color:#fff;font-size:10px;font-weight:900;">{{ vendor_notification_count }}</span>{% endif %}</a>
+                    <a href="/vendor/{{ session['username'] }}">🏬 My Store</a>
                 {% endif %}
-                <a href="/settings">Account</a>
+                <a href="/settings">⚙️ Account</a>
                 <a href="/logout" class="logout" style="background:#E53E3E;">Logout</a>
             {% else %}
-                <a href="/login">Sign In / Register</a>
+                <a href="/login">🔐 Sign In / Register</a>
             {% endif %}
             <button id="installAppBtn" type="button" class="install-app-btn" aria-label="Install BizHub app" title="Install app">📲 Install App</button>
         </div>
@@ -457,8 +463,11 @@
                                     {% if session.get('username') == product.seller %}
                                         <a href="/delete-item/{{ product.id }}" class="btn-action btn-delete">🗑️ Delete</a>
                                     {% else %}
-                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=I%20want%20to%20ask%20about%20your%20{{ product.title }}" class="btn-action btn-cart">❓ Inquiry</a>
-                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=I%20want%20to%20buy%20your%20{{ product.title }}" class="btn-action btn-momo">💬 Quick Buy</a>
+                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hi%20{{ product.seller }},%20I%20want%20to%20ask%20about%20your%20{{ product.title }}%20on%20biz%20hub" class="btn-action btn-cart">❓ Inquiry</a>
+                                        {% if product.active_promo %}
+                                            <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hello%20{{ product.business_label or product.seller }},%20I%20saw%20your%20{{ product.title }}%20promo%20on%20biz%20hub%20and%20I'd%20love%20to%20ask%20about%20it" class="btn-action btn-cart">⚡ Find out about promo</a>
+                                        {% endif %}
+                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=Hi%20{{ product.seller }},%20I%20want%20to%20buy%20your%20{{ product.title }}%20on%20biz%20hub.%20Let's%20arrange%20for%20payment%20and%20delivery" class="btn-action btn-momo">💬 Quick Buy</a>
                                         <a href="/add-to-cart/{{ product.id }}" class="btn-action btn-cart">🛒 Add to Basket</a>
                                     {% endif %}
                                 </div>
@@ -495,6 +504,15 @@
                 {% endif %}
             </div>
 
+        </div>
+    </div>
+
+    <div class="contact-footer">
+        <div class="contact-footer-title">Contact BizHub Operations</div>
+        <div class="contact-footer-row">
+            <a href="mailto:contactBizHub@proton.me">📧 contactBizHub@proton.me</a>
+            <a href="https://wa.me/233558272972" target="_blank" rel="noopener noreferrer">💬 0558272972</a>
+            <span>📞 0540901856</span>
         </div>
     </div>
 

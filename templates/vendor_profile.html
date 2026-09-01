@@ -15,10 +15,10 @@ html[data-theme="night"] input,html[data-theme="night"] textarea{background:#0f1
 <header class="sticky top-0 z-40 border-b borderx shadow-sm" style="background:var(--card)">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 <a href="/" class="font-black text-xl no-underline" style="color:var(--text)">Biz<span class="text-emerald-600">Hub</span></a>
-<nav class="flex items-center gap-3 text-sm font-bold">
-<a href="/" class="muted no-underline">Market</a>
-{% if session.get('role')=='Customer' %}<a href="/favorites" class="muted no-underline">⭐ Favorites</a>{% endif %}
-{% if session.get('username') %}<a href="/orders" class="muted no-underline">Orders</a><a href="/settings" class="muted no-underline">Account</a>{% else %}<a href="/login" class="muted no-underline">Sign In</a>{% endif %}
+<nav class="flex items-center gap-2 sm:gap-3 text-sm font-bold flex-wrap">
+<a href="/" class="muted no-underline inline-flex items-center gap-1.5">🛍️ Market</a>
+{% if session.get('role')=='Customer' %}<a href="/favorites" class="muted no-underline inline-flex items-center gap-1.5">⭐ Favorites</a>{% endif %}
+{% if session.get('username') %}<a href="/orders" class="muted no-underline inline-flex items-center gap-1.5">📦 Orders</a><a href="/settings" class="muted no-underline inline-flex items-center gap-1.5">⚙️ Account</a>{% else %}<a href="/login" class="muted no-underline inline-flex items-center gap-1.5">🔐 Sign In</a>{% endif %}
 </nav></div></header>
 
 <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -69,4 +69,14 @@ html[data-theme="night"] input,html[data-theme="night"] textarea{background:#0f1
 {% for product in products %}<article class="card rounded-xl border p-3 shadow-sm"><div class="h-36 bg-slate-100 rounded-lg overflow-hidden">{% if product['video_file'] %}<video controls preload="metadata" class="w-full h-full object-contain"><source src="{{ url_for('static', filename='uploads/' + product['video_file']) }}"></video>{% elif product['image_file'] %}<img src="{{ url_for('static', filename='uploads/' + product['image_file']) }}" class="w-full h-full object-contain" alt="{{ product['title'] }}">{% endif %}</div><h3 class="font-bold text-sm mt-3 line-clamp-2">{{ product['title'] }}</h3><div class="font-black text-lg text-emerald-700 mt-1">GH₵ {{ "%.2f"|format(product['price']) }}</div><p class="muted text-xs mt-1">📍 {{ product['location'] }}</p><a href="/add-to-cart/{{ product['id'] }}" class="block mt-3 text-center rounded-lg border borderx py-2 text-xs font-black no-underline" style="color:var(--text)">🛒 Add to Basket</a></article>{% else %}<div class="col-span-full card border borderx rounded-xl p-10 text-center muted">This vendor has no current products.</div>{% endfor %}
 </div></div></div>
 </main>
+<div style="max-width:72rem;margin:28px auto 0;padding:0 1rem 2rem;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;box-shadow:0 1px 2px rgba(15,23,42,0.05);">
+    <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.6px;color:var(--text);margin-bottom:8px;">Contact BizHub Operations</div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px 18px;font-size:12px;font-weight:700;">
+      <a href="mailto:contactBizHub@proton.me" style="color:#1d4ed8;text-decoration:none;">📧 contactBizHub@proton.me</a>
+      <a href="https://wa.me/233558272972" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;text-decoration:none;">💬 0558272972</a>
+      <span style="color:var(--text);">📞 0540901856</span>
+    </div>
+  </div>
+</div>
 </body></html>
