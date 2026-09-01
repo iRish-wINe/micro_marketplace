@@ -1,596 +1,72 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full" data-theme="{{ user['theme'] or 'day' }}">
+<html lang="en" data-theme="{{ session.get('theme') or 'day' }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>
-        {{ vendor['company_name'] or vendor['username'] }} | Biz Hub
-    </title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <style>
-        :root {
-            --bh-bg: #f3f4f6;
-            --bh-card: #ffffff;
-            --bh-text: #111827;
-            --bh-muted: #6b7280;
-            --bh-border: #e5e7eb;
-        }
-
-        html[data-theme="night"] {
-            --bh-bg: #0b1220;
-            --bh-card: #111827;
-            --bh-text: #f8fafc;
-            --bh-muted: #94a3b8;
-            --bh-border: #263244;
-        }
-
-        body {
-            background: var(--bh-bg);
-            color: var(--bh-text);
-            transition: background .2s, color .2s;
-        }
-
-        .bh-card {
-            background: var(--bh-card);
-            border-color: var(--bh-border);
-        }
-
-        .bh-border {
-            border-color: var(--bh-border);
-        }
-
-        .bh-text {
-            color: var(--bh-text);
-        }
-
-        .bh-muted {
-            color: var(--bh-muted);
-        }
-
-        .bh-soft {
-            background: #f8fafc;
-        }
-
-        html[data-theme="night"] header,
-        html[data-theme="night"] footer {
-            background: #0f172a !important;
-            border-color: #263244 !important;
-        }
-
-        html[data-theme="night"] .bh-soft {
-            background: #172033;
-        }
-
-        html[data-theme="night"] a {
-            color: #cbd5e1;
-        }
-    </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ vendor['company_name'] or vendor['username'] }} | Biz Hub</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{--bg:#f3f4f6;--card:#fff;--text:#111827;--muted:#6b7280;--border:#e5e7eb}
+html[data-theme="night"]{--bg:#0b1220;--card:#111827;--text:#f8fafc;--muted:#94a3b8;--border:#263244}
+body{background:var(--bg);color:var(--text)}.card{background:var(--card);border-color:var(--border)}.muted{color:var(--muted)}.borderx{border-color:var(--border)}
+html[data-theme="night"] input,html[data-theme="night"] textarea{background:#0f172a;color:#f8fafc;border-color:#334155}
+</style>
 </head>
-
-<body class="min-h-full font-sans antialiased">
-
-<header class="sticky top-0 z-40 w-full bg-white border-b shadow-sm bh-border">
-
-    <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-
-        <div class="flex items-center justify-between h-16">
-
-            <!-- BRAND -->
-            <a href="/" class="flex items-center gap-2 no-underline">
-
-                <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 shadow-md text-white font-black">
-                    BH
-                </div>
-
-                <span class="text-xl font-bold tracking-tight bh-text">
-                    Biz<span class="text-emerald-600">Hub</span>
-                </span>
-
-            </a>
-
-
-            <!-- NAVIGATION -->
-            <nav class="flex items-center gap-4 text-sm font-medium">
-
-                <a
-                    href="/"
-                    class="bh-muted hover:text-emerald-600 no-underline"
-                >
-                    Market
-                </a>
-
-                {% if user['role'] == 'Customer' %}
-
-                    <a
-                        href="/favorites"
-                        class="bh-muted hover:text-emerald-600 no-underline"
-                    >
-                        ⭐ Favorites
-                    </a>
-
-                    <a
-                        href="/orders"
-                        class="bh-muted hover:text-emerald-600 no-underline"
-                    >
-                        Orders
-                    </a>
-
-                {% elif user['role'] in ['Vendor', 'Fast Food'] %}
-
-                    <a
-                        href="/orders"
-                        class="bh-muted hover:text-emerald-600 no-underline"
-                    >
-                        🔔 Orders
-                    </a>
-
-                {% endif %}
-
-                <a
-                    href="/settings"
-                    class="bh-muted hover:text-emerald-600 no-underline"
-                >
-                    Account
-                </a>
-
-                <span class="hidden sm:inline bh-muted">
-                    @{{ user['username'] }}
-                </span>
-
-            </nav>
-
-        </div>
-
-    </div>
-
-</header>
-
-
-<main class="py-8 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-
-
-    <!-- BACK -->
-    <div class="mb-5">
-
-        <a
-            href="/"
-            class="inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700 no-underline"
-        >
-            ← Back to Market
-        </a>
-
-    </div>
-
-
-    <!-- VENDOR HERO -->
-    <section class="bh-card border rounded-2xl shadow-sm overflow-hidden mb-6">
-
-        <div class="p-6 sm:p-8">
-
-            <div class="flex flex-col md:flex-row md:items-start gap-6">
-
-
-                <!-- LOGO -->
-                <div class="flex-shrink-0">
-
-                    {% if vendor['company_logo'] %}
-
-                        <img
-                            src="{{ url_for('static', filename='uploads/' + vendor['company_logo']) }}"
-                            alt="{{ vendor['company_name'] or vendor['username'] }}"
-                            class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover border bh-border shadow-sm"
-                        >
-
-                    {% else %}
-
-                        <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white text-4xl font-black shadow-sm">
-                            {{ (vendor['company_name'] or vendor['username'])[0]|upper }}
-                        </div>
-
-                    {% endif %}
-
-                </div>
-
-
-                <!-- BUSINESS DETAILS -->
-                <div class="flex-1 min-w-0">
-
-                    <div class="flex flex-wrap items-center gap-2">
-
-                        <h1 class="text-2xl sm:text-3xl font-black bh-text">
-                            {{ vendor['company_name'] or vendor['username'] }}
-                        </h1>
-
-
-                        {% if vendor['is_verified'] %}
-
-                            <span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold">
-                                ✓ Verified
-                            </span>
-
-                        {% endif %}
-
-
-                        {% if vendor['is_premium'] %}
-
-                            <span class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-bold">
-                                👑 Premium
-                            </span>
-
-                        {% endif %}
-
-                    </div>
-
-
-                    <p class="text-sm bh-muted mt-2">
-                        @{{ vendor['username'] }}
-                    </p>
-
-
-                    {% if vendor['company_location'] %}
-
-                        <p class="text-sm bh-muted mt-3">
-                            📍 {{ vendor['company_location'] }}
-                        </p>
-
-                    {% endif %}
-
-
-                    <div class="flex flex-wrap gap-2 mt-4">
-
-                        {% if vendor['role'] == 'Fast Food' %}
-
-                            <span class="px-3 py-1.5 rounded-full bg-orange-50 text-orange-700 text-xs font-bold">
-                                🍟 Fast Food
-                            </span>
-
-                        {% else %}
-
-                            <span class="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">
-                                🏪 Vendor
-                            </span>
-
-                        {% endif %}
-
-
-                        {% if vendor['seller_type'] %}
-
-                            <span class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">
-                                {{ vendor['seller_type'] }}
-                            </span>
-
-                        {% endif %}
-
-                    </div>
-
-
-                    <!-- ACTIONS -->
-                    <div class="flex flex-wrap gap-3 mt-6">
-
-
-                        {% if user['role'] == 'Customer' %}
-
-                            {% if is_favorite %}
-
-                                <form
-                                    method="POST"
-                                    action="/favorites/remove/{{ vendor['id'] }}"
-                                >
-
-                                    <button
-                                        type="submit"
-                                        class="inline-flex items-center justify-center px-5 py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 font-bold text-sm"
-                                    >
-                                        ⭐ Remove Favorite
-                                    </button>
-
-                                </form>
-
-                            {% else %}
-
-                                <form
-                                    method="POST"
-                                    action="/favorites/add/{{ vendor['id'] }}"
-                                >
-
-                                    <button
-                                        type="submit"
-                                        class="inline-flex items-center justify-center px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-sm"
-                                    >
-                                        ⭐ Add to Favorites
-                                    </button>
-
-                                </form>
-
-                            {% endif %}
-
-                        {% endif %}
-
-
-                        {% if vendor['whatsapp_number'] %}
-
-                            <a
-                                href="https://wa.me/{{ vendor['whatsapp_number'] }}"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="inline-flex items-center justify-center px-5 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm no-underline"
-                            >
-                                💬 WhatsApp Vendor
-                            </a>
-
-                        {% endif %}
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ACTIVE PROMOTION -->
-    {% if promotion %}
-
-        <section class="mb-6">
-
-            <div class="rounded-2xl border border-red-200 bg-gradient-to-r from-red-50 to-orange-50 overflow-hidden">
-
-                <div class="p-6">
-
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-
-                        <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-red-100 text-2xl">
-                            🔥
-                        </div>
-
-                        <div class="flex-1">
-
-                            <div class="flex flex-wrap items-center gap-2">
-
-                                <span class="text-xs font-black uppercase tracking-wider text-red-600">
-                                    Promo Active
-                                </span>
-
-                                {% if promotion['discount'] %}
-
-                                    <span class="px-2 py-1 rounded-full bg-red-600 text-white text-[11px] font-black">
-                                        {{ promotion['discount'] }}% OFF
-                                    </span>
-
-                                {% endif %}
-
-                            </div>
-
-
-                            <h2 class="text-lg font-black text-gray-900 mt-1">
-                                {{ promotion['title'] }}
-                            </h2>
-
-
-                            {% if promotion['description'] %}
-
-                                <p class="text-sm text-gray-700 mt-1">
-                                    {{ promotion['description'] }}
-                                </p>
-
-                            {% endif %}
-
-
-                            {% if promotion['ends_at'] %}
-
-                                <p class="text-xs text-red-700 font-semibold mt-3">
-                                    ⏰ Offer ends {{ promotion['ends_at'] }}
-                                </p>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-    {% endif %}
-
-
-    <!-- WHAT WE SELL -->
-    <section class="bh-card border rounded-2xl shadow-sm overflow-hidden mb-6">
-
-        <div class="px-6 py-4 border-b bh-border bh-soft">
-
-            <h2 class="text-lg font-bold bh-text">
-                🛍️ What We Sell
-            </h2>
-
-            <p class="text-xs bh-muted mt-1">
-                Product ranges available from this vendor.
-            </p>
-
-        </div>
-
-
-        <div class="p-6">
-
-            {% if vendor_categories %}
-
-                <div class="flex flex-wrap gap-3">
-
-                    {% for category in vendor_categories %}
-
-                        <span class="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100 text-sm font-bold">
-                            {{ category }}
-                        </span>
-
-                    {% endfor %}
-
-                </div>
-
-            {% elif vendor['role'] == 'Fast Food' %}
-
-                <div class="flex flex-wrap gap-3">
-
-                    <span class="px-4 py-2 rounded-xl bg-orange-50 text-orange-700 border border-orange-100 text-sm font-bold">
-                        🍔 Meals
-                    </span>
-
-                    <span class="px-4 py-2 rounded-xl bg-orange-50 text-orange-700 border border-orange-100 text-sm font-bold">
-                        🍕 Pizza
-                    </span>
-
-                    <span class="px-4 py-2 rounded-xl bg-orange-50 text-orange-700 border border-orange-100 text-sm font-bold">
-                        🥤 Cold Drinks
-                    </span>
-
-                </div>
-
-            {% else %}
-
-                <p class="text-sm bh-muted">
-                    This vendor has not configured product ranges yet.
-                </p>
-
-            {% endif %}
-
-        </div>
-
-    </section>
-
-
-    <!-- PRODUCTS -->
-    <section>
-
-        <div class="flex items-end justify-between mb-5">
-
-            <div>
-
-                <h2 class="text-xl font-black bh-text">
-                    Products
-                </h2>
-
-                <p class="text-sm bh-muted mt-1">
-                    Browse products currently listed by this vendor.
-                </p>
-
-            </div>
-
-
-            {% if products %}
-
-                <span class="text-xs bh-muted font-semibold">
-                    {{ products|length }} product{% if products|length != 1 %}s{% endif %}
-                </span>
-
-            {% endif %}
-
-        </div>
-
-
-        {% if products %}
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-
-                {% for product in products %}
-
-                    <article class="bh-card border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition">
-
-
-                        {% if product['image'] %}
-
-                            <img
-                                src="{{ url_for('static', filename='uploads/' + product['image']) }}"
-                                alt="{{ product['name'] }}"
-                                class="w-full h-48 object-cover"
-                            >
-
-                        {% else %}
-
-                            <div class="w-full h-48 bg-slate-100 flex items-center justify-center text-4xl">
-                                🛍️
-                            </div>
-
-                        {% endif %}
-
-
-                        <div class="p-4">
-
-                            <h3 class="font-bold text-sm bh-text line-clamp-2">
-                                {{ product['name'] }}
-                            </h3>
-
-
-                            <p class="text-lg font-black text-emerald-600 mt-2">
-                                GH₵{{ "{:,.2f}".format(product['price']|float) }}
-                            </p>
-
-
-                            {% if product['location'] %}
-
-                                <p class="text-xs bh-muted mt-2">
-                                    📍 {{ product['location'] }}
-                                </p>
-
-                            {% endif %}
-
-
-                            <a
-                                href="/product/{{ product['id'] }}"
-                                class="block text-center mt-4 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold no-underline"
-                            >
-                                View Product
-                            </a>
-
-                        </div>
-
-                    </article>
-
-                {% endfor %}
-
-            </div>
-
-        {% else %}
-
-            <div class="bh-card border rounded-2xl shadow-sm">
-
-                <div class="p-12 text-center">
-
-                    <div class="text-4xl mb-4">
-                        🛍️
-                    </div>
-
-                    <h3 class="text-lg font-black bh-text">
-                        No Products Listed Yet
-                    </h3>
-
-                    <p class="text-sm bh-muted mt-2">
-                        This vendor does not currently have any visible products.
-                    </p>
-
-                </div>
-
-            </div>
-
-        {% endif %}
-
-    </section>
-
+<body class="min-h-screen font-sans antialiased">
+<header class="sticky top-0 z-40 border-b borderx shadow-sm" style="background:var(--card)">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+<a href="/" class="font-black text-xl no-underline" style="color:var(--text)">Biz<span class="text-emerald-600">Hub</span></a>
+<nav class="flex items-center gap-3 text-sm font-bold">
+<a href="/" class="muted no-underline">Market</a>
+{% if session.get('role')=='Customer' %}<a href="/favorites" class="muted no-underline">⭐ Favorites</a>{% endif %}
+{% if session.get('username') %}<a href="/orders" class="muted no-underline">Orders</a><a href="/settings" class="muted no-underline">Account</a>{% else %}<a href="/login" class="muted no-underline">Sign In</a>{% endif %}
+</nav></div></header>
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="card rounded-2xl border shadow-sm overflow-hidden">
+<div class="p-6 sm:p-8">
+<div class="flex flex-col sm:flex-row gap-6 sm:items-center">
+<div class="w-24 h-24 rounded-2xl border borderx overflow-hidden flex items-center justify-center bg-slate-100 shrink-0">
+{% if vendor['company_logo'] %}<img src="{{ url_for('static', filename='uploads/' + vendor['company_logo']) }}" class="w-full h-full object-cover" alt="{{ vendor['company_name'] or vendor['username'] }} logo">{% else %}<span class="text-2xl font-black text-slate-500">BH</span>{% endif %}
+</div>
+<div class="flex-1">
+<div class="flex flex-wrap items-center gap-2">
+<h1 class="text-3xl font-black">{{ vendor['company_name'] or vendor['username'] }}</h1>
+{% if subscription.is_premium %}<span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-black">✓ Verified Store</span>{% endif %}
+{% if promo %}<span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-black">🔥 PROMO ACTIVE</span>{% endif %}
+</div>
+<p class="muted mt-1">@{{ vendor['username'] }} · {{ vendor['role'] }}</p>
+<p class="muted mt-2">📍 {{ vendor['business_location'] or 'Business location not provided' }}</p>
+</div>
+{% if session.get('role') == 'Customer' %}
+<form method="POST" action="/favorites/toggle/{{ vendor['username'] }}">
+<button class="px-4 py-3 rounded-xl font-black text-sm border borderx {{ 'bg-amber-100 text-amber-800' if favorite else 'bg-white' }}">{{ '★ Favorited' if favorite else '☆ Add to Favorites' }}</button>
+</form>
+{% endif %}
+</div>
+</div>
+
+<div class="border-t borderx grid grid-cols-2 sm:grid-cols-4">
+<div class="p-5 border-r borderx"><div class="text-2xl font-black">{{ product_count }}</div><div class="muted text-xs font-bold uppercase">Products</div></div>
+<div class="p-5 sm:border-r borderx"><div class="text-2xl font-black">{{ categories|length }}</div><div class="muted text-xs font-bold uppercase">Ranges</div></div>
+<div class="p-5 border-r borderx"><div class="text-2xl font-black">{{ subscription.name }}</div><div class="muted text-xs font-bold uppercase">Store Status</div></div>
+<div class="p-5"><div class="text-2xl font-black">{{ vendor['seller_type'] }}</div><div class="muted text-xs font-bold uppercase">Vendor Type</div></div>
+</div>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-6 mt-6">
+<div class="lg:col-span-1 space-y-6">
+<section class="card rounded-2xl border shadow-sm p-6">
+<h2 class="font-black text-lg">What We Sell</h2>
+<div class="flex flex-wrap gap-2 mt-4">{% for c in categories %}<span class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">{{ c }}</span>{% else %}<span class="muted text-sm">No product ranges configured.</span>{% endfor %}</div>
+</section>
+{% if promo %}<section class="rounded-2xl border border-amber-200 bg-amber-50 p-6"><div class="text-xs font-black uppercase text-amber-700">🔥 Current Promo</div><h2 class="text-xl font-black text-amber-950 mt-2">{{ promo['title'] }}</h2>{% if promo['description'] %}<p class="text-sm text-amber-900 mt-2">{{ promo['description'] }}</p>{% endif %}{% if promo['discount'] is not none %}<div class="text-2xl font-black text-amber-800 mt-3">{{ "%.0f"|format(promo['discount']) }}% OFF</div>{% endif %}<p class="text-xs text-amber-700 mt-2">Valid {{ promo['starts_at'][:16].replace('T',' ') }} → {{ promo['ends_at'][:16].replace('T',' ') }}</p></section>{% endif %}
+{% if session.get('username') == vendor['username'] %}<a href="/promos" class="block text-center px-4 py-3 rounded-xl bg-amber-500 text-white font-black no-underline">🔥 Manage Promotions</a>{% endif %}
+{% if vendor['whatsapp_number'] %}<a href="https://wa.me/{{ vendor['whatsapp_number'] }}" class="block text-center px-4 py-3 rounded-xl bg-emerald-600 text-white font-black no-underline">💬 WhatsApp Vendor</a>{% endif %}
+</div>
+<div class="lg:col-span-2">
+<div class="flex items-center justify-between mb-4"><h2 class="text-xl font-black">Current Products</h2><a href="/" class="muted text-sm font-bold no-underline">← Back to Market</a></div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+{% for product in products %}<article class="card rounded-xl border p-3 shadow-sm"><div class="h-36 bg-slate-100 rounded-lg overflow-hidden">{% if product['video_file'] %}<video controls preload="metadata" class="w-full h-full object-contain"><source src="{{ url_for('static', filename='uploads/' + product['video_file']) }}"></video>{% elif product['image_file'] %}<img src="{{ url_for('static', filename='uploads/' + product['image_file']) }}" class="w-full h-full object-contain" alt="{{ product['title'] }}">{% endif %}</div><h3 class="font-bold text-sm mt-3 line-clamp-2">{{ product['title'] }}</h3><div class="font-black text-lg text-emerald-700 mt-1">GH₵ {{ "%.2f"|format(product['price']) }}</div><p class="muted text-xs mt-1">📍 {{ product['location'] }}</p><a href="/add-to-cart/{{ product['id'] }}" class="block mt-3 text-center rounded-lg border borderx py-2 text-xs font-black no-underline" style="color:var(--text)">🛒 Add to Basket</a></article>{% else %}<div class="col-span-full card border borderx rounded-xl p-10 text-center muted">This vendor has no current products.</div>{% endfor %}
+</div></div></div>
 </main>
-
-
-<footer class="bg-white border-t bh-border py-6 text-center text-xs bh-muted">
-
-    © 2026 Biz Hub. Vendor storefront.
-
-</footer>
-
-</body>
-</html>
+</body></html>

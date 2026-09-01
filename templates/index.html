@@ -75,10 +75,10 @@
         .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15); }
         .submit-btn { background-color: #F7CA00; color: #111; border: 1px solid #F0B800; padding: 10px; cursor: pointer; border-radius: var(--radius-sm); font-size: 13px; width: 100%; font-weight: 700; transition: var(--transition); box-shadow: 0 2px 5px rgba(213,217,213,0.5); }
         .submit-btn:hover { background-color: #F5B800; }
-        .submit-btn:disabled { opacity: 0.75; cursor: not-allowed; }
-        .listing-alert { margin: 0 0 14px; padding: 11px 13px; border-radius: 8px; background: #FFF7ED; border: 1px solid #FED7AA; color: #9A3412; font-size: 12px; font-weight: 700; }
-        .media-choice { border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: #FAFAFA; }
-        .media-status { font-size: 11px; margin-top: 6px; color: var(--text-muted); }
+        .submit-btn:disabled { opacity: .75; cursor: not-allowed; }
+        .listing-alert { margin:0 0 14px; padding:11px 13px; border-radius:8px; background:#FFF7ED; border:1px solid #FED7AA; color:#9A3412; font-size:12px; font-weight:700; }
+        .media-choice { border:1px solid var(--border-color); border-radius:8px; padding:10px; background:#FAFAFA; }
+        .media-status { font-size:11px; margin-top:6px; color:var(--text-muted); }
         .media-preview { display:none; margin-top:8px; width:100%; max-height:150px; object-fit:contain; background:#000; border-radius:6px; }
         .media-cancel { display:none; margin-top:6px; width:100%; border:1px solid #FED7D7; background:#FFF5F5; color:#B91C1C; border-radius:6px; padding:6px 8px; font-size:11px; font-weight:700; cursor:pointer; }
         
@@ -232,7 +232,15 @@
         <div class="nav-links">
             {% if session.get('username') %}
                 <span>Hello, <b>@{{ session['username'] }}</b></span>
-                <a href="/">Home</a>
+                <a href="/">Market</a>
+                {% if session.get('role') == 'Customer' %}
+                    <a href="/favorites">⭐ Favorites</a>
+                    <a href="/orders">Orders</a>
+                {% elif session.get('role') in ['Vendor', 'Fast Food'] %}
+                    <a href="/orders">🔔 Orders{% if vendor_notification_count %} <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#EF4444;color:#fff;font-size:10px;font-weight:900;">{{ vendor_notification_count }}</span>{% endif %}</a>
+                    <a href="/vendor/{{ session['username'] }}">My Store</a>
+                {% endif %}
+                <a href="/settings">Account</a>
                 <a href="/logout" class="logout" style="background:#E53E3E;">Logout</a>
             {% else %}
                 <a href="/login">Sign In / Register</a>
@@ -303,9 +311,7 @@
                             <h3>📢 Upload Product Listing</h3>
                         {% endif %}
 
-                        {% if listing_error %}
-                            <div class="listing-alert">{{ listing_error }}</div>
-                        {% endif %}
+                        {% if listing_error %}<div class="listing-alert">{{ listing_error }}</div>{% endif %}
                         <form id="listingForm" method="POST" action="/" enctype="multipart/form-data">
                             <div class="form-group">
                                 <label>{% if session.get('role') == 'Fast Food' %}Meal / Combo Name:{% else %}Item Title / Name:{% endif %}</label>
@@ -341,8 +347,8 @@
                                 <button id="cancelVideo" type="button" class="media-cancel">Cancel Video → Choose Image</button>
                                 <div id="mediaStatus" class="media-status">Choose exactly one: Image OR Video. Videos must be 20 seconds or shorter.</div>
                             </div>
-                            <button id="publishButton" type="submit" class="submit-btn {% if session.get('role') == 'Fast Food' %}btn-ff-override{% endif %}">
-                                <span id="publishButtonText">{% if session.get('role') == 'Fast Food' %}🚀 Launch Meal Live{% else %}Publish Item{% endif %}</span>
+                            <button type="submit" class="submit-btn {% if session.get('role') == 'Fast Food' %}btn-ff-override{% endif %}">
+                                {% if session.get('role') == 'Fast Food' %}🚀 Launch Meal Live{% else %}Publish Item{% endif %}
                             </button>
                         </form>
                     </div>
@@ -351,14 +357,17 @@
             </div>
             <!-- PANEL 2: MAIN Amazon FEED GRID -->
             <div>
-                <h3 style="margin-top: 0; font-size: 18px; color: var(--bg-abyssal); margin-bottom: 15px; font-weight:800;">🛍️ Live Marketplace Feed</h3>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
+                    <h3 style="margin:0; font-size:18px; color:var(--bg-abyssal); font-weight:800;">🛍️ Live Marketplace Feed</h3>
+                    {% if session.get('role') == 'Customer' %}<a href="/?promo=1" style="font-size:12px;font-weight:800;color:#B45309;text-decoration:none;background:#FEF3C7;border:1px solid #FCD34D;padding:7px 10px;border-radius:8px;">🔥 Vendors Running Promotions</a>{% endif %}
+                </div>
                 <div class="grid" id="masterCatalogGrid">
                     {% for product in products %}
                         <div class="card">
                             <!-- 👑 DYNAMIC MULTI-MEDIA RENDERING ENGINE ENGINE FIXED -->
                             <div class="card-media-wrapper" style="background-color: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; height: 170px;">
  {% if product.video_file %}
-        <video class="card-img" controls preload="metadata" playsinline>
+        <video class="card-img" controls preload="metadata">
             <source src="{{ url_for('stream_video', filename=product.video_file) }}">
             Your browser does not support video playback.
         </video>
@@ -378,9 +387,11 @@
                                     {% else %}
                                         <div class="card-logo-circle" style="display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; color:white; background:var(--primary-light);">BH</div>
                                     {% endif %}
-                                    <div class="card-brand">🏬 {{ product.business_label }}</div>
+                                    <a href="/vendor/{{ product.seller }}" class="card-brand" style="text-decoration:none;">🏬 {{ product.business_label }}</a>
                                 </div>
-                                
+                                {% if product.active_promo %}
+                                    <a href="/vendor/{{ product.seller }}" style="display:inline-block;width:max-content;max-width:100%;margin:0 0 5px;padding:3px 7px;border-radius:999px;background:#FEF3C7;color:#B45309;font-size:9px;font-weight:900;text-decoration:none;">🔥 PROMO ACTIVE</a>
+                                {% endif %}
                                 <h4 class="card-title">{{ product.title }}</h4>
                                 <div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div>
                                 <p class="card-text">{{ product.description }}</p>
@@ -476,102 +487,17 @@
         }
 
         function setupListingMediaControls() {
-            const form = document.getElementById("listingForm");
-            const imageInput = document.getElementById("productImage");
-            const videoInput = document.getElementById("productVideo");
-            const imagePreview = document.getElementById("imagePreview");
-            const videoPreview = document.getElementById("videoPreview");
-            const cancelImage = document.getElementById("cancelImage");
-            const cancelVideo = document.getElementById("cancelVideo");
-            const status = document.getElementById("mediaStatus");
-            const publishButton = document.getElementById("publishButton");
-            const publishText = document.getElementById("publishButtonText");
-            if (!form || !imageInput || !videoInput) return;
-
-            let imageUrl = null;
-            let videoUrl = null;
-            let videoDurationValid = true;
-
-            function clearImage() {
-                imageInput.value = "";
-                imagePreview.removeAttribute("src");
-                imagePreview.style.display = "none";
-                cancelImage.style.display = "none";
-                if (imageUrl) { URL.revokeObjectURL(imageUrl); imageUrl = null; }
-            }
-
-            function clearVideo() {
-                videoInput.value = "";
-                videoPreview.pause();
-                videoPreview.removeAttribute("src");
-                videoPreview.load();
-                videoPreview.style.display = "none";
-                cancelVideo.style.display = "none";
-                videoDurationValid = true;
-                if (videoUrl) { URL.revokeObjectURL(videoUrl); videoUrl = null; }
-                status.textContent = "Choose exactly one: Image OR Video. Videos must be 20 seconds or shorter.";
-            }
-
-            imageInput.addEventListener("change", function() {
-                if (!this.files.length) return;
-                clearVideo();
-                const file = this.files[0];
-                if (!file.type.startsWith("image/")) { clearImage(); status.textContent = "Please choose an image file."; return; }
-                if (imageUrl) URL.revokeObjectURL(imageUrl);
-                imageUrl = URL.createObjectURL(file);
-                imagePreview.src = imageUrl;
-                imagePreview.style.display = "block";
-                cancelImage.style.display = "block";
-                status.textContent = "Image selected. Video is cleared.";
-            });
-
-            videoInput.addEventListener("change", function() {
-                if (!this.files.length) return;
-                clearImage();
-                const file = this.files[0];
-                if (!file.type.startsWith("video/")) { clearVideo(); status.textContent = "Please choose a video file."; return; }
-                if (videoUrl) URL.revokeObjectURL(videoUrl);
-                videoUrl = URL.createObjectURL(file);
-                videoDurationValid = true;
-                videoPreview.src = videoUrl;
-                videoPreview.style.display = "block";
-                cancelVideo.style.display = "block";
-                status.textContent = "Checking video duration…";
-                videoPreview.onloadedmetadata = function() {
-                    if (videoPreview.duration > 20.0) {
-                        videoDurationValid = false;
-                        clearVideo();
-                        status.textContent = "Video rejected: maximum duration is 20 seconds.";
-                    } else {
-                        status.textContent = `Video selected (${videoPreview.duration.toFixed(1)}s). Image is cleared.`;
-                    }
-                };
-                videoPreview.onerror = function() {
-                    videoDurationValid = false;
-                    clearVideo();
-                    status.textContent = "Video could not be read by this browser. Please choose a valid MP4, WebM, or MOV file.";
-                };
-            });
-
-            cancelImage.addEventListener("click", function() { clearImage(); status.textContent = "Image cancelled. Choose a video or select an image again."; });
-            cancelVideo.addEventListener("click", function() { clearVideo(); });
-
-            form.addEventListener("submit", function(event) {
-                const hasImage = imageInput.files && imageInput.files.length > 0;
-                const hasVideo = videoInput.files && videoInput.files.length > 0;
-                if (hasImage === hasVideo) {
-                    event.preventDefault();
-                    status.textContent = "Choose exactly one: Image OR Video.";
-                    return;
-                }
-                if (hasVideo && !videoDurationValid) {
-                    event.preventDefault();
-                    status.textContent = "Video must be 20 seconds or shorter.";
-                    return;
-                }
-                publishButton.disabled = true;
-                publishText.textContent = "⏳ Publishing…";
-            });
+            const form=document.getElementById("listingForm"), imageInput=document.getElementById("productImage"), videoInput=document.getElementById("productVideo"), imagePreview=document.getElementById("imagePreview"), videoPreview=document.getElementById("videoPreview"), cancelImage=document.getElementById("cancelImage"), cancelVideo=document.getElementById("cancelVideo"), status=document.getElementById("mediaStatus");
+            const publishButton=form ? form.querySelector('button[type="submit"]') : null;
+            if(!form||!imageInput||!videoInput) return;
+            let imageUrl=null, videoUrl=null, videoDurationValid=true;
+            function clearImage(){ imageInput.value=""; imagePreview.removeAttribute("src"); imagePreview.style.display="none"; cancelImage.style.display="none"; if(imageUrl){URL.revokeObjectURL(imageUrl);imageUrl=null;} }
+            function clearVideo(){ videoInput.value=""; videoPreview.pause(); videoPreview.removeAttribute("src"); videoPreview.load(); videoPreview.style.display="none"; cancelVideo.style.display="none"; videoDurationValid=true; if(videoUrl){URL.revokeObjectURL(videoUrl);videoUrl=null;} }
+            imageInput.addEventListener("change",function(){ if(!this.files.length)return; clearVideo(); const f=this.files[0]; if(!f.type.startsWith("image/")){clearImage();status.textContent="Please choose an image file.";return;} imageUrl=URL.createObjectURL(f);imagePreview.src=imageUrl;imagePreview.style.display="block";cancelImage.style.display="block";status.textContent="Image selected. Video is cleared."; });
+            videoInput.addEventListener("change",function(){ if(!this.files.length)return; clearImage(); const f=this.files[0]; if(!f.type.startsWith("video/")){clearVideo();status.textContent="Please choose a video file.";return;} videoUrl=URL.createObjectURL(f);videoDurationValid=true;videoPreview.src=videoUrl;videoPreview.style.display="block";cancelVideo.style.display="block";status.textContent="Checking video duration…"; videoPreview.onloadedmetadata=function(){if(videoPreview.duration>20){videoDurationValid=false;clearVideo();status.textContent="Video rejected: maximum duration is 20 seconds.";}else{status.textContent=`Video selected (${videoPreview.duration.toFixed(1)}s). Image is cleared.`;}}; videoPreview.onerror=function(){videoDurationValid=false;clearVideo();status.textContent="Video could not be read. Please choose a valid MP4, WebM, or MOV file.";}; });
+            cancelImage.addEventListener("click",function(){clearImage();status.textContent="Image cancelled. Choose a video or select an image again.";});
+            cancelVideo.addEventListener("click",function(){clearVideo();status.textContent="Video cancelled. Choose an image or select a video again.";});
+            form.addEventListener("submit",function(e){const hi=imageInput.files.length>0,hv=videoInput.files.length>0;if(hi===hv){e.preventDefault();status.textContent="Choose exactly one: Image OR Video.";return;}if(hv&&!videoDurationValid){e.preventDefault();status.textContent="Video must be 20 seconds or shorter.";return;}if(publishButton){publishButton.disabled=true;publishButton.innerHTML="⏳ Publishing…";}});
         }
 
         function filterCatalogCards() {

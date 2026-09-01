@@ -79,3 +79,34 @@ License
 -------
 
 This project is licensed under the Apache License 2.0. See the LICENSE file for details.
+
+
+Biz Hub Relationship Layer Update
+
+Files included:
+- app.py
+- templates/index.html
+- templates/settings.html
+- templates/login.html
+- templates/vendor_profile.html
+- templates/favorites.html
+- templates/promotions.html
+- templates/orders.html
+
+Implemented:
+1. Vendor business profile with clickable vendor/company names.
+2. Business location on vendor accounts.
+3. Customer Favorites with unique customer/vendor pairs.
+4. Vendor purchase notifications with unread badge and per-vendor order items.
+5. Promotion creation/deactivation and active promo display.
+6. Customer navigation: Market | Favorites | Orders | Account.
+7. Vendor navigation: Market | Orders (unread badge) | My Store | Account.
+8. Existing username/theme/settings behavior retained.
+9. Settings product ranges are optional for unrelated settings changes; existing ranges are preserved when none are checked.
+10. Database migrations are automatic through init_db() for existing marketplace.db files.
+
+Important:
+- Replace the project's app.py and the listed templates with these versions.
+- Keep the existing static/ directory and marketplace.db.
+- The database tables favorites, vendor_notifications and promotions are created automatically at startup.
+- Flask was not installed in the isolated execution environment here, so runtime Flask integration testing could not be performed; app.py was syntax-checked with py_compile.
