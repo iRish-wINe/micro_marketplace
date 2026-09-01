@@ -325,7 +325,7 @@
                 </div>
             {% elif vendor_subscription and vendor_subscription.name == 'Premium Store' %}
                 <span class="billboard-promo-tag">💎 Premium Store Active</span>
-                <h1>Your Premium Store Is Active</h1>
+                <h1>Congrats, you're on the next level</h1>
                 <p>Your account is currently on a paid Premium Store subscription. Use Manage Account to review your plan and renewal details.</p>
             {% else %}
                 <span class="billboard-promo-tag">⚡ Trial Ended</span>
@@ -351,7 +351,7 @@
                         <p style="margin: 5px 0 12px; font-size: 12px;">Listings: <b>{{ listing_count }}</b></p>
                         <div style="display:flex;flex-direction:column;gap:7px;">
                             <a href="/vendor/{{ session['username'] }}" class="btn-action btn-cart" style="text-align:center;">🏬 My Store</a>
-                            <a href="/promotions" class="btn-action" style="text-align:center;background:#FEF3C7;color:#92400E;border-color:#FCD34D;">🔥 Manage Promotions</a>
+                            <a href="/promotions" class="btn-action" style="text-align:center;background:#FEF3C7;color:#92400E;border-color:#FCD34D;">⚡ Manage Promotions</a>
                             <a href="/subscription" class="btn-action btn-cart" style="text-align:center;">💎 Manage Account</a>
                         </div>
                     </div>
@@ -415,7 +415,7 @@
             <div>
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
                     <h3 style="margin:0; font-size:18px; color:var(--bg-abyssal); font-weight:800;">🛍️ Live Marketplace Feed</h3>
-                    {% if session.get('role') == 'Customer' %}<a href="/?promo=1" style="font-size:12px;font-weight:800;color:#B45309;text-decoration:none;background:#FEF3C7;border:1px solid #FCD34D;padding:7px 10px;border-radius:8px;">🔥 Vendors Running Promotions</a>{% endif %}
+                    {% if session.get('role') == 'Customer' %}<a href="/?promo=1" style="font-size:12px;font-weight:800;color:#B45309;text-decoration:none;background:#FEF3C7;border:1px solid #FCD34D;padding:7px 10px;border-radius:8px;">⚡ Vendors Running Promotions</a>{% endif %}
                 </div>
                 <div class="grid" id="masterCatalogGrid">
                     {% for product in products %}
@@ -446,7 +446,7 @@
                                     <a href="/vendor/{{ product.seller }}" class="card-brand" style="text-decoration:none;">🏬 {{ product.business_label }}</a>
                                 </div>
                                 {% if product.active_promo %}
-                                    <a href="/vendor/{{ product.seller }}" style="display:inline-block;width:max-content;max-width:100%;margin:0 0 5px;padding:3px 7px;border-radius:999px;background:#FEF3C7;color:#B45309;font-size:9px;font-weight:900;text-decoration:none;">🔥 PROMO ACTIVE</a>
+                                    <a href="/vendor/{{ product.seller }}" style="display:inline-block;width:max-content;max-width:100%;margin:0 0 5px;padding:3px 7px;border-radius:999px;background:#FEF3C7;color:#B45309;font-size:9px;font-weight:900;text-decoration:none;">⚡ PROMO ACTIVE</a>
                                 {% endif %}
                                 <h4 class="card-title">{{ product.title }}</h4>
                                 <div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div>

@@ -31,8 +31,8 @@ html[data-theme="night"] input,html[data-theme="night"] textarea{background:#0f1
 <div class="flex-1">
 <div class="flex flex-wrap items-center gap-2">
 <h1 class="text-3xl font-black">{{ vendor['company_name'] or vendor['username'] }}</h1>
-{% if subscription.is_premium %}<span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-black">✓ Verified Store</span>{% endif %}
-{% if promo %}<span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-black">🔥 PROMO ACTIVE</span>{% endif %}
+{% if subscription.is_premium %}<span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-black">𝕏 Verified Store</span>{% endif %}
+{% if promo %}<span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-black">⚡ PROMO ACTIVE</span>{% endif %}
 </div>
 <p class="muted mt-1">@{{ vendor['username'] }} · {{ vendor['role'] }}</p>
 <p class="muted mt-2">📍 {{ vendor['business_location'] or 'Business location not provided' }}</p>
@@ -59,8 +59,8 @@ html[data-theme="night"] input,html[data-theme="night"] textarea{background:#0f1
 <h2 class="font-black text-lg">What We Sell</h2>
 <div class="flex flex-wrap gap-2 mt-4">{% for c in categories %}<span class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">{{ c }}</span>{% else %}<span class="muted text-sm">No product ranges configured.</span>{% endfor %}</div>
 </section>
-{% if promo %}<section class="rounded-2xl border border-amber-200 bg-amber-50 p-6"><div class="text-xs font-black uppercase text-amber-700">🔥 Current Promo</div><h2 class="text-xl font-black text-amber-950 mt-2">{{ promo['title'] }}</h2>{% if promo['description'] %}<p class="text-sm text-amber-900 mt-2">{{ promo['description'] }}</p>{% endif %}{% if promo['discount'] is not none %}<div class="text-2xl font-black text-amber-800 mt-3">{{ "%.0f"|format(promo['discount']) }}% OFF</div>{% endif %}<p class="text-xs text-amber-700 mt-2">Valid {{ promo['starts_at'][:16].replace('T',' ') }} → {{ promo['ends_at'][:16].replace('T',' ') }}</p></section>{% endif %}
-{% if session.get('username') == vendor['username'] %}<a href="/promotions" class="block text-center px-4 py-3 rounded-xl bg-amber-500 text-white font-black no-underline">🔥 Manage Promotions</a>{% endif %}
+{% if promo %}<section class="rounded-2xl border border-amber-200 bg-amber-50 p-6"><div class="text-xs font-black uppercase text-amber-700">⚡ Current Promo</div><h2 class="text-xl font-black text-amber-950 mt-2">{{ promo['title'] }}</h2>{% if promo['description'] %}<p class="text-sm text-amber-900 mt-2">{{ promo['description'] }}</p>{% endif %}{% if promo['discount'] is not none %}<div class="text-2xl font-black text-amber-800 mt-3">{{ "%.0f"|format(promo['discount']) }}% OFF</div>{% endif %}<p class="text-xs text-amber-700 mt-2">Valid {{ promo['starts_at'][:16].replace('T',' ') }} → {{ promo['ends_at'][:16].replace('T',' ') }}</p></section>{% endif %}
+{% if session.get('username') == vendor['username'] %}<a href="/promotions" class="block text-center px-4 py-3 rounded-xl bg-amber-500 text-white font-black no-underline">⚡ Manage Promotions</a>{% endif %}
 {% if vendor['whatsapp_number'] %}<a href="https://wa.me/{{ vendor['whatsapp_number'] }}" class="block text-center px-4 py-3 rounded-xl bg-emerald-600 text-white font-black no-underline">💬 WhatsApp Vendor</a>{% endif %}
 </div>
 <div class="lg:col-span-2">
