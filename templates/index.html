@@ -234,6 +234,8 @@
         .btn-whatsapp-checkout { background-color: var(--success); color: white; text-align: center; text-decoration: none; padding: 10px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 800; display: block; margin-top: 10px; text-transform: uppercase; border: none; }
         .clear-cart-link { display: block; color: var(--text-muted); text-align: center; font-size: 12px; margin-top: 16px; text-decoration: none; font-weight: 600; transition: var(--transition); }
         .clear-cart-link:hover { color: var(--danger); }
+        .install-app-btn { display: none; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(59,130,246,0.4); background: rgba(59,130,246,0.10); color: #0F172A; font-size: 11px; font-weight: 800; text-decoration: none; cursor: pointer; }
+        .cancel-publish-btn { background: #FFF5F5; color: #B91C1C; border: 1px solid #FECACA; border-radius: 8px; padding: 12px 14px; font-weight: 800; font-size: 13px; cursor: pointer; }
     </style>
     
     <!-- PWA Installation Icon Anchors -->
@@ -274,6 +276,7 @@
             {% else %}
                 <a href="/login">Sign In / Register</a>
             {% endif %}
+            <button id="installAppBtn" type="button" class="install-app-btn" aria-label="Install BizHub app" title="Install app">📲 Install App</button>
         </div>
     </div>
     <div class="search-hero">
@@ -397,9 +400,12 @@
                                 <button id="cancelVideo" type="button" class="media-cancel">Cancel Video → Choose Image</button>
                                 <div id="mediaStatus" class="media-status">Choose exactly one: Image OR Video. Videos must be 20 seconds or shorter.</div>
                             </div>
-                            <button type="submit" class="submit-btn {% if session.get('role') == 'Fast Food' %}btn-ff-override{% endif %}">
-                                {% if session.get('role') == 'Fast Food' %}🚀 Launch Meal Live{% else %}Publish Item{% endif %}
-                            </button>
+                            <div style="display:flex; gap:8px; margin-top: 10px;">
+                                <button type="submit" class="submit-btn {% if session.get('role') == 'Fast Food' %}btn-ff-override{% endif %}" style="flex:1; margin-top: 0;">
+                                    {% if session.get('role') == 'Fast Food' %}🚀 Launch Meal Live{% else %}Publish Item{% endif %}
+                                </button>
+                                <button type="button" id="cancelPublishBtn" class="cancel-publish-btn">Cancel Publishing</button>
+                            </div>
                         </form>
                     </div>
 
@@ -497,11 +503,36 @@
         window.addEventListener("DOMContentLoaded", function() {
             startTrialCountdown();
             setupListingMediaControls();
+            setupInstallPrompt();
             setTimeout(function() {
                 let s = document.getElementById("bizhub-splash-screen");
                 if(s) { s.style.opacity = "0"; s.style.visibility = "hidden"; }
             }, 1500);
         });
+
+        function setupInstallPrompt() {
+            const installBtn = document.getElementById("installAppBtn");
+            if (!installBtn) return;
+            let deferredPrompt = null;
+
+            installBtn.addEventListener("click", async function() {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                installBtn.style.display = "none";
+            });
+
+            window.addEventListener("beforeinstallprompt", function(event) {
+                event.preventDefault();
+                deferredPrompt = event;
+                installBtn.style.display = "inline-flex";
+            });
+
+            window.addEventListener("appinstalled", function() {
+                installBtn.style.display = "none";
+            });
+        }
 
 
         function startTrialCountdown() {
@@ -537,7 +568,7 @@
         }
 
         function setupListingMediaControls() {
-            const form=document.getElementById("listingForm"), imageInput=document.getElementById("productImage"), videoInput=document.getElementById("productVideo"), imagePreview=document.getElementById("imagePreview"), videoPreview=document.getElementById("videoPreview"), cancelImage=document.getElementById("cancelImage"), cancelVideo=document.getElementById("cancelVideo"), status=document.getElementById("mediaStatus");
+            const form=document.getElementById("listingForm"), imageInput=document.getElementById("productImage"), videoInput=document.getElementById("productVideo"), imagePreview=document.getElementById("imagePreview"), videoPreview=document.getElementById("videoPreview"), cancelImage=document.getElementById("cancelImage"), cancelVideo=document.getElementById("cancelVideo"), status=document.getElementById("mediaStatus"), cancelPublishBtn=document.getElementById("cancelPublishBtn");
             const publishButton=form ? form.querySelector('button[type="submit"]') : null;
             if(!form||!imageInput||!videoInput) return;
             let imageUrl=null, videoUrl=null, videoDurationValid=true;
@@ -547,6 +578,21 @@
             videoInput.addEventListener("change",function(){ if(!this.files.length)return; clearImage(); const f=this.files[0]; if(!f.type.startsWith("video/")){clearVideo();status.textContent="Please choose a video file.";return;} videoUrl=URL.createObjectURL(f);videoDurationValid=true;videoPreview.src=videoUrl;videoPreview.style.display="block";cancelVideo.style.display="block";status.textContent="Checking video duration…"; videoPreview.onloadedmetadata=function(){if(videoPreview.duration>20){videoDurationValid=false;clearVideo();status.textContent="Video rejected: maximum duration is 20 seconds.";}else{status.textContent=`Video selected (${videoPreview.duration.toFixed(1)}s). Image is cleared.`;}}; videoPreview.onerror=function(){videoDurationValid=false;clearVideo();status.textContent="Video could not be read. Please choose a valid MP4, WebM, or MOV file.";}; });
             cancelImage.addEventListener("click",function(){clearImage();status.textContent="Image cancelled. Choose a video or select an image again.";});
             cancelVideo.addEventListener("click",function(){clearVideo();status.textContent="Video cancelled. Choose an image or select a video again.";});
+            if (cancelPublishBtn) {
+                cancelPublishBtn.addEventListener("click", function() {
+                    form.reset();
+                    clearImage();
+                    clearVideo();
+                    status.textContent = "Publishing cancelled. You can start again.";
+                    if (publishButton) {
+                        publishButton.disabled = false;
+                        publishButton.innerHTML = publishButton.dataset.defaultText || publishButton.textContent;
+                    }
+                });
+            }
+            if (publishButton) {
+                publishButton.dataset.defaultText = publishButton.innerHTML;
+            }
             form.addEventListener("submit",function(e){const hi=imageInput.files.length>0,hv=videoInput.files.length>0;if(hi===hv){e.preventDefault();status.textContent="Choose exactly one: Image OR Video.";return;}if(hv&&!videoDurationValid){e.preventDefault();status.textContent="Video must be 20 seconds or shorter.";return;}if(publishButton){publishButton.disabled=true;publishButton.innerHTML="⏳ Publishing…";}});
         }
 

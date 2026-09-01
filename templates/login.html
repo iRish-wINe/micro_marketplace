@@ -201,7 +201,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="submit-btn" style="background-color: var(--accent);">Claim Free 2-Month Trial</button>
+                <button id="registerSubmitButton" type="submit" class="submit-btn" style="background-color: var(--accent);">Register</button>
             </form>
         </div>
 
@@ -226,6 +226,13 @@
                 document.getElementById('registerForm').classList.add('active');
             }
             evaluateRoleParameters();
+        }
+
+        function updateRegisterButtonText() {
+            const role = document.getElementById('roleSelector').value;
+            const submitButton = document.getElementById('registerSubmitButton');
+            if (!submitButton) return;
+            submitButton.textContent = role === 'Customer' ? 'Register' : 'Claim Free 2-Month Trial';
         }
 
         function evaluateRoleParameters() {
@@ -258,7 +265,9 @@
                     compNameGroup.style.display = 'none';
                 }
             }
+            updateRegisterButtonText();
         }
+        document.getElementById('roleSelector').addEventListener('change', evaluateRoleParameters);
         evaluateRoleParameters();
     </script>
 </body>
