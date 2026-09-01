@@ -23,7 +23,7 @@
         body { background: #F7FAFC; }
         .auth-shell { width:100%; max-width:1120px; min-height:650px; display:grid; grid-template-columns:minmax(0,1.05fr) minmax(400px,.95fr); background:#fff; border:1px solid var(--border-color); border-radius:18px; overflow:hidden; box-shadow:0 16px 50px rgba(15,23,42,.10); }
         .auth-visual { min-height:650px; padding:42px; box-sizing:border-box; display:flex; align-items:flex-end; position:relative; overflow:hidden; background:linear-gradient(90deg, rgba(11,25,44,.92) 0%, rgba(11,25,44,.78) 26%, rgba(11,25,44,.35) 52%, rgba(11,25,44,.10) 100%); color:#fff; }
-        .auth-visual::before { content:""; position:absolute; inset:0; background-image:linear-gradient(180deg,rgba(11,25,44,.20),rgba(11,25,44,.74)),url("{{ url_for('static', filename='uploads/bizhub-login-banner.jpg') }}?v=1"); background-size:cover; background-position:center; transform:scale(1.04); }
+        .auth-visual::before { content:""; position:absolute; inset:0; background-image:linear-gradient(180deg,rgba(11,25,44,.20),rgba(11,25,44,.74)),url("{{ url_for('static', filename='uploads/bizhub-login-banner.svg') }}?v=1"); background-size:cover; background-position:center; transform:scale(1.04); }
         .auth-visual-copy { max-width:470px; position:relative; z-index:1; }
         .auth-visual-copy .kicker { display:inline-block; background:var(--accent); color:#0B192C; padding:6px 11px; border-radius:999px; font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.7px; margin-bottom:12px; }
         .auth-visual-copy h1 { margin:0 0 10px; font-size:42px; line-height:1.04; letter-spacing:-1px; }
@@ -87,7 +87,7 @@
                 <p>Your Local Market, Unified Online. Discover businesses around you, shop with confidence, and keep local commerce moving.</p>
             </div>
             <div class="auth-visual-figure">
-                <img src="{{ url_for('static', filename='uploads/bizhub-login-banner.jpg') }}?v=1" alt="BizHub customer using the app" onerror="this.style.display='none';">
+                <img src="{{ url_for('static', filename='uploads/bizhub-login-banner.svg') }}?v=1" alt="BizHub customer using the app" onerror="this.style.display='none';">
             </div>
         </section>
         <main class="auth-form-panel">
@@ -243,7 +243,7 @@
         <div class="bizhub-footer-title">Contact BizHub Operations</div>
         <ul class="bizhub-footer-list">
             <li class="bizhub-footer-item"><span class="bizhub-footer-icon">✉</span><a href="mailto:contactBizHub@proton.me">contactBizHub@proton.me</a></li>
-            <li class="bizhub-footer-item"><span class="bizhub-footer-icon">💬</span><a href="https://wa.me/233558272972" target="_blank" rel="noopener noreferrer">0558272972</a></li>
+            <li class="bizhub-footer-item"><span class="bizhub-footer-icon">�</span><a href="https://wa.me/233558272972" target="_blank" rel="noopener noreferrer">0558272972</a></li>
             <li class="bizhub-footer-item"><span class="bizhub-footer-icon">📞</span><span>0540901856</span></li>
         </ul>
     </div>
