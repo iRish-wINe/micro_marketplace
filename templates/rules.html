@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0B192C">
+    <title>Rules & Regulations | BizHub</title>
+    <style>
+        :root { --navy:#0B192C; --orange:#F59E0B; --blue:#1D4ED8; --bg:#EAEDED; --text:#0F172A; --muted:#64748B; --border:#D5D9D9; }
+        * { box-sizing:border-box; }
+        body { margin:0; padding:env(safe-area-inset-top) 16px calc(30px + env(safe-area-inset-bottom)); background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; }
+        .nav, .wrap { max-width:920px; margin:0 auto; }
+        .nav { padding:16px 0; display:flex; justify-content:space-between; align-items:center; gap:14px; }
+        .brand { color:var(--navy); font-size:22px; font-weight:900; text-decoration:none; }
+        .brand span { color:var(--orange); }
+        .nav a:last-child { color:var(--blue); font-size:12px; font-weight:800; text-decoration:none; }
+        .hero { margin:24px 0 16px; padding:30px; border-radius:12px; background:var(--navy); color:#fff; }
+        .hero h1 { margin:0 0 8px; font-size:30px; }
+        .hero p { margin:0; color:#CBD5E1; line-height:1.6; font-size:14px; }
+        .updated { margin-top:14px; color:#94A3B8; font-size:11px; }
+        .layout { display:grid; grid-template-columns:220px 1fr; gap:16px; align-items:start; }
+        .toc, .section { background:#fff; border:1px solid var(--border); border-radius:10px; box-shadow:0 3px 12px rgba(0,0,0,.05); }
+        .toc { padding:16px; position:sticky; top:16px; }
+        .toc strong { display:block; margin-bottom:10px; font-size:12px; }
+        .toc a { display:block; padding:7px 0; color:var(--blue); font-size:12px; text-decoration:none; }
+        .section { padding:22px; margin-bottom:12px; scroll-margin-top:16px; }
+        .section h2 { margin:0 0 9px; font-size:18px; }
+        .section p, .section li { color:#475569; font-size:13px; line-height:1.7; }
+        .section p { margin:7px 0; }
+        .section ul { margin:8px 0 0; padding-left:20px; }
+        .notice { border-left:4px solid var(--orange); background:#FFF7ED; }
+        .footer { padding:22px 0 8px; color:var(--muted); text-align:center; font-size:11px; }
+        @media(max-width:700px) { .layout { grid-template-columns:1fr; } .toc { position:static; } .hero { padding:24px; } .hero h1 { font-size:25px; } }
+    </style>
+</head>
+<body>
+    <nav class="nav"><a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a><a href="{{ url_for('home') }}">Back to Market</a></nav>
+    <main class="wrap">
+        <header class="hero"><h1>Rules &amp; Regulations</h1><p>These rules keep BizHub useful, honest, and safe for customers, vendors, fast-food kitchens, and delivery services.</p><div class="updated">Effective date: 2 September 2026</div></header>
+        <div class="layout">
+            <aside class="toc"><strong>On this page</strong><a href="#accounts">Accounts</a><a href="#listings">Listings</a><a href="#orders">Orders &amp; payments</a><a href="#delivery">Delivery services</a><a href="#conduct">Conduct</a><a href="#privacy">Privacy</a><a href="#enforcement">Enforcement</a></aside>
+            <div>
+                <section class="section notice"><h2>Important</h2><p>BizHub connects people and businesses. It does not take ownership of listed products, guarantee a seller or delivery provider, or replace your responsibility to check details before paying or sharing information.</p></section>
+                <section class="section" id="accounts"><h2>1. Accounts</h2><ul><li>Provide accurate registration details and keep your password private.</li><li>One person or business must not impersonate another account.</li><li>You are responsible for activity performed through your account.</li><li>Use the correct account type: Customer, Vendor, Fast Food, or Delivery Service.</li></ul></section>
+                <section class="section" id="listings"><h2>2. Product and food listings</h2><ul><li>List only lawful products, meals, and services that you are authorized to sell.</li><li>Descriptions, prices, stock, photos, videos, locations, and business names must be truthful and current.</li><li>Do not upload stolen, abusive, deceptive, infringing, dangerous, or illegal content.</li><li>Vendors must update stock and remove items that are no longer available.</li></ul></section>
+                <section class="section" id="orders"><h2>3. Orders and payments</h2><ul><li>Customers should confirm the seller, item, price, delivery terms, and payment instructions before paying.</li><li>Vendors must communicate honestly and must not mark an order paid unless payment has been received.</li><li>BizHub does not guarantee a private payment made between users. Keep payment evidence and report suspected fraud.</li><li>Refunds, cancellations, and disputes should first be discussed between the parties and may be reviewed by BizHub.</li></ul></section>
+                <section class="section" id="delivery"><h2>4. Delivery services</h2><ul><li>Delivery providers must keep their company name, phone number, location, service area, and delivery type accurate.</li><li>Only active Premium Delivery providers appear as available to vendors.</li><li>Providers must set Available only when they can accept delivery requests.</li><li>Vendors should confirm fees, timing, pickup details, and responsibility for loss before engaging an agent.</li></ul></section>
+                <section class="section" id="conduct"><h2>5. Respectful conduct</h2><ul><li>No harassment, threats, spam, scams, discriminatory abuse, or unwanted contact.</li><li>Do not misuse phone numbers, WhatsApp links, email addresses, or account information.</li><li>Do not attempt to bypass subscriptions, manipulate listings, scrape data, or interfere with the service.</li></ul></section>
+                <section class="section" id="privacy"><h2>6. Privacy and communication</h2><p>Use personal information only to complete legitimate BizHub activity. Do not publish another person’s private information without permission. Users may receive account notifications and, where enabled, email, WhatsApp, Firebase, or browser push notifications.</p></section>
+                <section class="section" id="enforcement"><h2>7. Reports and enforcement</h2><p>Report a suspicious listing, account, payment request, or message through BizHub support. BizHub may hide content, restrict contact, suspend accounts, cancel access, or remove accounts that break these rules or create risk for others.</p><p>These rules are practical marketplace guidelines and do not replace professional legal advice. BizHub may update them as the service develops.</p></section>
+            </div>
+        </div>
+        <div class="footer">© 2026 BizHub Marketplace · <a href="mailto:contactBizHub@proton.me">Contact support</a></div>
+    </main>
+</body>
+</html>

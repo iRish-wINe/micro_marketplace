@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0B192C">
+    <title>Premium Delivery | BizHub</title>
+    <style>
+        :root { --navy:#0B192C; --orange:#F59E0B; --blue:#1D4ED8; --bg:#EAEDED; --text:#0F172A; --muted:#64748B; --border:#D5D9D9; }
+        * { box-sizing:border-box; }
+        body { margin:0; padding:env(safe-area-inset-top) 16px calc(30px + env(safe-area-inset-bottom)); background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; }
+        .nav { max-width:760px; margin:0 auto; padding:16px 0; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+        .brand { color:var(--navy); font-size:21px; font-weight:900; text-decoration:none; }
+        .brand span { color:var(--orange); }
+        .nav a:last-child { color:var(--blue); font-size:12px; font-weight:800; text-decoration:none; }
+        .wrap { max-width:760px; margin:24px auto; }
+        .hero, .plan { background:#fff; border:1px solid var(--border); border-radius:12px; padding:24px; box-shadow:0 3px 12px rgba(0,0,0,.06); }
+        .hero { background:var(--navy); color:#fff; }
+        .hero h1 { margin:0 0 8px; font-size:28px; }
+        .hero p { margin:0; color:#CBD5E1; line-height:1.5; font-size:14px; }
+        .notice { margin:18px 0; padding:13px; border-left:4px solid var(--orange); background:#FFF7ED; font-size:13px; line-height:1.5; }
+        .plan h2 { margin:0 0 8px; font-size:21px; }
+        .price { color:var(--blue); font-size:32px; font-weight:900; }
+        .price small { color:var(--muted); font-size:13px; font-weight:700; }
+        ul { padding-left:20px; color:var(--muted); line-height:1.9; }
+        .button { display:block; width:100%; margin-top:20px; padding:13px; border:0; border-radius:8px; background:var(--orange); color:#111827; text-align:center; text-decoration:none; font-weight:900; cursor:pointer; }
+        .secondary { background:#F8FAFC; border:1px solid var(--border); color:var(--blue); margin-top:8px; }
+        .active { padding:13px; border-radius:8px; background:#DCFCE7; color:#166534; font-weight:800; }
+    </style>
+</head>
+<body>
+    <nav class="nav"><a class="brand" href="{{ url_for('delivery_dashboard') }}">Biz<span>Hub</span> Delivery</a><a href="{{ url_for('delivery_dashboard') }}">Back to Dashboard</a></nav>
+    <main class="wrap">
+        <section class="hero"><h1>Premium Delivery Service</h1><p>Stay visible to BizHub vendors and control when your delivery service is available.</p></section>
+        {% if requested %}<div class="notice"><strong>Premium request recorded.</strong><br>Send your payment receipt through WhatsApp so BizHub can activate your subscription.</div>{% endif %}
+        <section class="plan">
+            <h2>Delivery Premium</h2>
+            <div class="price">GH₵ 20 <small>/ month after trial</small></div>
+            <ul><li>First 5 months free</li><li>Appear in vendor delivery-service searches</li><li>Set your service to Available or Unavailable</li><li>Receive vendor delivery requests by WhatsApp</li></ul>
+            {% if subscription.is_premium %}<div class="active">Premium active until {{ subscription.expires }}</div>{% else %}<a class="button" href="https://wa.me/{{ payment_number }}?text={{ upgrade_message|urlencode }}" target="_blank" rel="noopener">Subscribe via WhatsApp</a><form method="post" action="{{ url_for('request_premium') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button secondary" type="submit">Mark Premium Request</button></form>{% endif %}
+        </section>
+    </main>
+</body>
+</html>

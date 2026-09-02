@@ -2,9 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Biz Hub - Your Local Market, Unified Online</title>
     <meta name="theme-color" content="#0B192C">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="BizHub">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/icon-192.png') }}?v=4">
     <style>
         /* 👑 BIZ HUB LUXURY DESIGN SYSTEM TOKENS (AMAZON ENTERPRISE MATRIX) */
         :root {
@@ -27,20 +33,36 @@
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: var(--bg-light); color: var(--text-main); margin: 0; padding-bottom: 60px; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: var(--bg-light); color: var(--text-main); margin: 0; padding: env(safe-area-inset-top) env(safe-area-inset-right) calc(60px + env(safe-area-inset-bottom)) env(safe-area-inset-left); overflow-x: hidden; }
         .container { width: 100%; max-width: 1480px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
 
         #bizhub-splash-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(135deg, var(--bg-abyssal) 0%, #020617 100%);
-            z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 0.4s ease-out, visibility 0.4s ease-out; opacity: 1; visibility: visible;
+            position: fixed; inset: 0; width: 100vw; height: 100dvh; min-height: 100vh;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            box-sizing: border-box; background: radial-gradient(circle at 50% 40%, #132946 0%, #0B192C 46%, #050C16 100%);
+            z-index: 99999; display:flex; flex-direction:column; justify-content:center; align-items:center;
+            overflow:hidden; transition:opacity .5s ease, visibility .5s ease; opacity:1; visibility:visible;
         }
-        .splash-logo { font-size: 42px; font-weight: 900; color: white; letter-spacing: -1px; margin-bottom: 20px; }
-        .splash-logo span { color: var(--accent); }
-        .splash-spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spinNode 0.8s linear infinite; }
-        @keyframes spinNode { to { transform: rotate(360deg); } }
+        #bizhub-splash-screen::before { content:""; position:absolute; width:280px; height:280px; border-radius:50%;
+            background:radial-gradient(circle, rgba(245,158,11,.16) 0%, rgba(245,158,11,0) 68%); animation:splashGlow 2.2s ease-in-out infinite; }
+        .splash-brand { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; text-align:center; }
+        .splash-logo-wrap { width:132px; height:132px; display:grid; place-items:center; margin-bottom:20px; animation:splashLogoIn .65s ease-out both; }
+        .splash-logo-image { width:132px; height:132px; display:block; object-fit:contain; animation:splashLogoRotate 1.15s cubic-bezier(.4,0,.2,1) both, splashLogoFloat 2.2s 1.15s ease-in-out infinite; filter:drop-shadow(0 16px 34px rgba(0,0,0,.42)); }
+        .splash-title { color:#fff; font-size:36px; line-height:1; font-weight:900; letter-spacing:-1.4px; margin:0 0 10px; animation:splashTextIn .7s .15s ease-out both; }
+        .splash-title span { color:var(--accent); }
+        .splash-motto { color:#E2E8F0; font-size:13px; font-weight:700; letter-spacing:.2px; text-align:center; margin:0 20px 28px; animation:splashTextIn .7s .25s ease-out both; }
+        .splash-rule { width:58px; height:2px; border-radius:999px; background:var(--accent); opacity:.9; margin-bottom:22px; animation:splashRuleIn .65s .35s ease-out both; }
+        .splash-spinner { width:20px; height:20px; border:2px solid rgba(255,255,255,.14); border-top-color:var(--accent); border-radius:50%; animation:spinNode .8s linear infinite; }
+        .splash-caption { color:#94A3B8; font-size:9px; font-weight:800; letter-spacing:1.7px; text-transform:uppercase; margin-top:12px; animation:splashTextIn .7s .4s ease-out both; }
+        @keyframes splashLogoRotate { from { transform:rotate(-210deg) scale(.68); opacity:0; } to { transform:rotate(0deg) scale(1); opacity:1; } }
+        @keyframes splashLogoIn { from { transform:translateY(10px); } to { transform:translateY(0); } }
+        @keyframes splashLogoFloat { 0%,100% { transform:translateY(0) rotate(0deg); } 50% { transform:translateY(-4px) rotate(4deg); } }
+        @keyframes splashTextIn { from { transform:translateY(8px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+        @keyframes splashRuleIn { from { transform:scaleX(0); opacity:0; } to { transform:scaleX(1); opacity:.9; } }
+        @keyframes splashGlow { 0%,100% { transform:scale(.92); opacity:.65; } 50% { transform:scale(1.08); opacity:1; } }
+        @keyframes spinNode { to { transform:rotate(360deg); } }
+        @media (max-width:480px) { .splash-logo-wrap,.splash-logo-image { width:104px; height:104px; } .splash-title { font-size:32px; } .splash-motto { font-size:12px; } }
+        @media (prefers-reduced-motion:reduce) { .splash-logo-image,.splash-logo-wrap,.splash-title,.splash-motto,.splash-rule,.splash-spinner,.splash-caption,#bizhub-splash-screen::before { animation:none !important; } }
 
         .navbar { display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-abyssal); padding: 12px 30px; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm); }
         .brand-logo { font-size: 24px; font-weight: 900; color: white; text-decoration: none; letter-spacing: -0.5px; }
@@ -58,7 +80,28 @@
         .search-btn { background: var(--accent); border: none; padding: 0 30px; color: var(--bg-abyssal); font-weight: 800; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; cursor: pointer; transition: var(--transition); font-size: 14px; }
         .search-btn:hover { background: var(--accent-hover); }
 
-        .amazon-billboard { width: 100%; max-width: 1440px; height: 260px; margin: 0 auto 20px auto; background: linear-gradient(180deg, #1E293B 0%, var(--bg-light) 100%); border-radius: 0 0 var(--radius-sm) var(--radius-sm); position: relative; overflow: hidden; display: flex; align-items: center; padding: 0 40px; box-sizing: border-box; }
+                .marketplace-hero {
+            width: 100%;
+            max-width: 1440px;
+            height: 300px;
+            margin: 0 auto 20px;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            overflow: hidden;
+            position: relative;
+            background: #0B192C url("{{ url_for('static', filename='uploads/bizhub-home-hero.png') }}") center center / cover no-repeat;
+            box-shadow: var(--shadow-md);
+        }
+        .marketplace-hero::after {
+            content: ""; position: absolute; inset: 0;
+            background: linear-gradient(90deg, rgba(11,25,44,.92) 0%, rgba(11,25,44,.72) 42%, rgba(11,25,44,.12) 78%, rgba(11,25,44,.04) 100%);
+        }
+        .marketplace-hero-content { position: relative; z-index: 2; max-width: 610px; padding: 46px 40px; color: #fff; }
+        .marketplace-hero-content h1 { margin: 0 0 10px; font-size: 32px; line-height: 1.08; font-weight: 900; letter-spacing: -.7px; }
+        .marketplace-hero-content h1 span { color: var(--accent); }
+        .marketplace-hero-content p { margin: 0; color: #E2E8F0; font-size: 14px; line-height: 1.55; max-width: 540px; }
+        .marketplace-hero-tag { display:inline-block; margin-bottom:10px; padding:5px 10px; border-radius:999px; background:rgba(245,158,11,.96); color:#111827; font-size:10px; font-weight:900; text-transform:uppercase; }
+
+.amazon-billboard { width: 100%; max-width: 1440px; height: 260px; margin: 0 auto 20px auto; background: linear-gradient(180deg, #1E293B 0%, var(--bg-light) 100%); border-radius: 0 0 var(--radius-sm) var(--radius-sm); position: relative; overflow: hidden; display: flex; align-items: center; padding: 0 40px; box-sizing: border-box; }
         .billboard-text-layer { max-width: 600px; z-index: 2; color: white; }
         .billboard-text-layer h1 { font-size: 28px; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -0.5px; }
         .billboard-text-layer p { font-size: 14px; margin: 0 0 15px 0; color: #E2E8F0; line-height: 1.5; }
@@ -80,6 +123,27 @@
         .media-choice { border:1px solid var(--border-color); border-radius:8px; padding:10px; background:#FAFAFA; }
         .media-status { font-size:11px; margin-top:6px; color:var(--text-muted); }
         .media-preview { display:none; margin-top:8px; width:100%; max-height:150px; object-fit:contain; background:#000; border-radius:6px; }
+        .stock-badge { display:inline-flex; align-items:center; width:max-content; max-width:100%; margin:0 0 7px; padding:4px 8px; border-radius:999px; font-size:10px; font-weight:900; }
+        .stock-good { background:#ECFDF5; color:#047857; border:1px solid #A7F3D0; }
+        .stock-low { background:#FFF7ED; color:#C2410C; border:1px solid #FED7AA; }
+        .stock-sold { background:#FEF2F2; color:#B91C1C; border:1px solid #FECACA; }
+        .cart-qty-control { display:flex; align-items:center; gap:6px; margin-top:6px; }
+        .cart-qty-control button { width:28px; height:28px; border:1px solid var(--border-color); background:#fff; border-radius:6px; font-weight:900; cursor:pointer; }
+        .cart-qty-control input { width:42px; height:28px; text-align:center; border:1px solid var(--border-color); border-radius:6px; font-weight:800; }
+        .cart-stock-note { display:block; margin-top:3px; font-size:10px; color:var(--text-muted); }
+        .bizhub-contact-footer { margin-top: 30px; background: var(--bg-abyssal); color:#fff; border-top:1px solid rgba(255,255,255,.08); }
+        .contact-footer-inner { max-width:1440px; margin:0 auto; padding:28px 30px; display:flex; justify-content:space-between; align-items:center; gap:30px; }
+        .contact-logo { font-size:24px; font-weight:900; letter-spacing:-.5px; }
+        .contact-logo span { color:var(--accent); }
+        .contact-brand p { margin:5px 0 0; color:#94A3B8; font-size:11px; }
+        .contact-links { display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end; }
+        .contact-links a { display:flex; align-items:center; gap:7px; padding:10px 13px; background:#172235; border:1px solid rgba(255,255,255,.09); border-radius:7px; color:#fff; text-decoration:none; font-size:12px; font-weight:700; transition:var(--transition); }
+        .contact-links a:hover { border-color:var(--accent); transform:translateY(-1px); }
+        .contact-links a span { color:#94A3B8; font-size:10px; text-transform:uppercase; }
+        .contact-links a b { color:#fff; }
+        .contact-footer-bottom { border-top:1px solid rgba(255,255,255,.07); padding:12px 20px; text-align:center; color:#64748B; font-size:10px; }
+        @media(max-width:767px){ .marketplace-hero{height:245px;border-radius:0 0 var(--radius-sm) var(--radius-sm)} .marketplace-hero-content{padding:32px 20px}.marketplace-hero-content h1{font-size:25px}.marketplace-hero-content p{font-size:12px}.contact-footer-inner{padding:22px 15px;display:block}.contact-links{margin-top:16px;justify-content:stretch}.contact-links a{flex:1 1 100%;justify-content:flex-start} }
+
         .media-cancel { display:none; margin-top:6px; width:100%; border:1px solid #FED7D7; background:#FFF5F5; color:#B91C1C; border-radius:6px; padding:6px 8px; font-size:11px; font-weight:700; cursor:pointer; }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 15px; }
@@ -92,53 +156,78 @@
     }
 
 /* MOBILE BASKET NOTIFICATION */
-.basket-mobile-popup {
-    display: none;
-}
-
+.basket-mobile-popup { display:none; }
 @media (max-width: 767px) {
     .basket-mobile-popup {
-        position: fixed;
-        top: 75px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: calc(100% - 30px);
-        max-width: 400px;
-        background: var(--bg-abyssal);
-        color: white;
-        padding: 14px 16px;
-        border-radius: 10px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 4px;
-        animation: basketPopupIn 0.3s ease-out;
+        position:fixed;
+        top:58px;
+        left:10px;
+        right:10px;
+        width:auto;
+        max-width:none;
+        box-sizing:border-box;
+        background:var(--bg-abyssal);
+        color:#fff;
+        padding:12px 14px;
+        border-radius:10px;
+        box-shadow:0 8px 25px rgba(0,0,0,.25);
+        z-index:99999;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        text-align:center;
+        gap:3px;
+        cursor:pointer;
+        touch-action:manipulation;
+        user-select:none;
+        animation:basketPopupIn .3s ease-out;
     }
-
-    .basket-mobile-popup strong {
-        font-size: 15px;
-    }
-
-    .basket-mobile-popup span {
-        font-size: 13px;
-        color: #E2E8F0;
-    }
-
+    .basket-mobile-popup strong { font-size:15px; }
+    .basket-mobile-popup span { font-size:13px; color:#E2E8F0; }
     @keyframes basketPopupIn {
-        from {
-            opacity: 0;
-            transform: translate(-50%, -15px);
-        }
-        to {
-            opacity: 1;
-            transform: translate(-50%, 0);
-        }
+        from { opacity:0; transform:translateY(-15px); }
+        to { opacity:1; transform:translateY(0); }
     }
 }
 
+/* MOBILE NAVIGATION: all account/session links remain inside the same header */
+@media (max-width: 767px) {
+    .navbar {
+        display:grid;
+        grid-template-columns:auto minmax(0,1fr);
+        align-items:center;
+        gap:8px;
+        width:100%;
+        min-width:0;
+        box-sizing:border-box;
+        padding:7px 9px;
+        overflow:visible;
+    }
+    .brand-logo { font-size:19px; letter-spacing:-.6px; white-space:nowrap; }
+    .nav-links {
+        display:grid;
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:4px;
+        width:100%;
+        min-width:0;
+        box-sizing:border-box;
+        font-size:10px;
+        align-items:stretch;
+        overflow:visible;
+    }
+    .nav-links span { display:none; }
+    .nav-links a {
+        min-width:0;
+        box-sizing:border-box;
+        padding:6px 4px;
+        border-radius:7px;
+        text-align:center;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+    }
+    .marketplace-hero { height:210px; }
+}
 
     .card {
         padding: 8px;
@@ -208,23 +297,36 @@
     </style>
     
     <!-- PWA Installation Icon Anchors -->
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=2">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=2">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=3">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/apple-touch-icon.png') }}?v=3">
 </head>
 <body>
 
-    <div id="bizhub-splash-screen">
-        <div class="splash-logo">Biz<span>Hub</span></div>
-        <div class="splash-spinner"></div>
+    <div id="bizhub-splash-screen" aria-label="BizHub loading">
+        <div class="splash-brand">
+            <div class="splash-logo-wrap">
+                <img class="splash-logo-image" src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub">
+            </div>
+            <div class="splash-title">Biz<span>Hub</span></div>
+            <p class="splash-motto">Your Local Market, Unified Online</p>
+            <div class="splash-rule" aria-hidden="true"></div>
+            <div class="splash-spinner" aria-hidden="true"></div>
+            <div class="splash-caption">Local commerce • One marketplace</div>
+        </div>
     </div>
 
-{% if cart_added %}
-    <div id="basketMobilePopup" class="basket-mobile-popup">
-        🛒 <strong>Added to Basket!</strong>
-        <span>Scroll down to view your basket</span>
+{% if request.args.get('cart_added') == '1' %}
+    <div id="basketMobilePopup" class="basket-mobile-popup" role="button" tabindex="0" aria-label="Item added to basket. Scroll down to see your basket.">
+        🛒 <strong>Item added to basket</strong>
+        <span>Scroll down to see your basket</span>
     </div>
 {% endif %}
 
+
+    {% if published_fastfood and session.get('role') == 'Fast Food' %}
+    <div id="fastFoodPublishPopup" style="position:fixed;top:78px;left:50%;transform:translateX(-50%);z-index:9999;background:#111827;color:#fff;border:1px solid #f59e0b;border-radius:12px;padding:12px 18px;box-shadow:0 14px 40px rgba(0,0,0,.25);font-size:13px;font-weight:900;text-align:center;max-width:90%;">🍔 Meal published! Go to My Store to see your listings.</div>
+    <script>setTimeout(function(){var p=document.getElementById('fastFoodPublishPopup');if(p)p.remove();},3500);</script>
+    {% endif %}
 
     <!-- MAIN BRAND HEADER (HOUSE EMOJI REMOVED COMPLETELY) -->
     <div class="navbar">
@@ -233,26 +335,31 @@
             {% if session.get('username') %}
                 <span>Hello, <b>@{{ session['username'] }}</b></span>
                 <a href="/">Market</a>
-                {% if session.get('role') == 'Customer' %}
+                {% if session.get('role') == 'Delivery Service' %}
+                    <a href="{{ url_for('delivery_dashboard') }}">Home</a>
+                {% elif session.get('role') == 'Customer' %}
                     <a href="/favorites">⭐ Favorites</a>
-                    <a href="/notifications">🔔 Notifications{% if customer_notification_count %} <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#EF4444;color:#fff;font-size:10px;font-weight:900;">{{ customer_notification_count }}</span>{% endif %}</a>
                     <a href="/orders">Orders</a>
                 {% elif session.get('role') in ['Vendor', 'Fast Food'] %}
                     <a href="/orders">🔔 Orders{% if vendor_notification_count %} <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#EF4444;color:#fff;font-size:10px;font-weight:900;">{{ vendor_notification_count }}</span>{% endif %}</a>
                     <a href="/vendor/{{ session['username'] }}">My Store</a>
-                    {% if vendor_subscription and vendor_subscription.is_premium %}<a href="/delivery/services">🚚 Find Delivery</a>{% endif %}
+                    <a href="/delivery/services">🚚 Delivery Services</a>
+                {% endif %}
+                {% if session.get('role') in ['Vendor', 'Fast Food'] %}
+                    <a href="/promotions" class="nav-link">🔥 Manage Promotions</a>
                 {% endif %}
                 <a href="/settings">Account</a>
-                <a href="/logout" class="logout" style="background:#E53E3E;">Logout</a>
             {% else %}
                 <a href="/login">Sign In / Register</a>
             {% endif %}
         </div>
     </div>
     <div class="search-hero">
-        <div class="container">
+    
+    <div class="container">
             <form method="GET" action="/" class="search-panel">
-                <input type="text" id="liveSearchField" onkeyup="filterCatalogCards()" placeholder="Search local products, fashion wear, or electronics instantly..." class="search-input">
+                <input type="text" id="liveSearchField" name="company_search" value="{{ company_search }}" onkeyup="filterCatalogCards()" placeholder="Search item, company, vendor or location..." class="search-input">
+                <input type="text" name="location_search" value="{{ location_search }}" placeholder="Location" class="filter-select" style="max-width:180px;">
                 <select name="filter_location" class="filter-select" onchange="this.form.submit()">
                     {% for city in ['🌍 All Cities (Ghana)', 'Abirem', 'Aburi', 'Accra', 'Ada', 'Aflao', 'Agona Swedru', 'Akim Achiase', 'Akim Oda', 'Asamankese', 'Axim', 'Bandai', 'Bimbila', 'Cape Coast', 'Damongo', 'Elmina', 'Ho', 'Hohoe', 'Jasikan', 'Kasoa', 'Keta', 'Kintampo', 'Koforidua', 'Kumasi', 'Kwahu', 'Mankessim', 'Nkawkaw', 'Nsawam', 'Obuase', 'Sehwi', 'Suhum', 'Sunyani', 'Takoradi', 'Tamale', 'Tarkwa', 'Tema'] %}
                         <option value="{{ 'All' if city == '🌍 All Cities (Ghana)' else city }}" {% if active_filter == city or (active_filter == 'All' and city == '🌍 All Cities (Ghana)') %}selected{% endif %}>{{ city }}</option>
@@ -262,6 +369,35 @@
             </form>
         </div>
     </div>
+
+    <!-- BIZHUB LOCAL MARKET SHOWCASE HERO -->
+    <div class="marketplace-hero">
+        <div class="marketplace-hero-content">
+            <span class="marketplace-hero-tag">🇬🇭 Shop Local on BizHub</span>
+            <h1>Your <span>Local Market</span>, Unified Online</h1>
+            <p>Discover products, food and trusted local stores across Ghana — all in one simple marketplace.</p>
+        </div>
+    </div>
+    {% if fast_food_vendors %}
+    <section id="fastFoodKitchens" style="margin:18px auto 20px; max-width:1180px; padding:18px; background:linear-gradient(135deg,#fff7ed,#fffbeb); border:1px solid #fed7aa; border-radius:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+            <div><h2 style="margin:0;color:#9a3412;font-size:20px;font-weight:900;">🍔 Fast Food Kitchens</h2><p style="margin:4px 0 0;color:#9a3412;font-size:12px;">Restaurant-style kitchens — open a kitchen to browse its menu.</p></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;">
+        {% for kitchen in fast_food_vendors %}
+            <article style="background:#fff;border:1px solid #fed7aa;border-radius:12px;padding:14px;">
+                {% if kitchen.company_logo %}<img src="{{ url_for('static', filename='uploads/' + kitchen.company_logo) }}" alt="{{ kitchen.business_label }}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;margin-bottom:8px;">{% endif %}
+                <div style="font-weight:900;color:#7c2d12;">{{ kitchen.business_label }}</div>
+                <div style="font-size:11px;color:#9a3412;margin-top:3px;">@{{ kitchen.username }}{% if kitchen.business_location %} · 📍 {{ kitchen.business_location }}{% endif %}</div>
+                <div style="font-size:11px;color:#9a3412;margin-top:4px;">{{ kitchen.menu_count }} menu item{% if kitchen.menu_count != 1 %}s{% endif %}</div>
+                <a href="/vendor/{{ kitchen.username }}" class="btn-action" style="display:block;text-align:center;margin-top:10px;background:#ea580c;color:#fff;text-decoration:none;">🍔 Order Your Food Now — Buy from {{ kitchen.business_label }}</a>
+            </article>
+        {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+
 
     <!-- 👑 CINEMATIC ADVERTISING BILLBOARD MATRIX GRID -->
 
@@ -287,8 +423,6 @@
         </div>
     </div>
 {% endif %}
-```
-
 
     <div class="container">
         <div class="layout">
@@ -303,19 +437,33 @@
                         {% endif %}
                         <p style="margin: 5px 0 12px; font-size: 12px;">Listings: <b>{{ listing_count }}</b></p>
                         <a href="/subscription" class="btn-action btn-cart" style="text-align:center;">💎 Manage Account</a>
-                        {% if vendor_subscription and vendor_subscription.is_premium %}<a href="/promotions" class="btn-action btn-momo" style="text-align:center;margin-top:6px;">🔥 Manage Promotions</a><a href="/delivery/services" class="btn-action btn-cart" style="text-align:center;margin-top:6px;">🚚 Find a Delivery Service</a>{% endif %}
                     </div>
+
+                    {% if session.get('role') == 'Vendor' and inventory_items %}
+                    <div class="panel-box" style="margin-bottom:14px;">
+                        <h3>📦 Inventory</h3>
+                        <p style="margin:0 0 10px;font-size:12px;color:var(--text-muted);">Your live stock: Initial → Sold → Remaining.</p>
+                        {% for inv in inventory_items %}
+                        <div style="padding:9px 0;border-bottom:1px solid var(--border-color);font-size:12px;">
+                            <div style="font-weight:800;">{{ inv.title }}</div>
+                            <div style="color:var(--text-muted);">{{ inv.initial_stock_quantity or 1 }} → {{ inv.sold_quantity or 0 }} → <b>{{ inv.stock_quantity or 0 }}</b> remaining</div>
+                            {% if inv.stock_quantity|int <= 0 %}<span class="stock-badge stock-sold">🔴 SOLD OUT</span>{% elif inv.stock_quantity|int <= 3 %}<span class="stock-badge stock-low">⚠️ LOW STOCK</span>{% else %}<span class="stock-badge stock-good">✓ IN STOCK</span>{% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
 
                     <!-- LISTING CREATION FORM BLOCK (FIXED PARAMETER PATHS) -->
                     <div class="panel-box">
                         {% if session.get('role') == 'Fast Food' %}
-                            <h3 style="color: #C53030; border-bottom: 2px solid #FED7D7;">🍕 Publish Hot Meal Deal</h3>
+                            <h3 style="color: #C53030; border-bottom: 2px solid #FED7D7;">🍕 Publish Meal to Your Fast Food Kitchen</h3>
                         {% else %}
                             <h3>📢 Upload Product Listing</h3>
                         {% endif %}
 
                         {% if listing_error %}<div class="listing-alert">{{ listing_error }}</div>{% endif %}
                         <form id="listingForm" method="POST" action="/" enctype="multipart/form-data">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                             <div class="form-group">
                                 <label>{% if session.get('role') == 'Fast Food' %}Meal / Combo Name:{% else %}Item Title / Name:{% endif %}</label>
                                 <input type="text" name="{% if session.get('role') == 'Fast Food' %}meal_name{% else %}title{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Jollof with Grilled Chicken{% else %}e.g. Smart Watch{% endif %}" class="form-control" required>
@@ -324,6 +472,15 @@
                                 <label>Price (GH₵):</label>
                                 <input type="number" name="price" step="0.01" class="form-control" placeholder="0.00" required>
                             </div>
+                            {% if session.get('role') == 'Vendor' %}
+                            <div class="form-group">
+                                <label>📦 Quantity / Units Available:</label>
+                                <input type="number" name="stock_quantity" min="1" step="1" class="form-control" placeholder="e.g. 10" required>
+                                <small style="color:var(--text-muted);">Enter how many units you currently have in stock. BizHub will reduce this automatically when a paid order is confirmed.</small>
+                            </div>
+                            {% else %}
+                            <input type="hidden" name="stock_quantity" value="1">
+                            {% endif %}
                             <div class="form-group">
                                 <label>Preparation / Dispatch City:</label>
                                 <select name="location" class="form-control">
@@ -338,7 +495,7 @@
                             </div>
                             
                             <div class="form-group media-choice" id="imageChoice">
-                                <label>Item Cover Photo (Image Option):</label>
+                                <label>{% if session.get('role') == 'Fast Food' %}Meal Cover Photo (Image Option):{% else %}Item Cover Photo (Image Option):{% endif %}</label>
                                 <input id="productImage" type="file" name="product_image" accept="image/*" class="form-control">
                                 <img id="imagePreview" class="media-preview" alt="Selected item image preview">
                                 <button id="cancelImage" type="button" class="media-cancel">Cancel Image → Choose Video</button>
@@ -346,14 +503,16 @@
                             <div class="form-group media-choice" id="videoChoice">
                                 <label>📦 Item Showcase Video (Premium/Trial Option):</label>
                                 <input id="productVideo" type="file" name="product_video" accept="video/mp4,video/webm,video/quicktime" class="form-control">
-                                <video id="videoPreview" class="media-preview" controls playsinline preload="metadata"></video>
+                                <video id="videoPreview" class="media-preview" controls autoplay muted playsinline loop preload="metadata"></video>
                                 <button id="cancelVideo" type="button" class="media-cancel">Cancel Video → Choose Image</button>
                                 <div id="mediaStatus" class="media-status">Choose exactly one: Image OR Video. Videos must be 20 seconds or shorter.</div>
                             </div>
                             <button type="submit" class="submit-btn {% if session.get('role') == 'Fast Food' %}btn-ff-override{% endif %}">
                                 {% if session.get('role') == 'Fast Food' %}🚀 Launch Meal Live{% else %}Publish Item{% endif %}
                             </button>
+                            <button id="cancelPublishing" type="button" class="media-cancel" style="display:block; width:100%; margin-top:10px;">✕ Cancel Publishing / Collapse</button>
                         </form>
+                        <button id="reopenPublishing" type="button" class="submit-btn" style="display:none; margin-top:8px;">＋ Continue Publishing</button>
                     </div>
 
                 {% endif %}
@@ -365,50 +524,22 @@
                     {% if session.get('role') == 'Customer' %}<a href="/?promo=1" style="font-size:12px;font-weight:800;color:#B45309;text-decoration:none;background:#FEF3C7;border:1px solid #FCD34D;padding:7px 10px;border-radius:8px;">🔥 Vendors Running Promotions</a>{% endif %}
                 </div>
                 <div class="grid" id="masterCatalogGrid">
-                    {% if todays_deals %}
-                    <section style="margin-bottom:22px;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><h3 style="margin:0;font-size:18px;color:var(--bg-abyssal);font-weight:800;">🔥 Today's Deals</h3><a href="/?promo=1" style="font-size:12px;font-weight:800;color:#B45309;text-decoration:none;">View all deals →</a></div>
-                        <div class="grid">
-                        {% for product in todays_deals[:6] %}
-                            <div class="card">
-                                <div class="card-media-wrapper" style="background:#000;">{% if product.video_file %}<video class="card-img" autoplay muted playsinline loop controls preload="metadata"><source src="{{ url_for('stream_video', filename=product.video_file) }}"></video>{% else %}<img class="card-img" src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}">{% endif %}</div>
-                                <div class="card-body"><div class="card-brand-wrapper"><a href="/vendor/{{ product.seller }}" class="card-brand">🏬 {{ product.business_label }}</a></div><span style="display:inline-block;width:max-content;padding:3px 7px;border-radius:999px;background:#FEF3C7;color:#B45309;font-size:9px;font-weight:900;">⚡ PROMOTION</span><h4 class="card-title">{{ product.title }}</h4><div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div><div class="card-actions"><a href="/add-to-cart/{{ product.id }}" class="btn-action btn-cart">🛒 Add to Basket</a></div></div>
-                            </div>
-                        {% endfor %}
-                        </div>
-                    </section>
-                    {% endif %}
-
-                    {% if fast_food_products %}
-                    <section style="margin-bottom:22px;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><h3 style="margin:0;font-size:18px;color:#C53030;font-weight:900;">🍔 Fast Food Near You</h3><span style="font-size:11px;color:var(--text-muted);">Menus from local food vendors</span></div>
-                        <div class="grid">
-                        {% for product in fast_food_products[:8] %}
-                            <div class="card">
-                                <div class="card-media-wrapper" style="background:#000;">{% if product.video_file %}<video class="card-img" autoplay muted playsinline loop controls preload="metadata"><source src="{{ url_for('stream_video', filename=product.video_file) }}"></video>{% elif product.image_file %}<img class="card-img" src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}">{% endif %}</div>
-                                <div class="card-body"><div class="card-brand-wrapper"><a href="/vendor/{{ product.seller }}" class="card-brand">🍽️ {{ product.business_label }}</a></div><h4 class="card-title">{{ product.title }}</h4><div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div><p class="card-text">{{ product.description }}</p><div class="card-actions"><a href="/vendor/{{ product.seller }}" class="btn-action btn-momo">🍔 View Menu</a><a href="/add-to-cart/{{ product.id }}" class="btn-action btn-cart">🛒 Add to Basket</a></div></div>
-                            </div>
-                        {% endfor %}
-                        </div>
-                    </section>
-                    {% endif %}
-
-                    <section>
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><h3 style="margin:0;font-size:18px;color:var(--bg-abyssal);font-weight:800;">🛍️ Recommended Products</h3></div>
-                    <div class="grid">
-                    {% for product in marketplace_products %}
+                    {% for product in products %}
                         <div class="card">
                             <!-- 👑 DYNAMIC MULTI-MEDIA RENDERING ENGINE ENGINE FIXED -->
                             <div class="card-media-wrapper" style="background-color: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; height: 170px;">
  {% if product.video_file %}
-        <video class="card-img" autoplay muted playsinline loop controls preload="metadata">
+        <video class="card-img" controls autoplay muted playsinline loop preload="metadata">
             <source src="{{ url_for('stream_video', filename=product.video_file) }}">
             Your browser does not support video playback.
         </video>
-    {% elif product.image_file %}
+    {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' %}
         <img class="card-img"
              src="{{ url_for('static', filename='uploads/' + product.image_file) }}"
-             alt="{{ product.title }}">
+             alt="{{ product.title }}"
+             onerror="this.style.display='none'; this.parentElement.classList.add('media-missing');">
+    {% else %}
+        <div style="color:#9CA3AF;font-size:12px;padding:20px;text-align:center;">Media unavailable</div>
     {% endif %}
 
     <span class="loc-badge">📍 {{ product.location }}</span>
@@ -422,12 +553,20 @@
                                         <div class="card-logo-circle" style="display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; color:white; background:var(--primary-light);">BH</div>
                                     {% endif %}
                                     <a href="/vendor/{{ product.seller }}" class="card-brand" style="text-decoration:none;">🏬 {{ product.business_label }}</a>
+                                    {% if product.is_verified %}<span title="Verified Store" style="display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:999px;background:#E8F1FF;color:#1D4ED8;font-size:9px;font-weight:900;white-space:nowrap;">✓ Verified Store</span>{% endif %}
                                 </div>
                                 {% if product.active_promo %}
                                     <a href="/vendor/{{ product.seller }}" style="display:inline-block;width:max-content;max-width:100%;margin:0 0 5px;padding:3px 7px;border-radius:999px;background:#FEF3C7;color:#B45309;font-size:9px;font-weight:900;text-decoration:none;">🔥 PROMO ACTIVE</a>
                                 {% endif %}
                                 <h4 class="card-title">{{ product.title }}</h4>
                                 <div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div>
+                                {% if product.status == 'Sold' or product.stock_quantity|int <= 0 %}
+                                    <div class="stock-badge stock-sold">🔴 SOLD OUT</div>
+                                {% elif product.stock_quantity|int <= 3 %}
+                                    <div class="stock-badge stock-low">⚠️ Only {{ product.stock_quantity }} left</div>
+                                {% else %}
+                                    <div class="stock-badge stock-good">✓ {{ product.stock_quantity }} available</div>
+                                {% endif %}
                                 <p class="card-text">{{ product.description }}</p>
                                 <div class="card-metadata">Owner: @{{ product.seller }}</div>
                                 
@@ -435,9 +574,16 @@
                                     {% if session.get('username') == product.seller %}
                                         <a href="/delete-item/{{ product.id }}" class="btn-action btn-delete">🗑️ Delete</a>
                                     {% else %}
-                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=I%20want%20to%20ask%20about%20your%20{{ product.title }}" class="btn-action btn-cart">❓ Inquiry</a>
-                                        <a href="whatsapp://send?phone={{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}&text=I%20want%20to%20buy%20your%20{{ product.title }}" class="btn-action btn-momo">💬 Quick Buy</a>
-                                        <a href="/add-to-cart/{{ product.id }}" class="btn-action btn-cart">🛒 Add to Basket</a>
+                                        {% set contact_name = product.business_label or product.seller %}
+                                        {% set inquiry_message = ' Hello ' ~ contact_name ~ ' , I saw your ' ~ product.title ~ ' on Biz Hub and I want to know more about it' %}
+                                        {% set quick_buy_message = 'Hi ' ~ contact_name ~ ' , i want to buy your ' ~ product.title ~ ' on biz hub. lets arrange for payment and delivery.' %}
+                                        <a href="https://wa.me/{{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}?text={{ inquiry_message|urlencode }}" class="btn-action btn-cart" target="_blank" rel="noopener">❓ Inquiry</a>
+                                        <a href="https://wa.me/{{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}?text={{ quick_buy_message|urlencode }}" class="btn-action btn-momo" target="_blank" rel="noopener">💬 Quick Buy</a>
+                                        {% if product.status == 'Sold' or product.stock_quantity|int <= 0 %}
+                                            <span class="btn-action" style="background:#E5E7EB;color:#6B7280;cursor:not-allowed;text-align:center;">🔴 Sold Out</span>
+                                        {% else %}
+                                            <a href="/add-to-cart/{{ product.id }}" class="btn-action btn-cart">🛒 Add to Basket</a>
+                                        {% endif %}
                                     {% endif %}
                                 </div>
                             </div>
@@ -447,18 +593,26 @@
                             📭 No matching items found.
                         </div>
                     {% endfor %}
-                    </div>
-                    </section>
+                </div>
             </div>
 
             <!-- PANEL 3: BASKET -->
-            <div class="cart-sidebar">
-                <h3>🛒 Shopping Basket ({{ session.get('cart', [])|length }})</h3>
+            <div id="basket" class="cart-sidebar">
+                <h3>🛒 Shopping Basket ({{ cart_count }})</h3>
                 {% if cart_items %}
                     {% for item in cart_items %}
-                        <div class="cart-item-row">
-                            <span>• {{ item.title }}</span>
-                            <b>GH₵{{ "%.2f"|format(item.price) }}</b>
+                        <div class="cart-item-row" style="display:block;">
+                            <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">
+                                <span>• {{ item.title }}</span>
+                                <b>GH₵{{ "%.2f"|format(item.cart_line_total) }}</b>
+                            </div>
+                            <form method="POST" action="/update-cart/{{ item.id }}" class="cart-qty-control">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" name="quantity" value="{{ [item.cart_quantity - 1, 0]|max }}" aria-label="Decrease quantity">−</button>
+                                <input type="number" name="quantity" value="{{ item.cart_quantity }}" min="0" max="{{ item.stock_quantity }}" aria-label="Quantity">
+                                <button type="submit" name="quantity" value="{{ [item.cart_quantity + 1, item.stock_quantity]|min }}" aria-label="Increase quantity">+</button>
+                            </form>
+                            <span class="cart-stock-note">{{ item.stock_quantity }} available now</span>
                         </div>
                     {% endfor %}
                     <div class="cart-total-row">
@@ -477,23 +631,81 @@
         </div>
     </div>
 
-    <div style="text-align:center;margin-top:28px;font-size:12px;color:var(--text-muted);">
-        {% if session.get('role') != 'Delivery Service' %}<a href="/delivery/register" style="color:var(--primary);font-weight:800;text-decoration:none;">🚚 Register as a Delivery Service</a>{% endif %}
-    </div>
+
+    <!-- BIZHUB CONTACT FOOTER -->
+    <footer class="bizhub-contact-footer">
+        <div class="contact-footer-inner">
+            <div class="contact-brand">
+                <div class="contact-logo">Biz<span>Hub</span></div>
+                <p>Your Local Market, Unified Online</p>
+            </div>
+            <div class="contact-links">
+                <a href="https://wa.me/233558272972" target="_blank" rel="noopener" aria-label="Contact BizHub on WhatsApp">💬 <span>WhatsApp</span><b>0558272972</b></a>
+                <a href="mailto:contactBizHub@proton.me" aria-label="Email BizHub">✉️ <span>Email</span><b>contactBizHub@proton.me</b></a>
+                <a href="tel:+233540901856" aria-label="Call BizHub">📞 <span>Phone</span><b>0540901856</b></a>
+            </div>
+        </div>
+        <div class="contact-footer-bottom">© 2026 BizHub Marketplace · Your Local Market, Unified Online · <a href="/rules" style="color:#E2E8F0;text-decoration:none;">Rules &amp; Regulations</a></div>
+    </footer>
 
     <!-- JAVASCRIPT MASTER OPERATIONS CONTROL PACK -->
     <script>
         window.addEventListener("DOMContentLoaded", function() {
             startTrialCountdown();
             setupListingMediaControls();
-            const basketPopup = document.getElementById("basketMobilePopup");
-            if (basketPopup) setTimeout(function(){ basketPopup.style.opacity = "0"; basketPopup.style.visibility = "hidden"; }, 4000);
-            setTimeout(function(){
+            setupPublishingCollapse();
+
+            if ("serviceWorker" in navigator) {
+                navigator.serviceWorker.register("{{ url_for('service_worker') }}", { scope: "/" }).catch(function() {});
+            }
+
+            setupAutoplayVideos();
+
+            setTimeout(function() {
                 let s = document.getElementById("bizhub-splash-screen");
                 if(s) { s.style.opacity = "0"; s.style.visibility = "hidden"; }
-            }, 1500);
+            }, 1700);
         });
 
+
+
+
+        function setupAutoplayVideos() {
+            const videos = document.querySelectorAll("video.card-img, video[data-autoplay]");
+            videos.forEach(function(video) {
+                video.muted = true;
+                video.setAttribute("muted", "");
+                video.setAttribute("playsinline", "");
+                video.setAttribute("autoplay", "");
+                video.setAttribute("loop", "");
+            });
+            if (!('IntersectionObserver' in window)) { videos.forEach(v => v.play().catch(()=>{})); return; }
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    const v = entry.target;
+                    if (entry.isIntersecting) v.play().catch(()=>{});
+                    else v.pause();
+                });
+            }, {threshold:0.35});
+            videos.forEach(v => observer.observe(v));
+        }
+
+        function setupPublishingCollapse() {
+            const form=document.getElementById("listingForm");
+            const cancel=document.getElementById("cancelPublishing");
+            const reopen=document.getElementById("reopenPublishing");
+            if(!form||!cancel||!reopen) return;
+            cancel.addEventListener("click", function(){
+                form.style.display="none";
+                cancel.style.display="none";
+                reopen.style.display="block";
+            });
+            reopen.addEventListener("click", function(){
+                form.style.display="block";
+                cancel.style.display="block";
+                reopen.style.display="none";
+            });
+        }
 
         function startTrialCountdown() {
             const countdown = document.getElementById("trialCountdown");
@@ -542,39 +754,50 @@
         }
 
         function filterCatalogCards() {
-            let input = document.getElementById("liveSearchField").value.toLowerCase().trim();
-            let cards = document.getElementsByClassName("card");
-            
+            const field = document.getElementById("liveSearchField");
+            const input = (field ? field.value : "").toLowerCase().trim();
+            const cards = document.getElementsByClassName("card");
+
             for (let i = 0; i < cards.length; i++) {
-                // 🧠 SAFE INJECTION CHANNELS: Safely extracts text without breaking on empty entries
-                let titleElement = cards[i].querySelector(".card-title");
-                if (titleElement) {
-                    let titleText = (titleElement.textContent || titleElement.innerText || "").toLowerCase();
-                    if (titleText.indexOf(input) > -1) { 
-                        cards[i].style.display = ""; 
-                    } else { 
-                        cards[i].style.display = "none"; 
-                    }
-                }
+                // Search all visible card information: item name, description, vendor/company and location.
+                const cardText = (cards[i].textContent || cards[i].innerText || "").toLowerCase();
+                cards[i].style.display = !input || cardText.indexOf(input) > -1 ? "" : "none";
             }
         }
 
-// Automatically hide the mobile basket notification//
+// Basket notification: clickable, touch-safe, keyboard-accessible and auto-dismisses after 3.5s.
 document.addEventListener("DOMContentLoaded", function() {
     const basketPopup = document.getElementById("basketMobilePopup");
+    const basket = document.getElementById("basket");
+    if (!basketPopup) return;
 
-    if (basketPopup) {
-        setTimeout(function() {
-            basketPopup.style.transition = "opacity 0.4s ease";
-            basketPopup.style.opacity = "0";
-
-            setTimeout(function() {
-                basketPopup.remove();
-            }, 400);
-        }, 3500);
-    }
+    const goToBasket = function() {
+        if (!basket) return;
+        basketPopup.style.pointerEvents = "none";
+        const navbar = document.querySelector(".navbar");
+        const headerOffset = navbar ? navbar.getBoundingClientRect().height + 10 : 10;
+        const targetY = Math.max(0, basket.getBoundingClientRect().top + window.scrollY - headerOffset);
+        window.scrollTo({ top: targetY, behavior: "smooth" });
+    };
+    basketPopup.addEventListener("click", goToBasket);
+    basketPopup.addEventListener("touchend", function(event) {
+        event.preventDefault();
+        goToBasket();
+    }, { passive:false });
+    basketPopup.addEventListener("keydown", function(event) {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            goToBasket();
+        }
+    });
+    setTimeout(function() {
+        basketPopup.style.transition = "opacity .4s ease, transform .4s ease";
+        basketPopup.style.opacity = "0";
+        basketPopup.style.transform = "translateY(-8px)";
+        setTimeout(function(){ basketPopup.remove(); }, 400);
+    }, 3500);
 });
 
     </script>
 </body>
-</html>
+</html> 

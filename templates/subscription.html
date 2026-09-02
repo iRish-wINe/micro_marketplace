@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#07111f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="BizHub">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='uploads/icon-192.png') }}">
     <title>Biz Hub Premium Storefront Subscriptions</title>
-
-
     <style>
-
         :root {
             --primary: #1A365D;
             --primary-light: #2B6CB0;
@@ -26,589 +26,164 @@
             --transition: all 0.25s ease-in-out;
         }
 
-
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg-light);
-            color: var(--text-main);
-            margin: 0;
-            padding-bottom: 60px;
-        }
-
-
-        .container {
-            width: 100%;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 20px;
-            box-sizing: border-box;
-        }
-
-
+        html { min-height:100%; background:var(--bg-light); }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-light); color: var(--text-main); margin: 0; padding-bottom: calc(60px + env(safe-area-inset-bottom));
+            padding-top: env(safe-area-inset-top); }
+        .container { width: 100%; max-width: 1000px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
+        
         /* Sticky Premium Navigation Header */
+        .navbar { display: flex; justify-content: space-between; align-items: center; background-color: white; padding: 15px 30px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .brand-logo { font-size: 22px; font-weight: 800; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 5px; }
+        .brand-logo span { color: var(--accent); }
+        .nav-links a { text-decoration: none; color: var(--primary-light); font-weight: 600; font-size: 14px; }
 
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: white;
-            padding: 15px 30px;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-
-        .brand-logo {
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-
-        .brand-logo span {
-            color: var(--accent);
-        }
-
-
-        .nav-links a {
-            text-decoration: none;
-            color: var(--primary-light);
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-
-        .hero-section {
-            text-align: center;
-            padding: 40px 0 20px 0;
-        }
-
-
-        .hero-section h1 {
-            margin: 0 0 10px 0;
-            color: var(--primary);
-            font-size: 28px;
-            font-weight: 800;
-        }
-
-
-        .hero-section p {
-            margin: 0;
-            color: var(--text-muted);
-            font-size: 15px;
-        }
-
+        .hero-section { text-align: center; padding: 40px 0 20px 0; }
+        .hero-section h1 { margin: 0 0 10px 0; color: var(--primary); font-size: 28px; font-weight: 800; }
+        .hero-section p { margin: 0; color: var(--text-muted); font-size: 15px; }
 
         /* Dynamic Status Notification Alert Boxes */
-
-        .alert-box {
-            background: white;
-            padding: 15px 20px;
-            border-radius: var(--radius-lg);
-            border-left: 4px solid var(--accent);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-
-        .alert-text h4 {
-            margin: 0 0 4px 0;
-            color: var(--primary);
-            font-size: 14px;
-        }
-
-
-        .alert-text p {
-            margin: 0;
-            color: var(--text-muted);
-            font-size: 12px;
-        }
-
+        .alert-box { background: white; padding: 15px 20px; border-radius: var(--radius-lg); border-left: 4px solid var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .alert-text h4 { margin: 0 0 4px 0; color: var(--primary); font-size: 14px; }
+        .alert-text p { margin: 0; color: var(--text-muted); font-size: 12px; }
 
         /* Multi-Tier Pricing Card Grid Matrix */
-
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 25px;
-            margin-top: 20px;
-        }
-
-
+        .pricing-grid { display: grid; grid-template-columns: 1fr; gap: 25px; margin-top: 20px; }
         @media (min-width: 768px) {
-
-            .pricing-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
+            .pricing-grid { grid-template-columns: 1fr 1fr; }
         }
 
+        .price-card { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 30px; display: flex; flex-direction: column; position: relative; transition: var(--transition); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .price-card.premium-active { border: 2px solid var(--success); background: linear-gradient(135deg, #F0FDF4 0%, #FFFFFF 100%); }
+        .price-card.premium-tier { border: 2px solid var(--primary-light); background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%); }
+        
+        .tier-badge { position: absolute; top: -12px; right: 20px; background: var(--primary-light); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .tier-badge.active { background: var(--success); }
 
-        .price-card {
-            background: white;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-color);
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            transition: var(--transition);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
+        .price-card h3 { margin: 0 0 10px 0; font-size: 20px; font-weight: 700; color: var(--primary); }
+        .price-tag { font-size: 32px; font-weight: 800; color: var(--text-main); margin-bottom: 20px; }
+        .price-tag span { font-size: 14px; font-weight: 600; color: var(--text-muted); }
 
-
-        .price-card.premium-active {
-            border: 2px solid var(--success);
-            background: linear-gradient(135deg, #F0FDF4 0%, #FFFFFF 100%);
-        }
-
-
-        .price-card.premium-tier {
-            border: 2px solid var(--primary-light);
-            background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
-        }
-
-
-        .tier-badge {
-            position: absolute;
-            top: -12px;
-            right: 20px;
-            background: var(--primary-light);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-
-        .tier-badge.active {
-            background: var(--success);
-        }
-
-
-        .price-card h3 {
-            margin: 0 0 10px 0;
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-
-        .price-tag {
-            font-size: 32px;
-            font-weight: 800;
-            color: var(--text-main);
-            margin-bottom: 20px;
-        }
-
-
-        .price-tag span {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-
-
-        .feature-list {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 30px 0;
-            flex-grow: 1;
-        }
-
-
-        .feature-list li {
-            font-size: 13px;
-            color: var(--text-main);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-
-        .feature-list li::before {
-            content: "✓";
-            color: var(--primary-light);
-            font-weight: bold;
-        }
-
-
-        .price-card.premium-active .feature-list li::before {
-            color: var(--success);
-        }
-
+        .feature-list { list-style: none; padding: 0; margin: 0 0 30px 0; flex-grow: 1; }
+        .feature-list li { font-size: 13px; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .feature-list li::before { content: "✓"; color: var(--primary-light); font-weight: bold; }
+        .price-card.premium-active .feature-list li::before { color: var(--success); }
 
         /* Unified Action Button Mechanics */
-
-        .btn-upgrade {
-            text-align: center;
-            text-decoration: none;
-            padding: 12px;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            font-weight: bold;
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-
-        .btn-upgrade.basic-action {
-            background-color: #EDF2F7;
-            color: var(--text-muted);
-            pointer-events: none;
-        }
-
-
-        .btn-upgrade.premium-action {
-            background-color: var(--primary-light);
-            color: white;
-        }
-
-
-        .btn-upgrade.premium-action:hover {
-            background-color: var(--primary);
-        }
-
-
-        .btn-upgrade.wa-action {
-            background-color: var(--success);
-            color: white;
-        }
-
-
-        .btn-upgrade.wa-action:hover {
-            background-color: #20BA56;
-        }
-
+        .btn-upgrade { text-align: center; text-decoration: none; padding: 12px; border-radius: var(--radius-sm); font-size: 14px; font-weight: bold; display: block; width: 100%; box-sizing: border-box; border: none; cursor: pointer; transition: var(--transition); }
+        .btn-upgrade.basic-action { background-color: #EDF2F7; color: var(--text-muted); pointer-events: none; }
+        .btn-upgrade.premium-action { background-color: var(--primary-light); color: white; }
+        .btn-upgrade.premium-action:hover { background-color: var(--primary); }
+        .btn-upgrade.wa-action { background-color: var(--success); color: white; }
+        .btn-upgrade.wa-action:hover { background-color: #20BA56; }
     </style>
-
 </head>
-
-
 <body>
 
-
     <!-- BRAND TOP NAVIGATION BAR -->
-
     <div class="navbar">
-
-        <a href="/" class="brand-logo">
-            🏪 Biz<span>Hub</span>
-        </a>
-
-        <div class="nav-links">
-
-            <a href="/">
-                ← Return to Market Feed
-            </a>
-
+        <a href="/" class="brand-logo">🏪 Biz<span>Hub</span></a>
+        <div class="nav-links" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+            <a href="/">← Return to Market Feed</a>
+            {% if user['role'] in ['Vendor', 'Fast Food', 'Delivery Service'] %}
+            <a href="https://wa.me/{{ payment_number }}?text={{ upgrade_message|urlencode }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border-radius:999px;background:var(--accent);color:#111827;text-decoration:none;font-weight:900;font-size:12px;box-shadow:0 3px 10px rgba(245,158,11,.25);">💎 Subscribe to Premium</a>
+            {% endif %}
         </div>
-
     </div>
-
 
     <div class="container">
-
-
+        
         <div class="hero-section">
-
-            <h1>
-                👑 Scale Your Local Business
-            </h1>
-
-            <p>
-                Unlock unlimited e-commerce capabilities, catalog videos,
-                and fast-food operational triggers.
-            </p>
-
+            <h1>👑 {% if user['role'] == 'Delivery Service' %}Premium Delivery Service{% else %}Scale Your Local Business{% endif %}</h1>
+            <p>{% if user['role'] == 'Delivery Service' %}Stay visible to BizHub vendors and control your Available or Unavailable service status.{% else %}Unlock unlimited e-commerce capabilities, catalog videos, and fast-food operational triggers.{% endif %}</p>
         </div>
 
-
         <!-- CONTEXTUAL NOTIFICATION GATE Matrix -->
-
         {% if requested %}
-
-            <div
-                class="alert-box"
-                style="border-left-color: var(--primary-light); background-color: #F8FAFC;"
-            >
-
+            <div class="alert-box" style="border-left-color: var(--primary-light); background-color: #F8FAFC;">
                 <div class="alert-text">
-
-                    <h4>
-                        ⚡ Processing Settlement Receipt
-                    </h4>
-
-                    <p>
-                        Your premium request form is compiled! Hit the green
-                        button to submit your payment log via WhatsApp.
-                    </p>
-
+                    <h4>⚡ Processing Settlement Receipt</h4>
+                    <p>Your premium request form is compiled! Hit the green button to submit your payment log via WhatsApp.</p>
                 </div>
-
-
-                <a
-                    href="whatsapp://send?phone={{ payment_number }}&text={{ payment_text }}"
-                    class="btn-upgrade wa-action"
-                    style="width: auto; padding: 8px 16px;"
-                >
-                    💬 Send Receipt
-                </a>
-
+                <a href="whatsapp://send?phone={{ payment_number }}&text={{ payment_text }}" class="btn-upgrade wa-action" style="width: auto; padding: 8px 16px;">💬 Send Receipt</a>
             </div>
-
-
-        {% elif subscription.name == 'Premium Store' %}
-
-
-            <div
-                class="alert-box"
-                style="border-left-color: var(--success); background-color: #F0FDF4;"
-            >
-
+        {% elif subscription.is_premium %}
+            <div class="alert-box" style="border-left-color: var(--success); background-color: #F0FDF4;">
                 <div class="alert-text">
-
-                    <h4 style="color: #15803D;">
-                        🟢 Premium Store Active
-                    </h4>
-
-                    <p>
-                        Your commercial brand configuration metrics are fully
-                        unconstrained. Thank you for trading on Biz Hub!
-                    </p>
-
+                    <h4 style="color: #15803D;">🟢 Premium Store Active</h4>
+                    <p>Your commercial brand configuration metrics are fully unconstrained. Thank you for trading on Biz Hub!</p>
                 </div>
-
             </div>
-
         {% endif %}
 
+        {% if user['role'] in ['Vendor', 'Fast Food', 'Delivery Service'] %}
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 18px;">
+            <a href="#account-overview" style="padding:9px 13px;border:1px solid var(--border-color);border-radius:999px;background:#fff;color:var(--text-muted);text-decoration:none;font-size:12px;font-weight:800;">Account overview</a>
+            <a href="https://wa.me/{{ payment_number }}?text={{ upgrade_message|urlencode }}" target="_blank" rel="noopener" style="padding:9px 13px;border:1px solid #F59E0B;border-radius:999px;background:#FFF7ED;color:#9A3412;text-decoration:none;font-size:12px;font-weight:900;">💎 Subscribe to Premium</a>
+        </div>
+        {% endif %}
 
         <!-- DUAL PRICING GRID LAYOUT -->
-
         <div class="pricing-grid">
-
-
+            
             <!-- TIER 1: THE BASIC/TRIAL COVERAGE CARD -->
-
-            <div
-                class="price-card {% if subscription.name != 'Premium Store' %}premium-active{% endif %}"
-            >
-
-                {% if subscription.name != 'Premium Store' %}
-
-                    <span class="tier-badge active">
-                        Current Tier
-                    </span>
-
+            <div class="price-card {% if not subscription.is_premium %}premium-active{% endif %}">
+                {% if not subscription.is_premium %}
+                    <span class="tier-badge active">Current Tier</span>
                 {% endif %}
-
-
-                <h3>
-                    Standard Basic
-                </h3>
-
-
-                <div class="price-tag">
-                    GH₵ 0
-                    <span>
-                        / Forever
-                    </span>
-                </div>
-
-
+                <h3>Standard Basic</h3>
+                <div class="price-tag">GH₵ 0<span> / Forever</span></div>
                 <ul class="feature-list">
-
-                    <li>
-                        List up to exactly 3 catalog items
-                    </li>
-
-                    <li>
-                        Fulfillment mapping across Ghana cities
-                    </li>
-
-                    <li>
-                        Standard Customer Basket order tallies
-                    </li>
-
-                    <li>
-                        Uneditable WhatsApp customer links
-                    </li>
-
-                    <li style="text-decoration: line-through; color: var(--text-muted);">
-                        No catalog mp4/mov video attachments
-                    </li>
-
-                    <li style="text-decoration: line-through; color: var(--text-muted);">
-                        Generic individual merchant title label
-                    </li>
-
+                    <li>List up to exactly 3 catalog items</li>
+                    <li>Fulfillment mapping across Ghana cities</li>
+                    <li>Standard Customer Basket order tallies</li>
+                    <li>Uneditable WhatsApp customer links</li>
+                    <li style="text-decoration: line-through; color: var(--text-muted);">No catalog mp4/mov video attachments</li>
+                    <li style="text-decoration: line-through; color: var(--text-muted);">Generic individual merchant title label</li>
                 </ul>
-
-
                 <button class="btn-upgrade basic-action">
-
-                    {% if subscription.name != 'Premium Store' %}
-                        Active Framework
-                    {% else %}
-                        Downgraded Base
-                    {% endif %}
-
+                    {% if not subscription.is_premium %}Active Framework{% else %}Downgraded Base{% endif %}
                 </button>
-
             </div>
 
-
             <!-- TIER 2: THE PREMIUM STOREFRONT CONVERSION CARD -->
-
-            <div
-                class="price-card {% if subscription.name == 'Premium Store' %}premium-active{% else %}premium-tier{% endif %}"
-            >
-
-
-                {% if subscription.name == 'Premium Store' %}
-
-                    <span class="tier-badge active">
-                        Active Now
-                    </span>
-
+            <div class="price-card {% if subscription.is_premium %}premium-active{% else %}premium-tier{% endif %}">
+                {% if subscription.is_premium %}
+                    <span class="tier-badge active">Active Now</span>
                 {% else %}
-
-                    <span
-                        class="tier-badge"
-                        style="background-color: var(--accent);"
-                    >
-                        🎁 Limited Promo Offer
-                    </span>
-
+                    <span class="tier-badge" style="background-color: var(--accent);">🎁 Limited Promo Offer</span>
                 {% endif %}
-
-
-                <h3>
-                    Premium Storefront
-                </h3>
-
-
+                <h3>{% if user['role'] == 'Delivery Service' %}Premium Delivery Service{% else %}Premium Storefront{% endif %}</h3>
                 <!-- 🧠 UPGRADED BRANDING MATRIX -->
-
-                <div class="price-tag">
-
-                    FREE
-
-                    <span
-                        style="
-                            font-size: 20px;
-                            color: var(--success);
-                            font-weight: 800;
-                            display: block;
-                            margin-top: 4px;
-                        "
-                    >
-                        🎉 First 2 Months Free!
-                    </span>
-
-                </div>
-
-
-                <div
-                    style="
-                        font-size: 13px;
-                        color: var(--text-muted);
-                        margin-bottom: 20px;
-                        font-weight: 600;
-                    "
-                >
-                    Then GH₵ 30 / 30 Days after trial ends.
-                </div>
-
-
+                <div class="price-tag">FREE <span style="font-size: 20px; color: var(--success); font-weight: 800; display: block; margin-top: 4px;">🎉 First {% if user['role'] == 'Delivery Service' %}5 Months{% else %}2 Months{% endif %} Free!</span></div>
+                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px; font-weight: 600;">Then GH₵ {% if user['role'] == 'Delivery Service' %}20 monthly{% else %}30 / 30 Days{% endif %} after trial ends.</div>
+                
                 <ul class="feature-list">
-
-                    <li>
-                        <b>Unlimited</b> marketplace product entries
-                    </li>
-
-                    <li>
-                        Attach detailed showcase <b>video files</b> (MP4/WebM)
-                    </li>
-
-                    <li>
-                        Display custom <b>Registered Brand / Company Name</b>
-                    </li>
-
-                    <li>
-                        Upload an independent <b>Company Store Logo</b> circle
-                    </li>
-
-                    <li>
-                        Top-priority visibility index in customer order tables
-                    </li>
-
-                    <li>
-                        Dedicated Fast Food Kitchen operations tracking dashboard
-                    </li>
-
+                    {% if user['role'] == 'Delivery Service' %}
+                    <li>Remain visible to BizHub vendors</li>
+                    <li>Choose Available or Unavailable status</li>
+                    <li>Receive vendor delivery requests</li>
+                    {% else %}
+                    <li><b>Unlimited</b> marketplace product entries</li>
+                    <li>Attach detailed showcase **video files** (MP4/WebM)</li>
+                    <li>Display custom **Registered Brand / Company Name**</li>
+                    <li>Upload an independent **Company Store Logo** circle</li>
+                    <li>Top-priority visibility index in customer order tables</li>
+                    <li>Dedicated Fast Food Kitchen operations tracking dashboard</li>
+                    {% endif %}
                 </ul>
 
-
-                {% if subscription.name == 'Premium Store' or user.plan == 'premium' %}
-
-                    <div
-                        style="
-                            text-align: center;
-                            padding: 10px;
-                            font-size: 13px;
-                            color: #15803D;
-                            font-weight: bold;
-                            background: #DCFCE7;
-                            border-radius: var(--radius-sm);
-                        "
-                    >
-
-                        ✓ Premium Promotional Trial Active
-                        (Valid Until:
-                        {{ subscription.expires if subscription.expires else '60 Days' }})
-
+                {% if subscription.is_premium %}
+                    <div style="text-align: center; padding: 10px; font-size: 13px; color: #15803D; font-weight: bold; background: #DCFCE7; border-radius: var(--radius-sm);">
+                        ✓ Premium Promotional Trial Active (Valid Until: {{ subscription.expires if subscription.expires else '60 Days' }})
                     </div>
-
-
                 {% else %}
-
-                    <form
-                        method="POST"
-                        action="/request-premium"
-                        style="margin: 0;"
-                    >
-
-                        <button
-                            type="submit"
-                            class="btn-upgrade premium-action"
-                        >
-                            🚀 Claim Your 2 Months Free Trial
-                        </button>
-
+                    <a href="https://wa.me/{{ payment_number }}?text={{ upgrade_message|urlencode }}" target="_blank" rel="noopener" class="btn-upgrade premium-action" style="background:var(--accent);color:#111827;">
+                        💎 Subscribe to Premium via WhatsApp
+                    </a>
+                    <form method="POST" action="/request-premium" style="margin:8px 0 0;">
+                        <button type="submit" class="btn-upgrade" style="background:#F8FAFC;color:var(--primary-light);border:1px solid var(--border-color);font-size:12px;">Mark Premium Request</button>
                     </form>
-
                 {% endif %}
-
-
             </div>
 
 
@@ -616,7 +191,5 @@
 
     </div>
 
-
 </body>
-
 </html>

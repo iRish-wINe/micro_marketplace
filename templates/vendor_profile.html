@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full" data-theme="{{ user['theme'] or 'day' }}">
+<html lang="en" class="h-full" data-theme="{{ session.get('theme') or 'day' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -102,7 +102,7 @@
                     Market
                 </a>
 
-                {% if user['role'] == 'Customer' %}
+                {% if session.get('role') == 'Customer' %}
 
                     <a
                         href="/favorites"
@@ -118,7 +118,7 @@
                         Orders
                     </a>
 
-                {% elif user['role'] in ['Vendor', 'Fast Food'] %}
+                {% elif session.get('role') in ['Vendor', 'Fast Food'] %}
 
                     <a
                         href="/orders"
@@ -137,7 +137,7 @@
                 </a>
 
                 <span class="hidden sm:inline bh-muted">
-                    @{{ user['username'] }}
+                    @{{ session.get('username') }}
                 </span>
 
             </nav>
@@ -208,7 +208,7 @@
                         {% if vendor['is_verified'] %}
 
                             <span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold">
-                                ✓ Verified
+                                ✓ Verified Store
                             </span>
 
                         {% endif %}
@@ -230,10 +230,10 @@
                     </p>
 
 
-                    {% if vendor['company_location'] %}
+                    {% if vendor['business_location'] %}
 
                         <p class="text-sm bh-muted mt-3">
-                            📍 {{ vendor['company_location'] }}
+                            📍 {{ vendor['business_location'] }}
                         </p>
 
                     {% endif %}
@@ -267,18 +267,31 @@
                     </div>
 
 
+                    {% if vendor['role'] == 'Fast Food' %}
+                        <div class="mt-5 rounded-2xl border border-orange-200 bg-orange-50 p-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                <div>
+                                    <div class="text-sm font-black text-orange-800">🍔 Hungry? Order from this kitchen.</div>
+                                    <p class="text-xs text-orange-700 mt-1">Browse the menu below, see each meal price and media, then add what you want to your basket.</p>
+                                </div>
+                                <a href="#menu" class="inline-flex items-center justify-center px-5 py-3 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-black text-sm no-underline">Order Your Food Now — Buy from {{ vendor['company_name'] or vendor['username'] }}</a>
+                            </div>
+                        </div>
+                    {% endif %}
+
                     <!-- ACTIONS -->
                     <div class="flex flex-wrap gap-3 mt-6">
 
 
-                        {% if user['role'] == 'Customer' %}
+                        {% if session.get('role') == 'Customer' %}
 
-                            {% if is_favorite %}
+                            {% if favorite %}
 
                                 <form
                                     method="POST"
-                                    action="/favorites/remove/{{ vendor['id'] }}"
+                                    action="/favorites/toggle/{{ vendor['username'] }}"
                                 >
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
                                     <button
                                         type="submit"
@@ -293,8 +306,9 @@
 
                                 <form
                                     method="POST"
-                                    action="/favorites/add/{{ vendor['id'] }}"
+                                    action="/favorites/toggle/{{ vendor['username'] }}"
                                 >
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
                                     <button
                                         type="submit"
@@ -313,7 +327,7 @@
                         {% if vendor['whatsapp_number'] %}
 
                             <a
-                                href="https://wa.me/{{ vendor['whatsapp_number'] }}"
+                                href="https://wa.me/{{ vendor_whatsapp }}?text={{ vendor_whatsapp_text }}"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="inline-flex items-center justify-center px-5 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm no-underline"
@@ -335,7 +349,7 @@
 
 
     <!-- ACTIVE PROMOTION -->
-    {% if promotion %}
+    {% if promo %}
 
         <section class="mb-6">
 
@@ -357,10 +371,10 @@
                                     Promo Active
                                 </span>
 
-                                {% if promotion['discount'] %}
+                                {% if promo['discount'] %}
 
                                     <span class="px-2 py-1 rounded-full bg-red-600 text-white text-[11px] font-black">
-                                        {{ promotion['discount'] }}% OFF
+                                        {{ promo['discount'] }}% OFF
                                     </span>
 
                                 {% endif %}
@@ -369,23 +383,23 @@
 
 
                             <h2 class="text-lg font-black text-gray-900 mt-1">
-                                {{ promotion['title'] }}
+                                {{ promo['title'] }}
                             </h2>
 
 
-                            {% if promotion['description'] %}
+                            {% if promo['description'] %}
 
                                 <p class="text-sm text-gray-700 mt-1">
-                                    {{ promotion['description'] }}
+                                    {{ promo['description'] }}
                                 </p>
 
                             {% endif %}
 
 
-                            {% if promotion['ends_at'] %}
+                            {% if promo['ends_at'] %}
 
                                 <p class="text-xs text-red-700 font-semibold mt-3">
-                                    ⏰ Offer ends {{ promotion['ends_at'] }}
+                                    ⏰ Offer ends {{ promo['ends_at'] }}
                                 </p>
 
                             {% endif %}
@@ -421,11 +435,11 @@
 
         <div class="p-6">
 
-            {% if vendor_categories %}
+            {% if categories %}
 
                 <div class="flex flex-wrap gap-3">
 
-                    {% for category in vendor_categories %}
+                    {% for category in categories %}
 
                         <span class="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100 text-sm font-bold">
                             {{ category }}
@@ -466,7 +480,8 @@
     </section>
 
 
-    <!-- PRODUCTS -->
+    <!-- MENU / PRODUCTS -->
+    <span id="menu"></span>
     <section>
 
         <div class="flex items-end justify-between mb-5">
@@ -474,11 +489,11 @@
             <div>
 
                 <h2 class="text-xl font-black bh-text">
-                    Products
+                    {% if vendor['role'] == 'Fast Food' %}🍔 Menu{% else %}Products{% endif %}
                 </h2>
 
                 <p class="text-sm bh-muted mt-1">
-                    Browse products currently listed by this vendor.
+                    {% if vendor['role'] == 'Fast Food' %}Browse meals available from this kitchen, with prices and photos/videos.{% else %}Browse products currently listed by this vendor.{% endif %}
                 </p>
 
             </div>
@@ -504,27 +519,25 @@
                     <article class="bh-card border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition">
 
 
-                        {% if product['image'] %}
-
+                        {% if product['video_file'] %}
+                            <video class="w-full h-48 object-cover" controls autoplay muted playsinline loop preload="metadata">
+                                <source src="{{ url_for('stream_video', filename=product['video_file']) }}">
+                            </video>
+                        {% elif product['image_file'] and product['image_file'] != 'fast-food-placeholder.svg' %}
                             <img
-                                src="{{ url_for('static', filename='uploads/' + product['image']) }}"
-                                alt="{{ product['name'] }}"
+                                src="{{ url_for('static', filename='uploads/' + product['image_file']) }}"
+                                alt="{{ product['title'] }}"
                                 class="w-full h-48 object-cover"
                             >
-
                         {% else %}
-
-                            <div class="w-full h-48 bg-slate-100 flex items-center justify-center text-4xl">
-                                🛍️
-                            </div>
-
+                            <div class="w-full h-48 bg-slate-100 flex items-center justify-center text-4xl">🍔</div>
                         {% endif %}
 
 
                         <div class="p-4">
 
                             <h3 class="font-bold text-sm bh-text line-clamp-2">
-                                {{ product['name'] }}
+                                {{ product['title'] }}
                             </h3>
 
 
@@ -543,10 +556,10 @@
 
 
                             <a
-                                href="/product/{{ product['id'] }}"
-                                class="block text-center mt-4 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold no-underline"
+                                href="{% if vendor['role'] == 'Fast Food' and product['meal_whatsapp_number'] %}https://wa.me/{{ product['meal_whatsapp_number'] }}?text={{ product['meal_whatsapp_text'] }}{% else %}/product/{{ product['id'] }}{% endif %}" target="{% if vendor['role'] == 'Fast Food' %}_blank{% endif %}" rel="{% if vendor['role'] == 'Fast Food' %}noopener noreferrer{% endif %}"
+                                class="block text-center mt-4 px-4 py-2.5 rounded-xl {% if vendor['role'] == 'Fast Food' %}bg-orange-600 hover:bg-orange-700{% else %}bg-emerald-600 hover:bg-emerald-700{% endif %} text-white text-xs font-bold no-underline"
                             >
-                                View Product
+                                {% if vendor['role'] == 'Fast Food' %}🍔 Order This Meal{% else %}View Product{% endif %}
                             </a>
 
                         </div>
