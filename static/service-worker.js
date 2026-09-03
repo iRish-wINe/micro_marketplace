@@ -1,7 +1,7 @@
-const CACHE='bizhub-static-v5';
+const CACHE='bizhub-static-v6';
 const STATIC=['/static/manifest.webmanifest','/static/uploads/bizhub-app-icon.png','/static/uploads/icon-192.png','/static/uploads/icon-512.png','/static/uploads/icon-512-maskable.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC)).then(()=>self.skipWaiting())));
-self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('bizhub-static-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('push',e=>{const d=e.data?e.data.json():{};e.waitUntil(self.registration.showNotification(d.title||'BizHub notification',{body:d.message||'',data:{link:d.link||'/'},icon:'/static/uploads/bizhub-app-icon.png'}));});
 self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.openWindow(e.notification.data.link||'/'));});
 self.addEventListener('fetch',e=>{

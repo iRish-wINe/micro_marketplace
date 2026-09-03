@@ -106,6 +106,7 @@
                         href="{{ url_for('notifications') }}"
                         class="bh-muted hover:text-emerald-600 no-underline"
                     >🔔 Notifications{% if unread_notifications_count %} ({{ unread_notifications_count }}){% endif %}</a>
+                    <a href="{{ url_for('features') }}" class="bh-muted hover:text-emerald-600 no-underline">✨ BizHub Features</a>
                 {% endif %}
 
                 {% if session.get('role') == 'Customer' %}
@@ -275,6 +276,7 @@
                         {% endif %}
 
                     </div>
+                    <div class="mt-4 text-sm bh-muted">⭐ {{ "%.1f"|format(review_summary.average_rating or 0) }}/5 ({{ review_summary.review_count }} reviews)</div>
 
 
                     {% if vendor['role'] == 'Fast Food' %}
@@ -604,6 +606,14 @@
 
         {% endif %}
 
+    </section>
+
+    <section class="bh-card border rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div class="p-6">
+            <h2 class="text-lg font-black bh-text">Customer reviews</h2>
+            {% for review in reviews %}<div class="mt-4 border-b bh-border pb-3"><strong>@{{ review.reviewer_username }}</strong><div class="text-amber-500">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</div><p class="text-sm bh-muted">{{ review.comment }}</p></div>{% else %}<p class="text-sm bh-muted">No reviews yet.</p>{% endfor %}
+            {% if session.get('role') == 'Customer' %}<form method="POST" action="{{ url_for('submit_review', vendor_id=vendor['id']) }}" class="mt-5 space-y-3"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><select name="rating" class="w-full rounded-lg border p-2"><option value="5">5 stars</option><option value="4">4 stars</option><option value="3">3 stars</option><option value="2">2 stars</option><option value="1">1 star</option></select><textarea name="comment" required class="w-full rounded-lg border p-2" placeholder="Share your experience"></textarea><button class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white" type="submit">Save review</button></form>{% endif %}
+        </div>
     </section>
 
 </main>

@@ -9,8 +9,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="BizHub">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/icon-192.png') }}?v=4">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/apple-touch-icon.png') }}?v=5">
     <style>
         /* 👑 BIZ HUB LUXURY DESIGN SYSTEM TOKENS (AMAZON ENTERPRISE MATRIX) */
         :root {
@@ -353,6 +354,7 @@
                 <span>Hello, <b>@{{ session['username'] }}</b></span>
                 <a href="/">Market</a>
                 <a href="{{ url_for('notifications') }}">🔔 Notifications{% if unread_notifications_count %} <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#EF4444;color:#fff;font-size:10px;font-weight:900;">{{ unread_notifications_count }}</span>{% endif %}</a>
+                <a href="{{ url_for('features') }}">✨ Features</a>
                 {% if session.get('role') == 'Delivery Service' %}
                     <a href="{{ url_for('delivery_dashboard') }}">Home</a>
                 {% elif session.get('role') == 'Customer' %}
@@ -640,6 +642,13 @@
                         <span>Total:</span>
                         <span>GH₵ {{ "%.2f"|format(cart_total) }}</span>
                     </div>
+                    {% if session.get('role') == 'Customer' %}
+                    <form method="POST" action="{{ url_for('apply_coupon') }}" style="display:flex;gap:6px;margin-top:10px;">
+                        <input type="text" name="code" placeholder="Coupon code" style="min-width:0;flex:1;padding:8px;border:1px solid var(--border-color);border-radius:6px;text-transform:uppercase;">
+                        <button type="submit" class="btn-action btn-cart" style="width:auto;">Apply</button>
+                    </form>
+                    {% if active_coupon %}<div style="font-size:11px;color:#15803D;margin-top:6px;">{{ active_coupon.code }} applied: {{ active_coupon.discount }}% off (GH₵{{ "%.2f"|format(discount_total) }} saved). <form method="POST" action="{{ url_for('remove_coupon') }}" style="display:inline;"><button type="submit" style="border:0;background:none;color:#B91C1C;cursor:pointer;font-size:11px;">Remove</button></form></div>{% endif %}
+                    {% endif %}
                     {% for order in seller_orders %}
                         <a href="whatsapp://send?phone={{ order.number }}&text={{ order.whatsapp_text }}" class="btn-whatsapp-checkout">💬 Pay Vendor @{{ order.seller }}</a>
                     {% endfor %}
