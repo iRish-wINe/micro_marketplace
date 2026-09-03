@@ -29,7 +29,7 @@
     </style>
 </head>
 <body>
-    <nav class="nav"><a class="brand" href="{{ url_for('delivery_dashboard') }}">Biz<span>Hub</span> Delivery</a><a href="{{ url_for('delivery_dashboard') }}">Back to Dashboard</a></nav>
+    <nav class="nav"><a class="brand" href="{{ url_for('delivery_dashboard') }}">Biz<span>Hub</span> Delivery</a><div style="display:flex;gap:12px;align-items:center"><a href="{{ url_for('notifications') }}">🔔 Notifications{% if unread_notifications_count %} ({{ unread_notifications_count }}){% endif %}</a><a href="{{ url_for('delivery_dashboard') }}">Back to Dashboard</a></div></nav>
     <main class="wrap">
         <section class="hero"><h1>Premium Delivery Service</h1><p>Stay visible to BizHub vendors and control when your delivery service is available.</p></section>
         {% if requested %}<div class="notice"><strong>Premium request recorded.</strong><br>Send your payment receipt through WhatsApp so BizHub can activate your subscription.</div>{% endif %}
@@ -39,6 +39,7 @@
             <ul><li>First 5 months free</li><li>Appear in vendor delivery-service searches</li><li>Set your service to Available or Unavailable</li><li>Receive vendor delivery requests by WhatsApp</li></ul>
             {% if subscription.is_premium %}<div class="active">Premium active until {{ subscription.expires }}</div>{% else %}<a class="button" href="https://wa.me/{{ payment_number }}?text={{ upgrade_message|urlencode }}" target="_blank" rel="noopener">Subscribe via WhatsApp</a><form method="post" action="{{ url_for('request_premium') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button secondary" type="submit">Mark Premium Request</button></form>{% endif %}
         </section>
+        {% if receipts %}<section class="plan" style="margin-top:18px"><h2>Subscription receipts</h2>{% for receipt in receipts %}<p><strong>{{ receipt.receipt_number }}</strong> · GH₵{{ "%.2f"|format(receipt.amount) }} · <a href="{{ url_for('subscription_receipt', receipt_id=receipt.id) }}">View receipt</a></p>{% endfor %}</section>{% endif %}
     </main>
 </body>
 </html>

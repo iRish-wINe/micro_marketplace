@@ -92,7 +92,6 @@
             </a>
 
 
-            <!-- NAVIGATION -->
             <nav class="flex items-center gap-4 text-sm font-medium">
 
                 <a
@@ -101,6 +100,13 @@
                 >
                     Market
                 </a>
+
+                {% if session.get('username') %}
+                    <a
+                        href="{{ url_for('notifications') }}"
+                        class="bh-muted hover:text-emerald-600 no-underline"
+                    >🔔 Notifications{% if unread_notifications_count %} ({{ unread_notifications_count }}){% endif %}</a>
+                {% endif %}
 
                 {% if session.get('role') == 'Customer' %}
 
@@ -236,6 +242,10 @@
                             📍 {{ vendor['business_location'] }}
                         </p>
 
+                    {% endif %}
+
+                    {% if session.get('username') and session.get('username') != vendor['username'] %}
+                        <a href="{{ url_for('report_user', user_id=vendor['id']) }}" class="inline-flex items-center justify-center mt-3 px-3 py-1.5 rounded-lg bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 font-semibold text-xs no-underline">Report this vendor</a>
                     {% endif %}
 
 

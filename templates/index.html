@@ -71,6 +71,9 @@
         .nav-links b { color: white; }
         .nav-links a { text-decoration: none; color: #E2E8F0; font-weight: 700; transition: var(--transition); padding: 6px 12px; border-radius: var(--radius-sm); }
         .nav-links a:hover { color: var(--accent); background: rgba(255,255,255,0.05); }
+        .nav-links.logged-out-nav { margin-left: auto; justify-content: flex-end; }
+        .nav-links .auth-link { color: #111827; background: var(--accent); padding: 8px 13px; font-size: 13px; font-weight: 900; white-space: nowrap; }
+        .nav-links .auth-link:hover { color: #111827; background: #FBBF24; }
 
         .search-hero { background-color: var(--bg-abyssal); padding: 15px 0; color: white; }
         .search-panel { display: flex; flex-wrap: wrap; background: white; border-radius: var(--radius-sm); overflow: hidden; box-shadow: var(--shadow-sm); max-width: 1100px; margin: 0 auto; width: 100%; border: 1px solid rgba(0,0,0,0.2); padding: 2px; box-sizing: border-box; }
@@ -146,14 +149,13 @@
 
         .media-cancel { display:none; margin-top:6px; width:100%; border:1px solid #FED7D7; background:#FFF5F5; color:#B91C1C; border-radius:6px; padding:6px 8px; font-size:11px; font-weight:700; cursor:pointer; }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 15px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 15px; }
+        @media (min-width: 768px) and (max-width: 1199px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; } }
+        @media (min-width: 1200px) { .layout { grid-template-columns: 240px minmax(0, 1fr) 240px; } .grid { grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 12px; } }
         
 /* MOBILE MARKETPLACE: 2 LISTINGS PER ROW */
 @media (max-width: 767px) {}
-    .grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-    }
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 
 /* MOBILE BASKET NOTIFICATION */
 .basket-mobile-popup { display:none; }
@@ -215,6 +217,7 @@
         align-items:stretch;
         overflow:visible;
     }
+    .nav-links.logged-out-nav { display:flex; justify-content:flex-end; margin-left:auto; }
     .nav-links span { display:none; }
     .nav-links a {
         min-width:0;
@@ -262,6 +265,12 @@
         
         .card-media-wrapper { width: 100%; height: 170px; background-color: #FFF; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 10px; }
         .card-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: var(--transition); }
+        .card-media-wrapper:has(.card-img[src]) { cursor: zoom-in; }
+        .image-lightbox { position: fixed; inset: 0; z-index: 200; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(0,0,0,.92); }
+        .image-lightbox.open { display: flex; }
+        .image-lightbox img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+        .image-lightbox-close { position: absolute; top: 16px; right: 20px; border: 1px solid rgba(255,255,255,.5); background: rgba(0,0,0,.55); color: #fff; border-radius: 50%; width: 42px; height: 42px; font-size: 24px; line-height: 1; cursor: pointer; }
+        .image-lightbox-caption { position: absolute; left: 20px; right: 20px; bottom: 16px; text-align: center; color: #fff; font-size: 13px; font-weight: 700; }
         video.card-img {
     width: 100%;
     height: 100%;
@@ -315,6 +324,14 @@
         </div>
     </div>
 
+    {% if welcome_message %}
+    <div id="welcomeMessage" role="status" style="position:fixed;top:78px;left:50%;transform:translateX(-50%);z-index:9999;width:min(520px,calc(100% - 28px));box-sizing:border-box;padding:18px 22px;background:#0B192C;color:#fff;border:1px solid #F59E0B;border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.25);text-align:center;transition:opacity .45s ease,transform .45s ease;">
+        <strong style="display:block;color:#F59E0B;font-size:17px;">Thank you for choosing BizHub</strong>
+        <span style="display:block;margin-top:5px;color:#E2E8F0;font-size:13px;">Enjoy the market.</span>
+    </div>
+    <script>setTimeout(function(){var w=document.getElementById('welcomeMessage');if(w){w.style.opacity='0';w.style.transform='translateX(-50%) translateY(-8px)';setTimeout(function(){w.remove();},500);}},5000);</script>
+    {% endif %}
+
 {% if request.args.get('cart_added') == '1' %}
     <div id="basketMobilePopup" class="basket-mobile-popup" role="button" tabindex="0" aria-label="Item added to basket. Scroll down to see your basket.">
         🛒 <strong>Item added to basket</strong>
@@ -331,10 +348,11 @@
     <!-- MAIN BRAND HEADER (HOUSE EMOJI REMOVED COMPLETELY) -->
     <div class="navbar">
         <a href="/" class="brand-logo">Biz<span>Hub</span></a>
-        <div class="nav-links">
+        <div class="nav-links{% if not session.get('username') %} logged-out-nav{% endif %}">
             {% if session.get('username') %}
                 <span>Hello, <b>@{{ session['username'] }}</b></span>
                 <a href="/">Market</a>
+                <a href="{{ url_for('notifications') }}">🔔 Notifications{% if unread_notifications_count %} <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#EF4444;color:#fff;font-size:10px;font-weight:900;">{{ unread_notifications_count }}</span>{% endif %}</a>
                 {% if session.get('role') == 'Delivery Service' %}
                     <a href="{{ url_for('delivery_dashboard') }}">Home</a>
                 {% elif session.get('role') == 'Customer' %}
@@ -350,7 +368,7 @@
                 {% endif %}
                 <a href="/settings">Account</a>
             {% else %}
-                <a href="/login">Sign In / Register</a>
+                <a href="/login" class="auth-link">Sign In / Register</a>
             {% endif %}
         </div>
     </div>
@@ -390,7 +408,7 @@
                 <div style="font-weight:900;color:#7c2d12;">{{ kitchen.business_label }}</div>
                 <div style="font-size:11px;color:#9a3412;margin-top:3px;">@{{ kitchen.username }}{% if kitchen.business_location %} · 📍 {{ kitchen.business_location }}{% endif %}</div>
                 <div style="font-size:11px;color:#9a3412;margin-top:4px;">{{ kitchen.menu_count }} menu item{% if kitchen.menu_count != 1 %}s{% endif %}</div>
-                <a href="/vendor/{{ kitchen.username }}" class="btn-action" style="display:block;text-align:center;margin-top:10px;background:#ea580c;color:#fff;text-decoration:none;">🍔 Order Your Food Now — Buy from {{ kitchen.business_label }}</a>
+                <a href="/vendor/{{ kitchen.username }}" class="btn-action" style="display:block;text-align:center;margin-top:10px;background:#ea580c;color:#fff;text-decoration:none;">🍔 Tap to see what we sell — Order your cravings now</a>
             </article>
         {% endfor %}
         </div>
@@ -537,6 +555,9 @@
         <img class="card-img"
              src="{{ url_for('static', filename='uploads/' + product.image_file) }}"
              alt="{{ product.title }}"
+               tabindex="0"
+               role="button"
+               aria-label="Open {{ product.title }} image full screen"
              onerror="this.style.display='none'; this.parentElement.classList.add('media-missing');">
     {% else %}
         <div style="color:#9CA3AF;font-size:12px;padding:20px;text-align:center;">Media unavailable</div>
@@ -648,12 +669,19 @@
         <div class="contact-footer-bottom">© 2026 BizHub Marketplace · Your Local Market, Unified Online · <a href="/rules" style="color:#E2E8F0;text-decoration:none;">Rules &amp; Regulations</a></div>
     </footer>
 
+    <div id="imageLightbox" class="image-lightbox" role="dialog" aria-modal="true" aria-label="Full-screen product image">
+        <button type="button" class="image-lightbox-close" aria-label="Close image">&times;</button>
+        <img id="lightboxImage" alt="">
+        <div id="lightboxCaption" class="image-lightbox-caption"></div>
+    </div>
+
     <!-- JAVASCRIPT MASTER OPERATIONS CONTROL PACK -->
     <script>
         window.addEventListener("DOMContentLoaded", function() {
             startTrialCountdown();
             setupListingMediaControls();
             setupPublishingCollapse();
+            setupImageLightbox();
 
             if ("serviceWorker" in navigator) {
                 navigator.serviceWorker.register("{{ url_for('service_worker') }}", { scope: "/" }).catch(function() {});
@@ -688,6 +716,46 @@
                 });
             }, {threshold:0.35});
             videos.forEach(v => observer.observe(v));
+        }
+
+        function setupImageLightbox() {
+            const lightbox = document.getElementById("imageLightbox");
+            const lightboxImage = document.getElementById("lightboxImage");
+            const caption = document.getElementById("lightboxCaption");
+            const closeButton = lightbox ? lightbox.querySelector(".image-lightbox-close") : null;
+            if (!lightbox || !lightboxImage || !closeButton) return;
+
+            function close() {
+                lightbox.classList.remove("open");
+                lightboxImage.removeAttribute("src");
+                document.body.style.overflow = "";
+            }
+
+            document.querySelectorAll("img.card-img").forEach(function(image) {
+                function open() {
+                    if (!image.src || image.style.display === "none") return;
+                    lightboxImage.src = image.src;
+                    lightboxImage.alt = image.alt;
+                    caption.textContent = image.alt;
+                    lightbox.classList.add("open");
+                    document.body.style.overflow = "hidden";
+                    closeButton.focus();
+                }
+                image.addEventListener("click", open);
+                image.addEventListener("keydown", function(event) {
+                    if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        open();
+                    }
+                });
+            });
+            closeButton.addEventListener("click", close);
+            lightbox.addEventListener("click", function(event) {
+                if (event.target === lightbox) close();
+            });
+            document.addEventListener("keydown", function(event) {
+                if (event.key === "Escape" && lightbox.classList.contains("open")) close();
+            });
         }
 
         function setupPublishingCollapse() {

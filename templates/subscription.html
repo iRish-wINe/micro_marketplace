@@ -122,6 +122,29 @@
         </div>
         {% endif %}
 
+        <section id="account-overview" class="price-card" style="margin-bottom:25px;scroll-margin-top:90px;">
+            <h2 style="margin:0 0 8px;color:var(--primary);font-size:20px;">Account overview</h2>
+            <p style="margin:0 0 18px;color:var(--text-muted);font-size:13px;">Review your account identity, current plan, and payment receipts.</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+                <div><small style="color:var(--text-muted);">Account</small><strong style="display:block;">@{{ user['username'] }}</strong></div>
+                <div><small style="color:var(--text-muted);">Business</small><strong style="display:block;">{{ user['company_name'] or 'Individual account' }}</strong></div>
+                <div><small style="color:var(--text-muted);">Current plan</small><strong style="display:block;">{{ subscription.name }}</strong></div>
+                <div><small style="color:var(--text-muted);">Valid until</small><strong style="display:block;">{{ subscription.expires or 'No active expiry' }}</strong></div>
+            </div>
+            <a href="{{ url_for('settings') }}" style="display:inline-block;margin-top:18px;color:var(--primary-light);font-weight:800;font-size:13px;">Edit account settings</a>
+            {% if receipts %}
+            <div style="margin-top:22px;border-top:1px solid var(--border-color);padding-top:16px;">
+                <strong style="font-size:13px;color:var(--primary);">Subscription receipts</strong>
+                {% for receipt in receipts %}
+                <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:10px;font-size:12px;">
+                    <span>{{ receipt.receipt_number }} · GH₵{{ "%.2f"|format(receipt.amount) }}</span>
+                    <a href="{{ url_for('subscription_receipt', receipt_id=receipt.id) }}" style="color:var(--primary-light);font-weight:800;">View receipt</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+
         <!-- DUAL PRICING GRID LAYOUT -->
         <div class="pricing-grid">
             

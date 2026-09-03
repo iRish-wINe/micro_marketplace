@@ -92,6 +92,7 @@
 
             <nav class="flex items-center gap-4 text-sm font-medium">
                 <a href="/" class="bh-muted hover:text-gray-900">Market</a>
+                <a href="{{ url_for('notifications') }}" class="bh-muted hover:text-gray-900">🔔 Notifications{% if unread_notifications_count %} ({{ unread_notifications_count }}){% endif %}</a>
 
                 {% if user['role'] in ['Vendor', 'Fast Food'] %}
                     <a href="/orders" class="bh-muted hover:text-gray-900">Orders</a>

@@ -134,6 +134,24 @@ def init_db():
         )
     """)
     cursor.execute("""
+        CREATE TABLE IF NOT EXISTS reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            reporter_id INTEGER NOT NULL,
+            target_user_id INTEGER NOT NULL,
+            target_username TEXT NOT NULL,
+            target_role TEXT NOT NULL,
+            category TEXT NOT NULL,
+            description TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'Pending',
+            admin_action TEXT,
+            admin_note TEXT,
+            created_at TEXT NOT NULL,
+            reviewed_at TEXT,
+            FOREIGN KEY(reporter_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY(target_user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
@@ -265,6 +283,21 @@ def init_db():
             is_read INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL,
             FOREIGN KEY(recipient_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS subscription_receipts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            receipt_number TEXT UNIQUE NOT NULL,
+            ledger_id INTEGER UNIQUE NOT NULL,
+            user_id INTEGER NOT NULL,
+            username TEXT NOT NULL,
+            plan_name TEXT NOT NULL,
+            amount REAL NOT NULL,
+            payment_reference TEXT,
+            issued_at TEXT NOT NULL,
+            FOREIGN KEY(ledger_id) REFERENCES financial_ledger(id) ON DELETE CASCADE,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
     cursor.execute("""
@@ -461,6 +494,47 @@ def create_notification(recipient_id, notification_type, title, message, link=No
     recipient = query_db("SELECT * FROM users WHERE id = ?", (recipient_id,), one=True)
     dispatch_external_notifications(recipient, title, message, link)
 
+@app.context_processor
+def notification_context():
+    unread_notifications_count = 0
+    if session.get("username"):
+        user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+        if user:
+            row = query_db("SELECT COUNT(*) AS count FROM notifications WHERE recipient_id = ? AND is_read = 0", (user["id"],), one=True)
+            unread_notifications_count = row["count"] if row else 0
+    return {"unread_notifications_count": unread_notifications_count}
+
+def issue_subscription_receipt(entry_id):
+    entry = query_db("SELECT * FROM financial_ledger WHERE id = ? AND transaction_type = 'Subscription'", (entry_id,), one=True)
+    if not entry:
+        return None
+    user = query_db("SELECT * FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food', 'Delivery Service')", (entry["username"],), one=True)
+    if not user:
+        return None
+    existing = query_db("SELECT * FROM subscription_receipts WHERE ledger_id = ?", (entry_id,), one=True)
+    if existing:
+        return existing
+    issued_at = datetime.now(timezone.utc)
+    expiry = issued_at + timedelta(days=30)
+    plan_name = "Premium Delivery" if user["role"] == "Delivery Service" else "Premium Store"
+    receipt_number = f"BIZ-{issued_at.strftime('%Y%m%d')}-{entry_id:06d}"
+    query_db(
+        "INSERT INTO subscription_receipts (receipt_number, ledger_id, user_id, username, plan_name, amount, payment_reference, issued_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (receipt_number, entry_id, user["id"], user["username"], plan_name, entry["amount"], entry["momo_reference"], issued_at.isoformat())
+    )
+    query_db("UPDATE users SET plan = 'premium', subscription_expires_at = ?, upgrade_requested_at = NULL WHERE id = ?", (expiry.isoformat(), user["id"]))
+    if user["role"] == "Delivery Service":
+        query_db("UPDATE delivery_services SET availability = 'Unavailable', updated_at = ? WHERE user_id = ?", (issued_at.isoformat(), user["id"]))
+    receipt = query_db("SELECT * FROM subscription_receipts WHERE ledger_id = ?", (entry_id,), one=True)
+    create_notification(
+        user["id"],
+        "announcement",
+        "Subscription payment approved",
+        f"Your {plan_name} subscription payment was approved. Receipt {receipt_number} is ready.",
+        url_for("subscription_receipt", receipt_id=receipt["id"])
+    )
+    return receipt
+
 def notify_favorite_customers(vendor_id, notification_type, title, message, link=None):
     rows = query_db("SELECT customer_id FROM favorites WHERE vendor_id = ?", (vendor_id,)) or []
     for row in rows:
@@ -569,6 +643,7 @@ def save_company_logo(upload):
 
 @app.route("/", methods=["GET", "POST"])
 def home():
+    welcome_message = bool(session.pop("welcome_message", False))
     if request.method == "POST":
         if "username" not in session or session.get("role") not in ["Vendor", "Fast Food"]:
             return redirect(url_for("home"))
@@ -677,6 +752,12 @@ def home():
     selected_category = request.args.get("category", "All")
     promo_only = request.args.get("promo") == "1"
     listing_error = request.args.get("listing_error")
+    favorite_vendor_usernames = set()
+    if session.get("role") == "Customer":
+        customer_user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+        if customer_user:
+            favorite_rows = query_db("SELECT u.username FROM favorites f JOIN users u ON u.id = f.vendor_id WHERE f.customer_id = ?", (customer_user["id"],)) or []
+            favorite_vendor_usernames = {row["username"] for row in favorite_rows}
     
     product_conditions = ["p.category != 'Fast Food'", "COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')"]
     product_args = [datetime.now(timezone.utc).isoformat()]
@@ -706,9 +787,11 @@ def home():
     product_query += " ORDER BY p.id DESC"
     
     all_products = query_db(product_query, product_args) or []
+    all_products.sort(key=lambda product: (product["seller"] not in favorite_vendor_usernames, -int(product["id"])))
 
     # Fast Food stays completely separate from the Amazon-style marketplace feed.
     fast_food_products = query_db("SELECT p.*, COALESCE(u.company_name, p.business_label, p.seller) AS business_label FROM products p LEFT JOIN users u ON u.username = p.seller WHERE p.category = 'Fast Food' AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated') ORDER BY p.id DESC") or []
+    fast_food_products.sort(key=lambda product: (product["seller"] not in favorite_vendor_usernames, -int(product["id"])))
     fast_food_vendors = query_db("SELECT id, username, company_name, business_location, company_logo, whatsapp_number FROM users WHERE role = 'Fast Food' AND account_status NOT IN ('Suspended', 'Terminated') ORDER BY id DESC") or []
     for kitchen in fast_food_vendors:
         kitchen["business_label"] = kitchen.get("company_name") or kitchen.get("username")
@@ -800,7 +883,7 @@ def home():
             fast_food_count_row = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ? AND category = 'Fast Food'", (session["username"],), one=True)
             fast_food_count = fast_food_count_row["count"] if fast_food_count_row else 0
 
-    return render_template("index.html", products=marketplace_products, marketplace_products=marketplace_products, fast_food_products=fast_food_products, fast_food_vendors=fast_food_vendors, todays_deals=[p for p in marketplace_products if p.get("active_promo")][:12], active_filter=selected_filter, company_search=company_search, location_search=location_search, selected_category=selected_category, categories=PRODUCT_CATEGORIES, vendor_logos=vendor_logos, cart_items=cart_items, cart_total=cart_total, seller_orders=sorted(seller_orders.values(), key=lambda order: not order["priority"]), vendor_subscription=vendor_subscription, listing_count=listing_count, fast_food_count=fast_food_count, inventory_items=inventory_items, listing_error=listing_error, premium_sellers=premium_sellers, vendor_notification_count=vendor_notification_count, customer_notification_count=customer_notification_count, promo_only=promo_only, cart_added=request.args.get("cart_added") == "1", published=request.args.get("published") == "1", published_fastfood=request.args.get("published") == "fastfood")
+    return render_template("index.html", products=marketplace_products, marketplace_products=marketplace_products, fast_food_products=fast_food_products, fast_food_vendors=fast_food_vendors, todays_deals=[p for p in marketplace_products if p.get("active_promo")][:12], active_filter=selected_filter, company_search=company_search, location_search=location_search, selected_category=selected_category, categories=PRODUCT_CATEGORIES, vendor_logos=vendor_logos, cart_items=cart_items, cart_total=cart_total, seller_orders=sorted(seller_orders.values(), key=lambda order: not order["priority"]), vendor_subscription=vendor_subscription, listing_count=listing_count, fast_food_count=fast_food_count, inventory_items=inventory_items, listing_error=listing_error, premium_sellers=premium_sellers, vendor_notification_count=vendor_notification_count, customer_notification_count=customer_notification_count, promo_only=promo_only, cart_added=request.args.get("cart_added") == "1", published=request.args.get("published") == "1", published_fastfood=request.args.get("published") == "fastfood", welcome_message=welcome_message)
 @app.route("/delete-item/<int:product_id>")
 def delete_item(product_id):
     if "username" not in session:
@@ -977,11 +1060,21 @@ def order_history():
 
 @app.route("/orders/notifications/read-all", methods=["POST"])
 def mark_all_order_notifications_read():
-    return mark_all_notifications_read()
+    if session.get("role") not in ["Vendor", "Fast Food"]:
+        return redirect(url_for("login"))
+    vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if vendor:
+        query_db("UPDATE vendor_notifications SET is_read = 1 WHERE vendor_id = ?", (vendor["id"],))
+    return redirect(request.referrer or url_for("order_history"))
 
 @app.route("/orders/notifications/<int:notification_id>/read", methods=["POST"])
 def mark_order_notification_read(notification_id):
-    return mark_notification_read(notification_id)
+    if session.get("role") not in ["Vendor", "Fast Food"]:
+        return redirect(url_for("login"))
+    vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if vendor:
+        query_db("UPDATE vendor_notifications SET is_read = 1 WHERE id = ? AND vendor_id = ?", (notification_id, vendor["id"]))
+    return redirect(request.referrer or url_for("order_history"))
 
 @app.route("/orders/<int:order_id>/status", methods=["POST"])
 def update_order_status(order_id):
@@ -1104,6 +1197,27 @@ def vendor_profile(username):
         product["meal_whatsapp_text"] = quote(f"Hello {vendor.get('company_name') or vendor.get('username')}, I want to buy {product.get('title')} on BizHub, lets arrange for payment and delivery.")
     return render_template("vendor_profile.html", vendor=vendor, products=products, categories=categories, promo=promo, favorite=favorite, product_count=len(products), subscription=vendor_status, vendor_whatsapp=vendor_whatsapp, vendor_whatsapp_text=vendor_whatsapp_text)
 
+@app.route("/report/<int:user_id>", methods=["GET", "POST"])
+def report_user(user_id):
+    if "username" not in session:
+        return redirect(url_for("login"))
+    reporter = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+    target = query_db("SELECT id, username, company_name, role FROM users WHERE id = ? AND role IN ('Vendor', 'Fast Food', 'Delivery Service')", (user_id,), one=True)
+    if not reporter or not target or reporter["id"] == target["id"]:
+        return redirect(url_for("home"))
+    if request.method == "POST":
+        category = request.form.get("category", "Other").strip()
+        description = request.form.get("description", "").strip()
+        allowed_categories = {"Fraud or payment", "Unsafe or abusive conduct", "Misleading listing", "Spam", "Other"}
+        if category not in allowed_categories:
+            category = "Other"
+        if description:
+            query_db("INSERT INTO reports (reporter_id, target_user_id, target_username, target_role, category, description, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)", (reporter["id"], target["id"], target["username"], target["role"], category, description, datetime.now(timezone.utc).isoformat()))
+            create_notification(reporter["id"], "announcement", "Report received", f"BizHub received your report about @{target['username']}. Our team will review it before taking action.", url_for("notifications"))
+            return redirect(url_for("notifications"))
+        return render_template("report.html", target=target, report_error="Please describe what happened.")
+    return render_template("report.html", target=target)
+
 @app.route("/favorites")
 def favorites():
     if "username" not in session or session.get("role") != "Customer":
@@ -1143,21 +1257,21 @@ def toggle_favorite(username):
 
 @app.route("/notifications/<int:notification_id>/read", methods=["POST"])
 def mark_notification_read(notification_id):
-    if session.get("role") not in ["Vendor", "Fast Food"]:
+    if "username" not in session:
         return redirect(url_for("login"))
-    vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
-    if vendor:
-        query_db("UPDATE vendor_notifications SET is_read = 1 WHERE id = ? AND vendor_id = ?", (notification_id, vendor["id"]))
-    return redirect(request.referrer or url_for("order_history"))
+    user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if user:
+        query_db("UPDATE notifications SET is_read = 1 WHERE id = ? AND recipient_id = ?", (notification_id, user["id"]))
+    return redirect(request.referrer or url_for("notifications"))
 
 @app.route("/notifications/read-all", methods=["POST"])
 def mark_all_notifications_read():
-    if session.get("role") not in ["Vendor", "Fast Food"]:
+    if "username" not in session:
         return redirect(url_for("login"))
-    vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
-    if vendor:
-        query_db("UPDATE vendor_notifications SET is_read = 1 WHERE vendor_id = ?", (vendor["id"],))
-    return redirect(request.referrer or url_for("order_history"))
+    user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if user:
+        query_db("UPDATE notifications SET is_read = 1 WHERE recipient_id = ?", (user["id"],))
+    return redirect(request.referrer or url_for("notifications"))
 
 @app.route("/notifications")
 def notifications():
@@ -1335,7 +1449,7 @@ def delivery_register():
             user = query_db("SELECT id FROM users WHERE username = ?", (username,), one=True)
             if not user:
                 raise sqlite3.IntegrityError
-            query_db("INSERT INTO delivery_services (user_id, service_name, logo_file, operating_location, phone_number, service_area, delivery_type, availability, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'Unavailable', ?, ?)", (user["id"], service_name, logo, operating_location, phone_number, service_area, delivery_type, datetime.now(timezone.utc).isoformat(), datetime.now(timezone.utc).isoformat()))
+            query_db("INSERT INTO delivery_services (user_id, service_name, logo_file, operating_location, phone_number, service_area, delivery_type, availability, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'Available', ?, ?)", (user["id"], service_name, logo, operating_location, phone_number, service_area, delivery_type, datetime.now(timezone.utc).isoformat(), datetime.now(timezone.utc).isoformat()))
         except sqlite3.IntegrityError:
             return render_template("delivery_register.html", error="That username is already in use.", delivery_types=DELIVERY_TYPES)
         session.clear()
@@ -1377,7 +1491,7 @@ def delivery_services():
     company = request.args.get("company", "").strip()
     search_pattern = f"%{company}%"
     location_pattern = f"%{location}%"
-    rows = query_db("SELECT ds.*, u.username FROM delivery_services ds JOIN users u ON u.id = ds.user_id WHERE (? = '' OR ds.operating_location LIKE ? OR ds.service_area LIKE ?) AND (? = '' OR ds.service_name LIKE ? OR u.username LIKE ?) ORDER BY CASE WHEN ds.availability = 'Available' THEN 0 ELSE 1 END, ds.operating_location, ds.service_name", (location, location_pattern, location_pattern, company, search_pattern, search_pattern)) or []
+    rows = query_db("SELECT ds.*, u.id AS user_id, u.username FROM delivery_services ds JOIN users u ON u.id = ds.user_id WHERE (? = '' OR ds.operating_location LIKE ? OR ds.service_area LIKE ?) AND (? = '' OR ds.service_name LIKE ? OR u.username LIKE ?) ORDER BY CASE WHEN ds.availability = 'Available' THEN 0 ELSE 1 END, ds.operating_location, ds.service_name", (location, location_pattern, location_pattern, company, search_pattern, search_pattern)) or []
     return render_template("delivery_service.html", services=rows, location=location, company=company)
 
 @app.route("/delivery/contact/<int:service_id>", methods=["POST"])
@@ -1408,7 +1522,8 @@ def subscription():
     upgrade_name = (user["company_name"] or user["username"]).strip()
     upgrade_price = "GH₵ 20 monthly" if user["role"] == "Delivery Service" else "the Premium Store plan"
     upgrade_message = f"hi biz hub, {user['username']} and {upgrade_name} wants to upgrade to {upgrade_price}. send account details."
-    return render_template("subscription.html", user=user, subscription=subscription_status(user), payment_number=payment_number, payment_text=payment_text, upgrade_message=upgrade_message, requested=request.args.get("requested") == "1")
+    receipts = query_db("SELECT * FROM subscription_receipts WHERE user_id = ? ORDER BY id DESC", (user["id"],)) or []
+    return render_template("subscription.html", user=user, subscription=subscription_status(user), receipts=receipts, payment_number=payment_number, payment_text=payment_text, upgrade_message=upgrade_message, requested=request.args.get("requested") == "1")
 
 @app.route("/delivery/subscription")
 def delivery_subscription():
@@ -1422,7 +1537,8 @@ def delivery_subscription():
     payment_text = quote(f"Hello Biz Hub, I want to upgrade my delivery service account {user['username']} to Premium Delivery for GH₵20 monthly.")
     upgrade_name = (user["company_name"] or user["username"]).strip()
     upgrade_message = f"Hello Biz Hub, {user['username']} from {upgrade_name} wants to subscribe to Premium Delivery for GH₵20 monthly."
-    return render_template("delivery_subscription.html", user=user, subscription=subscription_status(user), payment_number=payment_number, payment_text=payment_text, upgrade_message=upgrade_message, requested=request.args.get("requested") == "1")
+    receipts = query_db("SELECT * FROM subscription_receipts WHERE user_id = ? ORDER BY id DESC", (user["id"],)) or []
+    return render_template("delivery_subscription.html", user=user, subscription=subscription_status(user), receipts=receipts, payment_number=payment_number, payment_text=payment_text, upgrade_message=upgrade_message, requested=request.args.get("requested") == "1")
 
 @app.route("/request-premium", methods=["POST"])
 def request_premium():
@@ -1474,6 +1590,8 @@ def admin_dashboard():
     users = query_db("SELECT * FROM users ORDER BY COALESCE(registered_at, '') DESC, username")
     listing_counts = {row["seller"]: row["count"] for row in query_db("SELECT seller, COUNT(*) AS count FROM products GROUP BY seller")}
     ledger_entries = query_db("SELECT * FROM financial_ledger ORDER BY id DESC") or []
+    subscription_receipts = query_db("SELECT * FROM subscription_receipts ORDER BY id DESC") or []
+    reports = query_db("SELECT r.*, u.username AS reporter_username FROM reports r JOIN users u ON u.id = r.reporter_id ORDER BY CASE WHEN r.status = 'Pending' THEN 0 ELSE 1 END, r.id DESC") or []
     
     total_rev_row = query_db("SELECT SUM(amount) AS total FROM financial_ledger WHERE status = 'Verified'", one=True)
     total_revenue = total_rev_row["total"] if total_rev_row and total_rev_row["total"] is not None else 0.0
@@ -1484,25 +1602,82 @@ def admin_dashboard():
     verified_count_row = query_db("SELECT COUNT(*) AS count FROM financial_ledger WHERE status = 'Verified'", one=True)
     verified_count = verified_count_row["count"] if verified_count_row and verified_count_row["count"] is not None else 0
     
-    return render_template("admin.html", users=users, subscription_status=subscription_status, listing_counts=listing_counts, ledger_entries=ledger_entries, total_revenue=total_revenue, pending_momo=pending_momo, verified_count=verified_count)
+    return render_template("admin.html", users=users, subscription_status=subscription_status, listing_counts=listing_counts, ledger_entries=ledger_entries, subscription_receipts=subscription_receipts, reports=reports, total_revenue=total_revenue, pending_momo=pending_momo, verified_count=verified_count)
+
+@app.route("/admin/reports/<int:report_id>/review", methods=["POST"])
+def review_report(report_id):
+    if not is_admin():
+        return redirect(url_for("admin_login"))
+    report = query_db("SELECT * FROM reports WHERE id = ?", (report_id,), one=True)
+    if not report or report["status"] != "Pending":
+        return redirect(url_for("admin_dashboard"))
+    action = request.form.get("action", "Dismissed")
+    allowed_actions = {"Dismissed", "Warned", "Suspended", "Terminated", "More information"}
+    if action not in allowed_actions:
+        return redirect(url_for("admin_dashboard"))
+    note = request.form.get("admin_note", "").strip() or "Reviewed by BizHub administration."
+    reviewed_at = datetime.now(timezone.utc).isoformat()
+    query_db("UPDATE reports SET status = 'Reviewed', admin_action = ?, admin_note = ?, reviewed_at = ? WHERE id = ?", (action, note, reviewed_at, report_id))
+    if action in {"Warned", "Suspended", "Terminated"}:
+        query_db("UPDATE users SET account_status = ?, enforcement_reason = ?, suspended_until = NULL WHERE id = ?", (action if action != "Warned" else "Warned", note, report["target_user_id"]))
+        query_db("INSERT INTO enforcement_actions (user_id, action, reason, created_at) VALUES (?, ?, ?, ?)", (report["target_user_id"], action, note, reviewed_at))
+        if action in {"Suspended", "Terminated"}:
+            query_db("UPDATE delivery_services SET availability = 'Unavailable', updated_at = ? WHERE user_id = ?", (reviewed_at, report["target_user_id"]))
+    create_notification(report["reporter_id"], "announcement", "Report reviewed", f"Your report about @{report['target_username']} was reviewed by BizHub. Outcome: {action}.", url_for("notifications"))
+    return redirect(url_for("admin_dashboard"))
 
 @app.route("/admin/verify-transaction/<int:entry_id>", methods=["POST"])
 def verify_transaction(entry_id):
     if not is_admin(): 
         return redirect(url_for("admin_login"))
     query_db("UPDATE financial_ledger SET status = 'Verified' WHERE id = ?", (entry_id,))
+    issue_subscription_receipt(entry_id)
     return redirect(url_for("admin_dashboard"))
 
 @app.route("/admin/log-payment", methods=["POST"])
 def log_payment():
     if not is_admin():
         return redirect(url_for("admin_login"))
-    username = request.form.get("username")
-    amount = float(request.form.get("amount", 0.0))
+    username = request.form.get("username", "").strip()
+    try:
+        amount = float(request.form.get("amount", 0.0))
+    except ValueError:
+        return redirect(url_for("admin_dashboard"))
     tx_type = request.form.get("transaction_type", "Subscription")
     ref = request.form.get("momo_reference", "").strip() or f"WA-{uuid.uuid4().hex[:8].upper()}"
+    if tx_type == "Subscription" and (amount <= 0 or not query_db("SELECT id FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food', 'Delivery Service')", (username,), one=True)):
+        return redirect(url_for("admin_dashboard"))
     query_db("INSERT INTO financial_ledger (transaction_type, username, amount, momo_reference, status, created_at) VALUES (?, ?, ?, ?, 'Pending', ?)", (tx_type, username, amount, ref, datetime.now(timezone.utc).isoformat()))
+    if tx_type == "Subscription" and amount > 0:
+        entry = query_db("SELECT id FROM financial_ledger WHERE momo_reference = ?", (ref,), one=True)
+        if entry:
+            query_db("UPDATE financial_ledger SET status = 'Verified' WHERE id = ?", (entry["id"],))
+            issue_subscription_receipt(entry["id"])
     return redirect(url_for("admin_dashboard"))
+
+@app.route("/admin/notify-all", methods=["POST"])
+def notify_all_users():
+    if not is_admin():
+        return redirect(url_for("admin_login"))
+    title = request.form.get("title", "").strip()
+    message = request.form.get("message", "").strip()
+    if title and message:
+        users = query_db("SELECT id FROM users") or []
+        for user in users:
+            create_notification(user["id"], "announcement", title, message, url_for("notifications"))
+    return redirect(url_for("admin_dashboard"))
+
+@app.route("/subscription/receipt/<int:receipt_id>")
+def subscription_receipt(receipt_id):
+    if "username" not in session and not is_admin():
+        return redirect(url_for("login"))
+    receipt = query_db("SELECT * FROM subscription_receipts WHERE id = ?", (receipt_id,), one=True)
+    if not receipt:
+        return redirect(url_for("subscription"))
+    current_user = query_db("SELECT id FROM users WHERE username = ?", (session.get("username"),), one=True) if session.get("username") else None
+    if not is_admin() and (not current_user or receipt["user_id"] != current_user["id"]):
+        return redirect(url_for("subscription"))
+    return render_template("subscription_receipt.html", receipt=receipt)
 
 @app.route("/admin/approve-premium/<int:user_id>", methods=["POST"])
 def approve_premium(user_id):
@@ -1810,6 +1985,7 @@ def register():
             session["business_location"] = business_location
             session["whatsapp_number"] = whatsapp_number
             session["theme"] = "day"
+            session["welcome_message"] = True
             return redirect(url_for("home"))
             
         except sqlite3.IntegrityError:
