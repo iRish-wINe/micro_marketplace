@@ -1,6 +1,151 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BizHub Features</title><style>body{font-family:system-ui,sans-serif;background:#f4f7fb;color:#172033;margin:0;padding:20px}.wrap{max-width:980px;margin:auto}.brand{font-size:25px;font-weight:900;color:#12335b}.brand span{color:#f59e0b}.nav{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:20px}.nav a,a{color:#1d4ed8;font-weight:800;text-decoration:none}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}.card{background:#fff;border:1px solid #dbe3ed;border-radius:10px;padding:18px;box-shadow:0 3px 15px #0000000b}.card h2{margin:0 0 8px;color:#12335b;font-size:18px}.muted{color:#64748b;font-size:13px;line-height:1.5}.row{padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:13px}.form{display:grid;gap:8px;margin-top:12px}input,textarea,select,button{font:inherit;padding:9px;border:1px solid #cbd5e1;border-radius:7px}textarea{min-height:70px}button{background:#f59e0b;border-color:#f59e0b;color:#111827;font-weight:800;cursor:pointer}.stars{color:#f59e0b;font-size:16px}.verify-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.info-btn{width:24px;height:24px;border-radius:50%;padding:0;background:#12335b;color:#fff;border:0;font-size:13px;line-height:24px}.verify-success{margin:0 0 16px;padding:12px 14px;border-radius:9px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-weight:800}.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(7,17,31,.62);z-index:1000}.modal.open{display:flex}.modal-card{width:min(460px,100%);background:#fff;border-radius:14px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.25)}.modal-card h3{margin:0 0 8px;color:#12335b}.modal-close{float:right;background:#fff;color:#64748b;border:1px solid #cbd5e1;padding:5px 9px}.push-note{font-size:12px;color:#64748b;margin-top:10px}</style></head><body
-    data-vapid-url="{{ url_for('vapid_public_key') }}"
-    data-service-worker-url="{{ url_for('service_worker') }}"
-    data-subscribe-push-url="{{ url_for('subscribe_push') }}"
-><main class="wrap"><nav class="nav"><div><div class="brand">Biz<span>Hub</span></div><div class="muted">Trust, protection, growth, and better local commerce.</div></div><a href="{{ url_for('home') }}">Back to Marketplace</a></nav>
-{% if analytics %}<section class="card" style="max-width:980px;margin:16px auto;"><h2>Vendor analytics</h2><div class="row"><strong>{{ analytics.listings }}</strong> listings · <strong>{{ analytics.views }}</strong> views · <strong>{{ analytics.sold_units }}</strong> units sold</div><h2 style="margin-top:16px;">Create a coupon</h2><form method="post" action="{{ url_for('create_coupon') }}" class="form"><input name="code" placeholder="Coupon code" required><input name="description" placeholder="Offer description" required><input name="discount" type="number" min="1" max="100" step="0.01" placeholder="Discount %" required><button>Create coupon</button></form>{% for coupon in coupons %}<div class="row"><strong>{{ coupon.code }}</strong> · {{ coupon.discount }}% · {{ coupon.description }}</div>{% endfor %}</section>{% endif %}<div class="grid"><section class="card"><div class="verify-head"><h2>Trust &amp; verification</h2><button type="button" class="info-btn" aria-label="What does a verification review mean?" onclick="document.getElementById('verificationInfo').classList.add('open')">i</button></div><p class="muted">Request a BizHub verification review for your business or delivery service.</p>{% if verification_sent %}<div class="verify-success">✓ Request verification sent</div>{% endif %}<form method="post" action="{{ url_for('request_verification') }}" class="form"><button>Request verification review</button></form><div class="push-note">Verification is reviewed by BizHub administration. You will be notified when a decision is made.</div></section><section class="card"><h2>Loyalty rewards</h2><p class="muted">Your BizHub loyalty balance.</p><div style="font-size:36px;font-weight:900;color:#f59e0b">{{ loyalty.points }} <small style="font-size:14px;color:#64748b">points</small></div></section>{% if user.role == 'Customer' %}<section class="card"><h2>Saved searches</h2><p class="muted">Save a search and revisit it when you are ready to shop.</p><form method="post" action="{{ url_for('save_search') }}" class="form"><input name="query" placeholder="e.g. phones in Accra" required><button>Save search</button></form>{% for search in saved_searches %}<div class="row">🔎 {{ search.query }}</div>{% endfor %}</section><section class="card"><h2>Order or payment dispute</h2><p class="muted">Send a dispute to BizHub for review.</p><form method="post" action="{{ url_for('submit_dispute') }}" class="form"><input name="subject" value="Order or payment dispute"><textarea name="details" placeholder="Explain what happened" required></textarea><button>Submit dispute</button></form></section>{% endif %}{% if user.role in ['Vendor','Fast Food'] %}<section class="card"><h2>Delivery tracking</h2><p class="muted">Track requests made to delivery providers.</p>{% for request in delivery_requests %}<div class="row"><strong>{{ request.service_name }}</strong><br>{{ request.status }} · {{ request.message }}</div>{% else %}<p class="muted">No delivery requests yet.</p>{% endfor %}</section>{% endif %}<section class="card"><h2>Your reviews</h2>{% for review in reviews %}<div class="row"><strong>{{ review.company_name or review.vendor_username }}</strong><div class="stars">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</div>{{ review.comment }}</div>{% else %}<p class="muted">Reviews you write will appear here.</p>{% endfor %}</section></div></main><div id="verificationInfo" class="modal" role="dialog" aria-modal="true" aria-labelledby="verificationInfoTitle" onclick="if(event.target===this)this.classList.remove('open')"><div class="modal-card"><button type="button" class="modal-close" onclick="document.getElementById('verificationInfo').classList.remove('open')">Close</button><h3 id="verificationInfoTitle">Verification review</h3><p class="muted">A verification review asks BizHub administration to assess your business or delivery-service profile for trust and marketplace eligibility. It is not an automatic approval. BizHub reviews the request and sends you the final decision and any administrator note.</p></div></div><script>function registerBizHubPush(){if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window))return Promise.resolve(false);return fetch(document.body.dataset.vapidUrl).then(function(r){return r.ok?r.json():null}).then(async function(k){if(!k||!k.public_key)return false;const reg=await navigator.serviceWorker.register(document.body.dataset.serviceWorkerUrl,{scope:'/'});let sub=await reg.pushManager.getSubscription();if(!sub){if(Notification.permission==='denied')return false;if(Notification.permission!=='granted'){try{const permission=await Notification.requestPermission();if(permission!=='granted')return false}catch(e){return false}}sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey: Uint8Array.from(atob(k.public_key.replace(/-/g,'+').replace(/_/g,'/')),function(c){return c.charCodeAt(0)})});}await fetch(document.body.dataset.subscribePushUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(sub)});return true}).catch(function(){return false});}document.addEventListener('DOMContentLoaded',function(){registerBizHubPush();document.addEventListener('click',function(){if('Notification' in window&&Notification.permission==='default')registerBizHubPush()},{once:true});});</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BizHub Features</title>
+<style>
+:root{--navy:#12335b;--blue:#1d4ed8;--orange:#f59e0b;--bg:#f4f7fb;--muted:#64748b;--border:#dbe3ed;--green:#15803d}
+*{box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:#172033;margin:0}
+a{color:var(--blue);font-weight:800;text-decoration:none}
+.header{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;box-shadow:0 2px 12px #0000000b}
+.header-inner{max-width:1180px;margin:auto;padding:12px 20px}
+.topbar{display:flex;align-items:center;gap:18px;justify-content:space-between;flex-wrap:wrap}
+.brand{font-size:26px;font-weight:900;color:var(--navy);white-space:nowrap}.brand span{color:var(--orange)}
+.search{display:flex;gap:7px;flex:1;max-width:520px}.search input{flex:1}
+.navlinks{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}.navlinks a{padding:7px 9px;border-radius:7px}.navlinks a:hover{background:#f8fafc}
+.account{font-size:13px;color:var(--muted);white-space:nowrap}.account b{color:#172033}
+.wrap{max-width:1180px;margin:auto;padding:22px 20px 40px}
+.page-title{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px}.page-title h1{margin:0;color:var(--navy);font-size:26px}.muted{color:var(--muted);font-size:13px;line-height:1.55}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:0 3px 15px #0000000b}.card h2{margin:0 0 8px;color:var(--navy);font-size:18px}.card h3{margin:14px 0 6px;color:var(--navy);font-size:14px}
+.row{padding:11px 0;border-bottom:1px solid #e5e7eb;font-size:13px}.row:last-child{border-bottom:0}.form{display:grid;gap:9px;margin-top:12px}
+input,textarea,select,button{font:inherit;padding:9px;border:1px solid #cbd5e1;border-radius:7px}textarea{min-height:90px;resize:vertical}button{background:var(--orange);border-color:var(--orange);color:#111827;font-weight:800;cursor:pointer}.secondary{background:#fff;border-color:#cbd5e1;color:#334155}.danger{color:#b91c1c}
+.info{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border:1px solid #94a3b8;border-radius:50%;font-size:12px;color:#475569;cursor:help;margin-left:5px;vertical-align:middle}
+.notice{padding:10px 12px;border-radius:8px;background:#ecfdf5;color:var(--green);border:1px solid #bbf7d0;font-size:13px;margin-bottom:12px}.warning{background:#fffbeb;color:#92400e;border-color:#fde68a}
+.points{font-size:38px;font-weight:900;color:var(--orange)}.stars{color:var(--orange);font-size:16px}.status{font-weight:800}.delivered{color:var(--green)}
+.small{font-size:12px}.pill{display:inline-block;padding:3px 7px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:11px;font-weight:800}
+@media(max-width:700px){.search{order:3;max-width:none;width:100%}.header-inner,.wrap{padding-left:12px;padding-right:12px}.navlinks{overflow:auto;flex-wrap:nowrap}.page-title h1{font-size:22px}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <div class="topbar">
+      <a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a>
+      <form class="search" method="get" action="{{ url_for('home') }}">
+        <input name="search" placeholder="Search products, stores, categories...">
+        <button type="submit">Search</button>
+      </form>
+      <div class="account">
+        {% if user %}<b>@{{ user.username }}</b> · {{ user.role }}{% endif %}
+      </div>
+    </div>
+    <nav class="navlinks" aria-label="Main navigation">
+      <a href="{{ url_for('home') }}">Home</a>
+      <a href="{{ url_for('order_history') }}">Orders</a>
+      {% if user.role == 'Customer' %}<a href="{{ url_for('favorites') }}">Favorites</a>{% endif %}
+      {% if user.role in ['Vendor','Fast Food'] %}<a href="{{ url_for('promotions') }}">Promotions</a><a href="{{ url_for('vendor_profile', username=user.username) }}">My store</a>{% endif %}
+      {% if user.role == 'Delivery Service' %}<a href="{{ url_for('delivery_dashboard') }}">Delivery dashboard</a>{% endif %}
+      <a href="{{ url_for('notifications') }}">Notifications{% if unread_notifications_count %} ({{ unread_notifications_count }}){% endif %}</a>
+      <a href="{{ url_for('settings') }}">Account settings</a>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="page-title">
+    <div><h1>Features &amp; account tools</h1><p class="muted">Trust, rewards, promotions, delivery tracking, and account support in one place.</p></div>
+    <a href="{{ url_for('home') }}">← Marketplace</a>
+  </div>
+
+  {% if verification_sent %}<div class="notice">✓ Your verification request has been submitted. BizHub will notify you after review.</div>{% endif %}
+
+  <div class="grid">
+    <section class="card">
+      <h2>Trust &amp; verification <span class="info" title="Verification is a BizHub trust review for eligible Vendor, Fast Food, and Delivery Service accounts. BizHub reviews the request and notifies you of the outcome. Verification does not guarantee sales, payment, or delivery performance.">i</span></h2>
+      <p class="muted">Request a BizHub verification review for your business or delivery service.</p>
+      {% if verification_request %}
+        <div class="row"><span class="pill">{{ verification_request.status }}</span>{% if verification_request.created_at %} · submitted {{ verification_request.created_at[:16].replace('T',' ') }}{% endif %}</div>
+        {% if verification_request.user_message %}<div class="row"><b>Your message</b><br>{{ verification_request.user_message }}</div>{% endif %}
+        {% if verification_request.note and verification_request.status != 'Pending' %}<div class="row"><b>Review note</b><br>{{ verification_request.note }}</div>{% endif %}
+      {% endif %}
+      {% if not verification_request or verification_request.status != 'Pending' %}
+      <form method="post" action="{{ url_for('request_verification') }}" class="form">
+        <textarea name="user_message" maxlength="2000" placeholder="Optional: tell BizHub about your business, what you would like us to know, or anything relevant to your verification review."></textarea>
+        <button type="submit">Request verification review</button>
+      </form>
+      {% else %}<p class="muted">You already have a pending verification request. Please wait for the review outcome.</p>{% endif %}
+    </section>
+
+    <section class="card">
+      <h2>Loyalty rewards</h2>
+      <p class="muted">Your BizHub loyalty balance.</p>
+      <div class="points">{{ loyalty.points }} <small style="font-size:14px;color:#64748b">points</small></div>
+      <p class="muted">Current rule: eligible completed orders earn 1 point per whole currency unit of the final order total. Duplicate rewards for the same order are blocked.</p>
+    </section>
+
+    {% if analytics %}
+    <section class="card">
+      <h2>Vendor analytics</h2>
+      <div class="row"><strong>{{ analytics.listings }}</strong> listings · <strong>{{ analytics.views }}</strong> views · <strong>{{ analytics.sold_units }}</strong> units sold</div>
+      <h2 style="margin-top:16px">Create a coupon</h2>
+      <p class="muted">Codes are uppercase. A customer can redeem each coupon once. Set a total redemption limit, or leave it at 0 for unlimited redemptions.</p>
+      <form method="post" action="{{ url_for('create_coupon') }}" class="form">
+        <input name="code" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9_-]{2,31}" placeholder="Coupon code e.g. SAVE10" required>
+        <input name="description" maxlength="200" placeholder="Offer description" required>
+        <input name="discount" type="number" min="0.01" max="100" step="0.01" placeholder="Discount %" required>
+        <input name="expires_at" type="date" aria-label="Expiry date (optional)">
+        <input name="max_redemptions" type="number" min="0" step="1" value="0" placeholder="Maximum total redemptions (0 = unlimited)">
+        <button type="submit">Create coupon</button>
+      </form>
+      {% for coupon in coupons %}
+      <div class="row"><strong>{{ coupon.code }}</strong> · {{ coupon.discount }}% · {{ coupon.description }}{% if coupon.expires_at %} · expires {{ coupon.expires_at }}{% endif %}{% if coupon.max_redemptions|default(0)|int > 0 %} · limit {{ coupon.max_redemptions }}{% endif %}</div>
+      {% else %}<p class="muted">No coupons created yet.</p>{% endfor %}
+    </section>
+    {% endif %}
+
+    {% if user.role == 'Customer' %}
+    <section class="card">
+      <h2>Saved searches</h2><p class="muted">Save a search and revisit it when you are ready to shop.</p>
+      <form method="post" action="{{ url_for('save_search') }}" class="form"><input name="query" placeholder="e.g. phones in Accra" required><button>Save search</button></form>
+      {% for search in saved_searches %}<div class="row">🔎 {{ search.query }}</div>{% else %}<p class="muted">No saved searches yet.</p>{% endfor %}
+    </section>
+    <section class="card">
+      <h2>Order or payment dispute</h2><p class="muted">Send a dispute to BizHub for review.</p>
+      <form method="post" action="{{ url_for('submit_dispute') }}" class="form"><input name="subject" value="Order or payment dispute"><textarea name="details" placeholder="Explain what happened" required></textarea><button>Submit dispute</button></form>
+    </section>
+    {% endif %}
+
+    {% if user.role in ['Vendor','Fast Food'] %}
+    <section class="card">
+      <h2>Delivery tracking</h2>
+      <p class="muted">Track delivery requests made to delivery providers. A provider can move a request through Requested → Accepted → Picked Up → Delivered, or Declined.</p>
+      {% for dr in delivery_requests %}
+      <div class="row">
+        <strong>{{ dr.service_name }}</strong><br>
+        <span class="status {% if dr.status == 'Delivered' %}delivered{% endif %}">{{ dr.status }}</span> · {{ dr.message }}
+        {% if dr.updated_at %}<div class="muted small">Updated {{ dr.updated_at[:16].replace('T',' ') }}</div>{% endif %}
+        {% if dr.status == 'Delivered' and dr.id not in rated_request_ids %}
+        <form method="POST" action="{{ url_for('rate_delivery', request_id=dr.id) }}" class="form" style="margin-top:10px">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <select name="rating" required aria-label="Delivery rating"><option value="5">★★★★★ Excellent</option><option value="4">★★★★☆ Good</option><option value="3">★★★☆☆ Average</option><option value="2">★★☆☆☆ Poor</option><option value="1">★☆☆☆☆ Terrible</option></select>
+          <input type="text" name="comment" maxlength="1000" placeholder="Leave a comment (optional)">
+          <button type="submit">Submit rating</button>
+        </form>
+        {% elif dr.id in rated_request_ids %}<p class="muted">✓ You rated this delivery.</p>{% endif %}
+      </div>
+      {% else %}<p class="muted">No delivery requests yet.</p>{% endfor %}
+    </section>
+    {% endif %}
+
+    <section class="card">
+      <h2>Your reviews</h2>
+      {% for review in reviews %}<div class="row"><strong>{{ review.company_name or review.vendor_username }}</strong><div class="stars">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</div>{{ review.comment }}</div>{% else %}<p class="muted">Reviews you write will appear here.</p>{% endfor %}
+    </section>
+  </div>
+</main>
+</body>
+</html>

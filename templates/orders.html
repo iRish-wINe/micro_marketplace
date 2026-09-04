@@ -1,11 +1,200 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Orders | Biz Hub</title><script src="https://cdn.tailwindcss.com"></script></head>
-<body class="min-h-screen bg-slate-100 text-slate-900 font-sans"><header class="bg-slate-950 text-white sticky top-0 z-30"><div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between"><a href="/" class="font-black text-xl text-white no-underline">Biz<span class="text-amber-400">Hub</span></a><nav class="flex gap-4 text-sm font-bold"><a href="/" class="text-slate-300 no-underline">Market</a>{% if session.get('role')=='Customer' %}<a href="/favorites" class="text-slate-300 no-underline">⭐ Favorites</a>{% endif %}<a href="/settings" class="text-slate-300 no-underline">Account</a></nav></div></header>
-<main class="max-w-6xl mx-auto px-4 py-8">
-{% if session.get('role') in ['Vendor','Fast Food'] %}
-<section class="mb-8"><div class="flex items-center justify-between mb-4"><div><h1 class="text-3xl font-black">🔔 Vendor Orders</h1><p class="text-slate-500 mt-1">New purchases and order activity for your store.</p></div>{% if vendor_notification_count %}<form method="POST" action="/notifications/read-all"><button class="text-xs font-black px-3 py-2 rounded-lg bg-white border border-slate-200">Mark all vendor_notifications read</button></form>{% endif %}</div>
-{% if vendor_vendor_notifications %}<div class="space-y-3 mb-6">{% for n in vendor_vendor_notifications %}<div class="bg-white rounded-2xl border {{ 'border-amber-300' if not n['is_read'] else 'border-slate-200' }} shadow-sm p-5"><div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4"><div><div class="flex items-center gap-2"><span class="text-lg">{% if n['is_read'] %}🔕{% else %}🔔{% endif %}</span><h2 class="font-black">New Purchase</h2>{% if not n['is_read'] %}<span class="text-[10px] px-2 py-1 rounded-full bg-red-100 text-red-700 font-black">NEW</span>{% endif %}</div><p class="text-sm mt-2">{{ n['message'] }}</p><p class="text-xs text-slate-400 mt-2">Order #{{ n['order_id'] }} · {{ n['created_at'][:19].replace('T',' ') }}</p></div><div class="flex gap-2"><a href="/orders#order-{{ n['order_id'] }}" class="px-3 py-2 rounded-lg bg-slate-900 text-white text-xs font-black no-underline">View Order</a>{% if not n['is_read'] %}<form method="POST" action="/vendor_notifications/{{ n['id'] }}/read"><button class="px-3 py-2 rounded-lg bg-slate-100 text-xs font-black">Read</button></form>{% endif %}</div></div></div>{% endfor %}</div>{% else %}<div class="bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500 mb-6">No vendor vendor_notifications yet. New purchases will appear here.</div>{% endif %}
-{% for order in vendor_orders %}<article id="order-{{ order['id'] }}" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-4"><div class="flex items-center justify-between gap-3"><div><h2 class="font-black">Order #{{ order['id'] }}</h2><p class="text-xs text-slate-500">Customer: @{{ order['customer_username'] }}</p></div><span class="text-xs font-black px-3 py-1.5 rounded-full bg-slate-100">{{ order['status'] }}</span></div><div class="mt-4 space-y-2">{% for item in order_items[order['id']] if item['seller'] == session['username'] %}<div class="flex justify-between gap-4 border-b border-slate-100 pb-2"><div><b class="text-sm">{{ item['title'] }}</b><div class="text-xs text-slate-500">📍 {{ item['location'] or 'Not specified' }} · Qty {{ item['quantity'] }}</div></div><b>GH₵{{ "%.2f"|format(item['price'] * item['quantity']) }}</b></div>{% endfor %}</div><div class="mt-4 flex flex-wrap gap-2 text-sm">Payment: <b>{{ order['payment_status'] }}</b></div>{% if order['payment_status']=='Marked paid' and order['status']=='Pending' %}<div class="flex gap-2 mt-4"><form method="POST" action="/orders/{{ order['id'] }}/confirm"><button class="px-4 py-2 rounded-xl bg-emerald-600 text-white font-black text-sm">Confirm Order</button></form><form method="POST" action="/orders/{{ order['id'] }}/cancel"><button class="px-4 py-2 rounded-xl bg-red-50 text-red-700 font-black text-sm">Cancel</button></form></div>{% endif %}</article>{% else %}<div class="bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500">No orders for your store yet.</div>{% endfor %}</section>
-{% endif %}
-<section><h1 class="text-3xl font-black">🧾 My Orders</h1><p class="text-slate-500 mt-1 mb-5">Orders you placed as a customer.</p>{% for order in customer_orders %}<article id="order-{{ order['id'] }}" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-4"><div class="flex items-center justify-between"><div><h2 class="font-black">Order #{{ order['id'] }}</h2><p class="text-xs text-slate-500">{{ order['created_at'][:19].replace('T',' ') }}</p></div><span class="text-xs font-black px-3 py-1.5 rounded-full bg-slate-100">{{ order['status'] }}</span></div><p class="text-sm text-slate-600 mt-3">Vendors: {{ order_sellers[order['id']]|join(', ') }}</p><div class="mt-4 space-y-2">{% for item in order_items[order['id']] %}<div class="flex justify-between border-b border-slate-100 pb-2"><span class="text-sm">{{ item['title'] }} × {{ item['quantity'] }}</span><b>GH₵{{ "%.2f"|format(item['price'] * item['quantity']) }}</b></div>{% endfor %}</div><div class="mt-4 flex justify-between font-black"><span>Total</span><span>GH₵{{ "%.2f"|format(order['total']) }}</span></div>{% if order['payment_status']=='Unpaid' and order['status']=='Pending' %}<form method="POST" action="/orders/{{ order['id'] }}/payment-sent" class="mt-4"><button class="w-full rounded-xl bg-emerald-600 text-white py-3 font-black">I Have Sent Payment</button></form>{% endif %}</article>{% else %}<div class="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">You have not placed any orders yet.</div>{% endfor %}</section>
-</main></body></html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders | Biz Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900 font-sans antialiased">
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+
+    {% if session.get('role') in ['Vendor','Fast Food'] %}
+    <section class="mb-10">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-black mb-3">
+                    🔔 Store activity
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-black tracking-tight">Vendor Orders</h1>
+                <p class="text-slate-500 mt-2">New purchases and order activity for your store.</p>
+            </div>
+            {% if unread_notifications_count %}
+            <form method="POST" action="{{ url_for('mark_all_order_notifications_read') }}">
+                <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 shadow-sm text-xs font-black">
+                    Mark all notifications read
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+        {% if notifications %}
+        <div class="space-y-3 mb-7">
+            {% for n in notifications %}
+            <div class="bg-white rounded-2xl border {{ 'border-amber-300 ring-1 ring-amber-100' if not n['is_read'] else 'border-slate-200' }} shadow-sm p-5">
+                <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-lg">{% if n['is_read'] %}🔕{% else %}🔔{% endif %}</span>
+                            <h2 class="font-black">New Purchase</h2>
+                            {% if not n['is_read'] %}
+                            <span class="px-2 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-black">NEW</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-sm text-slate-700 mt-2">{{ n['message'] }}</p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            Order #{{ n['order_id'] }} · {{ n['created_at'][:19].replace('T',' ') }}
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap gap-2 shrink-0">
+                        <a href="{{ url_for('order_history') }}#order-{{ n['order_id'] }}" class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-black no-underline">
+                            View Order
+                        </a>
+                        {% if not n['is_read'] %}
+                        <form method="POST" action="{{ url_for('mark_order_notification_read', notification_id=n['id']) }}">
+                            <button type="submit" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-black">
+                                Read
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500 mb-7">
+            No vendor notifications yet. New purchases will appear here.
+        </div>
+        {% endif %}
+
+        {% if vendor_orders %}
+        <div class="space-y-4">
+            {% for order in vendor_orders %}
+            <article id="order-{{ order['id'] }}" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-5 sm:p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h2 class="text-lg font-black">Order #{{ order['id'] }}</h2>
+                                <span class="text-xs font-black px-3 py-1.5 rounded-full bg-slate-100 text-slate-700">{{ order['status'] }}</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">Customer: @{{ order['customer_username'] }}</p>
+                        </div>
+                        {% if order.get('customer_whatsapp') %}
+                        <a href="https://wa.me/{{ order['customer_whatsapp'] }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-black no-underline">💬 WhatsApp Customer</a>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-5 divide-y divide-slate-100 border-y border-slate-100">
+                        {% for item in order['items'] %}
+                        <div class="py-3 flex items-center justify-between gap-4">
+                            <div class="min-w-0">
+                                <p class="font-bold text-sm truncate">{{ item['name'] }}</p>
+                                <p class="text-xs text-slate-500 mt-1">Qty {{ item['quantity'] }}</p>
+                            </div>
+                            <b class="shrink-0">GH₵{{ "%.2f"|format(item['price']|float * item['quantity']|int) }}</b>
+                        </div>
+                        {% else %}
+                        <div class="py-5 text-sm text-slate-500">No order items are available.</div>
+                        {% endfor %}
+                    </div>
+
+                    {% if order.get('location') %}
+                    <p class="text-xs text-slate-500 mt-4">📍 Delivery / collection location: {{ order['location'] }}</p>
+                    {% endif %}
+
+                    <div class="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="text-sm">Payment: <b>{{ order['payment_status'] }}</b></div>
+                        {% if order['payment_status']=='Marked paid' and order['status']=='Pending' %}
+                        <div class="flex flex-wrap gap-2">
+                            <form method="POST" action="{{ url_for('confirm_order', order_id=order['id']) }}">
+                                <button type="submit" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm">Confirm Order</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('cancel_order', order_id=order['id']) }}">
+                                <button type="submit" class="px-4 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-black text-sm">Cancel</button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
+            No orders for your store yet.
+        </div>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <section>
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-black mb-3">
+                    🧾 Order history
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-black tracking-tight">My Orders</h1>
+                <p class="text-slate-500 mt-2">Orders you placed as a customer.</p>
+            </div>
+        </div>
+
+        {% if customer_orders %}
+        <div class="space-y-4">
+            {% for order in customer_orders %}
+            <article id="order-{{ order['id'] }}" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h2 class="text-lg font-black">Order #{{ order['id'] }}</h2>
+                                <span class="text-xs font-black px-3 py-1.5 rounded-full bg-slate-100 text-slate-700">{{ order['status'] }}</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">{{ order['created_at'][:19].replace('T',' ') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 divide-y divide-slate-100 border-y border-slate-100">
+                        {% for item in order['items'] %}
+                        <div class="py-3 flex items-center justify-between gap-4">
+                            <div class="min-w-0">
+                                <p class="text-sm font-bold">{{ item['name'] }} × {{ item['quantity'] }}</p>
+                                <p class="text-xs text-slate-500 mt-1">{{ item['vendor_name'] }}</p>
+                            </div>
+                            <b class="shrink-0">GH₵{{ "%.2f"|format(item['price']|float * item['quantity']|int) }}</b>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if order.get('location') %}
+                    <p class="text-xs text-slate-500 mt-4">📍 {{ order['location'] }}</p>
+                    {% endif %}
+
+                    <div class="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="text-sm text-slate-600">Vendors: <b>{{ order['items']|map(attribute='vendor_name')|join(', ') }}</b></div>
+                        <div class="text-lg font-black">GH₵{{ "%.2f"|format(order['total']|float) }}</div>
+                    </div>
+
+                    {% if order['payment_status']=='Unpaid' and order['status']=='Pending' %}
+                    <form method="POST" action="{{ url_for('payment_sent', order_id=order['id']) }}" class="mt-5">
+                        <button type="submit" class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-3 font-black">I Have Sent Payment</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
+            <div class="text-4xl mb-3">🧾</div>
+            <p class="font-semibold">You have not placed any orders yet.</p>
+            <a href="/" class="inline-flex mt-4 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-black no-underline">Browse the Market</a>
+        </div>
+        {% endif %}
+    </section>
+
+</main>
+</body>
+</html>

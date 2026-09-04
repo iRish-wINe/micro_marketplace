@@ -1,26 +1,89 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Manage Promotions | Biz Hub</title><script src="https://cdn.tailwindcss.com"></script></head>
-<body class="min-h-screen bg-slate-100 text-slate-900 font-sans">
-<header class="bg-slate-950 text-white"><div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between"><a href="/vendor/{{ vendor['username'] }}" class="font-black text-white no-underline">← {{ vendor['company_name'] or vendor['username'] }}</a><a href="/" class="text-sm font-bold text-slate-300 no-underline">Market</a></div></header>
-<main class="max-w-6xl mx-auto px-4 py-8">
-<h1 class="text-3xl font-black">🔥 Manage Promotions</h1><p class="text-slate-500 mt-1">Create a product promotion or store-wide promotion with an optional image and short 30-second ad.</p>
-{% if promo_error %}<div class="my-5 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-bold">{{ promo_error }}</div>{% endif %}
-{% if saved %}<div class="my-5 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-bold">Promotion published successfully.</div>{% endif %}
-<div class="grid lg:grid-cols-2 gap-6">
-<section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-<h2 class="font-black text-lg">Create Promotion</h2>
-<form method="POST" enctype="multipart/form-data" class="mt-5 space-y-4">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-<div><label class="block text-xs font-black uppercase mb-1">Promotion Type / Product</label><select name="product_id" class="w-full border border-slate-300 rounded-xl px-4 py-3"><option value="">Store-wide promotion</option>{% for product in products %}<option value="{{ product['id'] }}">{{ product['title'] }} — GH₵ {{ '%.2f'|format(product['price']) }}</option>{% endfor %}</select></div>
-<div><label class="block text-xs font-black uppercase mb-1">Promo Title</label><input name="title" required maxlength="120" class="w-full border border-slate-300 rounded-xl px-4 py-3" placeholder="e.g. Weekend special"></div>
-<div><label class="block text-xs font-black uppercase mb-1">Description</label><textarea name="description" maxlength="500" rows="3" class="w-full border border-slate-300 rounded-xl px-4 py-3" placeholder="Tell customers what is included."></textarea></div>
-<div class="grid sm:grid-cols-2 gap-4"><div><label class="block text-xs font-black uppercase mb-1">Discount (%)</label><input type="number" name="discount" min="0" max="100" step="0.01" class="w-full border border-slate-300 rounded-xl px-4 py-3"></div><div><label class="block text-xs font-black uppercase mb-1">Promo Price (GH₵)</label><input type="number" name="promo_price" min="0" step="0.01" class="w-full border border-slate-300 rounded-xl px-4 py-3"></div></div>
-<div class="grid sm:grid-cols-2 gap-4"><div><label class="block text-xs font-black uppercase mb-1">Starts</label><input type="datetime-local" name="starts_at" required class="w-full border border-slate-300 rounded-xl px-4 py-3"></div><div><label class="block text-xs font-black uppercase mb-1">Ends</label><input type="datetime-local" name="ends_at" required class="w-full border border-slate-300 rounded-xl px-4 py-3"></div></div>
-<div><label class="block text-xs font-black uppercase mb-1">Promotion Image</label><input id="promoImage" type="file" name="promo_image" accept="image/png,image/jpeg,image/webp,image/gif" class="w-full border border-slate-300 rounded-xl px-4 py-3"><img id="promoImagePreview" class="hidden mt-3 w-full max-h-48 object-cover rounded-xl border" alt="Promotion image preview"></div>
-<div><label class="block text-xs font-black uppercase mb-1">Short Promo Ad Video — 30 seconds max</label><input id="promoVideo" type="file" name="promo_video" accept="video/mp4,video/webm,video/quicktime" class="w-full border border-slate-300 rounded-xl px-4 py-3"><video id="promoVideoPreview" class="hidden mt-3 w-full max-h-56 rounded-xl bg-black" controls muted playsinline preload="metadata"></video><p id="promoVideoStatus" class="text-xs text-slate-500 mt-2">Optional. MP4, WebM or MOV. Maximum 30 seconds.</p></div>
-<button class="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-white py-3 font-black">Publish Promotion</button></form></section>
-<section><h2 class="font-black text-lg mb-4">Promotion History</h2><div class="space-y-4">{% for promo in promotions %}<article class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">{% if promo['image_file'] %}<img src="{{ url_for('static', filename='uploads/' + promo['image_file']) }}" class="w-full max-h-48 object-cover rounded-xl mb-3" alt="{{ promo['title'] }}">{% endif %}{% if promo['video_file'] %}<video class="w-full max-h-56 rounded-xl bg-black mb-3" controls muted playsinline preload="metadata"><source src="{{ url_for('stream_video', filename=promo['video_file']) }}"></video>{% endif %}<div class="flex items-start justify-between gap-4"><div><div class="flex flex-wrap gap-2 items-center"><h3 class="font-black">{{ promo['title'] }}</h3>{% if promo['active'] %}<span class="text-[10px] font-black px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">ACTIVE</span>{% endif %}</div><p class="text-sm text-slate-500 mt-2">{{ promo['description'] or 'No description.' }}</p>{% if promo['product_title'] %}<p class="text-xs font-bold text-slate-600 mt-2">Product: {{ promo['product_title'] }}</p>{% else %}<p class="text-xs font-bold text-slate-600 mt-2">Store-wide promotion</p>{% endif %}{% if promo['discount'] is not none %}<p class="font-black text-amber-700 mt-2">{{ "%.0f"|format(promo['discount']) }}% OFF</p>{% endif %}<p class="text-xs text-slate-400 mt-2">{{ promo['starts_at'][:16].replace('T',' ') }} → {{ promo['ends_at'][:16].replace('T',' ') }}</p></div>{% if promo['active'] %}<form method="POST" action="/promotions/{{ promo['id'] }}/deactivate"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="text-xs font-black px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200">Deactivate</button></form>{% endif %}</div></article>{% else %}<div class="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">No promotions created yet.</div>{% endfor %}</div></section></div></main>
+<html lang="en" class="h-full" data-theme="{{ session.get('theme') or 'day' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Promotions | Biz Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root{--bh-bg:#f3f4f6;--bh-card:#fff;--bh-text:#111827;--bh-muted:#6b7280;--bh-border:#e5e7eb;--bh-soft:#f8fafc}
+        html[data-theme="night"]{--bh-bg:#0b1220;--bh-card:#111827;--bh-text:#f8fafc;--bh-muted:#94a3b8;--bh-border:#263244;--bh-soft:#172033}
+        body{background:var(--bh-bg);color:var(--bh-text);transition:background .2s,color .2s}
+        .bh-card{background:var(--bh-card);border-color:var(--bh-border)} .bh-border{border-color:var(--bh-border)} .bh-text{color:var(--bh-text)} .bh-muted{color:var(--bh-muted)} .bh-soft{background:var(--bh-soft)}
+        .bh-input{background:var(--bh-card);color:var(--bh-text);border-color:var(--bh-border)}
+        html[data-theme="night"] header,html[data-theme="night"] footer{background:#0f172a!important;border-color:#263244!important}
+        html[data-theme="night"] a{color:#cbd5e1}
+        html[data-theme="night"] .bh-input{background:#0f172a;color:#f8fafc;border-color:#334155}
+    </style>
+</head>
+<body class="min-h-full font-sans antialiased">
+<header class="sticky top-0 z-40 w-full bg-white border-b shadow-sm bh-border">
+    <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8"><div class="flex items-center justify-between h-16 gap-4">
+        <a href="/vendor/{{ vendor['username'] }}" class="flex items-center gap-2 no-underline shrink-0">
+            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 shadow-md text-white font-black">BH</div>
+            <span class="text-xl font-bold tracking-tight bh-text">Biz<span class="text-emerald-600">Hub</span></span>
+        </a>
+        <nav class="flex items-center gap-3 sm:gap-4 text-sm font-medium">
+            <a href="/" class="bh-muted hover:text-emerald-600 no-underline">Market</a>
+            <a href="/vendor/{{ vendor['username'] }}" class="bh-muted hover:text-emerald-600 no-underline">Store</a>
+            <a href="/orders" class="bh-muted hover:text-emerald-600 no-underline">Orders</a>
+            <a href="/settings" class="bh-muted hover:text-emerald-600 no-underline">Account</a>
+            <span class="hidden md:inline bh-muted">@{{ vendor['username'] }}</span>
+        </nav>
+    </div></div>
+</header>
+
+<main class="py-8 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+            <a href="/vendor/{{ vendor['username'] }}" class="inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700 no-underline">← Back to Store</a>
+            <h1 class="text-2xl sm:text-3xl font-black bh-text mt-4">🔥 Manage Promotions</h1>
+            <p class="text-sm bh-muted mt-1">Create product or store-wide promotions with optional images and short 30-second ads.</p>
+        </div>
+        <div class="bh-card border rounded-2xl px-4 py-3 shadow-sm">
+            <p class="text-[11px] uppercase tracking-wider font-black bh-muted">Promotion Center</p>
+            <p class="text-sm font-bold bh-text mt-1">{{ promotions|length }} campaign{% if promotions|length != 1 %}s{% endif %}</p>
+        </div>
+    </div>
+
+    {% if promo_error %}<div class="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm font-bold">⚠️ {{ promo_error }}</div>{% endif %}
+    {% if saved %}<div class="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-bold">✓ Promotion published successfully.</div>{% endif %}
+
+    <div class="grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-6">
+        <section class="bh-card rounded-2xl border shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b bh-border bh-soft">
+                <div class="flex items-start gap-3"><div class="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center text-xl">🔥</div><div><h2 class="text-lg font-black bh-text">Create Promotion</h2><p class="text-xs bh-muted mt-1">Publish a new offer for customers and followers.</p></div></div>
+            </div>
+            <form method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Promotion Type / Product</label><select name="product_id" class="bh-input w-full px-4 py-3 rounded-xl border text-sm font-semibold focus:ring-2 focus:ring-amber-400 outline-none"><option value="">Store-wide promotion</option>{% for product in products %}<option value="{{ product['id'] }}">{{ product['title'] }} — GH₵ {{ '%.2f'|format(product['price']) }}</option>{% endfor %}</select></div>
+                <div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Promo Title</label><input name="title" required maxlength="120" class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-amber-400 outline-none" placeholder="e.g. Weekend special"></div>
+                <div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Description</label><textarea name="description" maxlength="500" rows="3" class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-amber-400 outline-none" placeholder="Tell customers what is included."></textarea></div>
+                <div class="grid sm:grid-cols-2 gap-4"><div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Discount (%)</label><input type="number" name="discount" min="0" max="100" step="0.01" class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-amber-400 outline-none"></div><div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Promo Price (GH₵)</label><input type="number" name="promo_price" min="0" step="0.01" class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-amber-400 outline-none"></div></div>
+                <div class="grid sm:grid-cols-2 gap-4"><div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Starts</label><input type="datetime-local" name="starts_at" required class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-amber-400 outline-none"></div><div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Ends</label><input type="datetime-local" name="ends_at" required class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-amber-400 outline-none"></div></div>
+                <div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Promotion Image</label><input id="promoImage" type="file" name="promo_image" accept="image/png,image/jpeg,image/webp,image/gif" class="bh-input w-full text-xs border rounded-xl px-3 py-3"><img id="promoImagePreview" class="hidden mt-3 w-full max-h-52 object-cover rounded-xl border bh-border" alt="Promotion image preview"></div>
+                <div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Short Promo Ad Video <span class="normal-case tracking-normal font-semibold">— 30 seconds max</span></label><input id="promoVideo" type="file" name="promo_video" accept="video/mp4,video/webm,video/quicktime" class="bh-input w-full text-xs border rounded-xl px-3 py-3"><video id="promoVideoPreview" class="hidden mt-3 w-full max-h-56 rounded-xl bg-black" controls muted playsinline preload="metadata"></video><p id="promoVideoStatus" class="text-xs bh-muted mt-2">Optional. MP4, WebM or MOV. Maximum 30 seconds.</p></div>
+                <button class="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-white py-3.5 font-black shadow-sm">🔥 Publish Promotion</button>
+            </form>
+        </section>
+
+        <section>
+            <div class="mb-4 flex items-end justify-between gap-3"><div><h2 class="text-xl font-black bh-text">Promotion History</h2><p class="text-sm bh-muted mt-1">Review current and previous campaigns.</p></div></div>
+            <div class="space-y-4">
+            {% for promo in promotions %}<article class="bh-card rounded-2xl border shadow-sm overflow-hidden">
+                {% if promo['image_file'] %}<img src="{{ url_for('static', filename='uploads/' + promo['image_file']) }}" class="w-full max-h-56 object-cover" alt="{{ promo['title'] }}">{% endif %}
+                {% if promo['video_file'] %}<video class="w-full max-h-60 rounded-none bg-black" controls muted playsinline preload="metadata"><source src="{{ url_for('stream_video', filename=promo['video_file']) }}"></video>{% endif %}
+                <div class="p-5"><div class="flex items-start justify-between gap-4"><div class="min-w-0"><div class="flex flex-wrap gap-2 items-center"><h3 class="font-black bh-text">{{ promo['title'] }}</h3>{% if promo['active'] %}<span class="text-[10px] font-black px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">ACTIVE</span>{% else %}<span class="text-[10px] font-black px-2 py-1 rounded-full bg-slate-100 text-slate-500">INACTIVE</span>{% endif %}</div><p class="text-sm bh-muted mt-2">{{ promo['description'] or 'No description.' }}</p>{% if promo['product_title'] %}<p class="text-xs font-bold bh-muted mt-3">Product: {{ promo['product_title'] }}</p>{% else %}<p class="text-xs font-bold bh-muted mt-3">Store-wide promotion</p>{% endif %}{% if promo['discount'] is not none %}<p class="font-black text-amber-600 mt-2">{{ "%.0f"|format(promo['discount']) }}% OFF</p>{% endif %}{% if promo['promo_price'] is not none %}<p class="text-sm font-black text-emerald-600 mt-1">Promo price: GH₵{{ "%.2f"|format(promo['promo_price']) }}</p>{% endif %}<p class="text-xs bh-muted mt-2">{{ promo['starts_at'][:16].replace('T',' ') }} → {{ promo['ends_at'][:16].replace('T',' ') }}</p></div>{% if promo['active'] %}<form method="POST" action="/promotions/{{ promo['id'] }}/deactivate"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="shrink-0 text-xs font-black px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 bh-text">Deactivate</button></form>{% endif %}</div></div>
+            </article>{% else %}<div class="bh-card rounded-2xl border border-dashed p-10 text-center shadow-sm"><div class="text-4xl mb-3">🔥</div><h3 class="font-black bh-text">No promotions created yet.</h3><p class="text-sm bh-muted mt-1">Your published campaigns will appear here.</p></div>{% endfor %}
+            </div>
+        </section>
+    </div>
+</main>
+<footer class="bg-white border-t bh-border py-6 mt-8 text-center text-xs bh-muted">© 2026 Biz Hub. Promotion management.</footer>
 <script>
-const pi=document.getElementById('promoImage'),pp=document.getElementById('promoImagePreview'); if(pi)pi.addEventListener('change',()=>{const f=pi.files[0];if(!f)return;pp.src=URL.createObjectURL(f);pp.classList.remove('hidden');});
-const pv=document.getElementById('promoVideo'),vv=document.getElementById('promoVideoPreview'),vs=document.getElementById('promoVideoStatus'); if(pv)pv.addEventListener('change',()=>{const f=pv.files[0];if(!f)return;vv.src=URL.createObjectURL(f);vv.classList.remove('hidden');vv.onloadedmetadata=()=>{if(vv.duration>30){pv.value='';vv.removeAttribute('src');vv.classList.add('hidden');vs.textContent='Video rejected: maximum duration is 30 seconds.';}else vs.textContent='Video selected ('+vv.duration.toFixed(1)+'s).';};});
-</script></body></html>
+const pi=document.getElementById('promoImage'),pp=document.getElementById('promoImagePreview');
+if(pi)pi.addEventListener('change',()=>{const f=pi.files[0];if(!f)return;pp.src=URL.createObjectURL(f);pp.classList.remove('hidden');});
+const pv=document.getElementById('promoVideo'),vv=document.getElementById('promoVideoPreview'),vs=document.getElementById('promoVideoStatus');
+if(pv)pv.addEventListener('change',()=>{const f=pv.files[0];if(!f)return;vv.src=URL.createObjectURL(f);vv.classList.remove('hidden');vv.onloadedmetadata=()=>{if(vv.duration>30){pv.value='';vv.removeAttribute('src');vv.classList.add('hidden');vs.textContent='Video rejected: maximum duration is 30 seconds.';}else vs.textContent='Video selected ('+vv.duration.toFixed(1)+'s).';};});
+</script>
+</body></html>

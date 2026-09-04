@@ -2,6 +2,7 @@ import sqlite3
 import os
 import uuid
 import re
+import secrets
 import json
 import logging
 import hashlib
@@ -346,6 +347,7 @@ def init_db():
             user_id INTEGER NOT NULL,
             status TEXT NOT NULL DEFAULT 'Pending',
             note TEXT,
+            user_message TEXT,
             created_at TEXT NOT NULL,
             reviewed_at TEXT,
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -403,6 +405,7 @@ def init_db():
             description TEXT NOT NULL,
             discount REAL NOT NULL,
             active INTEGER NOT NULL DEFAULT 1,
+            max_redemptions INTEGER NOT NULL DEFAULT 0,
             expires_at TEXT,
             created_at TEXT NOT NULL,
             FOREIGN KEY(vendor_id) REFERENCES users(id) ON DELETE CASCADE
@@ -444,8 +447,22 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS delivery_ratings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            vendor_id INTEGER NOT NULL,
+            service_id INTEGER NOT NULL,
+            request_id INTEGER NOT NULL UNIQUE,
+            rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),
+            comment TEXT,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(vendor_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY(service_id) REFERENCES delivery_services(id) ON DELETE CASCADE,
+            FOREIGN KEY(request_id) REFERENCES delivery_requests(id) ON DELETE CASCADE
+        )
+    """)
     conn.commit()
-        # 👑 PRODUCTION STRUCTURAL SCHEMA HOTFIX: Safe Column Alteration Injections
+    # Safe Column Alteration Injections
     try:
         cursor.execute("ALTER TABLE users ADD COLUMN registered_at TEXT")
     except sqlite3.OperationalError:
@@ -471,6 +488,30 @@ def init_db():
             cursor.execute(statement)
         except sqlite3.OperationalError:
             pass
+
+    # Additive, restart-safe migrations for verification messages and coupon redemption controls.
+    for statement in (
+        "ALTER TABLE verification_requests ADD COLUMN user_message TEXT",
+        "ALTER TABLE coupons ADD COLUMN max_redemptions INTEGER NOT NULL DEFAULT 0",
+    ):
+        try:
+            cursor.execute(statement)
+        except sqlite3.OperationalError:
+            pass
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS coupon_redemptions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            coupon_id INTEGER NOT NULL,
+            customer_id INTEGER NOT NULL,
+            order_id INTEGER NOT NULL UNIQUE,
+            redeemed_at TEXT NOT NULL,
+            UNIQUE(coupon_id, customer_id),
+            FOREIGN KEY(coupon_id) REFERENCES coupons(id) ON DELETE CASCADE,
+            FOREIGN KEY(customer_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE
+        )
+    """)
 
     try:
         cursor.execute("UPDATE products SET initial_stock_quantity = stock_quantity WHERE COALESCE(sold_quantity, 0) = 0 AND initial_stock_quantity = 1 AND stock_quantity > 1")
@@ -543,6 +584,53 @@ def subscription_status(user):
 
 def is_premium_vendor(user):
     return bool(user and user.get("role") in ["Vendor", "Fast Food"] and subscription_status(user)["is_premium"])
+
+def _admin_destination_number(env_name):
+    return normalize_whatsapp_number(os.environ.get(env_name, ""))
+
+def dispatch_admin_alert(title, message, link=None):
+    """Send critical operational alerts to configured admin phone/WhatsApp destinations."""
+    text = f"{title}\n{message}" + (f"\n{link}" if link else "")
+    sid = os.environ.get("BIZ_HUB_TWILIO_ACCOUNT_SID")
+    token = os.environ.get("BIZ_HUB_TWILIO_AUTH_TOKEN")
+    if not (sid and token):
+        return
+    admin_phone = _admin_destination_number("BIZ_HUB_ADMIN_PHONE")
+    admin_whatsapp = _admin_destination_number("BIZ_HUB_ADMIN_WHATSAPP")
+    sms_from = os.environ.get("BIZ_HUB_TWILIO_SMS_FROM")
+    whatsapp_from = os.environ.get("BIZ_HUB_TWILIO_WHATSAPP_FROM")
+    try:
+        import requests
+    except ImportError:
+        logger.warning("Install requests to enable BizHub admin SMS/WhatsApp alerts")
+        return
+
+    def send(to_number, from_number, prefix, channel):
+        if not to_number or not from_number:
+            return
+        try:
+            response = requests.post(
+                f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json",
+                data={"From": from_number, "To": f"{prefix}{to_number}", "Body": text},
+                auth=(sid, token), timeout=15
+            )
+            response.raise_for_status()
+        except Exception:
+            logger.exception("BizHub admin %s notification failed", channel)
+
+    send(admin_phone, sms_from, "+", "SMS")
+    send(admin_whatsapp, whatsapp_from, "whatsapp:+", "WhatsApp")
+
+def notify_admin_event(event_name, details, link=None):
+    titles = {
+        "registration": "New BizHub registration",
+        "delivery_registration": "New delivery service registration",
+        "report": "New report requires review",
+        "verification": "New verification request",
+        "dispute": "New dispute requires review",
+        "payment": "New payment recorded",
+    }
+    dispatch_admin_alert(titles.get(event_name, "BizHub admin alert"), details, link)
 
 def dispatch_external_notifications(user, title, message, link=None):
     if not user:
@@ -656,7 +744,109 @@ def award_loyalty_points(user_id, order_id, order_total):
     query_db("UPDATE orders SET loyalty_points_earned = ? WHERE id = ?", (points, order_id))
     return points
 
-@app.context_processor
+
+
+# -----------------------------------------------------------------------------
+# Global BizHub marketplace header
+# Injected at response level so existing and future HTML pages receive the same
+# Amazon-inspired marketplace navigation without requiring every template to be
+# rewritten or extended from a shared base template.
+# -----------------------------------------------------------------------------
+BIZHUB_GLOBAL_HEADER_CSS = r"""
+<style id="bizhub-global-header-styles">
+:root{--bh-navy:#131921;--bh-navy2:#232f3e;--bh-orange:#ff9900;--bh-yellow:#febd69}
+.bh-global-header{position:relative;z-index:10000;font-family:Arial,Helvetica,sans-serif;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.bh-topbar{min-height:64px;background:var(--bh-navy);display:flex;align-items:center;gap:10px;padding:8px 14px;box-sizing:border-box}
+.bh-brand{display:flex;align-items:center;gap:7px;text-decoration:none;color:#fff;font-weight:900;letter-spacing:-.5px;font-size:22px;line-height:1;white-space:nowrap;padding:8px 7px;border:1px solid transparent;border-radius:3px}.bh-brand:hover{border-color:#fff;color:#fff}.bh-brand-mark{font-size:23px}.bh-brand-sub{display:block;font-size:10px;letter-spacing:1.1px;color:#febd69;margin-top:3px;font-weight:700}
+.bh-location{min-width:108px;display:flex;align-items:center;gap:7px;padding:7px 8px;border:1px solid transparent;border-radius:3px;text-decoration:none;color:#fff}.bh-location:hover{border-color:#fff}.bh-location small{display:block;color:#c7d0d9;font-size:10px}.bh-location strong{display:block;font-size:13px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bh-search{display:flex;flex:1;min-width:150px;height:42px;border-radius:5px;overflow:hidden;background:#fff;box-shadow:0 0 0 2px transparent}.bh-search:focus-within{box-shadow:0 0 0 2px var(--bh-orange)}.bh-search input{border:0;outline:0;flex:1;padding:0 14px;font-size:15px;color:#111;min-width:0}.bh-search button{width:52px;border:0;background:var(--bh-yellow);color:#111;font-size:18px;cursor:pointer}.bh-search button:hover{background:#f3a847}
+.bh-action{display:flex;align-items:center;gap:5px;text-decoration:none;color:#fff;border:1px solid transparent;border-radius:3px;padding:7px 8px;min-height:42px;box-sizing:border-box}.bh-action:hover{border-color:#fff;color:#fff}.bh-action .small{display:block;font-size:10px;color:#e6e6e6;line-height:12px}.bh-action strong{display:block;font-size:13px;white-space:nowrap}.bh-action .icon{font-size:21px}.bh-badge{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;border-radius:10px;background:var(--bh-orange);color:#111;font-size:10px;font-weight:900;margin-left:-3px;margin-top:-14px}
+.bh-subbar{min-height:42px;background:var(--bh-navy2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap}.bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px}.bh-subbar a:hover{border-color:#fff;color:#fff}.bh-subbar .bh-grow{flex:1}.bh-role-pill{font-size:10px;color:#febd69;margin-left:3px;text-transform:uppercase}
+@media(max-width:900px){.bh-location{display:none}.bh-action.hide-md{display:none}.bh-topbar{flex-wrap:wrap}.bh-search{order:5;flex-basis:100%}.bh-topbar{padding-bottom:10px}}
+@media(max-width:560px){.bh-topbar{gap:5px;padding:7px}.bh-brand{font-size:19px}.bh-brand-sub{display:none}.bh-action{padding:6px 5px}.bh-action .small{display:none}.bh-action strong{font-size:11px}.bh-action .icon{font-size:19px}.bh-subbar a{font-size:12px;padding:10px 9px}.bh-search{height:40px}}
+</style>
+"""
+
+def _bh_escape(value):
+    import html
+    return html.escape(str(value or ""), quote=True)
+
+def bizhub_global_header():
+    logged_in = bool(session.get("username"))
+    admin = bool(session.get("is_admin"))
+    username = _bh_escape(session.get("username", "Guest"))
+    role = _bh_escape(session.get("role", ""))
+    location = _bh_escape(session.get("business_location") or "Ghana")
+    try:
+        cart = session.get("cart") or {}
+        if isinstance(cart, list): cart_count = len(cart)
+        elif isinstance(cart, dict): cart_count = sum(max(0, int(v or 0)) for v in cart.values())
+        else: cart_count = 0
+    except (TypeError, ValueError): cart_count = 0
+    notif_count = 0
+    if logged_in:
+        try:
+            u = query_db("SELECT id FROM users WHERE username = ?", (session.get("username"),), one=True)
+            if u:
+                row = query_db("SELECT COUNT(*) AS count FROM notifications WHERE recipient_id = ? AND is_read = 0", (u["id"],), one=True)
+                notif_count = int(row["count"] if row else 0)
+        except Exception: logger.exception("BizHub global header notification count failed")
+    home_url = _bh_escape(url_for("home")); login_url = _bh_escape(url_for("login")); orders_url = _bh_escape(url_for("orders")); notifications_url = _bh_escape(url_for("notifications")); favorites_url = _bh_escape(url_for("favorites")); settings_url = _bh_escape(url_for("settings")); delivery_url = _bh_escape(url_for("delivery_services")); admin_url = _bh_escape(url_for("admin_dashboard"))
+    account_url = settings_url if logged_in else login_url
+    account_label = username if logged_in else "Sign in"
+    role_pill = f"<span class=\"bh-role-pill\">{role}</span>" if role else ""
+    if logged_in:
+        auth_actions = f"""
+      <a class="bh-action" href="{account_url}"><span class="icon">👤</span><span><span class="small">Hello,</span><strong>{account_label} {role_pill}</strong></span></a>
+      <a class="bh-action hide-md" href="{orders_url}"><span><span class="small">Track &amp;</span><strong>Orders</strong></span></a>
+      <a class="bh-action" href="{notifications_url}"><span class="icon">🔔</span><span><span class="small">BizHub</span><strong>Alerts</strong></span>{f'<span class="bh-badge">{notif_count}</span>' if notif_count else ''}</a>
+      <a class="bh-action" href="{home_url}#cart"><span class="icon">🛒</span><span><span class="small">Your</span><strong>Cart</strong></span>{f'<span class="bh-badge">{cart_count}</span>' if cart_count else ''}</a>
+    """
+    else:
+        auth_actions = f"""
+      <a class="bh-action" href="{login_url}"><span class="icon">👤</span><span><span class="small">Welcome</span><strong>Sign in</strong></span></a>
+      <a class="bh-action" href="{login_url}"><span><span class="small">New to BizHub?</span><strong>Create account</strong></span></a>
+    """
+    admin_action = f'<a class="bh-action" href="{admin_url}"><span class="icon">🛡️</span><span><span class="small">Manage</span><strong>Admin</strong></span></a>' if admin else ''
+    admin_nav = f'<a href="{admin_url}">Admin Center</a>' if admin else ''
+    return f"""
+<header class="bh-global-header" role="banner">
+  <div class="bh-topbar">
+    <a class="bh-brand" href="{home_url}" aria-label="BizHub home"><span class="bh-brand-mark">B</span><span>BizHub<span class="bh-brand-sub">SHOP • SELL • CONNECT</span></span></a>
+    <a class="bh-location" href="{home_url}"><span>📍</span><span><small>Delivering to</small><strong>{location}</strong></span></a>
+    <form class="bh-search" method="get" action="{home_url}" role="search"><input name="search" placeholder="Search products, stores and categories" aria-label="Search BizHub"><button type="submit" aria-label="Search">🔍</button></form>
+    {auth_actions}{admin_action}
+  </div>
+  <nav class="bh-subbar" aria-label="BizHub marketplace navigation">
+    <a href="{home_url}">☰ &nbsp;All</a><a href="{home_url}#deals">Today's Deals</a><a href="{favorites_url}">Favorites</a><a href="{delivery_url}">Find Delivery</a><a href="{home_url}#fast-food">Fast Food</a><a href="{home_url}#categories">Categories</a><a href="{account_url}">Your Account</a><span class="bh-grow"></span>{admin_nav}
+  </nav>
+</header>
+"""
+
+@app.after_request
+def inject_bizhub_global_header(response):
+    content_type = (response.headers.get("Content-Type") or "").lower()
+    if "text/html" not in content_type or response.status_code in (204, 304) or request.path.startswith("/static"):
+        return response
+    try:
+        html = response.get_data(as_text=True)
+        if 'id="bizhub-global-header-styles"' in html or 'class="bh-global-header"' in html:
+            return response
+        header = bizhub_global_header()
+        lower = html.lower()
+        head = lower.find("</head>")
+        if head >= 0: html = html[:head] + BIZHUB_GLOBAL_HEADER_CSS + html[head:]
+        else: html = BIZHUB_GLOBAL_HEADER_CSS + html
+        body = html.lower().find("<body")
+        if body >= 0:
+            close = html.find(">", body)
+            if close >= 0: html = html[:close+1] + header + html[close+1:]
+        else: html = header + html
+        response.set_data(html)
+        response.headers.pop("Content-Length", None)
+    except Exception: logger.exception("BizHub global header injection failed")
+    return response
+
 def notification_context():
     unread_notifications_count = 0
     if session.get("username"):
@@ -1193,11 +1383,20 @@ def clear_cart():
 def apply_coupon():
     if session.get("role") != "Customer":
         return redirect(url_for("login"))
+    customer = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
     coupon = get_valid_coupon(request.form.get("code", ""))
-    if coupon:
-        session["coupon_code"] = coupon["code"]
-        return redirect(url_for("home", coupon_applied="1"))
-    return redirect(url_for("home", listing_error="That coupon is invalid, inactive, or expired."))
+    if not customer or not coupon:
+        return redirect(url_for("home", listing_error="That coupon is invalid, inactive, or expired."))
+    used = query_db("SELECT id FROM coupon_redemptions WHERE coupon_id = ? AND customer_id = ?", (coupon["id"], customer["id"]), one=True)
+    if used:
+        return redirect(url_for("home", listing_error="You have already redeemed this coupon."))
+    max_redemptions = int(coupon.get("max_redemptions") or 0)
+    if max_redemptions > 0:
+        used_total = query_db("SELECT COUNT(*) AS count FROM coupon_redemptions WHERE coupon_id = ?", (coupon["id"],), one=True)
+        if used_total and int(used_total["count"] or 0) >= max_redemptions:
+            return redirect(url_for("home", listing_error="This coupon has reached its redemption limit."))
+    session["coupon_code"] = coupon["code"]
+    return redirect(url_for("home", coupon_applied="1"))
 
 @app.route("/remove-coupon", methods=["POST"])
 def remove_coupon():
@@ -1211,7 +1410,10 @@ def place_order():
     cart = session.get("cart") or {}
     if isinstance(cart, list):
         cart = {str(pid): 1 for pid in cart}
-    cart = {str(k): int(v) for k, v in cart.items() if int(v) > 0}
+    try:
+        cart = {str(k): int(v) for k, v in cart.items() if int(v) > 0}
+    except (TypeError, ValueError):
+        return redirect(url_for("home", listing_error="Your cart contains an invalid quantity."))
     if not cart:
         return redirect(url_for("home"))
     ids = [int(k) for k in cart]
@@ -1224,24 +1426,82 @@ def place_order():
         qty = cart[str(item["id"])]
         if qty > int(item["stock_quantity"]):
             return redirect(url_for("home", listing_error=f"Only {item['stock_quantity']} available for {item['title']}."))
-    active_coupon = get_valid_coupon(session.get("coupon_code"))
-    discount_amount = sum(float(item["price"]) * cart[str(item["id"])] * float(active_coupon["discount"]) / 100 for item in items if active_coupon and item["seller"] == active_coupon["username"])
-    total = sum(float(item["price"]) * cart[str(item["id"])] for item in items) - discount_amount
+
     created_at = datetime.now(timezone.utc).isoformat()
     conn = open_db()
     try:
         conn.execute("BEGIN")
-        cur = conn.execute("INSERT INTO orders (customer_username, total, status, payment_status, coupon_code, discount_amount, created_at) VALUES (?, ?, 'Pending', 'Unpaid', ?, ?, ?)", (session["username"], total, active_coupon["code"] if active_coupon else None, discount_amount, created_at))
+        active_coupon = None
+        coupon_code = session.get("coupon_code")
+        if coupon_code:
+            active_coupon = conn.execute(
+                "SELECT c.*, u.username FROM coupons c JOIN users u ON u.id = c.vendor_id WHERE c.code = ? AND c.active = 1 AND (c.expires_at IS NULL OR c.expires_at = '' OR c.expires_at >= ?)",
+                (str(coupon_code).strip().upper(), datetime.now(timezone.utc).date().isoformat())
+            ).fetchone()
+            if active_coupon:
+                existing_redemption = conn.execute(
+                    "SELECT id FROM coupon_redemptions WHERE coupon_id = ? AND customer_id = (SELECT id FROM users WHERE username = ?)",
+                    (active_coupon["id"], session["username"])
+                ).fetchone()
+                if existing_redemption:
+                    conn.rollback()
+                    session.pop("coupon_code", None)
+                    return redirect(url_for("home", listing_error="You have already redeemed this coupon."))
+                max_redemptions = int(active_coupon["max_redemptions"] or 0)
+                if max_redemptions > 0:
+                    used_total = conn.execute("SELECT COUNT(*) AS count FROM coupon_redemptions WHERE coupon_id = ?", (active_coupon["id"],)).fetchone()
+                    if int(used_total["count"] or 0) >= max_redemptions:
+                        conn.rollback()
+                        session.pop("coupon_code", None)
+                        return redirect(url_for("home", listing_error="This coupon has reached its redemption limit."))
+
+        discount_amount = 0.0
+        if active_coupon:
+            discount_amount = sum(
+                float(item["price"]) * cart[str(item["id"])] * float(active_coupon["discount"]) / 100
+                for item in items if item["seller"] == active_coupon["username"]
+            )
+            if discount_amount <= 0:
+                active_coupon = None
+        subtotal = sum(float(item["price"]) * cart[str(item["id"])] for item in items)
+        total = max(0.0, subtotal - discount_amount)
+
+        cur = conn.execute(
+            "INSERT INTO orders (customer_username, total, status, payment_status, coupon_code, discount_amount, created_at) VALUES (?, ?, 'Pending', 'Unpaid', ?, ?, ?)",
+            (session["username"], round(total, 2), active_coupon["code"] if active_coupon else None, round(discount_amount, 2), created_at)
+        )
         order_id = cur.lastrowid
         external_vendor_notifications = []
         for item in items:
             qty = cart[str(item["id"])]
-            conn.execute("INSERT INTO order_items (order_id, product_id, seller, title, price, quantity) VALUES (?, ?, ?, ?, ?, ?)", (order_id, item["id"], item["seller"], item["title"], item["price"], qty))
-            vendor = conn.execute("SELECT id FROM users WHERE username = ? AND role = 'Vendor'", (item["seller"],)).fetchone()
+            conn.execute(
+                "INSERT INTO order_items (order_id, product_id, seller, title, price, quantity) VALUES (?, ?, ?, ?, ?, ?)",
+                (order_id, item["id"], item["seller"], item["title"], item["price"], qty)
+            )
+            vendor = conn.execute("SELECT id FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food')", (item["seller"],)).fetchone()
             if vendor:
                 message = f"New purchase from @{session['username']}: {item['title']} x{qty} for GH₵{float(item['price']) * qty:.2f}. Location: {item.get('location') or 'Not specified'}."
-                conn.execute("INSERT INTO vendor_notifications (vendor_id, order_id, product_id, customer_username, item_name, price, location, message, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (vendor["id"], order_id, item["id"], session["username"], item["title"], float(item["price"]) * qty, item.get("location"), message, created_at))
+                conn.execute(
+                    "INSERT INTO vendor_notifications (vendor_id, order_id, product_id, customer_username, item_name, price, location, message, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (vendor["id"], order_id, item["id"], session["username"], item["title"], float(item["price"]) * qty, item.get("location"), message, created_at)
+                )
                 external_vendor_notifications.append((vendor["id"], "New order", message))
+
+        if active_coupon:
+            customer = conn.execute("SELECT id FROM users WHERE username = ?", (session["username"],)).fetchone()
+            if not customer:
+                conn.rollback()
+                return redirect(url_for("login"))
+            try:
+                conn.execute(
+                    "INSERT INTO coupon_redemptions (coupon_id, customer_id, order_id, redeemed_at) VALUES (?, ?, ?, ?)",
+                    (active_coupon["id"], customer["id"], order_id, created_at)
+                )
+            except sqlite3.IntegrityError:
+                conn.rollback()
+                session.pop("coupon_code", None)
+                return redirect(url_for("home", listing_error="This coupon can only be redeemed once per customer."))
+
         conn.commit()
     except Exception:
         conn.rollback()
@@ -1479,6 +1739,7 @@ def report_user(user_id):
         if description:
             query_db("INSERT INTO reports (reporter_id, target_user_id, target_username, target_role, category, description, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)", (reporter["id"], target["id"], target["username"], target["role"], category, description, datetime.now(timezone.utc).isoformat()))
             create_notification(reporter["id"], "announcement", "Report received", f"BizHub received your report about @{target['username']}. Our team will review it before taking action.", url_for("notifications"))
+            notify_admin_event("report", f"@{reporter['username']} reported @{target['username']} ({target['role']}). Category: {category}.", url_for("admin_dashboard"))
             return redirect(url_for("notifications"))
         return render_template("report.html", target=target, report_error="Please describe what happened.")
     return render_template("report.html", target=target)
@@ -1517,7 +1778,23 @@ def toggle_favorite(username):
         query_db("DELETE FROM favorites WHERE id = ?", (existing["id"],))
     else:
         query_db("INSERT INTO favorites (customer_id, vendor_id, created_at) VALUES (?, ?, ?)", (customer["id"], vendor["id"], datetime.now(timezone.utc).isoformat()))
-        create_notification(vendor["id"], "favorite", "New Favorite", f"@{session['username']} added your store to their favorites.", url_for("vendor_profile", username=username))
+        company_name = vendor.get("company_name") or vendor.get("username") or username
+        profile_link = url_for("vendor_profile", username=vendor["username"])
+        create_notification(
+            vendor["id"],
+            "favorite",
+            "New Favorite",
+            f"@{session['username']} added your store to their favorites.",
+            profile_link
+        )
+        # Confirm the successful favorite action to the customer immediately.
+        create_notification(
+            customer["id"],
+            "favorite",
+            "Favorite added",
+            f"Thank you for adding {company_name} to your favorites. Hope you enjoy our services.",
+            profile_link
+        )
     return redirect(request.referrer or url_for("vendor_profile", username=username))
 
 @app.route("/notifications/<int:notification_id>/read", methods=["POST"])
@@ -1612,13 +1889,15 @@ def features():
         loyalty = {"points": 0}
     reviews = query_db("SELECT r.*, u.username AS vendor_username, u.company_name FROM reviews r JOIN users u ON u.id = r.vendor_id WHERE r.reviewer_id = ? ORDER BY r.id DESC", (user["id"],)) or []
     delivery_requests = query_db("SELECT dr.*, ds.service_name FROM delivery_requests dr JOIN delivery_services ds ON ds.id = dr.service_id WHERE dr.vendor_id = ? ORDER BY dr.id DESC", (user["id"],)) or []
+    rated_request_ids = {r["request_id"] for r in (query_db("SELECT request_id FROM delivery_ratings WHERE vendor_id = ?", (user["id"],)) or [])}
+    verification_request = query_db("SELECT * FROM verification_requests WHERE user_id = ? ORDER BY id DESC LIMIT 1", (user["id"],), one=True)
     saved_searches = query_db("SELECT * FROM saved_searches WHERE user_id = ? ORDER BY id DESC", (user["id"],)) or []
     analytics = None
     coupons = []
     if user["role"] in ["Vendor", "Fast Food"]:
         analytics = query_db("SELECT COUNT(*) AS listings, COALESCE(SUM(views), 0) AS views, COALESCE(SUM(sold_quantity), 0) AS sold_units FROM products WHERE seller = ?", (user["username"],), one=True)
         coupons = query_db("SELECT * FROM coupons WHERE vendor_id = ? ORDER BY id DESC", (user["id"],)) or []
-    return render_template("features.html", user=user, loyalty=loyalty, reviews=reviews, delivery_requests=delivery_requests, saved_searches=saved_searches, analytics=analytics, coupons=coupons, verification_sent=request.args.get("verification_sent") == "1")
+    return render_template("features.html", user=user, loyalty=loyalty, reviews=reviews, delivery_requests=delivery_requests, rated_request_ids=rated_request_ids, verification_request=verification_request, saved_searches=saved_searches, analytics=analytics, coupons=coupons, verification_sent=request.args.get("verification_sent") == "1")
 
 @app.route("/coupons", methods=["POST"])
 def create_coupon():
@@ -1627,13 +1906,26 @@ def create_coupon():
     vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
     code = request.form.get("code", "").strip().upper()
     description = request.form.get("description", "").strip()
+    expires_at = request.form.get("expires_at", "").strip() or None
     try:
         discount = float(request.form.get("discount", 0))
-    except ValueError:
-        discount = 0
-    if vendor and code and description and 0 < discount <= 100:
+        max_redemptions = int(request.form.get("max_redemptions", 0) or 0)
+    except (TypeError, ValueError):
+        discount, max_redemptions = 0, -1
+    expiry_ok = True
+    if expires_at:
         try:
-            query_db("INSERT INTO coupons (vendor_id, code, description, discount, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?)", (vendor["id"], code, description, discount, request.form.get("expires_at") or None, datetime.now(timezone.utc).isoformat()))
+            expiry_date = datetime.strptime(expires_at, "%Y-%m-%d").date()
+            expiry_ok = expiry_date >= datetime.now(timezone.utc).date()
+        except ValueError:
+            expiry_ok = False
+    code_ok = bool(re.fullmatch(r"[A-Z0-9][A-Z0-9_-]{2,31}", code))
+    if vendor and code_ok and description and 0 < discount <= 100 and max_redemptions >= 0 and expiry_ok:
+        try:
+            query_db(
+                "INSERT INTO coupons (vendor_id, code, description, discount, max_redemptions, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (vendor["id"], code, description[:200], discount, max_redemptions, expires_at, datetime.now(timezone.utc).isoformat())
+            )
         except sqlite3.IntegrityError:
             pass
     return redirect(url_for("features"))
@@ -1659,11 +1951,18 @@ def request_verification():
     if session.get("role") not in ["Vendor", "Fast Food", "Delivery Service"]:
         return redirect(url_for("login"))
     user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    user_message = request.form.get("user_message", "").strip()[:2000]
     if user:
         pending = query_db("SELECT id FROM verification_requests WHERE user_id = ? AND status = 'Pending'", (user["id"],), one=True)
         if not pending:
-            query_db("INSERT INTO verification_requests (user_id, created_at) VALUES (?, ?)", (user["id"], datetime.now(timezone.utc).isoformat()))
+            query_db(
+                "INSERT INTO verification_requests (user_id, user_message, created_at) VALUES (?, ?, ?)",
+                (user["id"], user_message or None, datetime.now(timezone.utc).isoformat())
+            )
             create_notification(user["id"], "announcement", "Verification request sent", "Your BizHub verification request has been sent. BizHub will review it and notify you of the outcome.", url_for("features"))
+            full_user = query_db("SELECT username, role, company_name FROM users WHERE id = ?", (user["id"],), one=True)
+            if full_user:
+                notify_admin_event("verification", f"@{full_user['username']} ({full_user['role']}) submitted a verification request.", url_for("admin_dashboard"))
         return redirect(url_for("features", verification_sent="1"))
     return redirect(url_for("features"))
 
@@ -1672,7 +1971,7 @@ def request_delivery(service_id):
     if session.get("role") not in ["Vendor", "Fast Food"]:
         return redirect(url_for("login"))
     vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
-    service = query_db("SELECT ds.id, ds.service_name, ds.user_id FROM delivery_services ds WHERE ds.id = ?", (service_id,), one=True)
+    service = query_db("SELECT ds.id, ds.service_name, ds.user_id FROM delivery_services ds JOIN users u ON u.id = ds.user_id WHERE ds.id = ? AND ds.availability = 'Available' AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')", (service_id,), one=True)
     message = request.form.get("message", "Delivery request from BizHub.").strip() or "Delivery request from BizHub."
     if vendor and service:
         now = datetime.now(timezone.utc).isoformat()
@@ -1682,18 +1981,86 @@ def request_delivery(service_id):
 
 @app.route("/delivery/requests/<int:request_id>/status", methods=["POST"])
 def update_delivery_request(request_id):
-    if "username" not in session:
+    if session.get("role") != "Delivery Service":
         return redirect(url_for("login"))
-    user = query_db("SELECT id, role FROM users WHERE username = ?", (session["username"],), one=True)
-    allowed = {"Requested", "Accepted", "Picked Up", "Delivered", "Declined"}
-    status = request.form.get("status", "Requested")
-    if status not in allowed or not user:
-        return redirect(request.referrer or url_for("features"))
-    if user["role"] == "Delivery Service":
-        query_db("UPDATE delivery_requests SET status = ?, updated_at = ? WHERE id = ? AND service_id IN (SELECT id FROM delivery_services WHERE user_id = ?)", (status, datetime.now(timezone.utc).isoformat(), request_id, user["id"]))
+    user = query_db("SELECT id FROM users WHERE username = ? AND role = 'Delivery Service'", (session["username"],), one=True)
+    if not user:
+        return redirect(url_for("login"))
+
+    delivery_req = query_db(
+        "SELECT dr.*, ds.service_name, ds.user_id AS service_user_id FROM delivery_requests dr JOIN delivery_services ds ON ds.id = dr.service_id WHERE dr.id = ? AND ds.user_id = ?",
+        (request_id, user["id"]), one=True
+    )
+    if not delivery_req:
+        return redirect(request.referrer or url_for("delivery_dashboard"))
+
+    requested_status = request.form.get("status", "")
+    transitions = {
+        "Requested": {"Accepted", "Declined"},
+        "Accepted": {"Picked Up", "Declined"},
+        "Picked Up": {"Delivered"},
+        "Delivered": set(),
+        "Declined": set(),
+    }
+    if requested_status not in transitions.get(delivery_req["status"], set()):
+        return redirect(request.referrer or url_for("delivery_dashboard"))
+
+    now = datetime.now(timezone.utc).isoformat()
+    updated = query_db(
+        "UPDATE delivery_requests SET status = ?, updated_at = ? WHERE id = ? AND service_id = (SELECT id FROM delivery_services WHERE user_id = ?) AND status = ?",
+        (requested_status, now, request_id, user["id"], delivery_req["status"])
+    )
+    # query_db returns no row count for UPDATE; the guarded WHERE above prevents cross-service changes.
+    status_messages = {
+        "Accepted": f"{delivery_req['service_name']} accepted your delivery request.",
+        "Picked Up": f"{delivery_req['service_name']} has picked up your order.",
+        "Delivered": f"{delivery_req['service_name']} marked your order as delivered. Please rate the service.",
+        "Declined": f"{delivery_req['service_name']} declined your delivery request.",
+    }
+    msg = status_messages.get(requested_status)
+    if msg:
+        create_notification(delivery_req["vendor_id"], "delivery", f"Delivery {requested_status}", msg, url_for("features"))
+    return redirect(request.referrer or url_for("delivery_dashboard"))
+
+@app.route("/delivery/requests/<int:request_id>/rate", methods=["POST"])
+def rate_delivery(request_id):
+    if session.get("role") not in ["Vendor", "Fast Food"]:
+        return redirect(url_for("login"))
+    vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if not vendor:
+        return redirect(url_for("features"))
+
+    delivery_req = query_db(
+        "SELECT dr.*, ds.service_name, ds.user_id AS service_user_id FROM delivery_requests dr JOIN delivery_services ds ON ds.id = dr.service_id WHERE dr.id = ? AND dr.vendor_id = ? AND dr.status = 'Delivered'",
+        (request_id, vendor["id"]), one=True
+    )
+    if not delivery_req:
+        return redirect(url_for("features"))
+
+    try:
+        rating = int(request.form.get("rating", 5))
+    except ValueError:
+        rating = 5
+    rating = max(1, min(5, rating))
+    comment = request.form.get("comment", "").strip()
+
+    existing = query_db("SELECT id FROM delivery_ratings WHERE request_id = ?", (request_id,), one=True)
+    if existing:
+        query_db("UPDATE delivery_ratings SET rating = ?, comment = ?, created_at = ? WHERE request_id = ?",
+                 (rating, comment, datetime.now(timezone.utc).isoformat(), request_id))
     else:
-        query_db("UPDATE delivery_requests SET status = ?, updated_at = ? WHERE id = ? AND vendor_id = ?", (status, datetime.now(timezone.utc).isoformat(), request_id, user["id"]))
-    return redirect(request.referrer or url_for("features"))
+        query_db("INSERT INTO delivery_ratings (vendor_id, service_id, request_id, rating, comment, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                 (vendor["id"], delivery_req["service_id"], request_id, rating, comment, datetime.now(timezone.utc).isoformat()))
+
+    # Notify delivery service of the new rating
+    stars = "★" * rating + "☆" * (5 - rating)
+    msg = f"@{session['username']} rated your delivery {stars} ({rating}/5)."
+    if comment:
+        msg += f' "{comment}"'
+    create_notification(delivery_req["service_user_id"], "delivery", "New delivery rating", msg, url_for("features"))
+
+    return redirect(url_for("features"))
+
 
 @app.route("/disputes", methods=["POST"])
 def submit_dispute():
@@ -1703,8 +2070,10 @@ def submit_dispute():
     subject = request.form.get("subject", "Order or payment dispute").strip()
     details = request.form.get("details", "").strip()
     if user and subject and details:
-        query_db("INSERT INTO disputes (reporter_id, order_id, subject, details, created_at) VALUES (?, ?, ?, ?, ?)", (user["id"], request.form.get("order_id") or None, subject, details, datetime.now(timezone.utc).isoformat()))
+        order_id = request.form.get("order_id") or None
+        query_db("INSERT INTO disputes (reporter_id, order_id, subject, details, created_at) VALUES (?, ?, ?, ?, ?)", (user["id"], order_id, subject, details, datetime.now(timezone.utc).isoformat()))
         create_notification(user["id"], "announcement", "Dispute received", "BizHub received your dispute for review.", url_for("features"))
+        notify_admin_event("dispute", f"@{session['username']} submitted a dispute: {subject}." + (f" Order #{order_id}." if order_id else ""), url_for("admin_dashboard"))
     return redirect(url_for("features"))
 
 @app.route("/saved-searches", methods=["POST"])
@@ -1839,6 +2208,7 @@ def delivery_register():
             return render_template("delivery_register.html", error="That username is already in use.", delivery_types=DELIVERY_TYPES)
         session.clear()
         session.update(username=username, email=email, role="Delivery Service", seller_type="Delivery Service", company_name=service_name, whatsapp_number=phone_number, theme="day")
+        notify_admin_event("delivery_registration", f"{service_name} (@{username}) registered as a Delivery Service in {operating_location}.", url_for("admin_dashboard"))
         session["welcome_message"] = True
         return redirect(url_for("delivery_dashboard"))
     return render_template("delivery_register.html", delivery_types=DELIVERY_TYPES)
@@ -1850,8 +2220,35 @@ def delivery_dashboard():
     welcome_message = bool(session.pop("welcome_message", False))
     sync_delivery_availability()
     user = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
-    service = get_delivery_service(user["id"]) if user else None
-    return render_template("delivery_dashboard.html", user=user, service=service, delivery_types=DELIVERY_TYPES, welcome_message=welcome_message)
+    if not user:
+        session.clear()
+        return redirect(url_for("login"))
+
+    service = get_delivery_service(user["id"])
+    delivery_requests = query_db(
+        "SELECT dr.*, u.username AS vendor_username, u.company_name AS vendor_company_name FROM delivery_requests dr JOIN users u ON u.id = dr.vendor_id WHERE dr.service_id = ? ORDER BY dr.id DESC",
+        (service["id"],) if service else (-1,)
+    ) or []
+    notifications = query_db(
+        "SELECT * FROM notifications WHERE recipient_id = ? ORDER BY id DESC LIMIT 50",
+        (user["id"],)
+    ) or []
+    unread_count = sum(1 for row in notifications if not row["is_read"])
+    verification_request = query_db(
+        "SELECT * FROM verification_requests WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+        (user["id"],)
+    , one=True)
+    return render_template(
+        "delivery_dashboard.html",
+        user=user,
+        service=service,
+        delivery_types=DELIVERY_TYPES,
+        delivery_requests=delivery_requests,
+        notifications=notifications,
+        unread_count=unread_count,
+        verification_request=verification_request,
+        welcome_message=welcome_message
+    )
 
 @app.route("/delivery/availability", methods=["POST"])
 def delivery_availability():
@@ -1879,20 +2276,57 @@ def delivery_services():
     search_pattern = f"%{company}%"
     location_pattern = f"%{location}%"
     rows = query_db("SELECT ds.*, u.id AS user_id, u.username FROM delivery_services ds JOIN users u ON u.id = ds.user_id WHERE (? = '' OR ds.operating_location LIKE ? OR ds.service_area LIKE ?) AND (? = '' OR ds.service_name LIKE ? OR u.username LIKE ?) ORDER BY CASE WHEN ds.availability = 'Available' THEN 0 ELSE 1 END, ds.operating_location, ds.service_name", (location, location_pattern, location_pattern, company, search_pattern, search_pattern)) or []
-    return render_template("delivery_service.html", services=rows, location=location, company=company)
+    # Attach average rating and count to each service
+    rating_rows = query_db("SELECT service_id, ROUND(AVG(rating), 1) AS avg_rating, COUNT(*) AS rating_count FROM delivery_ratings GROUP BY service_id") or []
+    ratings_map = {r["service_id"]: r for r in rating_rows}
+    services = []
+    for row in rows:
+        r = dict(row)
+        stats = ratings_map.get(r["id"], {})
+        r["avg_rating"] = stats.get("avg_rating")
+        r["rating_count"] = stats.get("rating_count", 0)
+        services.append(r)
+    return render_template("delivery_service.html", services=services, location=location, company=company)
 
 @app.route("/delivery/contact/<int:service_id>", methods=["POST"])
 def contact_delivery(service_id):
     if not delivery_access_allowed():
         return redirect(url_for("delivery_subscription", feature="delivery"))
     sync_delivery_availability()
-    service = query_db("SELECT ds.*, u.id AS user_id FROM delivery_services ds JOIN users u ON u.id = ds.user_id WHERE ds.id = ? AND ds.availability = 'Available' AND u.subscription_expires_at > ?", (service_id, datetime.now(timezone.utc).isoformat()), one=True)
+    service = query_db(
+        "SELECT ds.*, u.id AS user_id FROM delivery_services ds JOIN users u ON u.id = ds.user_id WHERE ds.id = ? AND ds.availability = 'Available' AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated') AND u.subscription_expires_at > ?",
+        (service_id, datetime.now(timezone.utc).isoformat()), one=True
+    )
     if not service:
         return redirect(url_for("delivery_services"))
-    vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
-    if vendor:
-        create_notification(service["user_id"], "delivery", f"Delivery request from @{session['username']}", f"A subscribed BizHub vendor is contacting {service['service_name']} for delivery service.", url_for("delivery_dashboard"))
-    return redirect("https://wa.me/" + normalize_whatsapp_number(service["phone_number"]) + "?text=" + quote(f"Hello {service['service_name']}, I found your delivery service on BizHub. I would like to arrange delivery."))
+
+    requester = query_db("SELECT id, username FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food')", (session["username"],), one=True)
+    if requester:
+        service_name = service.get("service_name") or service.get("username") or "the delivery service"
+        dashboard_link = url_for("delivery_dashboard")
+        create_notification(
+            service["user_id"],
+            "delivery",
+            f"Delivery request from @{requester['username']}",
+            f"@{requester['username']} is contacting {service_name} to arrange delivery.",
+            dashboard_link
+        )
+        create_notification(
+            requester["id"],
+            "delivery",
+            "Delivery service contacted",
+            f"Your request to contact {service_name} has been sent. You can continue the arrangement via WhatsApp.",
+            url_for("notifications")
+        )
+
+    phone = normalize_whatsapp_number(service.get("phone_number"))
+    if not phone:
+        return redirect(url_for("delivery_services"))
+    return redirect(
+        "https://wa.me/" + phone + "?text=" + quote(
+            f"Hello {service.get('service_name') or 'Delivery Service'}, I found your delivery service on BizHub. I would like to arrange delivery."
+        )
+    )
 
 @app.route("/subscription")
 def subscription():
@@ -2055,6 +2489,7 @@ def log_payment():
     if tx_type == "Subscription" and (amount <= 0 or not query_db("SELECT id FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food', 'Delivery Service')", (username,), one=True)):
         return redirect(url_for("admin_dashboard"))
     query_db("INSERT INTO financial_ledger (transaction_type, username, amount, momo_reference, status, created_at) VALUES (?, ?, ?, ?, 'Pending', ?)", (tx_type, username, amount, ref, datetime.now(timezone.utc).isoformat()))
+    notify_admin_event("payment", f"Admin recorded {tx_type} payment for @{username}: {amount:.2f}. Reference: {ref}.", url_for("admin_dashboard"))
     if tx_type == "Subscription" and amount > 0:
         entry = query_db("SELECT id FROM financial_ledger WHERE momo_reference = ?", (ref,), one=True)
         if entry:
@@ -2385,6 +2820,8 @@ def register():
                 conn.commit()
                     
             conn.close()
+
+            notify_admin_event("registration", f"@{username} registered as {role}" + (f" ({company_name})" if company_name else "."), url_for("admin_dashboard"))
                     
             session.clear()
             session["username"] = username
