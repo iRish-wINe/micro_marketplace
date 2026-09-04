@@ -1,3 +1,364 @@
-<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>BizHub Notifications</title><style>body{font-family:system-ui,sans-serif;background:#f4f7fb;color:#172033;margin:0;padding:18px}.wrap{max-width:850px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}.top a,.quick a,.item a{color:#1d4ed8;font-weight:800;text-decoration:none}.count{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:#ef4444;color:#fff;font-size:12px}.quick{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.quick a{background:#fff;border:1px solid #dbe3ed;border-radius:8px;padding:9px 12px;font-size:12px}.item{background:#fff;padding:16px;border-radius:10px;margin:10px 0;box-shadow:0 3px 15px #0000000b;border:1px solid #e5e7eb}.unread{border-left:5px solid #f59e0b}.item p{color:#64748b;line-height:1.5}.item form{display:inline}.item button,.mark-all{padding:8px 10px;border:1px solid #dbe3ed;border-radius:7px;background:#fff;color:#334155;font-weight:800;cursor:pointer}</style></head><body><main class="wrap"><div class="top"><div><h1>🔔 Notifications <span class="count">{{ unread_count }}</span></h1><p>Updates from BizHub, your favorite vendors, and account activity.</p></div><a href="{{ url_for('home') }}">Back to Marketplace</a></div><div class="quick"><a href="{{ url_for('favorites') if user['role']=='Customer' else url_for('home') }}">{% if user['role']=='Customer' %}⭐ Favorite vendors{% else %}🏪 Marketplace{% endif %}</a>{% if user['role'] in ['Vendor','Fast Food'] %}<a href="{{ url_for('promotions') }}">🔥 Manage promotions</a><a href="{{ url_for('vendor_profile', username=user['username']) }}">🏬 My store</a>{% elif user['role']=='Delivery Service' %}<a href="{{ url_for('delivery_dashboard') }}">🚚 Delivery dashboard</a>{% endif %}<a href="{{ url_for('settings') }}">⚙️ Account settings</a></div>{% if unread_count %}<form method="post" action="{{ url_for('mark_all_notifications_read') if user['role']!='Customer' else url_for('mark_all_notifications_read') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="mark-all">Mark all as read</button></form>{% endif %}{% for n in notifications %}<article class="item {% if not n['is_read'] %}unread{% endif %}"><strong>{{ n['title'] }}</strong><p>{{ n['message'] }}</p>{% if n['link'] %}<a href="{{ n['link'] }}">Open</a>{% endif %}{% if not n['is_read'] %}<form method="post" action="{{ url_for('mark_customer_notification_read', notification_id=n['id']) if user['role']=='Customer' else url_for('mark_notification_read', notification_id=n['id']) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button>Mark read</button></form>{% endif %}</article>{% else %}<div class="item">No notifications yet.</div>{% endfor %}</main></body></html>
-<script>if("serviceWorker" in navigator && "PushManager" in window){fetch("/push/vapid-public-key").then(r=>r.json()).then(async k=>{if(!k.public_key)return;const reg=await navigator.serviceWorker.register("/service-worker.js");let s=await reg.pushManager.getSubscription();if(!s)s=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:Uint8Array.from(atob(k.public_key.replace(/-/g,"+").replace(/_/g,"/")),c=>c.charCodeAt(0))});await fetch("/push/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(s)});}).catch(()=>{});}</script>
-<div style="position:fixed;top:0;left:0;right:0;z-index:10;background:#ffffff;border-bottom:1px solid #dbe3ed;padding:8px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 8px #0000000d;"><img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub logo" style="width:38px;height:38px;border-radius:10px;"><div><strong style="display:block;color:#12335b;font-size:18px;line-height:1.1;">Biz<span style="color:#f59e0b;">Hub</span></strong><small style="display:block;color:#64748b;font-size:11px;margin-top:2px;">Your Local Market, Unified Online</small></div></div><div style="height:58px;"></div>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BizHub Notifications</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background: #f4f7fb;
+            color: #172033;
+            margin: 0;
+            padding: 18px;
+        }
+        .wrap { max-width: 850px; margin: auto; }
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .top a, .quick a, .item a {
+            color: #1d4ed8;
+            font-weight: 800;
+            text-decoration: none;
+        }
+        .count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 24px;
+            height: 24px;
+            padding: 0 7px;
+            border-radius: 999px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 12px;
+        }
+        .quick {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 18px 0;
+        }
+        .quick a {
+            background: #fff;
+            border: 1px solid #dbe3ed;
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 12px;
+        }
+        .item {
+            background: #fff;
+            padding: 16px;
+            border-radius: 10px;
+            margin: 10px 0;
+            box-shadow: 0 3px 15px #0000000b;
+            border: 1px solid #e5e7eb;
+        }
+        .unread { border-left: 5px solid #f59e0b; }
+        .item p { color: #64748b; line-height: 1.5; }
+        .item form { display: inline; }
+        .item button, .mark-all {
+            padding: 8px 10px;
+            border: 1px solid #dbe3ed;
+            border-radius: 7px;
+            background: #fff;
+            color: #334155;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .open-btn {
+            display: inline-block;
+            padding: 8px 10px;
+            border: 1px solid #dbe3ed;
+            border-radius: 7px;
+            background: #12335b;
+            color: #fff;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .message-modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(7, 17, 31, .62);
+            z-index: 1000;
+        }
+        .message-modal.open { display: flex; }
+        .message-card {
+            width: min(560px, 100%);
+            background: #fff;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .28);
+        }
+        .message-card h2 { margin: 0 0 8px; color: #12335b; }
+        .message-body {
+            white-space: pre-wrap;
+            line-height: 1.65;
+            color: #334155;
+        }
+        .message-meta {
+            font-size: 12px;
+            color: #94a3b8;
+            margin: 10px 0 14px;
+        }
+        .message-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .message-actions button, .message-actions a {
+            padding: 9px 12px;
+            border-radius: 8px;
+            border: 1px solid #dbe3ed;
+            font-weight: 800;
+            text-decoration: none;
+        }
+        .message-actions button {
+            background: #fff;
+            color: #334155;
+            cursor: pointer;
+        }
+        .message-actions a {
+            background: #f59e0b;
+            color: #111827;
+            border-color: #f59e0b;
+        }
+    </style>
+</head>
+<body
+    data-vapid-url="{{ url_for('vapid_public_key') }}"
+    data-service-worker-url="{{ url_for('service_worker') }}"
+    data-subscribe-push-url="{{ url_for('subscribe_push') }}"
+    data-csrf-token="{{ csrf_token }}"
+>
+    <main class="wrap">
+        <div class="top">
+            <div>
+                <h1>
+                    🔔 Notifications
+                    <span class="count">{{ unread_count }}</span>
+                </h1>
+                <p>Updates from BizHub, your favorite vendors, and account activity.</p>
+            </div>
+            <a href="{{ url_for('home') }}">Back to Marketplace</a>
+        </div>
+
+        <div class="quick">
+            <a href="{{ url_for('favorites') if user['role'] == 'Customer' else url_for('home') }}">
+                {% if user['role'] == 'Customer' %}⭐ Favorite vendors{% else %}🏪 Marketplace{% endif %}
+            </a>
+
+            {% if user['role'] in ['Vendor', 'Fast Food'] %}
+                <a href="{{ url_for('promotions') }}">🔥 Manage promotions</a>
+                <a href="{{ url_for('vendor_profile', username=user['username']) }}">🏬 My store</a>
+            {% elif user['role'] == 'Delivery Service' %}
+                <a href="{{ url_for('delivery_dashboard') }}">🚚 Delivery dashboard</a>
+            {% endif %}
+
+            <a href="{{ url_for('settings') }}">⚙️ Account settings</a>
+        </div>
+
+        {% if unread_count %}
+            <form method="post" action="{{ url_for('mark_all_notifications_read') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button class="mark-all" type="submit">Mark all as read</button>
+            </form>
+        {% endif %}
+
+        {% for n in notifications %}
+            <article class="item {% if not n['is_read'] %}unread{% endif %}">
+                <strong>{{ n['title'] }}</strong>
+                <p>{{ n['message'] }}</p>
+
+                <div>
+                    <button
+                        type="button"
+                        class="open-btn"
+                        data-id="{{ n['id'] }}"
+                        data-title="{{ n['title']|e }}"
+                        data-message="{{ n['message']|e }}"
+                        data-created="{{ n['created_at']|e }}"
+                        data-link="{{ n['link']|default('', true)|e }}"
+                        data-read="{{ '1' if n['is_read'] else '0' }}"
+                        data-read-url="{% if user['role'] == 'Customer' %}{{ url_for('mark_customer_notification_read', notification_id=n['id']) }}{% else %}{{ url_for('mark_notification_read', notification_id=n['id']) }}{% endif %}"
+                        onclick="openNotification(this)"
+                    >
+                        Open
+                    </button>
+
+                    {% if not n['is_read'] %}
+                        <form
+                            method="post"
+                            action="{% if user['role'] == 'Customer' %}{{ url_for('mark_customer_notification_read', notification_id=n['id']) }}{% else %}{{ url_for('mark_notification_read', notification_id=n['id']) }}{% endif %}"
+                            style="display:inline;margin-left:6px"
+                        >
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit">Mark read</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </article>
+        {% else %}
+            <div class="item">No notifications yet.</div>
+        {% endfor %}
+    </main>
+
+    <div
+        id="notificationModal"
+        class="message-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="notificationModalTitle"
+        onclick="if (event.target === this) closeNotification()"
+    >
+        <div class="message-card">
+            <button type="button" class="modal-close" onclick="closeNotification()">Close</button>
+            <h2 id="notificationModalTitle">BizHub notification</h2>
+            <div id="notificationModalMeta" class="message-meta"></div>
+            <div id="notificationModalBody" class="message-body"></div>
+            <div id="notificationModalActions" class="message-actions" style="margin-top:18px"></div>
+        </div>
+    </div>
+
+    <script>
+        function openNotification(button) {
+            const modal = document.getElementById('notificationModal');
+            const actions = document.getElementById('notificationModalActions');
+
+            document.getElementById('notificationModalTitle').textContent =
+                button.dataset.title || 'BizHub notification';
+            document.getElementById('notificationModalMeta').textContent =
+                button.dataset.created || '';
+            document.getElementById('notificationModalBody').textContent =
+                button.dataset.message || '';
+
+            actions.innerHTML = '';
+
+            if (button.dataset.link) {
+                const link = document.createElement('a');
+                link.href = button.dataset.link;
+                link.textContent = 'Go to related page';
+                actions.appendChild(link);
+            }
+
+            if (button.dataset.read !== '1' && button.dataset.readUrl) {
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.action = button.dataset.readUrl;
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'csrf_token';
+                input.value = document.body.dataset.csrfToken || '';
+
+                const markReadButton = document.createElement('button');
+                markReadButton.type = 'submit';
+                markReadButton.textContent = 'Mark as read';
+
+                form.appendChild(input);
+                form.appendChild(markReadButton);
+                actions.appendChild(form);
+            }
+
+            modal.classList.add('open');
+        }
+
+        function closeNotification() {
+            document.getElementById('notificationModal').classList.remove('open');
+        }
+
+        function setupBizHubPush() {
+            if (
+                !('serviceWorker' in navigator) ||
+                !('PushManager' in window) ||
+                !('Notification' in window)
+            ) {
+                return Promise.resolve(false);
+            }
+
+            return fetch(document.body.dataset.vapidUrl)
+                .then(function (response) {
+                    return response.ok ? response.json() : null;
+                })
+                .then(async function (keyData) {
+                    if (!keyData || !keyData.public_key) {
+                        return false;
+                    }
+
+                    const registration = await navigator.serviceWorker.register(document.body.dataset.serviceWorkerUrl,
+                        { scope: '/' }
+                    );
+
+                    let subscription = await registration.pushManager.getSubscription();
+
+                    if (!subscription) {
+                        if (Notification.permission === 'denied') {
+                            return false;
+                        }
+
+                        if (Notification.permission !== 'granted') {
+                            const permission = await Notification.requestPermission();
+                            if (permission !== 'granted') {
+                                return false;
+                            }
+                        }
+
+                        const padding = '='.repeat((4 - keyData.public_key.length % 4) % 4);
+                        const base64 = keyData.public_key
+                            .replace(/-/g, '+')
+                            .replace(/_/g, '/') + padding;
+
+                        const applicationServerKey = Uint8Array.from(
+                            atob(base64),
+                            function (character) {
+                                return character.charCodeAt(0);
+                            }
+                        );
+
+                        subscription = await registration.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: applicationServerKey
+                        });
+                    }
+
+                    await fetch(document.body.dataset.subscribePushUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(subscription)
+                    });
+
+                    return true;
+                })
+                .catch(function () {
+                    return false;
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            setupBizHubPush();
+
+            document.addEventListener(
+                'click',
+                function () {
+                    if (
+                        'Notification' in window &&
+                        Notification.permission === 'default'
+                    ) {
+                        setupBizHubPush();
+                    }
+                },
+                { once: true }
+            );
+        });
+    </script>
+</body>
+</html>

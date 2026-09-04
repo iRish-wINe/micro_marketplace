@@ -4,11 +4,13 @@ import uuid
 import re
 import json
 import logging
+import hashlib
+import base64
 import smtplib
 from email.message import EmailMessage
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
-from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, render_template_string
+from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, render_template_string, Response
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import RequestEntityTooLarge
@@ -585,14 +587,19 @@ def dispatch_external_notifications(user, title, message, link=None):
         except Exception:
             logger.exception("BizHub Firebase notification failed")
 
-    vapid_private_key = os.environ.get("BIZ_HUB_VAPID_PRIVATE_KEY")
+    _, vapid_private_key = _bizhub_vapid_material()
     if vapid_private_key:
         try:
             from pywebpush import webpush
             subscriptions = query_db("SELECT id, subscription_json FROM push_subscriptions WHERE user_id = ?", (user["id"],)) or []
             for subscription in subscriptions:
                 try:
-                    webpush(subscription_info=json.loads(subscription["subscription_json"]), data=json.dumps({"title": title, "message": message, "link": link}), vapid_private_key=vapid_private_key, vapid_claims={"sub": os.environ.get("BIZ_HUB_VAPID_SUBJECT", "mailto:admin@bizhub.local")})
+                    webpush(
+                        subscription_info=json.loads(subscription["subscription_json"]),
+                        data=json.dumps({"title": title, "message": message, "link": link}),
+                        vapid_private_key=vapid_private_key,
+                        vapid_claims={"sub": os.environ.get("BIZ_HUB_VAPID_SUBJECT", "mailto:notifications@bizhub.local")}
+                    )
                 except Exception as push_error:
                     if getattr(push_error, "response", None) is not None and push_error.response.status_code in (404, 410):
                         query_db("DELETE FROM push_subscriptions WHERE id = ?", (subscription["id"],))
@@ -612,6 +619,22 @@ def create_notification(recipient_id, notification_type, title, message, link=No
     )
     recipient = query_db("SELECT * FROM users WHERE id = ?", (recipient_id,), one=True)
     dispatch_external_notifications(recipient, title, message, link)
+
+def notify_account_enforcement(user_id, action, reason):
+    """Send moderation outcomes to the affected user through BizHub notifications."""
+    if not user_id:
+        return
+    labels = {
+        "Warned": ("Account warning", "Your BizHub account has received an official warning."),
+        "Suspended": ("Account suspended", "Your BizHub account has been suspended."),
+        "Terminated": ("Account terminated", "Your BizHub account has been terminated."),
+        "Active": ("Account restored", "Your BizHub account has been restored and is active again."),
+    }
+    title, intro = labels.get(action, ("Account update", f"Your BizHub account status is now {action}."))
+    detail = (reason or "No additional reason was provided.").strip()
+    message = f"{intro} Reason: {detail}"
+    link = url_for("rules") if action in {"Suspended", "Terminated"} else url_for("notifications")
+    create_notification(user_id, "announcement", title, message, link)
 
 def get_valid_coupon(code):
     if not code:
@@ -704,9 +727,73 @@ def admin_signup_available():
 def is_admin():
     return session.get("is_admin") is True
 
+def _bizhub_vapid_material():
+    """Return stable VAPID keys derived from the existing BizHub app secret."""
+    secret = os.environ.get("BIZ_HUB_SECRET_KEY", "commercial_marketplace_super_secret_token")
+    curve_order = int("FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551", 16)
+    scalar = int.from_bytes(hashlib.sha256(("BizHub-VAPID:" + secret).encode("utf-8")).digest(), "big") % (curve_order - 1) + 1
+    try:
+        from cryptography.hazmat.primitives.asymmetric import ec
+        from cryptography.hazmat.primitives import serialization
+        private_key = ec.derive_private_key(scalar, ec.SECP256R1())
+        public_key = private_key.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint)
+        private_pem = private_key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()).decode("ascii")
+        public_b64 = base64.urlsafe_b64encode(public_key).rstrip(b"=").decode("ascii")
+        return public_b64, private_pem
+    except ImportError:
+        return "", ""
+
+
 @app.route("/service-worker.js")
 def service_worker():
-    return send_from_directory(app.static_folder, "service-worker.js", mimetype="application/javascript")
+    # Preserve the existing service-worker/cache behavior and append only the
+    # push handlers needed for BizHub notifications.
+    worker_path = os.path.join(app.static_folder, "service-worker.js")
+    try:
+        with open(worker_path, "r", encoding="utf-8") as worker_file:
+            worker_source = worker_file.read()
+    except OSError:
+        worker_source = ""
+    push_handlers = r'''
+
+/* BizHub push notification layer. */
+self.addEventListener("push", function(event) {
+    let payload = {};
+    try { payload = event.data ? event.data.json() : {}; } catch (e) {}
+    const title = payload.title || "BizHub";
+    const message = payload.message || "You have a new BizHub notification.";
+    const target = payload.link || "/notifications";
+    event.waitUntil(self.registration.showNotification(title, {
+        body: message,
+        icon: "/static/uploads/icon-192.png",
+        badge: "/static/uploads/icon-192.png",
+        tag: "bizhub-notification",
+        data: { link: target },
+        renotify: true
+    }));
+});
+
+self.addEventListener("notificationclick", function(event) {
+    event.notification.close();
+    const target = event.notification && event.notification.data && event.notification.data.link
+        ? event.notification.data.link
+        : "/notifications";
+    event.waitUntil(clients.matchAll({ type: "window", includeUncontrolled: true }).then(function(clientList) {
+        for (const client of clientList) {
+            if ("focus" in client) {
+                if ("navigate" in client) client.navigate(target);
+                return client.focus();
+            }
+        }
+        return clients.openWindow(target);
+    }));
+});
+'''
+    if "/* BizHub push notification layer. */" not in worker_source:
+        worker_source += push_handlers
+    response = Response(worker_source, mimetype="application/javascript")
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return response
 
 @app.route("/rules")
 def rules():
@@ -1479,7 +1566,10 @@ def subscribe_push():
 def vapid_public_key():
     if "username" not in session:
         return {"ok": False}, 401
-    return {"public_key": os.environ.get("BIZ_HUB_VAPID_PUBLIC_KEY", "")}
+    public_key, _ = _bizhub_vapid_material()
+    if not public_key:
+        return {"ok": False, "error": "Browser push support is unavailable on this server."}, 503
+    return {"public_key": public_key}
 
 @app.route("/push/firebase-token", methods=["POST"])
 def save_firebase_token():
@@ -1528,7 +1618,7 @@ def features():
     if user["role"] in ["Vendor", "Fast Food"]:
         analytics = query_db("SELECT COUNT(*) AS listings, COALESCE(SUM(views), 0) AS views, COALESCE(SUM(sold_quantity), 0) AS sold_units FROM products WHERE seller = ?", (user["username"],), one=True)
         coupons = query_db("SELECT * FROM coupons WHERE vendor_id = ? ORDER BY id DESC", (user["id"],)) or []
-    return render_template("features.html", user=user, loyalty=loyalty, reviews=reviews, delivery_requests=delivery_requests, saved_searches=saved_searches, analytics=analytics, coupons=coupons)
+    return render_template("features.html", user=user, loyalty=loyalty, reviews=reviews, delivery_requests=delivery_requests, saved_searches=saved_searches, analytics=analytics, coupons=coupons, verification_sent=request.args.get("verification_sent") == "1")
 
 @app.route("/coupons", methods=["POST"])
 def create_coupon():
@@ -1569,9 +1659,12 @@ def request_verification():
     if session.get("role") not in ["Vendor", "Fast Food", "Delivery Service"]:
         return redirect(url_for("login"))
     user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
-    if user and not query_db("SELECT id FROM verification_requests WHERE user_id = ? AND status = 'Pending'", (user["id"],), one=True):
-        query_db("INSERT INTO verification_requests (user_id, created_at) VALUES (?, ?)", (user["id"], datetime.now(timezone.utc).isoformat()))
-        create_notification(user["id"], "announcement", "Verification request received", "BizHub will review your verification request.", url_for("features"))
+    if user:
+        pending = query_db("SELECT id FROM verification_requests WHERE user_id = ? AND status = 'Pending'", (user["id"],), one=True)
+        if not pending:
+            query_db("INSERT INTO verification_requests (user_id, created_at) VALUES (?, ?)", (user["id"], datetime.now(timezone.utc).isoformat()))
+            create_notification(user["id"], "announcement", "Verification request sent", "Your BizHub verification request has been sent. BizHub will review it and notify you of the outcome.", url_for("features"))
+        return redirect(url_for("features", verification_sent="1"))
     return redirect(url_for("features"))
 
 @app.route("/delivery/request/<int:service_id>", methods=["POST"])
@@ -1936,6 +2029,7 @@ def review_report(report_id):
         query_db("INSERT INTO enforcement_actions (user_id, action, reason, created_at) VALUES (?, ?, ?, ?)", (report["target_user_id"], action, note, reviewed_at))
         if action in {"Suspended", "Terminated"}:
             query_db("UPDATE delivery_services SET availability = 'Unavailable', updated_at = ? WHERE user_id = ?", (reviewed_at, report["target_user_id"]))
+        notify_account_enforcement(report["target_user_id"], action, note)
     create_notification(report["reporter_id"], "announcement", "Report reviewed", f"Your report about @{report['target_username']} was reviewed by BizHub. Outcome: {action}.", url_for("notifications"))
     return redirect(url_for("admin_dashboard"))
 
@@ -2016,6 +2110,7 @@ def enforce_account(user_id):
     query_db("INSERT INTO admin_audit_log (admin_username, action, target_username, details, created_at) VALUES (?, ?, ?, ?, ?)", (session.get("admin_username", "admin"), "Account " + action, target["username"] if target else None, reason, datetime.now(timezone.utc).isoformat()))
     if action in ("Suspended", "Terminated"):
         query_db("UPDATE delivery_services SET availability = 'Unavailable', updated_at = ? WHERE user_id = ?", (datetime.now(timezone.utc).isoformat(), user_id))
+    notify_account_enforcement(user_id, action, reason)
     return redirect(url_for("admin_dashboard"))
 
 @app.route("/admin/delete-user/<int:user_id>", methods=["POST"])
