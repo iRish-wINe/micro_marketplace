@@ -4,42 +4,324 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0B192C">
-    <title>Premium Delivery | BizHub</title>
+    <title>Manage Accounts | BizHub Delivery</title>
     <style>
-        :root { --navy:#0B192C; --orange:#F59E0B; --blue:#1D4ED8; --bg:#EAEDED; --text:#0F172A; --muted:#64748B; --border:#D5D9D9; }
+        :root {
+            --navy:#0B192C;
+            --navy2:#13243A;
+            --orange:#F59E0B;
+            --orange-soft:#FFF7ED;
+            --blue:#1D4ED8;
+            --green:#166534;
+            --green-soft:#DCFCE7;
+            --bg:#EAEDED;
+            --text:#0F172A;
+            --muted:#64748B;
+            --border:#D5D9D9;
+            --white:#fff;
+        }
         * { box-sizing:border-box; }
-        body { margin:0; padding:env(safe-area-inset-top) 16px calc(30px + env(safe-area-inset-bottom)); background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; }
-        .nav { max-width:760px; margin:0 auto; padding:16px 0; display:flex; justify-content:space-between; align-items:center; gap:12px; }
-        .brand { color:var(--navy); font-size:21px; font-weight:900; text-decoration:none; }
+        body {
+            margin:0;
+            padding:env(safe-area-inset-top) 16px calc(34px + env(safe-area-inset-bottom));
+            background:var(--bg);
+            color:var(--text);
+            font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+        }
+        .nav {
+            max-width:900px;
+            margin:0 auto;
+            padding:12px 0 18px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:18px;
+        }
+        .brand {
+            color:var(--navy);
+            font-size:21px;
+            font-weight:900;
+            text-decoration:none;
+            white-space:nowrap;
+        }
         .brand span { color:var(--orange); }
-        .nav a:last-child { color:var(--blue); font-size:12px; font-weight:800; text-decoration:none; }
-        .wrap { max-width:760px; margin:24px auto; }
-        .hero, .plan { background:#fff; border:1px solid var(--border); border-radius:12px; padding:24px; box-shadow:0 3px 12px rgba(0,0,0,.06); }
-        .hero { background:var(--navy); color:#fff; }
-        .hero h1 { margin:0 0 8px; font-size:28px; }
-        .hero p { margin:0; color:#CBD5E1; line-height:1.5; font-size:14px; }
-        .notice { margin:18px 0; padding:13px; border-left:4px solid var(--orange); background:#FFF7ED; font-size:13px; line-height:1.5; }
-        .plan h2 { margin:0 0 8px; font-size:21px; }
-        .price { color:var(--blue); font-size:32px; font-weight:900; }
-        .price small { color:var(--muted); font-size:13px; font-weight:700; }
-        ul { padding-left:20px; color:var(--muted); line-height:1.9; }
-        .button { display:block; width:100%; margin-top:20px; padding:13px; border:0; border-radius:8px; background:var(--orange); color:#111827; text-align:center; text-decoration:none; font-weight:900; cursor:pointer; }
-        .secondary { background:#F8FAFC; border:1px solid var(--border); color:var(--blue); margin-top:8px; }
-        .active { padding:13px; border-radius:8px; background:#DCFCE7; color:#166534; font-weight:800; }
+        .nav-actions { display:flex; gap:10px; align-items:center; }
+        .nav-link {
+            color:var(--blue);
+            font-size:12px;
+            font-weight:800;
+            text-decoration:none;
+            padding:8px 10px;
+            border-radius:7px;
+        }
+        .nav-link:hover { background:#F8FAFC; }
+        .wrap { max-width:900px; margin:8px auto 0; }
+        .hero {
+            background:linear-gradient(135deg,var(--navy),var(--navy2));
+            color:#fff;
+            border-radius:14px;
+            padding:27px 28px;
+            box-shadow:0 5px 18px rgba(15,23,42,.14);
+            position:relative;
+            overflow:hidden;
+        }
+        .hero:after {
+            content:"";
+            position:absolute;
+            width:180px;
+            height:180px;
+            border-radius:50%;
+            right:-65px;
+            top:-75px;
+            background:rgba(245,158,11,.12);
+        }
+        .eyebrow {
+            margin:0 0 7px;
+            color:#FCD34D;
+            font-size:11px;
+            font-weight:900;
+            letter-spacing:.08em;
+            text-transform:uppercase;
+        }
+        .hero h1 { margin:0 0 8px; font-size:29px; line-height:1.15; }
+        .hero p { margin:0; max-width:680px; color:#CBD5E1; line-height:1.55; font-size:14px; }
+        .status-row {
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+            margin-top:18px;
+            position:relative;
+            z-index:1;
+        }
+        .status-pill {
+            display:inline-flex;
+            align-items:center;
+            gap:7px;
+            padding:8px 11px;
+            border-radius:999px;
+            background:rgba(255,255,255,.10);
+            border:1px solid rgba(255,255,255,.14);
+            color:#fff;
+            font-size:12px;
+            font-weight:800;
+        }
+        .status-dot { width:7px; height:7px; border-radius:50%; background:#4ADE80; }
+        .grid {
+            display:grid;
+            grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);
+            gap:18px;
+            margin-top:18px;
+        }
+        .card {
+            background:var(--white);
+            border:1px solid var(--border);
+            border-radius:13px;
+            padding:23px;
+            box-shadow:0 3px 12px rgba(0,0,0,.055);
+        }
+        .card h2 { margin:0 0 7px; font-size:20px; }
+        .card-subtitle { margin:0 0 18px; color:var(--muted); font-size:13px; line-height:1.5; }
+        .price { color:var(--blue); font-size:32px; font-weight:900; line-height:1; margin:14px 0 5px; }
+        .price small { color:var(--muted); font-size:12px; font-weight:800; }
+        .feature-list { padding-left:19px; margin:18px 0 0; color:#475569; line-height:1.85; font-size:13px; }
+        .feature-list li { padding-left:3px; }
+        .active {
+            margin-top:19px;
+            padding:14px;
+            border-radius:9px;
+            background:var(--green-soft);
+            color:var(--green);
+            font-weight:800;
+            font-size:13px;
+            border:1px solid #BBF7D0;
+        }
+        .active small { display:block; margin-top:4px; font-weight:600; color:#15803D; }
+        .button {
+            display:block;
+            width:100%;
+            margin-top:18px;
+            padding:13px 15px;
+            border:0;
+            border-radius:8px;
+            background:var(--orange);
+            color:#111827;
+            text-align:center;
+            text-decoration:none;
+            font-weight:900;
+            font-size:14px;
+            cursor:pointer;
+            box-shadow:0 2px 4px rgba(0,0,0,.08);
+        }
+        .button:hover { filter:brightness(.97); }
+        .secondary {
+            background:#F8FAFC;
+            border:1px solid var(--border);
+            color:var(--blue);
+            margin-top:9px;
+            box-shadow:none;
+        }
+        .notice {
+            margin:18px 0 0;
+            padding:14px 16px;
+            border-left:4px solid var(--orange);
+            border-radius:8px;
+            background:var(--orange-soft);
+            font-size:13px;
+            line-height:1.5;
+        }
+        .account-row {
+            display:flex;
+            justify-content:space-between;
+            gap:18px;
+            padding:11px 0;
+            border-bottom:1px solid #EEF2F7;
+            font-size:13px;
+        }
+        .account-row:last-child { border-bottom:0; padding-bottom:0; }
+        .account-label { color:var(--muted); }
+        .account-value { font-weight:800; text-align:right; overflow-wrap:anywhere; }
+        .mini-title { margin:0 0 10px; font-size:14px; font-weight:900; }
+        .info-list { margin:0; padding-left:18px; color:#475569; font-size:13px; line-height:1.75; }
+        .support {
+            margin-top:18px;
+            padding:16px;
+            border-radius:10px;
+            background:#F8FAFC;
+            border:1px solid var(--border);
+            color:#475569;
+            font-size:12px;
+            line-height:1.55;
+        }
+        .support strong { color:var(--text); }
+        .receipts { margin-top:18px; }
+        .receipt {
+            display:flex;
+            justify-content:space-between;
+            gap:12px;
+            align-items:center;
+            padding:12px 0;
+            border-bottom:1px solid #EEF2F7;
+            font-size:12px;
+        }
+        .receipt:last-child { border-bottom:0; }
+        .receipt a { color:var(--blue); font-weight:800; text-decoration:none; white-space:nowrap; }
+        .empty { color:var(--muted); font-size:13px; margin:0; }
+        @media (max-width:700px) {
+            body { padding-left:12px; padding-right:12px; }
+            .nav { align-items:flex-start; }
+            .nav-actions { flex-wrap:wrap; justify-content:flex-end; gap:3px; }
+            .hero { padding:23px 20px; }
+            .hero h1 { font-size:25px; }
+            .grid { grid-template-columns:1fr; }
+            .card { padding:20px; }
+        }
+        @media (max-width:470px) {
+            .nav { flex-direction:column; gap:7px; }
+            .nav-actions { width:100%; justify-content:flex-start; }
+            .account-row { flex-direction:column; gap:3px; }
+            .account-value { text-align:left; }
+        }
     </style>
 </head>
 <body>
-    <nav class="nav"><a class="brand" href="{{ url_for('delivery_dashboard') }}">Biz<span>Hub</span> Delivery</a><div style="display:flex;gap:12px;align-items:center"><a href="{{ url_for('notifications') }}">🔔 Notifications{% if unread_notifications_count %} ({{ unread_notifications_count }}){% endif %}</a><a href="{{ url_for('delivery_dashboard') }}">Back to Dashboard</a></div></nav>
+    <nav class="nav">
+        <a class="brand" href="{{ url_for('delivery_dashboard') }}">Biz<span>Hub</span> Delivery</a>
+        <div class="nav-actions">
+            <a class="nav-link" href="{{ url_for('delivery_dashboard') }}">Back to Dashboard</a>
+        </div>
+    </nav>
+
     <main class="wrap">
-        <section class="hero"><h1>Premium Delivery Service</h1><p>Stay visible to BizHub vendors and control when your delivery service is available.</p></section>
-        {% if requested %}<div class="notice"><strong>Premium request recorded.</strong><br>Send your payment receipt through WhatsApp so BizHub can activate your subscription.</div>{% endif %}
-        <section class="plan">
-            <h2>Delivery Premium</h2>
-            <div class="price">GH₵ 20 <small>/ month after trial</small></div>
-            <ul><li>First 5 months free</li><li>Appear in vendor delivery-service searches</li><li>Set your service to Available or Unavailable</li><li>Receive vendor delivery requests by WhatsApp</li></ul>
-            {% if subscription.is_premium %}<div class="active">Premium active until {{ subscription.expires }}</div>{% else %}<a class="button" href="https://wa.me/{{ payment_number }}?text={{ upgrade_message|urlencode }}" target="_blank" rel="noopener">Subscribe via WhatsApp</a><form method="post" action="{{ url_for('request_premium') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button secondary" type="submit">Mark Premium Request</button></form>{% endif %}
+        <section class="hero">
+            <p class="eyebrow">Account Management</p>
+            <h1>Premium Delivery Service</h1>
+            <p>Manage your delivery-service membership, review your current status, and upgrade through BizHub when you are ready.</p>
+            <div class="status-row">
+                <span class="status-pill"><span class="status-dot"></span>{{ subscription.name }}</span>
+                {% if subscription.expires %}<span class="status-pill">Active until {{ subscription.expires }}</span>{% endif %}
+            </div>
         </section>
-        {% if receipts %}<section class="plan" style="margin-top:18px"><h2>Subscription receipts</h2>{% for receipt in receipts %}<p><strong>{{ receipt.receipt_number }}</strong> · GH₵{{ "%.2f"|format(receipt.amount) }} · <a href="{{ url_for('subscription_receipt', receipt_id=receipt.id) }}">View receipt</a></p>{% endfor %}</section>{% endif %}
+
+        {% if requested %}
+        <div class="notice">
+            <strong>Premium request recorded.</strong><br>
+            Send your payment receipt through WhatsApp so BizHub can activate or extend your subscription.
+        </div>
+        {% endif %}
+
+        <div class="grid">
+            <section class="card">
+                <h2>Delivery Premium</h2>
+                <p class="card-subtitle">Premium keeps your service visible to vendors and gives you access to BizHub delivery-service features.</p>
+                <div class="price">GH₵ 20 <small>/ month after trial</small></div>
+
+                <ul class="feature-list">
+                    <li>First 5 months free for eligible new Delivery Service accounts</li>
+                    <li>Appear in vendor delivery-service searches</li>
+                    <li>Set your service to Available or Unavailable</li>
+                    <li>Receive vendor delivery requests through BizHub notifications and configured contact channels</li>
+                </ul>
+
+                {% if subscription.is_premium %}
+                <div class="active">
+                    {% if subscription.trial %}
+                        Free trial active until {{ subscription.expires }}
+                        <small>Your account currently has Premium access during the 5-month free trial.</small>
+                    {% else %}
+                        Premium active until {{ subscription.expires }}
+                        <small>You can subscribe again through WhatsApp to renew or extend your Premium service.</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <a class="button" href="https://wa.me/{{ payment_number }}?text={{ upgrade_message|urlencode }}" target="_blank" rel="noopener">Subscribe to Premium</a>
+
+                {% if not subscription.is_premium %}
+                <form method="post" action="{{ url_for('request_premium') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button class="button secondary" type="submit">Mark Premium Request</button>
+                </form>
+                {% endif %}
+            </section>
+
+            <aside>
+                <section class="card">
+                    <h2>Account Overview</h2>
+                    <p class="card-subtitle">Your current BizHub Delivery Service account.</p>
+                    <div class="account-row"><span class="account-label">Username</span><span class="account-value">{{ user.username }}</span></div>
+                    <div class="account-row"><span class="account-label">Company</span><span class="account-value">{{ user.company_name or (service.service_name if service else user.username) }}</span></div>
+                    <div class="account-row"><span class="account-label">Plan</span><span class="account-value">{{ subscription.name }}</span></div>
+                    {% if subscription.expires %}<div class="account-row"><span class="account-label">Access through</span><span class="account-value">{{ subscription.expires }}</span></div>{% endif %}
+                </section>
+
+                <section class="card" style="margin-top:18px">
+                    <h2>After the free trial</h2>
+                    <p class="card-subtitle">The first 5 months are free for eligible new Delivery Service accounts.</p>
+                    <ul class="info-list">
+                        <li>Premium access continues at <strong>GH₵20 per month</strong> when you subscribe.</li>
+                        <li>If Premium expires, your service will no longer be treated as Premium/available for vendor delivery-service matching.</li>
+                        <li>You can return here and use <strong>Subscribe to Premium</strong> to renew.</li>
+                    </ul>
+                </section>
+            </aside>
+        </div>
+
+        {% if receipts %}
+        <section class="card receipts">
+            <h2>Subscription History</h2>
+            <p class="card-subtitle">Receipts recorded for this Delivery Service account.</p>
+            {% for receipt in receipts %}
+            <div class="receipt">
+                <span><strong>{{ receipt.receipt_number }}</strong> · GH₵{{ "%.2f"|format(receipt.amount) }}</span>
+                <a href="{{ url_for('subscription_receipt', receipt_id=receipt.id) }}">View receipt</a>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <div class="support">
+            <strong>Need help?</strong> Use the Subscribe to Premium button to open WhatsApp with your account details already prepared for BizHub. After payment, send your receipt so the account can be activated or extended.
+        </div>
     </main>
 </body>
 </html>

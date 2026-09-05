@@ -15,30 +15,75 @@
         .bh-muted { color:var(--bh-muted); }
         .bh-soft { background:#f8fafc; }
         html[data-theme="night"] .bh-soft { background:#172033; }
-    </style>
+    .vendor-identity-panel { background:#ffffff; color:#0f172a; }
+        .vendor-identity-panel .vendor-company-name { color:#0f172a !important; }
+        </style>
 </head>
-<body class="min-h-full font-sans antialiased pt-16">
-<header class="fixed top-0 left-0 right-0 z-50 bg-slate-950 text-white shadow-lg">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-    <a href="{{ url_for('home') }}" class="flex items-center gap-2 no-underline text-white">
-      <span class="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black">BH</span>
-      <span class="text-xl font-black">BizHub</span>
-    </a>
-    <nav class="flex items-center gap-2 text-sm font-bold">
-      <a href="{{ url_for('home') }}" class="px-3 py-2 rounded-lg hover:bg-white/10 no-underline text-white">Marketplace</a>
-      {% if session.get('username') %}<a href="{{ url_for('notifications') }}" class="px-3 py-2 rounded-lg hover:bg-white/10 no-underline text-white">Notifications</a><a href="{{ url_for('order_history') }}" class="px-3 py-2 rounded-lg hover:bg-white/10 no-underline text-white">Orders</a><a href="{{ url_for('settings') }}" class="px-3 py-2 rounded-lg hover:bg-white/10 no-underline text-white">Account</a>{% endif %}
-    </nav>
+<body class="min-h-full font-sans antialiased">
+<style id="bizhub-global-header-styles">
+:root{--bh-navy:#131921;--bh-navy2:#232f3e;--bh-orange:#ff9900;--bh-yellow:#febd69}
+.bh-global-header{position:relative;z-index:10000;font-family:Arial,Helvetica,sans-serif;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.bh-topbar{min-height:64px;background:var(--bh-navy);display:flex;align-items:center;gap:10px;padding:8px 14px;box-sizing:border-box}
+.bh-brand{display:flex;align-items:center;gap:7px;text-decoration:none;color:#fff;font-weight:900;letter-spacing:-.5px;font-size:22px;line-height:1;white-space:nowrap;padding:8px 7px;border:1px solid transparent;border-radius:3px}.bh-brand:hover{border-color:#fff;color:#fff}.bh-brand-mark{font-size:23px}.bh-brand-sub{display:block;font-size:10px;letter-spacing:1.1px;color:#febd69;margin-top:3px;font-weight:700}
+.bh-location{min-width:108px;display:flex;align-items:center;gap:7px;padding:7px 8px;border:1px solid transparent;border-radius:3px;text-decoration:none;color:#fff}.bh-location:hover{border-color:#fff}.bh-location small{display:block;color:#c7d0d9;font-size:10px}.bh-location strong{display:block;font-size:13px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bh-search{display:flex;flex:1;min-width:150px;height:42px;border-radius:5px;overflow:hidden;background:#fff;box-shadow:0 0 0 2px transparent}.bh-search:focus-within{box-shadow:0 0 0 2px var(--bh-orange)}.bh-search input{border:0;outline:0;flex:1;padding:0 14px;font-size:15px;color:#111;min-width:0}.bh-search button{width:52px;border:0;background:var(--bh-yellow);color:#111;font-size:18px;cursor:pointer}.bh-search button:hover{background:#f3a847}
+.bh-action{display:flex;align-items:center;gap:5px;text-decoration:none;color:#fff;border:1px solid transparent;border-radius:3px;padding:7px 8px;min-height:42px;box-sizing:border-box}.bh-action:hover{border-color:#fff;color:#fff}.bh-action .small{display:block;font-size:10px;color:#e6e6e6;line-height:12px}.bh-action strong{display:block;font-size:13px;white-space:nowrap}.bh-action .icon{font-size:21px}.bh-badge{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;border-radius:10px;background:var(--bh-orange);color:#111;font-size:10px;font-weight:900;margin-left:-3px;margin-top:-14px}
+.bh-subbar{min-height:42px;background:var(--bh-navy2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap}.bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px}.bh-subbar a:hover{border-color:#fff;color:#fff}.bh-subbar .bh-grow{flex:1}.bh-role-pill{font-size:10px;color:#febd69;margin-left:3px;text-transform:uppercase}
+@media(max-width:900px){.bh-location{display:none}.bh-action.hide-md{display:none}.bh-topbar{flex-wrap:wrap}.bh-search{order:5;flex-basis:100%}.bh-topbar{padding-bottom:10px}}
+@media(max-width:560px){.bh-topbar{gap:5px;padding:7px}.bh-brand{font-size:19px}.bh-brand-sub{display:none}.bh-action{padding:6px 5px}.bh-action .small{display:none}.bh-action strong{font-size:11px}.bh-action .icon{font-size:19px}.bh-subbar a{font-size:12px;padding:10px 9px}.bh-search{height:40px}}
+</style>
+
+<header class="bh-global-header" role="banner">
+  <div class="bh-topbar">
+    <a class="bh-brand" href="{{ url_for('home') }}" aria-label="BizHub home"><span class="bh-brand-mark">B</span><span>BizHub<span class="bh-brand-sub">SHOP • SELL • CONNECT</span></span></a>
+    <a class="bh-location" href="{{ url_for('home') }}"><span>📍</span><span><small>Delivering to</small><strong>{{ session.get('business_location') or 'Ghana' }}</strong></span></a>
+    <form class="bh-search" method="get" action="{{ url_for('home') }}" role="search"><input name="search" placeholder="Search products, stores and categories" aria-label="Search BizHub"><button type="submit" aria-label="Search">🔍</button></form>
+    {% if session.get('username') %}
+      <a class="bh-action" href="{{ url_for('settings') }}"><span class="icon">👤</span><span><span class="small">Hello,</span><strong>{{ session.get('username') }}{% if session.get('role') %} <span class="bh-role-pill">{{ session.get('role') }}</span>{% endif %}</strong></span></a>
+      <a class="bh-action hide-md" href="{{ url_for('order_history') }}"><span><span class="small">Track &amp;</span><strong>Orders</strong></span></a>
+      <a class="bh-action" href="{{ url_for('notifications') }}"><span class="icon">🔔</span><span><span class="small">BizHub</span><strong>Alerts</strong></span></a>
+      <a class="bh-action" href="{{ url_for('cart_page') }}"><span class="icon">🛒</span><span><span class="small">Your</span><strong>Cart</strong></span></a>
+    {% else %}
+      <a class="bh-action" href="{{ url_for('login') }}"><span class="icon">👤</span><span><span class="small">Welcome</span><strong>Sign in</strong></span></a>
+      <a class="bh-action" href="{{ url_for('login') }}"><span><span class="small">New to BizHub?</span><strong>Create account</strong></span></a>
+    {% endif %}
   </div>
+  <nav class="bh-subbar" aria-label="BizHub marketplace navigation">
+    <a href="{{ url_for('home') }}">☰ &nbsp;All</a><a href="{{ url_for('home') }}#deals">Today's Deals</a><a href="{{ url_for('favorites') }}">Favorites</a><a href="{{ url_for('delivery_services') }}">Find Delivery</a><a href="{{ url_for('home') }}#fast-food">Fast Food</a><a href="{{ url_for('home') }}#categories">Categories</a><a href="{{ url_for('settings') if session.get('username') else url_for('login') }}">Your Account</a>{% if session.get('role') in ['Vendor', 'Fast Food'] and is_owner %}<a href="{{ url_for('promotions') }}">Manage Your Promos</a>{% endif %}<span class="bh-grow"></span>{% if session.get('is_admin') %}<a href="{{ url_for('admin_dashboard') }}">Admin Center</a>{% endif %}
+  </nav>
 </header>
 
+
 <main class="py-8 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-    <div class="mb-5">
-        <a href="/" class="inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700 no-underline">← Back to Market</a>
+    {% if is_owner and welcome_message %}
+    <div id="owner-welcome" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4">
+        <div class="w-full max-w-md rounded-3xl bg-white p-7 text-center shadow-2xl border border-emerald-100">
+            <div class="mx-auto mb-3 w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl">✓</div>
+            <div class="font-black text-slate-900 text-xl">Welcome to Biz Hub</div>
+            <div class="text-sm text-slate-600 mt-2">{{ vendor['company_name'] or vendor['username'] }}, your store is ready.
+            </div>
+        </div>
     </div>
+    <div id="owner-publish-command" class="hidden mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
+        <a href="#publish-space" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 no-underline">
+            <div><div class="font-black text-emerald-900">Visit My Store to publish your {{ 'meals' if vendor['role'] == 'Fast Food' else 'products' }}</div><div class="text-sm text-emerald-800 mt-1">Click here to open your publishing space.</div></div>
+            <span class="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-black">Open Publishing Space →</span>
+        </a>
+    </div>
+    <script>
+        window.setTimeout(function(){
+            const welcome=document.getElementById('owner-welcome');
+            const command=document.getElementById('owner-publish-command');
+            if(welcome){ welcome.style.transition='opacity .35s ease'; welcome.style.opacity='0'; window.setTimeout(()=>welcome.remove(),400); }
+            if(command){ command.classList.remove('hidden'); command.style.opacity='0'; window.requestAnimationFrame(()=>{ command.style.transition='opacity .35s ease'; command.style.opacity='1'; }); }
+        },5000);
+    </script>
+    {% endif %}
 
     <section class="bh-card border rounded-3xl shadow-sm overflow-hidden mb-6">
-        <div class="h-28 sm:h-36 bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-900"></div>
-        <div class="p-6 sm:p-8 pt-6 sm:pt-8">
+        <div class="h-24 sm:h-32 bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-900"></div>
+        <div class="p-6 sm:p-8 -mt-12 sm:-mt-16">
+            <div class="vendor-identity-panel rounded-2xl shadow-md border border-slate-200 px-4 py-3 mb-5">
             <div class="flex flex-col md:flex-row md:items-start gap-6">
                 <div class="flex-shrink-0">
                     {% if vendor['company_logo'] %}
@@ -50,16 +95,16 @@
                     {% endif %}
                 </div>
 
-                <div class="flex-1 min-w-0 pt-0 sm:pt-2">
+                <div class="flex-1 min-w-0 pt-1 sm:pt-3">
                     <div class="flex flex-wrap items-center gap-2">
-                        <h1 class="text-2xl sm:text-3xl font-black bh-text">{{ vendor['company_name'] or vendor['username'] }}</h1>
+                        <h1 class="text-2xl sm:text-3xl font-black text-slate-950">{{ vendor['company_name'] or vendor['username'] }}</h1>
                         {% if vendor['is_verified'] %}<span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold">✓ Verified</span>{% endif %}
                         {% if vendor['is_premium'] %}<span class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-bold">👑 Premium</span>{% endif %}
                     </div>
                     <p class="text-sm bh-muted mt-2">@{{ vendor['username'] }}</p>
                     {% if vendor['business_location'] %}<p class="text-sm bh-muted mt-3">📍 {{ vendor['business_location'] }}</p>{% endif %}
-                    {% if session.get('username') and session.get('username') != vendor['username'] %}
-                    <a href="{{ url_for('report_user', user_id=vendor['id']) }}" class="inline-flex items-center justify-center mt-3 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xs no-underline shadow-sm border border-red-700">🚩 Report Vendor</a>
+                    {% if not is_owner and session.get('username') %}
+                    <a href="{{ url_for('report_user', user_id=vendor['id']) }}" class="inline-flex items-center justify-center mt-3 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-xs no-underline shadow-sm">Report this Vendor</a>
                     {% endif %}
 
                     <div class="flex flex-wrap gap-2 mt-4">
@@ -71,7 +116,7 @@
                         {% if vendor['seller_type'] %}<span class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">{{ vendor['seller_type'] }}</span>{% endif %}
                     </div>
 
-                    {% if vendor['role'] == 'Fast Food' %}
+                    {% if vendor['role'] == 'Fast Food' and not is_owner %}
                     <div class="mt-5 rounded-2xl border border-orange-200 bg-orange-50 p-4">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div><div class="text-sm font-black text-orange-800">🍔 Hungry? Order from this kitchen.</div><p class="text-xs text-orange-700 mt-1">Browse the menu below, see each meal price and media, then add what you want to your basket.</p></div>
@@ -80,6 +125,7 @@
                     </div>
                     {% endif %}
 
+                    {% if not is_owner %}
                     <div class="flex flex-wrap gap-3 mt-6">
                         {% if session.get('role') == 'Customer' %}
                         <form method="POST" action="/favorites/toggle/{{ vendor['username'] }}">
@@ -93,10 +139,93 @@
                         <a href="https://wa.me/{{ vendor_whatsapp }}?text={{ vendor_whatsapp_text }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-5 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm no-underline">💬 WhatsApp Vendor</a>
                         {% endif %}
                     </div>
+                    {% endif %}
                 </div>
+            </div>
             </div>
         </div>
     </section>
+
+    {% if is_owner %}
+    <section class="bh-card border rounded-2xl shadow-sm overflow-hidden mb-7">
+        <div class="px-6 py-4 border-b bh-border bh-soft">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-lg font-black bh-text">{{ '🍔 Your Kitchen — Published Meals' if vendor['role'] == 'Fast Food' else '📦 Your Published Products' }}</h2>
+                    <p class="text-xs bh-muted mt-1">{{ 'These are the meals currently published in your kitchen menu.' if vendor['role'] == 'Fast Food' else 'These are the products you have published from your store.' }}</p>
+                </div>
+                <span class="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">{{ products|length }} published</span>
+            </div>
+        </div>
+        <div class="p-6">
+            {% if products %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {% for product in products %}
+                <article class="bh-card border rounded-2xl overflow-hidden shadow-sm">
+                    {% if product['video_file'] %}<video class="w-full h-48 object-cover" controls muted playsinline loop preload="metadata"><source src="{{ url_for('stream_video', filename=product['video_file']) }}"></video>
+                    {% elif product['image_file'] and product['image_file'] != 'fast-food-placeholder.svg' %}<a href="{{ url_for('static', filename='uploads/' + product['image_file']) }}" target="_blank" rel="noopener noreferrer" aria-label="Open full-size image of {{ product['title'] }}" style="display:block;width:100%;line-height:0;"><img src="{{ url_for('static', filename='uploads/' + product['image_file']) }}" alt="{{ product['title'] }}" class="w-full h-48 object-cover"></a>
+                    {% else %}<div class="w-full h-48 bg-slate-100 flex items-center justify-center text-4xl">{% if vendor['role'] == 'Fast Food' %}🍔{% else %}🛍️{% endif %}</div>{% endif %}
+                    <div class="p-4">
+                        <h3 class="font-bold text-sm bh-text line-clamp-2">{{ product['title'] }}</h3>
+                        <p class="text-lg font-black text-emerald-600 mt-2">GH₵{{ "{:,.2f}".format(product['price']|float) }}</p>
+                        {% if product['location'] %}<p class="text-xs bh-muted mt-2">📍 {{ product['location'] }}</p>{% endif %}
+                        <div class="mt-4 space-y-2">
+                            <form method="POST" action="{{ url_for('delete_item', product_id=product['id']) }}" onsubmit="return confirm('Delete this listing? This cannot be undone.');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="w-full px-4 py-2.5 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 text-xs font-bold">Delete Listing</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="p-8 text-center rounded-2xl border bh-border bh-soft">
+                <div class="text-3xl mb-3">{{ '🍔' if vendor['role'] == 'Fast Food' else '📦' }}</div>
+                <h3 class="text-base font-black bh-text">{{ 'Your kitchen has no published meals yet.' if vendor['role'] == 'Fast Food' else 'You have no published products yet.' }}</h3>
+                <p class="text-sm bh-muted mt-2">{{ 'Use the publishing space below to add your first meal.' if vendor['role'] == 'Fast Food' else 'Use the publishing space below to add your first product.' }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section id="publish-space" class="bh-card border rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div class="px-6 py-4 border-b bh-border bh-soft">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-lg font-black bh-text">{{ '🍔 Kitchen — Publish a Meal' if vendor['role'] == 'Fast Food' else '📦 Publish a Product' }}</h2>
+                    <p class="text-xs bh-muted mt-1">{{ 'Publish meals from your kitchen. Each meal will appear in your kitchen menu and the Fast Food marketplace area.' if vendor['role'] == 'Fast Food' else 'Publish from your store. Your listing will also appear in the appropriate Biz Hub marketplace feed.' }}</p>
+                </div>
+                <span class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">Owner view</span>
+            </div>
+        </div>
+        <form method="POST" action="{{ url_for('home') }}" enctype="multipart/form-data" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="publish_return" value="profile">
+            {% if vendor['role'] == 'Fast Food' %}
+            <div><label class="block text-xs font-bold bh-muted mb-1">Meal name</label><input name="meal_name" required maxlength="120" class="w-full rounded-xl border bh-border bg-transparent px-3 py-2.5 text-sm" placeholder="e.g. Jollof & Chicken"></div>
+            {% else %}
+            <div><label class="block text-xs font-bold bh-muted mb-1">Product title</label><input name="title" required maxlength="120" class="w-full rounded-xl border bh-border bg-transparent px-3 py-2.5 text-sm" placeholder="e.g. Samsung Galaxy A55"></div>
+            {% endif %}
+
+            <div><label class="block text-xs font-bold bh-muted mb-1">Price (GH₵)</label><input name="price" required type="number" min="0" step="0.01" class="w-full rounded-xl border bh-border bg-transparent px-3 py-2.5 text-sm" placeholder="0.00"></div>
+
+            {% if vendor['role'] != 'Fast Food' %}
+            <div><label class="block text-xs font-bold bh-muted mb-1">Category</label><select name="category" class="w-full rounded-xl border bh-border bg-transparent px-3 py-2.5 text-sm"><option value="" selected>e.g. Choose a product category (optional)</option>{% for category in product_categories if category != 'Fast Food' %}<option value="{{ category }}">{{ category }}</option>{% endfor %}</select></div>
+            <div><label class="block text-xs font-bold bh-muted mb-1">Quantity available</label><input name="stock_quantity" required type="number" min="1" step="1" class="w-full rounded-xl border bh-border bg-transparent px-3 py-2.5 text-sm" placeholder="e.g. 10"></div>
+            {% endif %}
+
+            <div class="md:col-span-2"><label class="block text-xs font-bold bh-muted mb-1">Description</label><textarea name="{{ 'meal_description' if vendor['role'] == 'Fast Food' else 'description' }}" required maxlength="2000" rows="4" class="w-full rounded-xl border bh-border bg-transparent px-3 py-2.5 text-sm" placeholder="e.g. Describe the item, condition, features or what the customer receives..."></textarea></div>
+            <div><label class="block text-xs font-bold bh-muted mb-1">Location</label><input name="location" required maxlength="160" value="{{ vendor['business_location'] or '' }}" class="w-full rounded-xl border bh-border bg-transparent px-3 py-2.5 text-sm" placeholder="e.g. Accra, Ghana"></div>
+            <div><label class="block text-xs font-bold bh-muted mb-1">Cover image</label><input name="product_image" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="w-full rounded-xl border bh-border bg-transparent px-3 py-2 text-xs"></div>
+            <div><label class="block text-xs font-bold bh-muted mb-1">Showcase video (Premium/Trial)</label><input id="vendorProductVideo" name="product_video" type="file" accept="video/mp4,video/webm,video/quicktime" class="w-full rounded-xl border bh-border bg-transparent px-3 py-2 text-xs"><p class="text-[11px] bh-muted mt-1">Video rule: maximum 20 seconds. Videos longer than 20 seconds will be rejected.</p></div>
+            <div class="md:col-span-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">{% if vendor['role'] == 'Fast Food' %}Add a meal image or showcase video. Your meal will be listed in your menu and the Fast Food marketplace area.{% else %}Choose exactly one: cover image OR showcase video. Basic stores can publish up to 3 listings; eligible Premium/trial stores can use showcase video.{% endif %}</div>
+            <div class="md:col-span-2 flex flex-wrap items-center gap-3"><button type="submit" class="inline-flex items-center justify-center px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm">{{ 'Publish Meal to Kitchen' if vendor['role'] == 'Fast Food' else 'Publish Product' }}</button><span class="text-xs bh-muted">You can manage your own listings from this owner view.</span></div>
+        </form>
+    </section>
+    {% if request.args.get('listing_error') %}<div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{{ request.args.get('listing_error') }}</div>{% endif %}
+    {% if request.args.get('published') or request.args.get('published') == 'fastfood' %}<div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">Published successfully. Your new listing is now visible in your store and the appropriate marketplace feed.</div>{% endif %}
+    {% endif %}
 
     {% if promo %}
     <section class="mb-6">
@@ -125,6 +254,7 @@
         </div>
     </section>
 
+    {% if not is_owner %}
     <span id="menu"></span>
     <section>
         <div class="flex items-end justify-between gap-4 mb-5"><div><h2 class="text-xl sm:text-2xl font-black bh-text">{% if vendor['role'] == 'Fast Food' %}🍔 Menu{% else %}Products{% endif %}</h2><p class="text-sm bh-muted mt-1">{% if vendor['role'] == 'Fast Food' %}Browse meals available from this kitchen, with prices and photos/videos.{% else %}Browse products currently listed by this vendor.{% endif %}</p></div>{% if products %}<span class="text-xs bh-muted font-semibold whitespace-nowrap">{{ products|length }} product{% if products|length != 1 %}s{% endif %}</span>{% endif %}</div>
@@ -134,13 +264,13 @@
             {% for product in products %}
             <article class="bh-card border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition hover:-translate-y-0.5">
                 {% if product['video_file'] %}<video class="w-full h-48 object-cover" controls autoplay muted playsinline loop preload="metadata"><source src="{{ url_for('stream_video', filename=product['video_file']) }}"></video>
-                {% elif product['image_file'] and product['image_file'] != 'fast-food-placeholder.svg' %}<img src="{{ url_for('static', filename='uploads/' + product['image_file']) }}" alt="{{ product['title'] }}" class="w-full h-48 object-cover">
+                {% elif product['image_file'] and product['image_file'] != 'fast-food-placeholder.svg' %}<a href="{{ url_for('static', filename='uploads/' + product['image_file']) }}" target="_blank" rel="noopener noreferrer" aria-label="Open full-size image of {{ product['title'] }}" style="display:block;width:100%;line-height:0;"><img src="{{ url_for('static', filename='uploads/' + product['image_file']) }}" alt="{{ product['title'] }}" class="w-full h-48 object-cover"></a>
                 {% else %}<div class="w-full h-48 bg-slate-100 flex items-center justify-center text-4xl">{% if vendor['role'] == 'Fast Food' %}🍔{% else %}🛍️{% endif %}</div>{% endif %}
                 <div class="p-4">
                     <h3 class="font-bold text-sm bh-text line-clamp-2">{{ product['title'] }}</h3>
                     <p class="text-lg font-black text-emerald-600 mt-2">GH₵{{ "{:,.2f}".format(product['price']|float) }}</p>
                     {% if product['location'] %}<p class="text-xs bh-muted mt-2">📍 {{ product['location'] }}</p>{% endif %}
-                    <a href="{% if vendor['role'] == 'Fast Food' and product['meal_whatsapp_number'] %}https://wa.me/{{ product['meal_whatsapp_number'] }}?text={{ product['meal_whatsapp_text'] }}{% else %}/product/{{ product['id'] }}{% endif %}" target="{% if vendor['role'] == 'Fast Food' %}_blank{% endif %}" rel="{% if vendor['role'] == 'Fast Food' %}noopener noreferrer{% endif %}" class="block text-center mt-4 px-4 py-2.5 rounded-xl {% if vendor['role'] == 'Fast Food' %}bg-orange-600 hover:bg-orange-700{% else %}bg-emerald-600 hover:bg-emerald-700{% endif %} text-white text-xs font-bold no-underline">{% if vendor['role'] == 'Fast Food' %}🍔 Order This Meal{% else %}View Product{% endif %}</a>
+                    <a href="{% if vendor['role'] == 'Fast Food' and product['meal_whatsapp_number'] %}https://wa.me/{{ product['meal_whatsapp_number'] }}?text={{ product['meal_whatsapp_text'] }}{% else %}/product/{{ product['id'] }}{% endif %}" target="{% if vendor['role'] == 'Fast Food' %}_blank{% endif %}" rel="{% if vendor['role'] == 'Fast Food' %}noopener noreferrer{% endif %}" class="block text-center mt-4 px-4 py-2.5 rounded-xl {% if vendor['role'] == 'Fast Food' %}bg-orange-600 hover:bg-orange-700{% else %}bg-emerald-600 hover:bg-emerald-700{% endif %} text-white text-xs font-bold no-underline"> {% if vendor['role'] == 'Fast Food' %}🍔 Order This Meal{% else %}View Product{% endif %}</a>
                 </div>
             </article>
             {% endfor %}
@@ -149,7 +279,9 @@
         <div class="bh-card border rounded-2xl shadow-sm"><div class="p-12 text-center"><div class="text-4xl mb-4">🛍️</div><h3 class="text-lg font-black bh-text">No Products Listed Yet</h3><p class="text-sm bh-muted mt-2">This vendor does not currently have any visible products.</p></div></div>
         {% endif %}
     </section>
+    {% endif %}
 </main>
+
 
 <footer class="bg-white border-t bh-border py-6 text-center text-xs bh-muted">© 2026 Biz Hub. Vendor storefront.</footer>
 </body>

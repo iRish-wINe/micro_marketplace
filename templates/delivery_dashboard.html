@@ -5,840 +5,112 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Delivery Dashboard | BizHub</title>
 <style>
-:root{
-  --navy:#0B192C;
-  --orange:#F59E0B;
-  --bg:#EAEDED;
-  --border:#D5D9D9;
-  --green:#166534;
-  --red:#B91C1C;
-  --blue:#1D4ED8
-}
-
-*{box-sizing:border-box}
-
-body{
-  margin:0;
-  background:var(--bg);
-  font-family:'Segoe UI',system-ui,sans-serif;
-  color:#0F172A
-}
-
-.nav{
-  background:var(--navy);
-  color:#fff;
-  padding:12px 18px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap
-}
-
-.nav a{
-  color:#fff;
-  text-decoration:none;
-  font-size:11px;
-  font-weight:800
-}
-
-.brand{
-  font-weight:900;
-  font-size:20px
-}
-
-.brand span{
-  color:var(--orange)
-}
-
-.nav-right{
-  display:flex;
-  gap:12px;
-  align-items:center
-}
-
-.badge{
-  display:inline-flex;
-  min-width:18px;
-  height:18px;
-  padding:0 5px;
-  align-items:center;
-  justify-content:center;
-  border-radius:999px;
-  background:var(--orange);
-  color:#111;
-  font-size:10px;
-  font-weight:900
-}
-
-.wrap{
-  max-width:1100px;
-  margin:20px auto;
-  padding:0 14px
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-  gap:14px
-}
-
-.card{
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:8px;
-  padding:16px;
-  box-shadow:0 2px 8px rgba(0,0,0,.06);
-  margin-bottom:14px
-}
-
-.wide{
-  grid-column:1/-1
-}
-
-.card h2,
-.card h3{
-  margin:0 0 10px
-}
-
-.muted{
-  color:#64748B;
-  font-size:12px;
-  line-height:1.6
-}
-
-.row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  padding:12px 0;
-  border-top:1px solid #E5E7EB
-}
-
-.row:first-child{
-  border-top:0
-}
-
-.pill{
-  display:inline-block;
-  padding:4px 8px;
-  border-radius:999px;
-  font-size:10px;
-  font-weight:900;
-  background:#F1F5F9;
-  color:#475569
-}
-
-.pill.Accepted{
-  background:#DBEAFE;
-  color:#1E40AF
-}
-
-.pill.Picked{
-  background:#FEF3C7;
-  color:#92400E
-}
-
-.pill.Delivered{
-  background:#DCFCE7;
-  color:var(--green)
-}
-
-.pill.Declined{
-  background:#FEE2E2;
-  color:var(--red)
-}
-
-.btn{
-  border:0;
-  border-radius:6px;
-  padding:7px 10px;
-  background:var(--orange);
-  font-size:12px;
-  font-weight:800;
-  cursor:pointer
-}
-
-.btn.availability-on{
-  background:#16A34A;
-  color:#fff
-}
-
-.btn.availability-off{
-  background:#DC2626;
-  color:#fff
-}
-
-.btn.availability-neutral{
-  background:#E2E8F0;
-  color:#334155
-}
-
-.btn.secondary{
-  background:#E2E8F0
-}
-
-.btn.danger{
-  background:#FECACA;
-  color:#7F1D1D
-}
-
-.actions{
-  display:flex;
-  gap:7px;
-  flex-wrap:wrap;
-  margin-top:10px
-}
-
-.availability-actions{
-  display:flex;
-  gap:7px;
-  flex-wrap:wrap;
-  margin-top:10px
-}
-
-.service-logo{
-  width:64px;
-  height:64px;
-  object-fit:contain;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:#fff;
-  padding:4px
-}
-
-.service-head{
-  display:flex;
-  align-items:center;
-  gap:12px
-}
-
-.info{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:17px;
-  height:17px;
-  border:1px solid #94A3B8;
-  border-radius:50%;
-  font-size:11px;
-  font-weight:900;
-  color:#475569;
-  cursor:help;
-  vertical-align:middle;
-  margin-left:3px
-}
-
-.note{
-  padding:10px;
-  background:#F8FAFC;
-  border-radius:6px;
-  font-size:12px;
-  line-height:1.6
-}
-
-.notification{
-  padding:12px 0;
-  border-top:1px solid #E5E7EB
-}
-
-.notification:first-child{
-  border-top:0
-}
-
-.unread{
-  font-weight:800
-}
-
-.small{
-  font-size:10px;
-  color:#64748B
-}
-
-.verify{
-  display:flex;
-  flex-direction:column;
-  gap:9px
-}
-
-.verify textarea{
-  min-height:90px;
-  resize:vertical;
-  padding:9px;
-  border:1px solid var(--border);
-  border-radius:6px;
-  font:inherit
-}
-
-.status{
-  font-size:12px;
-  font-weight:800
-}
-
-.success{
-  color:var(--green)
-}
-
-.pending{
-  color:#92400E
-}
-
-.rejected{
-  color:var(--red)
-}
+:root{--navy:#0B192C;--orange:#F59E0B;--bg:#EAEDED;--border:#D5D9D9;--green:#166534;--red:#B91C1C;--blue:#1D4ED8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:#0F172A}.nav{background:var(--navy);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.nav a{color:#fff;text-decoration:none;font-size:11px;font-weight:800}.brand{font-weight:900;font-size:20px}.brand span{color:var(--orange)}.nav-right{display:flex;gap:12px;align-items:center}.badge{display:inline-flex;min-width:18px;height:18px;padding:0 5px;align-items:center;justify-content:center;border-radius:999px;background:var(--orange);color:#111;font-size:10px;font-weight:900}.wrap{max-width:1100px;margin:20px auto;padding:0 14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}.card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:14px}.wide{grid-column:1/-1}.card h2,.card h3{margin:0 0 10px}.muted{color:#64748B;font-size:12px;line-height:1.6}.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #E5E7EB}.row:first-child{border-top:0}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900;background:#F1F5F9;color:#475569}.pill.Accepted{background:#DBEAFE;color:#1E40AF}.pill.Picked{background:#FEF3C7;color:#92400E}.pill.Delivered{background:#DCFCE7;color:var(--green)}.pill.Declined{background:#FEE2E2;color:var(--red)}.btn{border:0;border-radius:6px;padding:8px 10px;background:var(--orange);font-weight:900;cursor:pointer}.btn.secondary{background:#E2E8F0}.btn.danger{background:#FECACA;color:#7F1D1D}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.note{padding:10px;background:#F8FAFC;border-radius:6px;font-size:12px;line-height:1.6}.notification{padding:12px 0;border-top:1px solid #E5E7EB}.notification:first-child{border-top:0}.unread{font-weight:800}.small{font-size:10px;color:#64748B}.verify{display:flex;flex-direction:column;gap:9px}.verify textarea{min-height:90px;resize:vertical;padding:9px;border:1px solid var(--border);border-radius:6px;font:inherit}.status{font-size:12px;font-weight:800}.success{color:var(--green)}.pending{color:#92400E}.rejected{color:var(--red)}
 </style>
 </head>
-
 <body>
-
 <div class="nav">
   <div class="brand">Biz<span>Hub</span> · Delivery Service</div>
-
   <div class="nav-right">
-    <a href="{{ url_for('notifications') }}">
-      🔔 Notifications
-      {% if unread_count %}
-        <span class="badge">{{ unread_count }}</span>
-      {% endif %}
-    </a>
-
+    <a href="{{ url_for('notifications') }}">🔔 Notifications{% if unread_count %} <span class="badge">{{ unread_count }}</span>{% endif %}</a>
     <a href="{{ url_for('delivery_services') }}">Find Delivery</a>
     <a href="{{ url_for('settings') }}">Account</a>
+    <a href="{{ url_for('delivery_manage_accounts') }}">Manage Accounts</a>
     <a href="{{ url_for('logout') }}">Logout</a>
   </div>
 </div>
-
 <div class="wrap">
-
   {% if welcome_message %}
-    <div class="card" id="bizhub-welcome">
-      <b>Welcome to BizHub.</b>
-      Your delivery service dashboard is ready.
+  <div id="delivery-welcome" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,.62);padding:16px;">
+    <div style="width:100%;max-width:430px;background:#fff;border:1px solid #D5D9D9;border-radius:18px;padding:28px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.28);">
+      <div style="width:52px;height:52px;margin:0 auto 12px;border-radius:16px;background:#DCFCE7;color:#166534;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:900;">✓</div>
+      <div style="font-size:23px;font-weight:900;color:#0B192C;">Welcome to BizHub</div>
+      <div style="font-size:14px;color:#64748B;line-height:1.55;margin-top:8px;">Your delivery service account is ready. Your dashboard is now set up.</div>
     </div>
+  </div>
+  <script>
+    window.setTimeout(function(){
+      const welcome=document.getElementById('delivery-welcome');
+      if(welcome){ welcome.style.transition='opacity .35s ease'; welcome.style.opacity='0'; window.setTimeout(()=>welcome.remove(),400); }
+    },5000);
+  </script>
   {% endif %}
 
   <div class="grid">
-
-    <!-- DELIVERY SERVICE PROFILE -->
     <div class="card">
-
-      <div class="service-head">
-
-        {% if service and service.logo_file %}
-          <img
-            class="service-logo"
-            src="{{ url_for('static', filename='uploads/' ~ service.logo_file) }}"
-            alt="{{ service.service_name }} logo"
-          >
-        {% else %}
-          <div class="service-logo" aria-hidden="true">🚚</div>
-        {% endif %}
-
-        <div>
-          <h2>
-            {{ service.service_name if service else (user.company_name or user.username) }}
-          </h2>
-
-          {% if service %}
-            <div class="muted">
-              📍 {{ service.operating_location }}
-              · 🗺️ {{ service.service_area }}
-              · 🛵 {{ service.delivery_type }}
-            </div>
-          {% endif %}
-        </div>
-
-      </div>
-
+      <h2>{{ service.service_name if service else (user.company_name or user.username) }}</h2>
       {% if service %}
-
-        <div
-          class="availability-actions"
-          aria-label="Delivery availability"
-        >
-
-          <form
-            method="POST"
-            action="{{ url_for('delivery_availability') }}"
-          >
-            <input
-              type="hidden"
-              name="availability"
-              value="Available"
-            >
-
-            <button
-              class="btn {% if service.availability == 'Available' %}availability-on{% else %}availability-neutral{% endif %}"
-              type="submit"
-            >
-              Available
-            </button>
+        <div class="muted">📍 {{ service.operating_location }} · 🗺️ {{ service.service_area }} · 🛵 {{ service.delivery_type }}</div>
+        <div class="actions">
+          <form method="POST" action="{{ url_for('delivery_availability') }}">
+            <input type="hidden" name="availability" value="{% if service.availability == 'Available' %}Unavailable{% else %}Available{% endif %}">
+            <button class="btn" type="submit">Set {{ 'Unavailable' if service.availability == 'Available' else 'Available' }}</button>
           </form>
-
-          <form
-            method="POST"
-            action="{{ url_for('delivery_availability') }}"
-          >
-            <input
-              type="hidden"
-              name="availability"
-              value="Unavailable"
-            >
-
-            <button
-              class="btn {% if service.availability == 'Unavailable' %}availability-off{% else %}availability-neutral{% endif %}"
-              type="submit"
-            >
-              Unavailable
-            </button>
-          </form>
-
-          <span class="pill">
-            {{ service.availability }}
-          </span>
-
+          <span class="pill">{{ service.availability }}</span>
         </div>
-
-      {% else %}
-
-        <div class="muted">
-          No delivery service profile was found for this account.
-        </div>
-
-      {% endif %}
-
+      {% else %}<div class="muted">No delivery service profile was found for this account.</div>{% endif %}
     </div>
 
-
-    <!-- WHAT REGISTERING AS DELIVERY SERVICE MEANS -->
-    <div class="card wide">
-
-      <h3>What registering as a Delivery Service means</h3>
-
-      <p class="muted">
-        Registering as a delivery service company or independent delivery
-        agent on BizHub means you are joining the marketplace as a provider
-        that can receive delivery requests from participating vendors and
-        Fast Food businesses.
-      </p>
-
-      <div class="note">
-
-        <b>What you are expected to do:</b>
-
-        <ul style="margin:7px 0 0 18px;padding:0;line-height:1.7">
-
-          <li>
-            Keep your service name, phone number, operating location,
-            service area, delivery type and logo accurate and up to date.
-          </li>
-
-          <li>
-            Set yourself to <b>Available</b> only when you are genuinely
-            ready to accept delivery work; use <b>Unavailable</b> when you
-            are not accepting requests.
-          </li>
-
-          <li>
-            Review requests carefully, then accept or decline them based
-            on your actual capacity and ability to complete the delivery.
-          </li>
-
-          <li>
-            When a request is accepted, use the dashboard to keep its
-            status accurate through pickup and delivery.
-          </li>
-
-          <li>
-            Communicate responsibly and follow BizHub rules. Do not use
-            the platform for unsafe, fraudulent, abusive or misleading
-            activity.
-          </li>
-
-        </ul>
-
-      </div>
-
-      <p class="muted" style="margin-top:9px">
-
-        <b>Verification:</b>
-        You may request a BizHub verification review. Verification is a
-        trust review by BizHub and is not a guarantee of delivery requests,
-        income, payment, customer satisfaction or business performance.
-        Keep your account information truthful so BizHub can review your
-        service fairly.
-
-      </p>
-
-    </div>
-
-
-    <!-- VERIFICATION -->
     <div class="card">
-
-      <h3>
-        Verification
-
-        <span
-          class="info"
-          title="Verification is a BizHub trust review for eligible Vendor, Fast Food, and Delivery Service accounts. BizHub reviews the request and notifies you of the outcome. Verification does not guarantee delivery requests, income, payment, or delivery performance."
-        >
-          i
-        </span>
-
-      </h3>
-
+      <h3>Verification</h3>
       {% if verification_request %}
-
-        <div
-          class="status
-          {% if verification_request.status == 'Approved' %}
-            success
-          {% elif verification_request.status == 'Rejected' %}
-            rejected
-          {% else %}
-            pending
-          {% endif %}"
-        >
-          {{ verification_request.status }}
-        </div>
-
-        {% if verification_request.user_message %}
-
-          <div
-            class="note"
-            style="margin-top:8px"
-          >
-            <b>Your message:</b><br>
-            {{ verification_request.user_message }}
-          </div>
-
-        {% endif %}
-
-        {% if verification_request.note %}
-
-          <div
-            class="note"
-            style="margin-top:8px"
-          >
-            <b>BizHub review:</b><br>
-            {{ verification_request.note }}
-          </div>
-
-        {% endif %}
-
+        <div class="status {% if verification_request.status == 'Approved' %}success{% elif verification_request.status == 'Rejected' %}rejected{% else %}pending{% endif %}">{{ verification_request.status }}</div>
+        {% if verification_request.user_message %}<div class="note" style="margin-top:8px"><b>Your message:</b><br>{{ verification_request.user_message }}</div>{% endif %}
+        {% if verification_request.note %}<div class="note" style="margin-top:8px"><b>BizHub review:</b><br>{{ verification_request.note }}</div>{% endif %}
         {% if verification_request.status != 'Pending' %}
-
-          <div
-            class="muted"
-            style="margin-top:8px"
-          >
-            You may submit another request if you need a new review.
-          </div>
-
+          <div class="muted" style="margin-top:8px">You may submit another request if you need a new review.</div>
         {% endif %}
-
       {% endif %}
-
       {% if not verification_request or verification_request.status != 'Pending' %}
-
-        <form
-          class="verify"
-          method="POST"
-          action="{{ url_for('request_verification') }}"
-        >
-
-          <label for="user_message">
-            <b>Message to BizHub (optional)</b>
-
-            <span
-              title="Tell BizHub anything useful about your verification request."
-            >
-              ⓘ
-            </span>
-          </label>
-
-          <textarea
-            id="user_message"
-            name="user_message"
-            maxlength="2000"
-            placeholder="Add an optional message for the BizHub verification team."
-          ></textarea>
-
-          <button
-            class="btn"
-            type="submit"
-          >
-            Request Verification
-          </button>
-
+        <form class="verify" method="POST" action="{{ url_for('request_verification') }}">
+          <label for="user_message"><b>Message to BizHub (optional)</b> <span title="Tell BizHub anything useful about your verification request.">ⓘ</span></label>
+          <textarea id="user_message" name="user_message" maxlength="2000" placeholder="Add an optional message for the BizHub verification team."></textarea>
+          <button class="btn" type="submit">Request Verification</button>
         </form>
-
-      {% else %}
-
-        <div
-          class="muted"
-          style="margin-top:8px"
-        >
-          A verification request is already pending.
-        </div>
-
-      {% endif %}
-
+      {% else %}<div class="muted" style="margin-top:8px">A verification request is already pending.</div>{% endif %}
     </div>
-
   </div>
 
-
-  <!-- DELIVERY REQUESTS -->
   <div class="card wide">
-
     <h3>Delivery Requests</h3>
-
     {% for req in delivery_requests %}
-
       <div class="row">
-
         <div>
-
-          <b>
-            {{ req.vendor_company_name or req.vendor_username }}
-          </b>
-
-          <div class="muted">
-            @{{ req.vendor_username }}
-            · {{ req.message }}
-          </div>
-
-          <div class="small">
-            Request #{{ req.id }}
-            · {{ req.created_at }}
-          </div>
-
+          <b>{{ req.vendor_company_name or req.vendor_username }}</b>
+          <div class="muted">@{{ req.vendor_username }} · {{ req.message }}</div>
+          <div class="small">Request #{{ req.id }} · {{ req.created_at }}</div>
         </div>
-
         <div style="text-align:right">
-
-          <span class="pill {{ req.status|replace(' ','') }}">
-            {{ req.status }}
-          </span>
-
+          <span class="pill {{ req.status|replace(' ','') }}">{{ req.status }}</span>
           {% if req.status == 'Requested' %}
-
             <div class="actions">
-
-              <form
-                method="POST"
-                action="{{ url_for('update_delivery_request', request_id=req.id) }}"
-              >
-
-                <input
-                  type="hidden"
-                  name="status"
-                  value="Accepted"
-                >
-
-                <button
-                  class="btn"
-                  type="submit"
-                >
-                  Accept
-                </button>
-
-              </form>
-
-              <form
-                method="POST"
-                action="{{ url_for('update_delivery_request', request_id=req.id) }}"
-              >
-
-                <input
-                  type="hidden"
-                  name="status"
-                  value="Declined"
-                >
-
-                <button
-                  class="btn danger"
-                  type="submit"
-                >
-                  Decline
-                </button>
-
-              </form>
-
+              <form method="POST" action="{{ url_for('update_delivery_request', request_id=req.id) }}"><input type="hidden" name="status" value="Accepted"><button class="btn" type="submit">Accept</button></form>
+              <form method="POST" action="{{ url_for('update_delivery_request', request_id=req.id) }}"><input type="hidden" name="status" value="Declined"><button class="btn danger" type="submit">Decline</button></form>
             </div>
-
           {% elif req.status == 'Accepted' %}
-
-            <form
-              class="actions"
-              method="POST"
-              action="{{ url_for('update_delivery_request', request_id=req.id) }}"
-            >
-
-              <input
-                type="hidden"
-                name="status"
-                value="Picked Up"
-              >
-
-              <button
-                class="btn"
-                type="submit"
-              >
-                Mark Picked Up
-              </button>
-
-            </form>
-
+            <form class="actions" method="POST" action="{{ url_for('update_delivery_request', request_id=req.id) }}"><input type="hidden" name="status" value="Picked Up"><button class="btn" type="submit">Mark Picked Up</button></form>
           {% elif req.status == 'Picked Up' %}
-
-            <form
-              class="actions"
-              method="POST"
-              action="{{ url_for('update_delivery_request', request_id=req.id) }}"
-            >
-
-              <input
-                type="hidden"
-                name="status"
-                value="Delivered"
-              >
-
-              <button
-                class="btn"
-                type="submit"
-              >
-                Mark Delivered
-              </button>
-
-            </form>
-
+            <form class="actions" method="POST" action="{{ url_for('update_delivery_request', request_id=req.id) }}"><input type="hidden" name="status" value="Delivered"><button class="btn" type="submit">Mark Delivered</button></form>
           {% endif %}
-
         </div>
-
       </div>
-
-    {% else %}
-
-      <div class="muted">
-        No delivery requests yet.
-      </div>
-
-    {% endfor %}
-
+    {% else %}<div class="muted">No delivery requests yet.</div>{% endfor %}
   </div>
 
-
-  <!-- NOTIFICATIONS -->
   <div class="card wide">
-
     <h3>Notifications</h3>
-
     {% for notification in notifications %}
-
-      <div
-        class="notification
-        {% if not notification.is_read %}unread{% endif %}"
-      >
-
-        <div>
-          <b>{{ notification.title }}</b>
-        </div>
-
-        <div class="muted">
-          {{ notification.message }}
-        </div>
-
-        <div class="small">
-          {{ notification.created_at }}
-        </div>
-
+      <div class="notification {% if not notification.is_read %}unread{% endif %}">
+        <div><b>{{ notification.title }}</b></div>
+        <div class="muted">{{ notification.message }}</div>
+        <div class="small">{{ notification.created_at }}</div>
         {% if not notification.is_read %}
-
-          <form
-            method="POST"
-            action="{{ url_for('mark_notification_read', notification_id=notification.id) }}"
-            style="margin-top:6px"
-          >
-
-            <button
-              class="btn secondary"
-              type="submit"
-            >
-              Mark as read
-            </button>
-
-          </form>
-
+          <form method="POST" action="{{ url_for('mark_notification_read', notification_id=notification.id) }}" style="margin-top:6px"><button class="btn secondary" type="submit">Mark as read</button></form>
         {% endif %}
-
       </div>
-
-    {% else %}
-
-      <div class="muted">
-        No notifications yet.
-      </div>
-
-    {% endfor %}
-
+    {% else %}<div class="muted">No notifications yet.</div>{% endfor %}
   </div>
-
 </div>
-
-
-<!-- BIZHUB COPYRIGHT -->
-<footer
-  style="
-    max-width:1100px;
-    margin:0 auto;
-    padding:18px 14px 28px;
-    text-align:center;
-    color:#64748B;
-    font-size:11px;
-    line-height:1.6;
-  "
->
-
-  <div>
-    © 2026 BizHub. All rights reserved.
-  </div>
-
-  <div>
-    BizHub is a marketplace platform connecting businesses and
-    delivery service providers.
-  </div>
-
-</footer>
-
-
-<!-- 5-SECOND WELCOME MESSAGE -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-
-  var welcome = document.getElementById('bizhub-welcome');
-
-  if (welcome) {
-
-    window.setTimeout(function () {
-
-      welcome.style.transition = 'opacity .3s ease';
-      welcome.style.opacity = '0';
-
-      window.setTimeout(function () {
-        welcome.remove();
-      }, 320);
-
-    }, 5000);
-
-  }
-
-});
-</script>
-
 </body>
 </html>

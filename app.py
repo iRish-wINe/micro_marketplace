@@ -20,8 +20,31 @@ logger = logging.getLogger(__name__)
 app.secret_key = os.environ.get("BIZ_HUB_SECRET_KEY", "commercial_marketplace_super_secret_token")
 LOCAL_ADMIN_USERNAME = "Stapps Of Faith"
 LOCAL_ADMIN_PASSWORD = "RICHARD10"
-PRODUCT_CATEGORIES = ["Phones & Accessories", "Groceries", "Clothing", "Books", "Health & Beauty", "Beauty & Personal Care", "Home & Kitchen", "Electronics", "Fast Food", "Other"]
-VENDOR_CATEGORIES = PRODUCT_CATEGORIES + ["Health & Beauty", "Fast Food"]
+PRODUCT_CATEGORIES = [
+    "Phones & Accessories",
+    "Computers & Accessories",
+    "Electronics",
+    "Home Appliances",
+    "Home & Kitchen",
+    "Furniture",
+    "Groceries",
+    "Food & Beverages",
+    "Clothing & Fashion",
+    "Shoes & Bags",
+    "Beauty & Personal Care",
+    "Health & Wellness",
+    "Books & Stationery",
+    "Baby & Kids",
+    "Sports & Fitness",
+    "Automotive",
+    "Tools & Hardware",
+    "Agriculture",
+    "Jewelry & Accessories",
+    "Services",
+    "Other",
+    "Fast Food",
+]
+VENDOR_CATEGORIES = [c for c in PRODUCT_CATEGORIES if c != "Fast Food"]
 VIDEO_EXTENSIONS = {".mp4", ".webm", ".mov"}
 DELIVERY_TYPES = ["Motorcycle", "Car", "Van", "Bicycle", "Other"]
 NOTIFICATION_TYPES = {
@@ -210,6 +233,20 @@ def init_db():
             price REAL NOT NULL,
             quantity INTEGER NOT NULL DEFAULT 1,
             FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS cart_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            product_id INTEGER,
+            title TEXT NOT NULL,
+            seller TEXT NOT NULL,
+            price REAL NOT NULL,
+            quantity_added INTEGER NOT NULL DEFAULT 1,
+            cart_quantity_after INTEGER NOT NULL DEFAULT 1,
+            added_at TEXT NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
     cursor.execute("""
@@ -585,53 +622,6 @@ def subscription_status(user):
 def is_premium_vendor(user):
     return bool(user and user.get("role") in ["Vendor", "Fast Food"] and subscription_status(user)["is_premium"])
 
-def _admin_destination_number(env_name):
-    return normalize_whatsapp_number(os.environ.get(env_name, ""))
-
-def dispatch_admin_alert(title, message, link=None):
-    """Send critical operational alerts to configured admin phone/WhatsApp destinations."""
-    text = f"{title}\n{message}" + (f"\n{link}" if link else "")
-    sid = os.environ.get("BIZ_HUB_TWILIO_ACCOUNT_SID")
-    token = os.environ.get("BIZ_HUB_TWILIO_AUTH_TOKEN")
-    if not (sid and token):
-        return
-    admin_phone = _admin_destination_number("BIZ_HUB_ADMIN_PHONE")
-    admin_whatsapp = _admin_destination_number("BIZ_HUB_ADMIN_WHATSAPP")
-    sms_from = os.environ.get("BIZ_HUB_TWILIO_SMS_FROM")
-    whatsapp_from = os.environ.get("BIZ_HUB_TWILIO_WHATSAPP_FROM")
-    try:
-        import requests
-    except ImportError:
-        logger.warning("Install requests to enable BizHub admin SMS/WhatsApp alerts")
-        return
-
-    def send(to_number, from_number, prefix, channel):
-        if not to_number or not from_number:
-            return
-        try:
-            response = requests.post(
-                f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json",
-                data={"From": from_number, "To": f"{prefix}{to_number}", "Body": text},
-                auth=(sid, token), timeout=15
-            )
-            response.raise_for_status()
-        except Exception:
-            logger.exception("BizHub admin %s notification failed", channel)
-
-    send(admin_phone, sms_from, "+", "SMS")
-    send(admin_whatsapp, whatsapp_from, "whatsapp:+", "WhatsApp")
-
-def notify_admin_event(event_name, details, link=None):
-    titles = {
-        "registration": "New BizHub registration",
-        "delivery_registration": "New delivery service registration",
-        "report": "New report requires review",
-        "verification": "New verification request",
-        "dispute": "New dispute requires review",
-        "payment": "New payment recorded",
-    }
-    dispatch_admin_alert(titles.get(event_name, "BizHub admin alert"), details, link)
-
 def dispatch_external_notifications(user, title, message, link=None):
     if not user:
         return
@@ -743,109 +733,6 @@ def award_loyalty_points(user_id, order_id, order_total):
     query_db("UPDATE loyalty_accounts SET points = points + ?, updated_at = ? WHERE user_id = ?", (points, now, user_id))
     query_db("UPDATE orders SET loyalty_points_earned = ? WHERE id = ?", (points, order_id))
     return points
-
-
-
-# -----------------------------------------------------------------------------
-# Global BizHub marketplace header
-# Injected at response level so existing and future HTML pages receive the same
-# Amazon-inspired marketplace navigation without requiring every template to be
-# rewritten or extended from a shared base template.
-# -----------------------------------------------------------------------------
-BIZHUB_GLOBAL_HEADER_CSS = r"""
-<style id="bizhub-global-header-styles">
-:root{--bh-navy:#131921;--bh-navy2:#232f3e;--bh-orange:#ff9900;--bh-yellow:#febd69}
-.bh-global-header{position:relative;z-index:10000;font-family:Arial,Helvetica,sans-serif;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18)}
-.bh-topbar{min-height:64px;background:var(--bh-navy);display:flex;align-items:center;gap:10px;padding:8px 14px;box-sizing:border-box}
-.bh-brand{display:flex;align-items:center;gap:7px;text-decoration:none;color:#fff;font-weight:900;letter-spacing:-.5px;font-size:22px;line-height:1;white-space:nowrap;padding:8px 7px;border:1px solid transparent;border-radius:3px}.bh-brand:hover{border-color:#fff;color:#fff}.bh-brand-mark{font-size:23px}.bh-brand-sub{display:block;font-size:10px;letter-spacing:1.1px;color:#febd69;margin-top:3px;font-weight:700}
-.bh-location{min-width:108px;display:flex;align-items:center;gap:7px;padding:7px 8px;border:1px solid transparent;border-radius:3px;text-decoration:none;color:#fff}.bh-location:hover{border-color:#fff}.bh-location small{display:block;color:#c7d0d9;font-size:10px}.bh-location strong{display:block;font-size:13px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bh-search{display:flex;flex:1;min-width:150px;height:42px;border-radius:5px;overflow:hidden;background:#fff;box-shadow:0 0 0 2px transparent}.bh-search:focus-within{box-shadow:0 0 0 2px var(--bh-orange)}.bh-search input{border:0;outline:0;flex:1;padding:0 14px;font-size:15px;color:#111;min-width:0}.bh-search button{width:52px;border:0;background:var(--bh-yellow);color:#111;font-size:18px;cursor:pointer}.bh-search button:hover{background:#f3a847}
-.bh-action{display:flex;align-items:center;gap:5px;text-decoration:none;color:#fff;border:1px solid transparent;border-radius:3px;padding:7px 8px;min-height:42px;box-sizing:border-box}.bh-action:hover{border-color:#fff;color:#fff}.bh-action .small{display:block;font-size:10px;color:#e6e6e6;line-height:12px}.bh-action strong{display:block;font-size:13px;white-space:nowrap}.bh-action .icon{font-size:21px}.bh-badge{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;border-radius:10px;background:var(--bh-orange);color:#111;font-size:10px;font-weight:900;margin-left:-3px;margin-top:-14px}
-.bh-subbar{min-height:42px;background:var(--bh-navy2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap}.bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px}.bh-subbar a:hover{border-color:#fff;color:#fff}.bh-subbar .bh-grow{flex:1}.bh-role-pill{font-size:10px;color:#febd69;margin-left:3px;text-transform:uppercase}
-@media(max-width:900px){.bh-location{display:none}.bh-action.hide-md{display:none}.bh-topbar{flex-wrap:wrap}.bh-search{order:5;flex-basis:100%}.bh-topbar{padding-bottom:10px}}
-@media(max-width:560px){.bh-topbar{gap:5px;padding:7px}.bh-brand{font-size:19px}.bh-brand-sub{display:none}.bh-action{padding:6px 5px}.bh-action .small{display:none}.bh-action strong{font-size:11px}.bh-action .icon{font-size:19px}.bh-subbar a{font-size:12px;padding:10px 9px}.bh-search{height:40px}}
-</style>
-"""
-
-def _bh_escape(value):
-    import html
-    return html.escape(str(value or ""), quote=True)
-
-def bizhub_global_header():
-    logged_in = bool(session.get("username"))
-    admin = bool(session.get("is_admin"))
-    username = _bh_escape(session.get("username", "Guest"))
-    role = _bh_escape(session.get("role", ""))
-    location = _bh_escape(session.get("business_location") or "Ghana")
-    try:
-        cart = session.get("cart") or {}
-        if isinstance(cart, list): cart_count = len(cart)
-        elif isinstance(cart, dict): cart_count = sum(max(0, int(v or 0)) for v in cart.values())
-        else: cart_count = 0
-    except (TypeError, ValueError): cart_count = 0
-    notif_count = 0
-    if logged_in:
-        try:
-            u = query_db("SELECT id FROM users WHERE username = ?", (session.get("username"),), one=True)
-            if u:
-                row = query_db("SELECT COUNT(*) AS count FROM notifications WHERE recipient_id = ? AND is_read = 0", (u["id"],), one=True)
-                notif_count = int(row["count"] if row else 0)
-        except Exception: logger.exception("BizHub global header notification count failed")
-    home_url = _bh_escape(url_for("home")); login_url = _bh_escape(url_for("login")); orders_url = _bh_escape(url_for("orders")); notifications_url = _bh_escape(url_for("notifications")); favorites_url = _bh_escape(url_for("favorites")); settings_url = _bh_escape(url_for("settings")); delivery_url = _bh_escape(url_for("delivery_services")); admin_url = _bh_escape(url_for("admin_dashboard"))
-    account_url = settings_url if logged_in else login_url
-    account_label = username if logged_in else "Sign in"
-    role_pill = f"<span class=\"bh-role-pill\">{role}</span>" if role else ""
-    if logged_in:
-        auth_actions = f"""
-      <a class="bh-action" href="{account_url}"><span class="icon">👤</span><span><span class="small">Hello,</span><strong>{account_label} {role_pill}</strong></span></a>
-      <a class="bh-action hide-md" href="{orders_url}"><span><span class="small">Track &amp;</span><strong>Orders</strong></span></a>
-      <a class="bh-action" href="{notifications_url}"><span class="icon">🔔</span><span><span class="small">BizHub</span><strong>Alerts</strong></span>{f'<span class="bh-badge">{notif_count}</span>' if notif_count else ''}</a>
-      <a class="bh-action" href="{home_url}#cart"><span class="icon">🛒</span><span><span class="small">Your</span><strong>Cart</strong></span>{f'<span class="bh-badge">{cart_count}</span>' if cart_count else ''}</a>
-    """
-    else:
-        auth_actions = f"""
-      <a class="bh-action" href="{login_url}"><span class="icon">👤</span><span><span class="small">Welcome</span><strong>Sign in</strong></span></a>
-      <a class="bh-action" href="{login_url}"><span><span class="small">New to BizHub?</span><strong>Create account</strong></span></a>
-    """
-    admin_action = f'<a class="bh-action" href="{admin_url}"><span class="icon">🛡️</span><span><span class="small">Manage</span><strong>Admin</strong></span></a>' if admin else ''
-    admin_nav = f'<a href="{admin_url}">Admin Center</a>' if admin else ''
-    return f"""
-<header class="bh-global-header" role="banner">
-  <div class="bh-topbar">
-    <a class="bh-brand" href="{home_url}" aria-label="BizHub home"><span class="bh-brand-mark">B</span><span>BizHub<span class="bh-brand-sub">SHOP • SELL • CONNECT</span></span></a>
-    <a class="bh-location" href="{home_url}"><span>📍</span><span><small>Delivering to</small><strong>{location}</strong></span></a>
-    <form class="bh-search" method="get" action="{home_url}" role="search"><input name="search" placeholder="Search products, stores and categories" aria-label="Search BizHub"><button type="submit" aria-label="Search">🔍</button></form>
-    {auth_actions}{admin_action}
-  </div>
-  <nav class="bh-subbar" aria-label="BizHub marketplace navigation">
-    <a href="{home_url}">☰ &nbsp;All</a><a href="{home_url}#deals">Today's Deals</a><a href="{favorites_url}">Favorites</a><a href="{delivery_url}">Find Delivery</a><a href="{home_url}#fast-food">Fast Food</a><a href="{home_url}#categories">Categories</a><a href="{account_url}">Your Account</a><span class="bh-grow"></span>{admin_nav}
-  </nav>
-</header>
-"""
-
-@app.after_request
-def inject_bizhub_global_header(response):
-    content_type = (response.headers.get("Content-Type") or "").lower()
-    if "text/html" not in content_type or response.status_code in (204, 304) or request.path.startswith("/static"):
-        return response
-    try:
-        html = response.get_data(as_text=True)
-        if 'id="bizhub-global-header-styles"' in html or 'class="bh-global-header"' in html:
-            return response
-        header = bizhub_global_header()
-        lower = html.lower()
-        head = lower.find("</head>")
-        if head >= 0: html = html[:head] + BIZHUB_GLOBAL_HEADER_CSS + html[head:]
-        else: html = BIZHUB_GLOBAL_HEADER_CSS + html
-        body = html.lower().find("<body")
-        if body >= 0:
-            close = html.find(">", body)
-            if close >= 0: html = html[:close+1] + header + html[close+1:]
-        else: html = header + html
-        response.set_data(html)
-        response.headers.pop("Content-Length", None)
-    except Exception: logger.exception("BizHub global header injection failed")
-    return response
 
 def notification_context():
     unread_notifications_count = 0
@@ -1077,7 +964,11 @@ def home():
         
         title = request.form.get("meal_name" if is_fast_food else "title")
         description = request.form.get("meal_description" if is_fast_food else "description")
-        category = "Fast Food" if is_fast_food else request.form.get("category", "Other")
+        # Vendor publishing no longer asks the user to choose a category.
+        # Keep a safe default so existing marketplace/category functionality remains intact.
+        category = "Fast Food" if is_fast_food else (request.form.get("category", "Other").strip() or "Other")
+        if not is_fast_food and category not in VENDOR_CATEGORIES:
+            category = "Other"
         stock_quantity = request.form.get("stock_quantity", "")
         location = request.form.get("location")
         file = request.files.get("product_image")
@@ -1159,7 +1050,7 @@ def home():
             vendor_user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
             if vendor_user:
                 notify_favorite_customers(vendor_user["id"], "product", f"{b_label} added a new item", title, url_for("vendor_profile", username=session["username"]))
-            return redirect(url_for("home", published="fastfood" if is_fast_food else "1"))
+            return redirect(url_for("vendor_profile", username=session["username"], published="fastfood" if is_fast_food else "item"))
 
             
     selected_filter = request.args.get("filter_location", "All")
@@ -1225,8 +1116,19 @@ def home():
     logo_rows = query_db("SELECT username, company_logo FROM users WHERE company_logo IS NOT NULL") or []
     for row in logo_rows:
         vendor_logos[row["username"]] = row["company_logo"]
-    marketplace_products = all_products
-    todays_deals = [p for p in all_products if p.get("active_promo")][:12]
+    # Owner-first marketplace presentation: sellers see their own listings in a dedicated section.
+    owner_username = session.get("username")
+    owner_role = session.get("role")
+    if owner_role == "Fast Food":
+        your_marketplace_products = [p for p in fast_food_products if p.get("seller") == owner_username]
+        marketplace_products = all_products
+    elif owner_role == "Vendor":
+        your_marketplace_products = [p for p in all_products if p.get("seller") == owner_username]
+        marketplace_products = [p for p in all_products if p.get("seller") != owner_username]
+    else:
+        your_marketplace_products = []
+        marketplace_products = all_products
+    todays_deals = [p for p in marketplace_products if p.get("active_promo")][:12]
     inventory_items = []
     if session.get("role") == "Vendor":
         inventory_items = query_db("SELECT id, title, initial_stock_quantity, stock_quantity, sold_quantity, status FROM products WHERE seller = ? AND category != 'Fast Food' ORDER BY id DESC", (session["username"],)) or []
@@ -1309,7 +1211,7 @@ def home():
             fast_food_count_row = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ? AND category = 'Fast Food'", (session["username"],), one=True)
             fast_food_count = fast_food_count_row["count"] if fast_food_count_row else 0
 
-    return render_template("index.html", products=marketplace_products, marketplace_products=marketplace_products, fast_food_products=fast_food_products, fast_food_vendors=fast_food_vendors, todays_deals=[p for p in marketplace_products if p.get("active_promo")][:12], active_filter=selected_filter, company_search=company_search, location_search=location_search, selected_category=selected_category, categories=PRODUCT_CATEGORIES, vendor_logos=vendor_logos, cart_items=cart_items, cart_total=cart_total, discount_total=discount_total, active_coupon=active_coupon, seller_orders=sorted(seller_orders.values(), key=lambda order: not order["priority"]), vendor_subscription=vendor_subscription, listing_count=listing_count, fast_food_count=fast_food_count, inventory_items=inventory_items, listing_error=listing_error, premium_sellers=premium_sellers, vendor_notification_count=vendor_notification_count, customer_notification_count=customer_notification_count, promo_only=promo_only, cart_added=request.args.get("cart_added") == "1", published=request.args.get("published") == "1", published_fastfood=request.args.get("published") == "fastfood", welcome_message=welcome_message)
+    return render_template("index.html", products=marketplace_products, marketplace_products=marketplace_products, your_marketplace_products=your_marketplace_products, fast_food_products=fast_food_products, fast_food_vendors=fast_food_vendors, todays_deals=[p for p in marketplace_products if p.get("active_promo")][:12], active_filter=selected_filter, company_search=company_search, location_search=location_search, selected_category=selected_category, categories=PRODUCT_CATEGORIES, vendor_logos=vendor_logos, cart_items=cart_items, cart_count=cart_count, cart_total=cart_total, discount_total=discount_total, active_coupon=active_coupon, seller_orders=sorted(seller_orders.values(), key=lambda order: not order["priority"]), vendor_subscription=vendor_subscription, listing_count=listing_count, fast_food_count=fast_food_count, inventory_items=inventory_items, listing_error=listing_error, premium_sellers=premium_sellers, vendor_notification_count=vendor_notification_count, customer_notification_count=customer_notification_count, promo_only=promo_only, cart_added=request.args.get("cart_added") == "1", published=request.args.get("published") == "1", published_fastfood=request.args.get("published") == "fastfood", welcome_message=welcome_message)
 @app.route("/delete-item/<int:product_id>")
 def delete_item(product_id):
     if "username" not in session:
@@ -1321,7 +1223,7 @@ def delete_item(product_id):
 
 @app.route("/add-to-cart/<int:product_id>")
 def add_to_cart(product_id):
-    product = query_db("SELECT id, stock_quantity, status, category, title FROM products WHERE id = ?", (product_id,), one=True)
+    product = query_db("SELECT id, stock_quantity, status, category, title, seller, price FROM products WHERE id = ?", (product_id,), one=True)
     if not product or product.get("category") == "Fast Food":
         return redirect(url_for("home"))
     if int(product.get("stock_quantity") or 0) < 1 or product.get("status") == "Sold":
@@ -1336,7 +1238,95 @@ def add_to_cart(product_id):
     cart[key] = current + 1
     session["cart"] = cart
     session.modified = True
+
+    if session.get("username"):
+        user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+        if user:
+            query_db(
+                "INSERT INTO cart_history (user_id, product_id, title, seller, price, quantity_added, cart_quantity_after, added_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (user["id"], product["id"], product["title"], product["seller"], float(product["price"]), 1, cart[key], datetime.now(timezone.utc).isoformat())
+            )
     return redirect(url_for("home", cart_added="1"))
+
+@app.route("/cart")
+def cart_page():
+    if "username" not in session:
+        return redirect(url_for("login"))
+
+    user = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+    if not user:
+        session.clear()
+        return redirect(url_for("login"))
+
+    cart_items = []
+    cart_total = 0.0
+    discount_total = 0.0
+    seller_orders = {}
+    active_coupon = get_valid_coupon(session.get("coupon_code"))
+    if not active_coupon:
+        session.pop("coupon_code", None)
+
+    cart = session.get("cart") or {}
+    if isinstance(cart, list):
+        cart = {str(pid): 1 for pid in cart}
+    if cart:
+        ids = [int(k) for k in cart]
+        placeholders = ",".join("?" for _ in ids)
+        items_in_db = query_db(f"SELECT * FROM products WHERE id IN ({placeholders}) AND category != 'Fast Food'", ids) or []
+        for item in items_in_db:
+            qty = min(int(cart.get(str(item["id"]), 1)), max(0, int(item.get("stock_quantity") or 0)))
+            if qty <= 0 or item.get("status") == "Sold":
+                continue
+            item["cart_quantity"] = qty
+            item["cart_line_total"] = float(item["price"]) * qty
+            item_discount = 0.0
+            if active_coupon and item["seller"] == active_coupon["username"]:
+                item_discount = item["cart_line_total"] * float(active_coupon["discount"]) / 100
+            item["discount_amount"] = item_discount
+            item["discounted_line_total"] = item["cart_line_total"] - item_discount
+            cart_items.append(item)
+            cart_total += item["discounted_line_total"]
+            discount_total += item_discount
+            seller_number = normalize_whatsapp_number(item["seller_whatsapp"])
+            seller_key = (item["seller"], seller_number)
+            seller_order = seller_orders.setdefault(seller_key, {"seller": item["seller"], "number": seller_number, "items": [], "total": 0.0})
+            seller_order["items"].append(item)
+            seller_order["total"] += item["discounted_line_total"]
+
+    for seller_order in seller_orders.values():
+        message = f"Hello {seller_order['seller']}, I want to buy these products on Biz Hub:\n"
+        for item in seller_order["items"]:
+            message += f"- {item['title']} (GH₵{item['price']}) in {item['location']}\n"
+        message += f"\nTotal Cost: GH₵{seller_order['total']:.2f}. Let's arrange for payment and delivery."
+        seller_order["whatsapp_text"] = quote(message)
+
+    history = query_db(
+        "SELECT id, product_id, title, seller, price, quantity_added, cart_quantity_after, added_at FROM cart_history WHERE user_id = ? ORDER BY id DESC LIMIT 200",
+        (user["id"],)
+    ) or []
+
+    vendor_notification_count = 0
+    customer_notification_count = 0
+    if user["role"] in ["Vendor", "Fast Food"]:
+        row = query_db("SELECT COUNT(*) AS count FROM vendor_notifications WHERE vendor_id = ? AND is_read = 0", (user["id"],), one=True)
+        vendor_notification_count = row["count"] if row else 0
+    else:
+        row = query_db("SELECT COUNT(*) AS count FROM notifications WHERE recipient_id = ? AND is_read = 0", (user["id"],), one=True)
+        customer_notification_count = row["count"] if row else 0
+
+    return render_template(
+        "cart.html",
+        user=user,
+        cart_items=cart_items,
+        cart_count=sum(int(item.get("cart_quantity", 0)) for item in cart_items),
+        cart_total=cart_total,
+        discount_total=discount_total,
+        active_coupon=active_coupon,
+        seller_orders=sorted(seller_orders.values(), key=lambda order: order["seller"].lower()),
+        history=history,
+        vendor_notification_count=vendor_notification_count,
+        customer_notification_count=customer_notification_count,
+    )
 
 @app.route("/update-cart/<int:product_id>", methods=["POST"])
 def update_cart(product_id):
@@ -1359,19 +1349,6 @@ def update_cart(product_id):
     session.modified = True
     return redirect(url_for("home"))
 
-@app.route("/mark-sold/<int:product_id>", methods=["POST"])
-def mark_sold(product_id):
-    if session.get("role") != "Vendor":
-        return redirect(url_for("login"))
-    product = query_db("SELECT stock_quantity, sold_quantity FROM products WHERE id = ? AND seller = ?", (product_id, session["username"]), one=True)
-    if product:
-        try:
-            removed = int(request.form.get("sold_quantity", "1"))
-        except (TypeError, ValueError):
-            removed = 0
-        if 1 <= removed <= int(product["stock_quantity"]):
-            query_db("UPDATE products SET stock_quantity = MAX(stock_quantity - ?, 0), status = CASE WHEN stock_quantity <= ? THEN 'Sold' ELSE 'Available' END WHERE id = ? AND seller = ?", (removed, removed, product_id, session["username"]))
-    return redirect(url_for("home"))
 
 @app.route("/clear-cart")
 def clear_cart():
@@ -1695,9 +1672,14 @@ def vendor_profile(username):
     )
     if not vendor:
         return redirect(url_for("home"))
+    welcome_message = bool(session.pop("welcome_message", False)) if session.get("username") == vendor.get("username") else False
     vendor_status = subscription_status(vendor)
     vendor["is_verified"] = vendor_status["is_premium"]
     vendor["is_premium"] = vendor_status["is_premium"]
+    is_owner = bool(
+        session.get("username") == vendor["username"]
+        and session.get("role") == vendor["role"]
+    )
     products = query_db(
         "SELECT * FROM products WHERE seller = ? ORDER BY id DESC",
         (username,)
@@ -1720,7 +1702,7 @@ def vendor_profile(username):
     for product in products:
         product["meal_whatsapp_number"] = vendor_whatsapp
         product["meal_whatsapp_text"] = quote(f"Hello {vendor.get('company_name') or vendor.get('username')}, I want to buy {product.get('title')} on BizHub, lets arrange for payment and delivery.")
-    return render_template("vendor_profile.html", vendor=vendor, products=products, categories=categories, promo=promo, favorite=favorite, product_count=len(products), subscription=vendor_status, vendor_whatsapp=vendor_whatsapp, vendor_whatsapp_text=vendor_whatsapp_text, reviews=reviews, review_summary=review_summary)
+    return render_template("vendor_profile.html", vendor=vendor, products=products, categories=categories, product_categories=PRODUCT_CATEGORIES, promo=promo, favorite=favorite, product_count=len(products), subscription=vendor_status, vendor_whatsapp=vendor_whatsapp, vendor_whatsapp_text=vendor_whatsapp_text, reviews=reviews, review_summary=review_summary, is_owner=is_owner, welcome_message=welcome_message)
 
 @app.route("/report/<int:user_id>", methods=["GET", "POST"])
 def report_user(user_id):
@@ -1739,7 +1721,6 @@ def report_user(user_id):
         if description:
             query_db("INSERT INTO reports (reporter_id, target_user_id, target_username, target_role, category, description, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)", (reporter["id"], target["id"], target["username"], target["role"], category, description, datetime.now(timezone.utc).isoformat()))
             create_notification(reporter["id"], "announcement", "Report received", f"BizHub received your report about @{target['username']}. Our team will review it before taking action.", url_for("notifications"))
-            notify_admin_event("report", f"@{reporter['username']} reported @{target['username']} ({target['role']}). Category: {category}.", url_for("admin_dashboard"))
             return redirect(url_for("notifications"))
         return render_template("report.html", target=target, report_error="Please describe what happened.")
     return render_template("report.html", target=target)
@@ -1778,23 +1759,7 @@ def toggle_favorite(username):
         query_db("DELETE FROM favorites WHERE id = ?", (existing["id"],))
     else:
         query_db("INSERT INTO favorites (customer_id, vendor_id, created_at) VALUES (?, ?, ?)", (customer["id"], vendor["id"], datetime.now(timezone.utc).isoformat()))
-        company_name = vendor.get("company_name") or vendor.get("username") or username
-        profile_link = url_for("vendor_profile", username=vendor["username"])
-        create_notification(
-            vendor["id"],
-            "favorite",
-            "New Favorite",
-            f"@{session['username']} added your store to their favorites.",
-            profile_link
-        )
-        # Confirm the successful favorite action to the customer immediately.
-        create_notification(
-            customer["id"],
-            "favorite",
-            "Favorite added",
-            f"Thank you for adding {company_name} to your favorites. Hope you enjoy our services.",
-            profile_link
-        )
+        create_notification(vendor["id"], "favorite", "New Favorite", f"@{session['username']} added your store to their favorites.", url_for("vendor_profile", username=username))
     return redirect(request.referrer or url_for("vendor_profile", username=username))
 
 @app.route("/notifications/<int:notification_id>/read", methods=["POST"])
@@ -1960,9 +1925,6 @@ def request_verification():
                 (user["id"], user_message or None, datetime.now(timezone.utc).isoformat())
             )
             create_notification(user["id"], "announcement", "Verification request sent", "Your BizHub verification request has been sent. BizHub will review it and notify you of the outcome.", url_for("features"))
-            full_user = query_db("SELECT username, role, company_name FROM users WHERE id = ?", (user["id"],), one=True)
-            if full_user:
-                notify_admin_event("verification", f"@{full_user['username']} ({full_user['role']}) submitted a verification request.", url_for("admin_dashboard"))
         return redirect(url_for("features", verification_sent="1"))
     return redirect(url_for("features"))
 
@@ -2070,10 +2032,8 @@ def submit_dispute():
     subject = request.form.get("subject", "Order or payment dispute").strip()
     details = request.form.get("details", "").strip()
     if user and subject and details:
-        order_id = request.form.get("order_id") or None
-        query_db("INSERT INTO disputes (reporter_id, order_id, subject, details, created_at) VALUES (?, ?, ?, ?, ?)", (user["id"], order_id, subject, details, datetime.now(timezone.utc).isoformat()))
+        query_db("INSERT INTO disputes (reporter_id, order_id, subject, details, created_at) VALUES (?, ?, ?, ?, ?)", (user["id"], request.form.get("order_id") or None, subject, details, datetime.now(timezone.utc).isoformat()))
         create_notification(user["id"], "announcement", "Dispute received", "BizHub received your dispute for review.", url_for("features"))
-        notify_admin_event("dispute", f"@{session['username']} submitted a dispute: {subject}." + (f" Order #{order_id}." if order_id else ""), url_for("admin_dashboard"))
     return redirect(url_for("features"))
 
 @app.route("/saved-searches", methods=["POST"])
@@ -2208,7 +2168,6 @@ def delivery_register():
             return render_template("delivery_register.html", error="That username is already in use.", delivery_types=DELIVERY_TYPES)
         session.clear()
         session.update(username=username, email=email, role="Delivery Service", seller_type="Delivery Service", company_name=service_name, whatsapp_number=phone_number, theme="day")
-        notify_admin_event("delivery_registration", f"{service_name} (@{username}) registered as a Delivery Service in {operating_location}.", url_for("admin_dashboard"))
         session["welcome_message"] = True
         return redirect(url_for("delivery_dashboard"))
     return render_template("delivery_register.html", delivery_types=DELIVERY_TYPES)
@@ -2220,34 +2179,33 @@ def delivery_dashboard():
     welcome_message = bool(session.pop("welcome_message", False))
     sync_delivery_availability()
     user = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+    service = get_delivery_service(user["id"]) if user else None
+    return render_template("delivery_dashboard.html", user=user, service=service, delivery_types=DELIVERY_TYPES, welcome_message=welcome_message)
+
+@app.route("/delivery/manage-accounts")
+def delivery_manage_accounts():
+    if "username" not in session or session.get("role") != "Delivery Service":
+        return redirect(url_for("login"))
+    sync_delivery_availability()
+    user = query_db("SELECT * FROM users WHERE username = ? AND role = 'Delivery Service'", (session["username"],), one=True)
     if not user:
         session.clear()
         return redirect(url_for("login"))
-
     service = get_delivery_service(user["id"])
-    delivery_requests = query_db(
-        "SELECT dr.*, u.username AS vendor_username, u.company_name AS vendor_company_name FROM delivery_requests dr JOIN users u ON u.id = dr.vendor_id WHERE dr.service_id = ? ORDER BY dr.id DESC",
-        (service["id"],) if service else (-1,)
-    ) or []
-    notifications = query_db(
-        "SELECT * FROM notifications WHERE recipient_id = ? ORDER BY id DESC LIMIT 50",
-        (user["id"],)
-    ) or []
-    unread_count = sum(1 for row in notifications if not row["is_read"])
-    verification_request = query_db(
-        "SELECT * FROM verification_requests WHERE user_id = ? ORDER BY id DESC LIMIT 1",
-        (user["id"],)
-    , one=True)
+    subscription = subscription_status(user)
+    receipts = query_db("SELECT * FROM subscription_receipts WHERE user_id = ? ORDER BY id DESC", (user["id"],)) or []
+    payment_number = normalize_whatsapp_number(os.environ.get("BIZ_HUB_PAYMENT_WHATSAPP", "233558272972"))
+    company_name = (user["company_name"] or (service["service_name"] if service else user["username"]) or user["username"]).strip()
+    upgrade_message = f"Hello Biz Hub, {user['username']} from {company_name} wants to upgrade to premium. Send account details."
     return render_template(
-        "delivery_dashboard.html",
+        "delivery_subscription.html",
         user=user,
         service=service,
-        delivery_types=DELIVERY_TYPES,
-        delivery_requests=delivery_requests,
-        notifications=notifications,
-        unread_count=unread_count,
-        verification_request=verification_request,
-        welcome_message=welcome_message
+        subscription=subscription,
+        receipts=receipts,
+        payment_number=payment_number,
+        upgrade_message=upgrade_message,
+        requested=request.args.get("requested") == "1",
     )
 
 @app.route("/delivery/availability", methods=["POST"])
@@ -2293,40 +2251,13 @@ def contact_delivery(service_id):
     if not delivery_access_allowed():
         return redirect(url_for("delivery_subscription", feature="delivery"))
     sync_delivery_availability()
-    service = query_db(
-        "SELECT ds.*, u.id AS user_id FROM delivery_services ds JOIN users u ON u.id = ds.user_id WHERE ds.id = ? AND ds.availability = 'Available' AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated') AND u.subscription_expires_at > ?",
-        (service_id, datetime.now(timezone.utc).isoformat()), one=True
-    )
+    service = query_db("SELECT ds.*, u.id AS user_id FROM delivery_services ds JOIN users u ON u.id = ds.user_id WHERE ds.id = ? AND ds.availability = 'Available' AND u.subscription_expires_at > ?", (service_id, datetime.now(timezone.utc).isoformat()), one=True)
     if not service:
         return redirect(url_for("delivery_services"))
-
-    requester = query_db("SELECT id, username FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food')", (session["username"],), one=True)
-    if requester:
-        service_name = service.get("service_name") or service.get("username") or "the delivery service"
-        dashboard_link = url_for("delivery_dashboard")
-        create_notification(
-            service["user_id"],
-            "delivery",
-            f"Delivery request from @{requester['username']}",
-            f"@{requester['username']} is contacting {service_name} to arrange delivery.",
-            dashboard_link
-        )
-        create_notification(
-            requester["id"],
-            "delivery",
-            "Delivery service contacted",
-            f"Your request to contact {service_name} has been sent. You can continue the arrangement via WhatsApp.",
-            url_for("notifications")
-        )
-
-    phone = normalize_whatsapp_number(service.get("phone_number"))
-    if not phone:
-        return redirect(url_for("delivery_services"))
-    return redirect(
-        "https://wa.me/" + phone + "?text=" + quote(
-            f"Hello {service.get('service_name') or 'Delivery Service'}, I found your delivery service on BizHub. I would like to arrange delivery."
-        )
-    )
+    vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if vendor:
+        create_notification(service["user_id"], "delivery", f"Delivery request from @{session['username']}", f"A subscribed BizHub vendor is contacting {service['service_name']} for delivery service.", url_for("delivery_dashboard"))
+    return redirect("https://wa.me/" + normalize_whatsapp_number(service["phone_number"]) + "?text=" + quote(f"Hello {service['service_name']}, I found your delivery service on BizHub. I would like to arrange delivery."))
 
 @app.route("/subscription")
 def subscription():
@@ -2489,7 +2420,6 @@ def log_payment():
     if tx_type == "Subscription" and (amount <= 0 or not query_db("SELECT id FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food', 'Delivery Service')", (username,), one=True)):
         return redirect(url_for("admin_dashboard"))
     query_db("INSERT INTO financial_ledger (transaction_type, username, amount, momo_reference, status, created_at) VALUES (?, ?, ?, ?, 'Pending', ?)", (tx_type, username, amount, ref, datetime.now(timezone.utc).isoformat()))
-    notify_admin_event("payment", f"Admin recorded {tx_type} payment for @{username}: {amount:.2f}. Reference: {ref}.", url_for("admin_dashboard"))
     if tx_type == "Subscription" and amount > 0:
         entry = query_db("SELECT id FROM financial_ledger WHERE momo_reference = ?", (ref,), one=True)
         if entry:
@@ -2614,25 +2544,25 @@ def settings():
         ))
 
         if not new_username:
-            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Username is required.")
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Username is required.")
         if not re.fullmatch(r"[A-Za-z0-9_.-]{3,40}", new_username):
-            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Username must be 3-40 characters and use only letters, numbers, dots, underscores, or hyphens.")
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Username must be 3-40 characters and use only letters, numbers, dots, underscores, or hyphens.")
         if new_username != current_username:
             existing = query_db("SELECT id FROM users WHERE username = ?", (new_username,), one=True)
             if existing:
-                return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="That username is already in use.")
+                return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="That username is already in use.")
         if not email:
-            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Email is required.")
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Email is required.")
         if is_vendor_any and not whatsapp_number:
-            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Vendor accounts need a WhatsApp number for payments.")
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Vendor accounts need a WhatsApp number for payments.")
         if new_password and new_password != confirm_password:
-            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="The new passwords do not match.")
+            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="The new passwords do not match.")
         if theme not in ("day", "night"):
             theme = "day"
         if logo_upload and logo_upload.filename:
             company_logo = save_company_logo(logo_upload)
             if not company_logo:
-                return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, settings_error="Upload a PNG, JPG, JPEG, WEBP, or GIF logo.")
+                return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Upload a PNG, JPG, JPEG, WEBP, or GIF logo.")
 
         if not is_vendor_any:
             company_name = None
@@ -2682,6 +2612,7 @@ def settings():
         subscription=subscription_status(user),
         vendor_categories=vendor_categories,
         vendor_category_options=VENDOR_CATEGORIES,
+        product_categories=PRODUCT_CATEGORIES,
         updated=request.args.get("updated") == "1"
     )
 @app.route("/login", methods=["GET", "POST"])
@@ -2820,8 +2751,6 @@ def register():
                 conn.commit()
                     
             conn.close()
-
-            notify_admin_event("registration", f"@{username} registered as {role}" + (f" ({company_name})" if company_name else "."), url_for("admin_dashboard"))
                     
             session.clear()
             session["username"] = username
@@ -2833,6 +2762,8 @@ def register():
             session["whatsapp_number"] = whatsapp_number
             session["theme"] = "day"
             session["welcome_message"] = True
+            if role in ["Vendor", "Fast Food"]:
+                return redirect(url_for("vendor_profile", username=username))
             return redirect(url_for("home"))
             
         except sqlite3.IntegrityError:
