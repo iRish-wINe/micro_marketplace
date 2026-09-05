@@ -122,7 +122,8 @@
         .listing-alert { margin:0 0 14px; padding:11px 13px; border-radius:8px; background:#FFF7ED; border:1px solid #FED7AA; color:#9A3412; font-size:12px; font-weight:700; }
         .media-choice { border:1px solid var(--border-color); border-radius:8px; padding:10px; background:#FAFAFA; }
         .media-status { font-size:11px; margin-top:6px; color:var(--text-muted); }
-        .media-preview { display:none; margin-top:8px; width:100%; max-height:150px; object-fit:contain; background:#000; border-radius:6px; }
+        .media-preview-wrap { position:relative; margin-top:8px; }
+        .media-preview { display:none; width:100%; max-height:150px; object-fit:contain; background:#000; border-radius:6px; }
         .stock-badge { display:inline-flex; align-items:center; width:max-content; max-width:100%; margin:0 0 7px; padding:4px 8px; border-radius:999px; font-size:10px; font-weight:900; }
         .stock-good { background:#ECFDF5; color:#047857; border:1px solid #A7F3D0; }
         .stock-low { background:#FFF7ED; color:#C2410C; border:1px solid #FED7AA; }
@@ -145,6 +146,8 @@
         @media(max-width:767px){ .marketplace-hero{height:245px;border-radius:0 0 var(--radius-sm) var(--radius-sm)} .marketplace-hero-content{padding:32px 20px}.marketplace-hero-content h1{font-size:25px}.marketplace-hero-content p{font-size:12px}.contact-footer-inner{padding:22px 15px;display:block}.contact-links{margin-top:16px;justify-content:stretch}.contact-links a{flex:1 1 100%;justify-content:flex-start} }
 
         .media-cancel { display:none; margin-top:6px; width:100%; border:1px solid #FED7D7; background:#FFF5F5; color:#B91C1C; border-radius:6px; padding:6px 8px; font-size:11px; font-weight:700; cursor:pointer; }
+        .media-cancel-x { display:none; position:absolute; top:6px; right:6px; z-index:5; width:30px; height:30px; border:2px solid #fff; border-radius:999px; background:rgba(0,0,0,.72); color:#fff; font-size:18px; line-height:24px; font-weight:900; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.35); padding:0; }
+        .media-cancel-x:hover { background:rgba(185,28,28,.95); }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 15px; }
         
@@ -339,10 +342,7 @@
     </script>
     {% endif %}
 
-    {% if published_fastfood and session.get('role') == 'Fast Food' %}
-    <div id="fastFoodPublishPopup" style="position:fixed;top:78px;left:50%;transform:translateX(-50%);z-index:9999;background:#111827;color:#fff;border:1px solid #f59e0b;border-radius:12px;padding:12px 18px;box-shadow:0 14px 40px rgba(0,0,0,.25);font-size:13px;font-weight:900;text-align:center;max-width:90%;">🍔 Meal published! Go to My Store to see your listings.</div>
-    <script>setTimeout(function(){var p=document.getElementById('fastFoodPublishPopup');if(p)p.remove();},3500);</script>
-    {% endif %}
+
 
 <style id="bizhub-global-header-styles">
 :root{--bh-navy:#131921;--bh-navy2:#232f3e;--bh-orange:#ff9900;--bh-yellow:#febd69}
@@ -372,7 +372,7 @@
     {% endif %}
   </div>
   <nav class="bh-subbar" aria-label="BizHub marketplace navigation">
-    <a href="{{ url_for('home') }}">☰ &nbsp;All</a><a href="{{ url_for('home') }}#deals">Today's Deals</a><a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">Favorites</a>{% if session.get('username') %}<a href="{{ url_for('order_history') }}">Orders</a>{% endif %}{% if session.get('role') in ['Vendor', 'Fast Food'] %}<a href="{{ url_for('vendor_profile', username=session['username']) }}">My Store</a>{% endif %}<a href="{{ url_for('delivery_services') }}">Find Delivery</a><a href="{{ url_for('home') }}#fast-food">Fast Food</a><a href="{{ url_for('home') }}#categories">Categories</a>{% if session.get('role') in ['Vendor', 'Fast Food'] %}<a href="{{ url_for('promotions') }}">Manage Your Promos</a>{% endif %}<a href="{{ url_for('settings') if session.get('username') else url_for('login') }}">Your Account</a><span class="bh-grow"></span>{% if session.get('is_admin') %}<a href="{{ url_for('admin_dashboard') }}">Admin Center</a>{% endif %}
+    <a href="{{ url_for('home') }}">☰ &nbsp;Marketplace</a><a href="{{ url_for('home') }}#deals">Today's Deals</a><a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">Favorites</a><a href="{{ url_for('all_stores') }}">All Stores</a>{% if session.get('username') %}<a href="{{ url_for('order_history') }}">Orders</a>{% endif %}{% if session.get('role') in ['Vendor', 'Fast Food'] %}<a href="{{ url_for('vendor_profile', username=session['username']) }}">My Store</a>{% endif %}<a href="{{ url_for('delivery_services') }}">Find Delivery</a><a href="{{ url_for('fast_food_stores') }}">Fast Food</a>{% if session.get('role') in ['Vendor', 'Fast Food'] %}<a href="{{ url_for('promotions') }}">Manage Your Promos</a>{% endif %}<a href="{{ url_for('settings') if session.get('username') else url_for('login') }}">Your Account</a><span class="bh-grow"></span>{% if session.get('is_admin') %}<a href="{{ url_for('admin_dashboard') }}">Admin Center</a>{% endif %}
   </nav>
 </header>
 
@@ -446,141 +446,9 @@
         <div class="layout">
             <!-- PANEL 1: SIDEBAR CONTAINER -->
             <div>
-                {% if session.get('username') and session.get('role') in ['Vendor', 'Fast Food'] %}
-                    <div class="panel-box">
-                        <h3>👑 Store Settings</h3>
-                        <p style="margin: 0 0 5px; font-size: 13px;">Plan: <b>{{ vendor_subscription.name if vendor_subscription else 'Free Trial' }}</b></p>
-                        {% if vendor_subscription and vendor_subscription.trial %}
-                            <small style="color: var(--accent); display: block; margin-bottom: 8px;">Premium Promotion Trial Active</small>
-                        {% endif %}
-                        <p style="margin: 5px 0 12px; font-size: 12px;">Listings: <b>{{ listing_count }}</b></p>
-                        <a href="/subscription" class="btn-action btn-cart" style="text-align:center;">💎 Manage Account</a>
-                    </div>
-
-                    {% if session.get('role') == 'Vendor' and inventory_items %}
-                    <div class="panel-box" style="margin-bottom:14px;">
-                        <h3>📦 Inventory</h3>
-                        <p style="margin:0 0 10px;font-size:12px;color:var(--text-muted);">Your live stock: Initial → Sold → Remaining.</p>
-                        {% for inv in inventory_items %}
-                        <div style="padding:9px 0;border-bottom:1px solid var(--border-color);font-size:12px;">
-                            <div style="font-weight:800;">{{ inv.title }}</div>
-                            <div style="color:var(--text-muted);">{{ inv.initial_stock_quantity or 1 }} → {{ inv.sold_quantity or 0 }} → <b>{{ inv.stock_quantity or 0 }}</b> remaining</div>
-                            {% if inv.stock_quantity|int <= 0 %}<span class="stock-badge stock-sold">🔴 SOLD OUT</span>{% elif inv.stock_quantity|int <= 3 %}<span class="stock-badge stock-low">⚠️ LOW STOCK</span>{% else %}<span class="stock-badge stock-good">✓ IN STOCK</span>{% endif %}
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
-                    <!-- LISTING CREATION FORM BLOCK (FIXED PARAMETER PATHS) -->
-                    <div class="panel-box">
-                        {% if session.get('role') == 'Fast Food' %}
-                            <h3 style="color: #C53030; border-bottom: 2px solid #FED7D7;">🍕 Publish Meal to Your Fast Food Kitchen</h3>
-                        {% else %}
-                            <h3>📢 Upload Product Listing</h3>
-                        {% endif %}
-
-                        {% if listing_error %}<div class="listing-alert">{{ listing_error }}</div>{% endif %}
-                        <form id="listingForm" method="POST" action="/" enctype="multipart/form-data">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                            <div class="form-group">
-                                <label>{% if session.get('role') == 'Fast Food' %}Meal / Combo Name:{% else %}Item Title / Name:{% endif %}</label>
-                                <input type="text" name="{% if session.get('role') == 'Fast Food' %}meal_name{% else %}title{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Jollof with Grilled Chicken{% else %}e.g. Smart Watch{% endif %}" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Price (GH₵):</label>
-                                <input type="number" name="price" step="0.01" class="form-control" placeholder="e.g. 250.00" required>
-                            </div>
-                            {% if session.get('role') == 'Vendor' %}
-                            <div class="form-group">
-                                <label>📦 Quantity / Units Available:</label>
-                                <input type="number" name="stock_quantity" min="1" step="1" class="form-control" placeholder="e.g. 10" required>
-                                <small style="color:var(--text-muted);">Enter how many units you currently have in stock. BizHub will reduce this automatically when a paid order is confirmed.</small>
-                            </div>
-                            {% else %}
-                            <input type="hidden" name="stock_quantity" value="1">
-                            {% endif %}
-                            <div class="form-group">
-                                <label>Preparation / Dispatch City:</label>
-                                <select name="location" class="form-control">
-                                    {% for city in ['Abirem', 'Aburi', 'Accra', 'Ada', 'Aflao', 'Agona Swedru', 'Akim Achiase', 'Akim Oda', 'Asamankese', 'Axim', 'Bandai', 'Bimbila', 'Cape Coast', 'Damongo', 'Elmina', 'Ho', 'Hohoe', 'Jasikan', 'Kasoa', 'Keta', 'Kintampo', 'Koforidua', 'Kumasi', 'Kwahu', 'Mankessim', 'Nkawkaw', 'Nsawam', 'Obuase', 'Sehwi', 'Suhum', 'Sunyani', 'Takoradi', 'Tamale', 'Tarkwa', 'Tema'] %}
-                                        <option value="{{ city }}">{{ city }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>{% if session.get('role') == 'Fast Food' %}Ingredients / Delivery Package Notes:{% else %}Product Description:{% endif %}</label>
-                                <textarea name="{% if session.get('role') == 'Fast Food' %}meal_description{% else %}description{% endif %}" placeholder="{% if session.get('role') == 'Fast Food' %}e.g. Served hot with pepper sauce, salad, and a free drink.{% else %}Enter details...{% endif %}" class="form-control" required></textarea>
-                            </div>
-                            
-                            <div class="form-group media-choice" id="imageChoice">
-                                <label>{% if session.get('role') == 'Fast Food' %}Meal Cover Photo (Image Option):{% else %}Item Cover Photo (Image Option):{% endif %}</label>
-                                <input id="productImage" type="file" name="product_image" accept="image/*" class="form-control">
-                                <img id="imagePreview" class="media-preview" alt="Selected item image preview">
-                                <button id="cancelImage" type="button" class="media-cancel">Cancel Image → Choose Video</button>
-                            </div>
-                            <div class="form-group media-choice" id="videoChoice">
-                                <label>📦 Item Showcase Video (Premium/Trial Option):</label>
-                                <input id="productVideo" type="file" name="product_video" accept="video/mp4,video/webm,video/quicktime" class="form-control">
-                                <video id="videoPreview" class="media-preview" controls autoplay muted playsinline loop preload="metadata"></video>
-                                <button id="cancelVideo" type="button" class="media-cancel">Cancel Video → Choose Image</button>
-                                <div id="mediaStatus" class="media-status">Choose exactly one: Image OR Video. Videos must be 20 seconds or shorter.</div>
-                            </div>
-                            <button type="submit" class="submit-btn {% if session.get('role') == 'Fast Food' %}btn-ff-override{% endif %}">
-                                {% if session.get('role') == 'Fast Food' %}🚀 Launch Meal Live{% else %}Publish Item{% endif %}
-                            </button>
-                            <button id="cancelPublishing" type="button" class="media-cancel" style="display:block; width:100%; margin-top:10px;">✕ Cancel Publishing / Collapse</button>
-                        </form>
-                        <button id="reopenPublishing" type="button" class="submit-btn" style="display:none; margin-top:8px;">＋ Continue Publishing</button>
-                    </div>
-
-                {% endif %}
             </div>
-            <!-- PANEL 2: OWNER LISTINGS + MAIN MARKETPLACE FEED -->
+            <!-- PANEL 2: MAIN MARKETPLACE FEED -->
             <div>
-                {% if session.get('role') in ['Vendor', 'Fast Food'] and your_marketplace_products %}
-                <section style="margin-bottom:24px;padding:16px;background:#fff;border:2px solid #f59e0b;border-radius:12px;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
-                        <div>
-                            <h3 style="margin:0;font-size:18px;color:#111827;font-weight:900;">{% if session.get('role') == 'Fast Food' %}🍔 Your Kitchen Menu Listings{% else %}📦 Your Item Listings{% endif %}</h3>
-                            <p style="margin:4px 0 0;color:#6b7280;font-size:12px;">Your published listings are shown here first in the marketplace.</p>
-                        </div>
-                        <a href="{{ url_for('vendor_profile', username=session.get('username')) }}" style="font-size:12px;font-weight:800;color:#92400e;text-decoration:none;background:#fef3c7;border:1px solid #fcd34d;padding:7px 10px;border-radius:8px;">Manage Your Store</a>
-                    </div>
-                    <div class="grid">
-                        {% for product in your_marketplace_products %}
-                        <div class="card">
-                            <div class="card-media-wrapper" style="background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;height:170px;">
-                                {% if product.video_file %}
-                                    <video class="card-img" controls autoplay muted playsinline loop preload="metadata"><source src="{{ url_for('stream_video', filename=product.video_file) }}"></video>
-                                {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' %}
-                                    <a href="{{ url_for('static', filename='uploads/' + product.image_file) }}" target="_blank" rel="noopener noreferrer" aria-label="Open full-size image of {{ product.title }}" style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;text-decoration:none;">
-                                        <img class="card-img" src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}">
-                                    </a>
-                                {% else %}
-                                    <div style="color:#9CA3AF;font-size:12px;padding:20px;text-align:center;">Media unavailable</div>
-                                {% endif %}
-                                <span class="loc-badge">📍 {{ product.location }}</span>
-                            </div>
-                            <div class="card-body">
-                                <div class="card-brand-wrapper"><span class="card-brand">🏬 {{ product.business_label }}</span><span style="display:inline-flex;padding:2px 6px;border-radius:999px;background:#dcfce7;color:#166534;font-size:9px;font-weight:900;">✓ YOUR LISTING</span></div>
-                                <h4 class="card-title">{{ product.title }}</h4>
-                                <div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div>
-                                {% if session.get('role') == 'Fast Food' %}
-                                    <div class="stock-badge stock-good">✓ Published to Kitchen</div>
-                                {% else %}
-                                    <div class="stock-badge {% if product.status == 'Sold' or product.stock_quantity|int <= 0 %}stock-sold{% elif product.stock_quantity|int <= 3 %}stock-low{% else %}stock-good{% endif %}">{% if product.status == 'Sold' or product.stock_quantity|int <= 0 %}🔴 SOLD OUT{% else %}✓ {{ product.stock_quantity }} available{% endif %}</div>
-                                {% endif %}
-                                <p class="card-text">{{ product.description }}</p>
-                                <div class="card-actions">
-                                    <a href="{{ url_for('vendor_profile', username=session.get('username')) }}" class="btn-action btn-cart">⚙️ Manage Listing</a>
-                                    <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn-action btn-momo">👁️ View Item</a>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </section>
-                {% endif %}
 
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
                     <h3 style="margin:0; font-size:18px; color:var(--bg-abyssal); font-weight:800;">🛍️ Live Marketplace Feed</h3>
@@ -717,8 +585,6 @@
     <script>
         window.addEventListener("DOMContentLoaded", function() {
             startTrialCountdown();
-            setupListingMediaControls();
-            setupPublishingCollapse();
 
             if ("serviceWorker" in navigator) {
                 navigator.serviceWorker.register("{{ url_for('service_worker') }}", { scope: "/" }).catch(function() {});
@@ -755,23 +621,6 @@
             videos.forEach(v => observer.observe(v));
         }
 
-        function setupPublishingCollapse() {
-            const form=document.getElementById("listingForm");
-            const cancel=document.getElementById("cancelPublishing");
-            const reopen=document.getElementById("reopenPublishing");
-            if(!form||!cancel||!reopen) return;
-            cancel.addEventListener("click", function(){
-                form.style.display="none";
-                cancel.style.display="none";
-                reopen.style.display="block";
-            });
-            reopen.addEventListener("click", function(){
-                form.style.display="block";
-                cancel.style.display="block";
-                reopen.style.display="none";
-            });
-        }
-
         function startTrialCountdown() {
             const countdown = document.getElementById("trialCountdown");
             const value = document.getElementById("trialCountdownValue");
@@ -802,20 +651,6 @@
 
             update();
             setInterval(update, 1000);
-        }
-
-        function setupListingMediaControls() {
-            const form=document.getElementById("listingForm"), imageInput=document.getElementById("productImage"), videoInput=document.getElementById("productVideo"), imagePreview=document.getElementById("imagePreview"), videoPreview=document.getElementById("videoPreview"), cancelImage=document.getElementById("cancelImage"), cancelVideo=document.getElementById("cancelVideo"), status=document.getElementById("mediaStatus");
-            const publishButton=form ? form.querySelector('button[type="submit"]') : null;
-            if(!form||!imageInput||!videoInput) return;
-            let imageUrl=null, videoUrl=null, videoDurationValid=true;
-            function clearImage(){ imageInput.value=""; imagePreview.removeAttribute("src"); imagePreview.style.display="none"; cancelImage.style.display="none"; if(imageUrl){URL.revokeObjectURL(imageUrl);imageUrl=null;} }
-            function clearVideo(){ videoInput.value=""; videoPreview.pause(); videoPreview.removeAttribute("src"); videoPreview.load(); videoPreview.style.display="none"; cancelVideo.style.display="none"; videoDurationValid=true; if(videoUrl){URL.revokeObjectURL(videoUrl);videoUrl=null;} }
-            imageInput.addEventListener("change",function(){ if(!this.files.length)return; clearVideo(); const f=this.files[0]; if(!f.type.startsWith("image/")){clearImage();status.textContent="Please choose an image file.";return;} imageUrl=URL.createObjectURL(f);imagePreview.src=imageUrl;imagePreview.style.display="block";cancelImage.style.display="block";status.textContent="Image selected. Video is cleared."; });
-            videoInput.addEventListener("change",function(){ if(!this.files.length)return; clearImage(); const f=this.files[0]; if(!f.type.startsWith("video/")){clearVideo();status.textContent="Please choose a video file.";return;} videoUrl=URL.createObjectURL(f);videoDurationValid=true;videoPreview.src=videoUrl;videoPreview.style.display="block";cancelVideo.style.display="block";status.textContent="Checking video duration…"; videoPreview.onloadedmetadata=function(){if(videoPreview.duration>20){videoDurationValid=false;clearVideo();status.textContent="Video rejected: maximum duration is 20 seconds.";}else{status.textContent=`Video selected (${videoPreview.duration.toFixed(1)}s). Image is cleared.`;}}; videoPreview.onerror=function(){videoDurationValid=false;clearVideo();status.textContent="Video could not be read. Please choose a valid MP4, WebM, or MOV file.";}; });
-            cancelImage.addEventListener("click",function(){clearImage();status.textContent="Image cancelled. Choose a video or select an image again.";});
-            cancelVideo.addEventListener("click",function(){clearVideo();status.textContent="Video cancelled. Choose an image or select a video again.";});
-            form.addEventListener("submit",function(e){const hi=imageInput.files.length>0,hv=videoInput.files.length>0;if(hi===hv){e.preventDefault();status.textContent="Choose exactly one: Image OR Video.";return;}if(hv&&!videoDurationValid){e.preventDefault();status.textContent="Video must be 20 seconds or shorter.";return;}if(publishButton){publishButton.disabled=true;publishButton.innerHTML="⏳ Publishing…";}});
         }
 
         function filterCatalogCards() {

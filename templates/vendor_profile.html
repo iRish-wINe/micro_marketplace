@@ -49,7 +49,7 @@
     {% endif %}
   </div>
   <nav class="bh-subbar" aria-label="BizHub marketplace navigation">
-    <a href="{{ url_for('home') }}">☰ &nbsp;All</a><a href="{{ url_for('home') }}#deals">Today's Deals</a><a href="{{ url_for('favorites') }}">Favorites</a><a href="{{ url_for('delivery_services') }}">Find Delivery</a><a href="{{ url_for('home') }}#fast-food">Fast Food</a><a href="{{ url_for('home') }}#categories">Categories</a><a href="{{ url_for('settings') if session.get('username') else url_for('login') }}">Your Account</a>{% if session.get('role') in ['Vendor', 'Fast Food'] and is_owner %}<a href="{{ url_for('promotions') }}">Manage Your Promos</a>{% endif %}<span class="bh-grow"></span>{% if session.get('is_admin') %}<a href="{{ url_for('admin_dashboard') }}">Admin Center</a>{% endif %}
+    <a href="{{ url_for('home') }}">☰ &nbsp;All</a><a href="{{ url_for('home') }}#deals">Today's Deals</a><a href="{{ url_for('favorites') }}">Favorites</a><a href="{{ url_for('delivery_services') }}">Find Delivery</a><a href="{{ url_for('fast_food_stores') }}">Fast Food</a><a href="{{ url_for('all_stores') }}">All Stores</a><a href="{{ url_for('home') }}#categories">Categories</a><a href="{{ url_for('settings') if session.get('username') else url_for('login') }}">Your Account</a>{% if session.get('role') in ['Vendor', 'Fast Food'] and is_owner %}<a href="{{ url_for('promotions') }}">Manage Your Promos</a>{% endif %}<span class="bh-grow"></span>{% if session.get('is_admin') %}<a href="{{ url_for('admin_dashboard') }}">Admin Center</a>{% endif %}
   </nav>
 </header>
 
@@ -64,20 +64,6 @@
             </div>
         </div>
     </div>
-    <div id="owner-publish-command" class="hidden mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
-        <a href="#publish-space" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 no-underline">
-            <div><div class="font-black text-emerald-900">Visit My Store to publish your {{ 'meals' if vendor['role'] == 'Fast Food' else 'products' }}</div><div class="text-sm text-emerald-800 mt-1">Click here to open your publishing space.</div></div>
-            <span class="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-black">Open Publishing Space →</span>
-        </a>
-    </div>
-    <script>
-        window.setTimeout(function(){
-            const welcome=document.getElementById('owner-welcome');
-            const command=document.getElementById('owner-publish-command');
-            if(welcome){ welcome.style.transition='opacity .35s ease'; welcome.style.opacity='0'; window.setTimeout(()=>welcome.remove(),400); }
-            if(command){ command.classList.remove('hidden'); command.style.opacity='0'; window.requestAnimationFrame(()=>{ command.style.transition='opacity .35s ease'; command.style.opacity='1'; }); }
-        },5000);
-    </script>
     {% endif %}
 
     <section class="bh-card border rounded-3xl shadow-sm overflow-hidden mb-6">
@@ -127,8 +113,8 @@
 
                     {% if not is_owner %}
                     <div class="flex flex-wrap gap-3 mt-6">
-                        {% if session.get('role') == 'Customer' %}
-                        <form method="POST" action="/favorites/toggle/{{ vendor['username'] }}">
+                        {% if session.get('username') %}
+                        <form method="POST" action="{{ url_for('toggle_favorite', username=vendor['username']) }}">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                             <button type="submit" class="inline-flex items-center justify-center px-5 py-3 rounded-xl {% if favorite %}bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100{% else %}bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm{% endif %} font-bold text-sm">
                                 {% if favorite %}⭐ Remove Favorite{% else %}⭐ Add to Favorites{% endif %}

@@ -1060,10 +1060,10 @@ def home():
     promo_only = request.args.get("promo") == "1"
     listing_error = request.args.get("listing_error")
     favorite_vendor_usernames = set()
-    if session.get("role") == "Customer":
-        customer_user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
-        if customer_user:
-            favorite_rows = query_db("SELECT u.username FROM favorites f JOIN users u ON u.id = f.vendor_id WHERE f.customer_id = ?", (customer_user["id"],)) or []
+    if session.get("username"):
+        favorite_user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+        if favorite_user:
+            favorite_rows = query_db("SELECT u.username FROM favorites f JOIN users u ON u.id = f.vendor_id WHERE f.customer_id = ?", (favorite_user["id"],)) or []
             favorite_vendor_usernames = {row["username"] for row in favorite_rows}
     
     product_conditions = ["p.category != 'Fast Food'", "COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')"]
@@ -1693,10 +1693,10 @@ def vendor_profile(username):
         (vendor["id"], now_iso, now_iso), one=True
     )
     favorite = False
-    if session.get("role") == "Customer":
-        customer = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
-        if customer:
-            favorite = bool(query_db("SELECT id FROM favorites WHERE customer_id = ? AND vendor_id = ?", (customer["id"], vendor["id"]), one=True))
+    if session.get("username"):
+        current_user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+        if current_user and current_user["id"] != vendor["id"]:
+            favorite = bool(query_db("SELECT id FROM favorites WHERE customer_id = ? AND vendor_id = ?", (current_user["id"], vendor["id"]), one=True))
     vendor_whatsapp = normalize_whatsapp_number(vendor.get("whatsapp_number"))
     vendor_whatsapp_text = quote(f"Hey {vendor.get('company_name') or vendor.get('username')}, I visited your store on BizHub and I'd love to know more about your brand.")
     for product in products:
@@ -1725,26 +1725,69 @@ def report_user(user_id):
         return render_template("report.html", target=target, report_error="Please describe what happened.")
     return render_template("report.html", target=target)
 
+@app.route("/fast-food")
+def fast_food_stores():
+    if "username" in session:
+        current_user = query_db("SELECT id, username, role FROM users WHERE username = ?", (session["username"],), one=True)
+    else:
+        current_user = None
+    kitchens = query_db("""
+        SELECT u.id, u.username, u.company_name, u.business_location, u.company_logo, u.whatsapp_number,
+               (SELECT COUNT(*) FROM products p WHERE p.seller = u.username AND p.category = 'Fast Food') AS menu_count
+        FROM users u
+        WHERE u.role = 'Fast Food' AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
+        ORDER BY u.id DESC
+    """) or []
+    owner_username = current_user["username"] if current_user and current_user["role"] == "Fast Food" else None
+    kitchens.sort(key=lambda k: (k.get("username") != owner_username, -int(k.get("id") or 0)))
+    for kitchen in kitchens:
+        kitchen["business_label"] = kitchen.get("company_name") or kitchen.get("username")
+        kitchen["is_owner"] = kitchen.get("username") == owner_username
+    return render_template("fast_food_stores.html", kitchens=kitchens)
+
+@app.route("/all-stores")
+def all_stores():
+    if "username" in session:
+        current_user = query_db("SELECT id, username, role FROM users WHERE username = ?", (session["username"],), one=True)
+    else:
+        current_user = None
+    stores = query_db("""
+        SELECT u.id, u.username, u.company_name, u.business_location, u.company_logo, u.whatsapp_number,
+               (SELECT COUNT(*) FROM products p WHERE p.seller = u.username AND p.category != 'Fast Food') AS product_count
+        FROM users u
+        WHERE u.role = 'Vendor' AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
+        ORDER BY u.id DESC
+    """) or []
+    owner_username = current_user["username"] if current_user and current_user["role"] == "Vendor" else None
+    stores.sort(key=lambda s: (s.get("username") != owner_username, -int(s.get("id") or 0)))
+    for store in stores:
+        store["business_label"] = store.get("company_name") or store.get("username")
+        store["is_owner"] = store.get("username") == owner_username
+    return render_template("all_stores.html", stores=stores)
+
 @app.route("/favorites")
 def favorites():
-    if "username" not in session or session.get("role") != "Customer":
+    if "username" not in session:
         return redirect(url_for("login"))
-    customer = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    user = query_db("SELECT id, username, role FROM users WHERE username = ?", (session["username"],), one=True)
     vendors = []
-    if customer:
+    if user:
         vendors = query_db("""
             SELECT u.*,
                    (SELECT COUNT(*) FROM products p WHERE p.seller = u.username) AS product_count
             FROM favorites f
             JOIN users u ON u.id = f.vendor_id
             WHERE f.customer_id = ? AND u.role IN ('Vendor', 'Fast Food')
+              AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
             ORDER BY f.id DESC
-        """, (customer["id"],))
+        """, (user["id"],)) or []
         now_iso = datetime.now(timezone.utc).isoformat()
         for vendor in vendors:
             vendor["categories"] = get_vendor_categories(vendor["id"])
             vendor["promo"] = query_db("SELECT * FROM promotions WHERE vendor_id = ? AND active = 1 AND starts_at <= ? AND ends_at >= ? ORDER BY id DESC LIMIT 1", (vendor["id"], now_iso, now_iso), one=True)
-    return render_template("favorites.html", vendors=vendors)
+            vendor["business_label"] = vendor.get("company_name") or vendor.get("username")
+    return render_template("favorites.html", vendors=vendors, current_user=user)
+
 
 @app.route("/favorites/toggle/<username>", methods=["POST"])
 def toggle_favorite(username):
