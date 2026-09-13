@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Today's Lightning Deals - Biz Hub</title>
+    <style>
+:root{--nav:#0b192c;--accent:#f59e0b;--bg:#f4f7fb;--text:#172033;--muted:#64748b;--border:#dbe3ed}
+*{box-sizing:border-box}
+.bizhub-header{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav);min-height:58px;padding:8px 22px;display:flex;align-items:center;gap:22px;box-shadow:0 2px 10px #0002}
+.bizhub-brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:#fff;min-width:max-content}.bizhub-brand img{width:38px;height:38px;border-radius:10px}.bizhub-brand strong{font-size:18px;line-height:1.05}.bizhub-brand strong span{color:var(--accent)}.bizhub-brand small{display:block;color:#cbd5e1;font-size:10px;margin-top:2px}
+.bizhub-nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.bizhub-nav a{color:#e2e8f0;text-decoration:none;font-weight:800;font-size:13px;padding:9px 11px;border-radius:7px}.bizhub-nav a:hover{background:#ffffff12;color:var(--accent)}
+@media(max-width:650px){.bizhub-header{padding:7px 10px;gap:10px}.bizhub-brand small{display:none}.bizhub-nav a{padding:8px 7px;font-size:12px}body{padding-top:74px}}
+
+        :root {
+            --bg-abyssal: #0B192C;
+            --accent: #F59E0B;
+            --bg-light: #EAEDED;
+            --text-main: #0F172A;
+            --border-color: #D5D9D9;
+            --radius-sm: 8px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-light); color: var(--text-main); margin: 0; padding: 78px 18px 30px; }
+        .container { width: 100%; max-width: 1200px; margin: 30px auto; padding: 0 20px; box-sizing: border-box; }
+        .deals-header { font-size: 24px; font-weight: 800; color: var(--bg-abyssal); margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
+                .deals-grid { 
+            display: flex !important;
+            gap: 16px;
+            overflow-x: auto !important;
+            scroll-snap-type: x mandatory;
+            padding: 10px 4px 20px 4px !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .deals-grid::-webkit-scrollbar {
+            display: none;
+        }
+        .deals-grid .card, .deals-grid .ff-promo-card, .deals-grid .merchant-promo-card {
+            flex: 0 0 280px !important; /* Perfect width sizing for side-by-side card swiping */
+            scroll-snap-align: start;
+        }
+
+        /* 👑 HIGH-SPEED RE-INTEGRATED CLICKABLE IMAGE DESIGNS */
+        .card-media-wrapper { width: 100%; height: 170px; background-color: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 12px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.06); }
+        .card-img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+        video.card-img { width: 100%; height: 100%; object-fit: cover; background: #000; }
+
+        @keyframes pulseFire {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 4px #F59E0B); }
+            100% { transform: scale(1); }
+        }    
+</style>
+</head>
+<body>
+
+<header class="bizhub-header">
+<a class="bizhub-brand" href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub"><div><strong>Biz<span>Hub</span></strong><small>Your Local Market, Unified Online</small></div></a>
+<nav class="bizhub-nav">
+<a href="{{ url_for('home') }}">☰ Marketplace</a>
+<a href="{{ url_for('cart_page') }}">🛒 Your Cart{% if session.get('cart') %} ({{ session.get('cart')|length }}){% endif %}</a>
+{% if session.get('role') in ['Vendor','Fast Food'] %}<a href="{{ url_for('vendor_profile', username=session['username']) }}">🏪 My Store</a>{% endif %}
+</nav>
+</header>
+
+    <div class="container">
+        <h2 class="deals-header">⚡ Today's Limited Commercial Lightning Deals</h2>
+        <div class="deals-grid">
+
+        {% for deal in deals %}
+            {% if deal.is_fast_food %}
+                <!-- 🟢 UBER EATS STYLE FAST FOOD PROMO CARD -->
+                <div class="card ff-promo-card" style="background-color: #0A0A0A; border: 2px solid #06C167; border-radius: 12px; padding: 20px; color: #FFFFFF; box-shadow: 0 4px 15px rgba(0,0,0,0.25); display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <span style="background-color: #06C167; color: #0A0A0A; font-weight: 800; font-size: 11px; padding: 4px 10px; border-radius: 20px; text-transform: uppercase;">🍔 BizHub Deal</span>
+                            <span style="color: #A0A0A0; font-size: 12px;">📍 {{ deal.product_location or 'Ghana' }}</span>
+                        </div>
+                        <h4 style="font-size: 18px; font-weight: 800; margin: 0 0 6px 0; color: #FFFFFF;">{{ deal.title }}</h4>
+                        <p style="color: #D1D5DB; font-size: 13px; line-height: 1.4; margin: 0 0 14px 0;">{{ deal.description or 'Special kitchen package markdown.' }}</p>
+                      
+                        <!-- 🚀 1. INSTALLED DYNAMIC MEDIA WRAPPER IN UBER EATS SYSTEM -->
+                        <div class="card-media-wrapper" style="border-color: #2D2D2D; background: #111;">
+                            {% if deal.product_video %}
+                                <a href="{{ url_for('stream_video', filename=deal.product_video) }}" target="_blank" rel="noopener" style="display:block; width:100%; height:100%;">
+                                    <video class="card-img" muted playsinline loop autoplay preload="metadata">
+                                        <source src="{{ url_for('stream_video', filename=deal.product_video) }}">
+                                    </video>
+                                </a>
+                            {% elif deal.product_image and deal.product_image != 'fast-food-placeholder.svg' %}
+                                <a href="{{ url_for('static', filename='uploads/' + deal.product_image) }}" target="_blank" rel="noopener" style="display:block; width:100%; height:100%; display:grid; place-items:center;">
+                                    <img class="card-img" src="{{ url_for('static', filename='uploads/' + deal.product_image) }}" alt="media">
+                                </a>
+                            {% else %}
+                                <div style="color:#6B7280; font-size:12px; font-weight:700;">🍕 Meal Showcase View</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div style="background-color: #1A1A1A; border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border: 1px solid #2D2D2D;">
+                            <div>
+                                <span style="font-size: 13px; color: #9CA3AF; text-decoration: line-through; margin-right: 8px; font-weight: 600;">GH₵ {{ "%.2f"|format(deal.original_price) }}</span>
+                                <div style="margin-top: 2px;">
+                                    <span style="font-size: 22px; color: #06C167; font-weight: 900;">GH₵ {{ "%.2f"|format(deal.effective_price) }} <span style="font-size: 24px; display: inline-block; animation: pulseFire 1s infinite;">🔥</span></span>
+                                </div>
+                            </div>
+                            {% if deal.discount_percent %}
+                                <span style="background-color: rgba(6,193,103,0.15); color: #06C167; font-weight: 800; font-size: 13px; padding: 4px 8px; border-radius: 6px;">-{{ deal.discount_percent|int }}% OFF</span>
+                            {% endif %}
+                        </div>
+                        <a href="whatsapp://send?phone={{ deal.vendor_whatsapp }}&text={{ deal.inquiry_text }}" style="background-color: #06C167; color: #0A0A0A; text-decoration: none; display: block; text-align: center; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 14px;">🚀 Order via Fast Food Kitchen</a>
+                    </div>
+                </div>
+            {% else %}
+                <!-- 🔴 AMAZON STYLE GENERAL VENDOR PROMO CARD -->
+                <div class="card merchant-promo-card" style="background-color: #FFFFFF; border: 1px solid #E5E7EB; border-top: 4px solid #CC0C39; border-radius: 8px; padding: 12px; color: #111111; box-shadow: 0 2px 8 rgba(0,0,0,0.06); display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px;">
+                            <span style="background-color: #CC0C39; color: #FFFFFF; font-weight: 800; font-size: 11px; padding: 4px 8px; border-radius: 4px; text-transform: uppercase;">🎁 BizHub Limited Deal</span>
+                            <span style="color: #666666; font-size: 12px;">📍 {{ deal.product_location or 'Ghana' }}</span>
+                        </div>
+                        <h4 style="font-size: 17px; font-weight: 700; margin: 0 0 4px 0; color: #111111;">{{ deal.title }}</h4>
+                        <p style="color: #555555; font-size: 13px; line-height: 1.35; margin: 0 0 8px 0;">{{ deal.description }}</p>
+                      <!-- 🚀 2. INSTALLED DYNAMIC MEDIA WRAPPER IN AMAZON SYSTEM -->
+                        <div class="card-media-wrapper">
+                            {% if deal.product_video %}
+                                <a href="{{ url_for('stream_video', filename=deal.product_video) }}" target="_blank" rel="noopener" style="display:block; width:100%; height:100%;">
+                                    <video class="card-img" muted playsinline loop autoplay preload="metadata">
+                                        <source src="{{ url_for('stream_video', filename=deal.product_video) }}">
+                                    </video>
+                                </a>
+                            {% elif deal.product_image and deal.product_image != 'fast-food-placeholder.svg' %}
+                                <a href="{{ url_for('static', filename='uploads/' + deal.product_image) }}" target="_blank" rel="noopener" style="display:block; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                                    <img class="card-img" src="{{ url_for('static', filename='uploads/' + deal.product_image) }}" alt="media">
+                                </a>
+                            {% else %}
+                                <div style="color:#9CA3AF; font-size:12px; font-weight:600;">📦 Product Showcase View</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div style="background-color: #F9FAFB; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border: 1px solid #E5E7EB;">
+                            <div>
+                                <span style="font-size: 13px; color: #767676; text-decoration: line-through; margin-right: 8px; font-weight: 600;">GH₵ {{ "%.2f"|format(deal.original_price) }}</span>
+                                <div style="margin-top: 0;">
+                                    <span style="font-size: 22px; color: #B12704; font-weight: 900;">GH₵ {{ "%.2f"|format(deal.effective_price) }} <span style="font-size: 24px; display: inline-block; animation: pulseFire 1s infinite;">🔥</span></span>
+                                </div>
+                            </div>
+                            {% if deal.discount_percent %}
+                                <span style="background-color: rgba(204,12,57,0.1); color: #CC0C39; font-weight: 800; font-size: 14px; padding: 4px 8px; border-radius: 6px;">-{{ deal.discount_percent|int }}% OFF</span>
+                            {% endif %}
+                        </div>
+                        <a href="whatsapp://send?phone={{ deal.vendor_whatsapp }}&text={{ deal.inquiry_text }}" style="background-color: #FFD814; color: #111111; text-decoration: none; display: block; text-align: center; padding: 9px; border-radius: 20px; font-weight: 700; font-size: 13px; border: 1px solid #FCD200; box-shadow: 0 2px 5px rgba(213,217,213,0.5);">💬 Secure Item Claim</a>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: #565959; background: white; border-radius: 8px; border: 1px dashed #D5D9D9;">
+                📭 No active corporate promotions or limited lightning deals running right now.
+            </div>
+        {% endfor %}
+
+        </div>
+    </div>
+        <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
+            © 2026 BizHub Marketplace · Your Local Market, Unified Online
+        </footer>
+</body>
+</html>

@@ -1,80 +1,423 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>BizHub Admin Control Centre</title><meta name="theme-color" content="#0B192C">
-<style>
-:root{--navy:#0B192C;--navy2:#020617;--orange:#F59E0B;--orange2:#D97706;--green:#10B981;--red:#EF4444;--blue:#3B82F6;--bg:#EAEDED;--card:#fff;--text:#0F172A;--muted:#64748B;--border:#D5D9D9;--shadow:0 2px 10px rgba(15,23,42,.07);--r:10px}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;overflow-x:hidden}.top{position:sticky;top:0;z-index:50;background:var(--navy);color:#fff;padding:13px 24px;display:flex;justify-content:space-between;align-items:center;gap:15px;box-shadow:0 3px 12px rgba(0,0,0,.15)}.brand{font-weight:950;font-size:20px}.brand span{color:var(--orange)}.top small{color:#CBD5E1;font-size:11px}.logout{background:#fff;color:var(--navy);padding:8px 12px;border-radius:8px;text-decoration:none;font-weight:900;font-size:11px}.wrap{max-width:1500px;margin:0 auto;padding:20px}.hero{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;border-radius:var(--r);padding:22px;margin-bottom:18px;display:flex;justify-content:space-between;gap:20px;align-items:center}.hero h1{margin:0 0 5px;font-size:25px}.hero p{margin:0;color:#CBD5E1;font-size:12px;line-height:1.5}.hero-badge{padding:9px 12px;border:1px solid rgba(245,158,11,.55);border-radius:9px;background:rgba(245,158,11,.1);color:#FCD34D;font-weight:900;font-size:11px;white-space:nowrap}.metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:18px}.metric{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:13px;box-shadow:var(--shadow)}.metric .icon{font-size:20px}.metric strong{display:block;font-size:20px;margin-top:5px;color:var(--navy)}.metric span{display:block;font-size:9px;text-transform:uppercase;font-weight:900;color:var(--muted);margin-top:2px}.metric.accent{background:#FFFBEB;border-color:#FCD34D}.metric.accent strong{color:#B45309}.metric.danger{background:#FFF7F7;border-color:#FECACA}.metric.danger strong{color:#B91C1C}.section-nav{display:flex;gap:7px;overflow:auto;margin-bottom:16px;padding-bottom:3px}.section-nav a{white-space:nowrap;text-decoration:none;color:#334155;background:#fff;border:1px solid var(--border);padding:8px 11px;border-radius:999px;font-size:10px;font-weight:900}.section-nav a:hover{border-color:var(--orange);color:#B45309}.grid2{display:grid;grid-template-columns:2fr 1fr;gap:18px}.panel{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}.ph{padding:13px 16px;background:#F8FAFC;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px}.ph h2{margin:0;font-size:14px;color:var(--navy);font-weight:950}.ph p{margin:3px 0 0;color:var(--muted);font-size:10px}.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:9px;font-weight:900;white-space:nowrap}.green{background:#D1FAE5;color:#047857}.yellow{background:#FEF3C7;color:#B45309}.blue{background:#DBEAFE;color:#1D4ED8}.red{background:#FEE2E2;color:#B91C1C}.gray{background:#F1F5F9;color:#64748B}.table-wrap{overflow:auto;-webkit-overflow-scrolling:touch}table{width:100%;min-width:820px;border-collapse:collapse;font-size:11px}th{background:#F3F4F6;color:#475569;text-transform:uppercase;font-size:9px;padding:9px 11px;text-align:left;white-space:nowrap}td{padding:10px 11px;border-top:1px solid #E5E7EB;vertical-align:middle}tr:hover{background:#F8FAFC}.btn{border:1px solid var(--border);border-radius:7px;padding:6px 8px;background:#fff;font-size:9px;font-weight:900;cursor:pointer}.btn-orange{background:var(--orange);border-color:#E5A000;color:#111}.btn-red{background:#FFF5F5;border-color:#FECACA;color:#B91C1C}.btn-blue{background:#EFF6FF;border-color:#BFDBFE;color:#1D4ED8}.form-row{display:flex;gap:6px;align-items:center}.input{width:72px;padding:6px 7px;border:1px solid var(--border);border-radius:6px;font-size:10px}.stack{padding:14px 16px}.list{display:grid;gap:8px}.list-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed #E2E8F0;font-size:11px}.list-row:last-child{border-bottom:0}.muted{color:var(--muted)}.money{font-weight:950;color:#B12704}.service-logo{width:34px;height:34px;border-radius:7px;object-fit:cover;border:1px solid var(--border);vertical-align:middle}.mini-card{background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:10px}.mini-card strong{display:block;font-size:13px}.mini-card span{font-size:9px;color:var(--muted)}.status-line{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.footer-note{text-align:center;color:var(--muted);font-size:10px;padding:10px}
-@media(max-width:1200px){.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}@media(max-width:700px){.top{padding:11px 12px}.brand{font-size:16px}.top small{display:none}.wrap{padding:10px}.hero{padding:16px;align-items:flex-start;flex-direction:column}.hero h1{font-size:20px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.metric{padding:10px}.metric strong{font-size:16px}.metric span{font-size:8px}.section-nav a{font-size:9px;padding:7px 9px}.ph{padding:11px 12px}.ph h2{font-size:12px}table{min-width:780px}.stack{padding:12px}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BizHub Administration Command Center</title>
+    <style>
+        :root {
+            --nav: #0b192c;
+            --accent: #f59e0b;
+            --bg: #f4f7fb;
+            --text: #172033;
+            --muted: #64748b;
+            --border: #dbe3ed;
+            --success: #06C167;
+            --danger: #CC0C39;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 85px 18px 40px; }
+        
+        .bizhub-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--nav); min-height: 58px; padding: 8px 22px; display: flex; align-items: center; gap: 22px; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+        .bizhub-brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: #fff; }
+        .bizhub-brand img { width: 38px; height: 38px; border-radius: 10px; }
+        .bizhub-brand strong { font-size: 18px; line-height: 1.05; }
+        .bizhub-brand strong span { color: var(--accent); }
+        
+        .container { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 24px; }
+        @media(min-width: 992px) { .container { grid-template-columns: 280px 1fr; } }
+        
+        .sidebar { background: #fff; padding: 20px; border-radius: 12px; border: 1px solid var(--border); height: fit-content; position: sticky; top: 85px; }
+        .sidebar a { display: block; padding: 10px 12px; color: var(--text); text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 6px; margin-bottom: 4px; }
+        .sidebar a:hover, .sidebar a.active { background: #f1f5f9; color: var(--nav); }
+        
+        .main-content { display: flex; flex-direction: column; gap: 24px; }
+        .card { background: #fff; padding: 24px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 8px; }
+        .metric-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+        .metric-val { font-size: 24px; font-weight: 800; color: var(--nav); margin-top: 4px; }
+        
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; background: #fff; color: var(--text); }
+        .form-control:focus { border-color: var(--accent); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th { background: #f8fafc; text-align: left; padding: 12px; border-bottom: 2px solid var(--border); font-weight: 700; color: var(--nav); }
+        td { padding: 12px; border-bottom: 1px solid var(--border); color: #334155; vertical-align: top; }
+        tr:hover td { background: #f8fafc; }
+        
+        .badge { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
+        .badge-pending { background: #fef3c7; color: #d97706; }
+        .badge-verified { background: #d1fae5; color: #065f46; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        
+        .action-btn { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: white; color: var(--text); text-decoration: none; }
+        .action-btn:hover { background: #f8fafc; }
+        .btn-approve { background: var(--success); color: white; border: none; }
+        .btn-approve:hover { opacity: 0.9; }
+    </style>
 </head>
 <body>
-<div class="top"><div><div class="brand">Biz<span>Hub</span> Admin Control Centre</div><small>Marketplace • Fast Food • Delivery • Premium • Finance</small></div><a href="/admin/logout" class="logout">🚪 Logout</a></div>
-<div class="wrap">
-<div class="hero"><div><h1>Platform Command Centre</h1><p>One operational view for BizHub's Amazon-style marketplace, Uber Eats-style Fast Food flow and delivery network.</p></div><div class="hero-badge">● LIVE ADMIN VIEW</div></div>
-<div class="metrics">
-<div class="metric"><div class="icon">👥</div><strong>{{ customer_count|default(0) }}</strong><span>Customers</span></div>
-<div class="metric"><div class="icon">🏪</div><strong>{{ vendor_count|default(0) }}</strong><span>Marketplace Vendors</span></div>
-<div class="metric"><div class="icon">🍔</div><strong>{{ fast_food_vendor_count|default(0) }}</strong><span>Fast Food Vendors</span></div>
-<div class="metric"><div class="icon">🚚</div><strong>{{ delivery_count|default(0) }}</strong><span>Delivery Providers</span></div>
-<div class="metric accent"><div class="icon">💎</div><strong>{{ premium_count|default(0) }}</strong><span>Premium Accounts</span></div>
-<div class="metric accent"><div class="icon">🎁</div><strong>{{ trial_count|default(0) }}</strong><span>Active Trials</span></div>
-<div class="metric"><div class="icon">📦</div><strong>{{ total_products|default(0) }}</strong><span>Total Listings</span></div>
-<div class="metric"><div class="icon">🛒</div><strong>{{ order_count|default(0) }}</strong><span>Total Orders</span></div>
-<div class="metric"><div class="icon">📊</div><strong>{{ total_sold_units|default(0) }}</strong><span>Units Sold</span></div>
-<div class="metric danger"><div class="icon">🔴</div><strong>{{ sold_out_count|default(0) }}</strong><span>Sold Out</span></div>
-<div class="metric accent"><div class="icon">⚠️</div><strong>{{ low_stock_count|default(0) }}</strong><span>Low Stock</span></div>
-<div class="metric revenue"><div class="icon">💰</div><strong style="color:#F59E0B">GH₵ {{ "%.2f"|format(total_revenue) }}</strong><span>Verified Revenue</span></div>
+
+<header class="bizhub-header">
+    <a class="bizhub-brand" href="/"><img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub"><div><strong>Biz<span>Hub</span> Administration Center</strong></div></a>
+    <nav style="margin-left: auto;">
+        <a href="/admin/logout" style="color: #cbd5e1; text-decoration: none; font-weight: 700; font-size: 13px;">🚪 System Logout</a>
+    </nav>
+</header>
+
+<div class="container">
+    
+    <!-- LEFT CONTROL SIDEBAR -->
+    <aside class="sidebar">
+        <h3 style="margin-top:0; font-size:12px; text-transform:uppercase; color:var(--muted); letter-spacing:0.5px; margin-bottom:12px;">Management Triggers</h3>
+        <a href="#metrics" class="active">📊 Platform Metrics Overview</a>
+        <a href="#messaging">✉️ Communications Terminal</a>
+        <a href="#verification">🆔 Identity Verification Profiles</a>
+        <a href="#transactions">💸 Transaction Ledgers</a>
+        <a href="#disputes">⚠️ Disputes & Fraud Logs</a>
+        <a href="#reports">🚩 Moderation Action Sheets</a>
+        <a href="#users">👥 Market Users Directory</a>
+    </aside>
+
+    <!-- RIGHT MASTER CONTENTS VIEW -->
+    <main class="main-content">
+        
+        <!-- CARD 1: PLATFORM METRICS SUMMARY -->
+        <div class="card" id="metrics">
+            <h3 style="margin-top:0; margin-bottom:15px; font-size:18px; color:var(--nav);">📊 Platform Financial & Operational Metrics</h3>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div style="font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase;">Verified Revenue</div>
+                    <div class="metric-val">GH₵ {{ "%.2f"|format(total_revenue) }}</div>
+                </div>
+                <div class="metric-card">
+                    <div style="font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase;">Pending MoMo Transactions</div>
+                    <div class="metric-val">GH₵ {{ "%.2f"|format(pending_momo) }}</div>
+                </div>
+                <div class="metric-card">
+                    <div style="font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase;">Approved Receipts Issued</div>
+                    <div class="metric-val">{{ verified_count }} records</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 👑 CARD 2: ENTERPRISE PRIVATE & GROUP MESSAGING CONSOLE -->
+        <div class="card" id="messaging">
+            <h3 style="margin-top:0; font-size:18px; font-weight:800; color:var(--nav); border-bottom: 2px solid #F3F4F6; padding-bottom:8px; margin-bottom:15px;">
+                ✉️ Dispatch Administrative Communications Terminal
+            </h3>
+            <p style="font-size:13px; color:var(--muted); margin-top:-10px; margin-bottom:20px;">
+                Select an audience scope to dispatch private 1-on-1 account notifications, specific role-group notices, or marketplace-wide announcements.
+            </p>
+            
+            {% if request.args.get('message_sent') == '1' %}
+                <div style="background-color: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-weight: 700; font-size: 13px;">
+                    ✓ Success: Your administrative communication has been securely dispatched to the target target scope.
+                </div>
+            {% endif %}
+            
+            <form method="POST" action="/admin/dispatch-message">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px; color:#334155;">Target Audience Scope:</label>
+                        <select name="target_scope" id="msgScopeSelector" class="form-control" onchange="evaluateMessageTargetUI(this.value)">
+                            <option value="All">📢 Global Broadcast (All Accounts)</option>
+                            <option value="Group">👥 Segment Broadcast (Specific Role Group)</option>
+                            <option value="Individual">🔒 Private Note (Single Target Username)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Conditional Role Group Field Options -->
+                    <div id="msgRoleGroupWrapper" style="display: none;">
+                        <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px; color:#334155;">Select Target Account Role Group:</label>
+                        <select name="target_role" class="form-control">
+                            <option value="Customer">Standard Customers Only</option>
+                            <option value="Vendor">General Merchant Shops Only</option>
+                            <option value="Fast Food">Fast Food Kitchens Only</option>
+                            <option value="Delivery Service">Rider Fleet Dispatchers Only</option>
+                        </select>
+                    </div>
+            <!-- Conditional Single Username Target Input Field -->
+            <div id="msgIndividualWrapper" style="display: none;">
+                <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px; color:#334155;">Target Account Username Handle:</label>
+                <input type="text" name="target_username" class="form-control" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; font-size:14px;" placeholder="e.g. kofi_accra">
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px; color:#334155;">Notification Headline Title:</label>
+            <input type="text" name="title" class="form-control" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; font-size:14px;" placeholder="Enter message header alert subject title..." required>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px; color:#334155;">Detailed Bulletin Message Body Content:</label>
+            <textarea name="message" class="form-control" rows="4" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; font-size:14px; font-family:inherit;" placeholder="Type announcement parameters or private moderation note guidelines here..." required></textarea>
+        </div>
+
+        <button type="submit" style="background:#0B192C; color:white; border:none; padding:12px 24px; font-weight:700; border-radius:6px; cursor:pointer; width:100%; text-transform:uppercase; letter-spacing:0.5px; font-size:14px;">
+            🚀 Dispatch Authenticated Communication
+        </button>
+    </form>
 </div>
-<div class="section-nav"><a href="#overview">Overview</a><a href="#inventory">Inventory</a><a href="#orders">Orders</a><a href="#marketplace">Marketplace</a><a href="#fastfood">Fast Food</a><a href="#delivery">Delivery</a><a href="#premium">Premium</a><a href="#finance">Finance</a><a href="#accounts">Accounts</a><a href="#reports">Reports</a><a href="#enforcement">Enforcement</a></div>
 
-<div class="panel" style="margin-bottom:16px"><div class="ph"><div><h2>📣 BizHub Announcement</h2><p>Send an in-app notification to every registered user.</p></div></div><form method="POST" action="/admin/notify-all" class="stack"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input class="input" name="title" placeholder="Announcement title" required><textarea class="input" name="message" placeholder="Message for all users" rows="3" required></textarea><button class="btn btn-orange" type="submit">Send to all users</button></form></div>
+        <div class="card" id="verification">
+            <h3 style="margin-top:0; font-size:18px; color:var(--nav);">🆔 Pending Identity Verification Request Pipelines</h3>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Account Info</th>
+                            <th>Role Scope</th>
+                            <th>Merchant Message Log</th>
+                            <th>Fulfillment Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vr in verification_requests %}
+                            <tr>
+                                <td><b>{{ vr.company_name or vr.username }}</b><br><small style="color:var(--muted);">@{{ vr.username }}</small></td>
+                                <td><span class="badge badge-pending">{{ vr.role }}</span></td>
+                                <td><small style="font-style:italic; color:#475569;">"{{ vr.user_message or 'No message provided.' }}"</small></td>
+                                <td>
+                                    {% if vr.status == 'Pending' %}
+                                        <form method="POST" action="/admin/verification/{{ vr.id }}" style="display:inline-flex; gap:6px;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <input type="text" name="note" class="form-control" style="padding:4px 8px; font-size:12px; max-width:140px;" placeholder="Admin audit note...">
+                                            <button type="submit" name="action" value="Approved" class="action-btn btn-approve">Approve</button>
+                                            <button type="submit" name="action" value="Rejected" class="action-btn" style="background:#ef4444; color:white; border:none;">Deny</button>
+                                        </form>
+                                    {% else %}
+                                        <span class="badge {% if vr.status == 'Approved' %}badge-verified{% else %}badge-danger{% endif %}">{{ vr.status }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="4" style="text-align:center; color:var(--muted); padding:30px;">📭 No open identity verification request tickets found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-<div id="reports" class="panel"><div class="ph"><div><h2>🚩 User Reports</h2><p>Review complaints before applying account enforcement.</p></div><span class="badge yellow">{{ reports|selectattr('status', 'equalto', 'Pending')|list|length }} pending</span></div><div class="table-wrap"><table><thead><tr><th>Report</th><th>Reporter</th><th>Target</th><th>Category</th><th>Details</th><th>Review</th></tr></thead><tbody>{% for report in reports|default([]) %}<tr><td>#{{ report.id }}<br><small>{{ report.created_at[:16].replace('T',' ') }}</small><br><span class="badge {% if report.status == 'Pending' %}yellow{% else %}gray{% endif %}">{{ report.status }}</span></td><td>@{{ report.reporter_username }}</td><td>@{{ report.target_username }}<br><small>{{ report.target_role }}</small></td><td>{{ report.category }}</td><td style="max-width:260px;white-space:normal">{{ report.description }}{% if report.admin_note %}<br><small class="muted">Admin: {{ report.admin_note }}</small>{% endif %}</td><td>{% if report.status == 'Pending' %}<form method="POST" action="{{ url_for('review_report', report_id=report.id) }}" class="stack"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input class="input" name="admin_note" placeholder="Review note" required><select class="input" name="action"><option>Dismissed</option><option>Warned</option><option>Suspended</option><option>Terminated</option><option>More information</option></select><button class="btn btn-orange" type="submit">Review report</button></form>{% else %}{{ report.admin_action }}{% endif %}</td></tr>{% else %}<tr><td colspan="6" class="muted" style="text-align:center;padding:30px">No reports have been submitted.</td></tr>{% endfor %}</tbody></table></div></div>
-<div class="grid2"><div class="panel"><div class="ph"><div><h2>✅ Verification Requests</h2><p>Review independent trust verification requests.</p></div></div><div class="stack">{% for item in verification_requests|default([]) %}<div class="list-row"><span><b>@{{ item.username }}</b> · {{ item.role }}<br><small class="muted">{{ item.status }}{% if item.created_at %} · submitted {{ item.created_at[:16].replace('T',' ') }}{% endif %}</small>{% if item.user_message %}<br><small><b>User message:</b> {{ item.user_message }}</small>{% endif %}{% if item.note %}<br><small class="muted"><b>Admin review:</b> {{ item.note }}</small>{% endif %}</span>{% if item.status == 'Pending' %}<form method="POST" action="{{ url_for('review_verification', request_id=item.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input class="input" name="note" maxlength="2000" placeholder="Review note" required><button class="btn btn-blue" name="action" value="Approved">Approve</button><button class="btn btn-red" name="action" value="Rejected">Reject</button></form>{% endif %}</div>{% else %}<span class="muted">No verification requests.</span>{% endfor %}</div></div><div class="panel"><div class="ph"><div><h2>⚖️ Disputes</h2><p>Order and payment issues awaiting review.</p></div></div><div class="stack">{% for dispute in disputes|default([]) %}<div class="list-row"><span><b>#{{ dispute.id }} @{{ dispute.reporter_username }}</b><br>{{ dispute.subject }}<br><small class="muted">{{ dispute.details }}</small></span><span class="badge gray">{{ dispute.status }}</span></div>{% else %}<span class="muted">No disputes submitted.</span>{% endfor %}</div></div></div>
+        <div class="card" id="transactions">
+            <h3 style="margin-top:0; font-size:18px; color:var(--nav);">💸 Financial Premium Ledgers Logging</h3>
+            
+            <div style="background:#f8fafc; border:1px solid var(--border); padding:16px; border-radius:8px; margin-bottom:15px;">
+                <h4 style="margin-top:0; font-size:13px; color:var(--nav); text-transform:uppercase;">📝 Log Outside Manual Payment Override</h4>
+                <!-- 🚀 FIXED STYLE SEPARATORS: SEMICOLONS INTEGRATED TO CLEAR CONSOLE ERRORS -->
+                <form method="POST" action="/admin/log-payment" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; align-items: flex-end;">
 
-<div id="overview" class="grid2">
-<div class="panel"><div class="ph"><div><h2>📈 Business Snapshot</h2><p>How the two commercial flows are performing.</p></div></div><div class="stack"><div class="list">
-<div class="list-row"><span>🛍️ Marketplace listings</span><b>{{ marketplace_product_count|default(0) }}</b></div>
-<div class="list-row"><span>🍔 Fast Food menu items</span><b>{{ fast_food_product_count|default(0) }}</b></div>
-<div class="list-row"><span>🛒 Marketplace orders</span><b>{{ marketplace_order_count|default(0) }}</b></div>
-<div class="list-row"><span>🍽️ Fast Food orders</span><b>{{ fast_food_order_count|default(0) }}</b></div>
-<div class="list-row"><span>⏳ Pending orders</span><b class="money">{{ pending_orders|default(0) }}</b></div>
-<div class="list-row"><span>✅ Completed orders</span><b class="green">{{ completed_orders|default(0) }}</b></div>
-<div class="list-row"><span>❌ Cancelled orders</span><b class="red">{{ cancelled_orders|default(0) }}</b></div>
-<div class="list-row"><span>👑 Premium requests awaiting review</span><b class="yellow">{{ premium_requests|default(0) }}</b></div>
-</div></div></div>
-<div class="panel"><div class="ph"><div><h2>🏆 Top Vendors</h2><p>Ranked by recorded sold units.</p></div></div><div class="stack"><div class="list">{% for v in top_vendors|default([]) %}<div class="list-row"><span><b>{{ loop.index }}.</b> {{ v.vendor_name }}<br><small class="muted">@{{ v.seller }}</small></span><b>{{ v.sold_units }} sold</b></div>{% else %}<div class="muted">No vendor sales recorded yet.</div>{% endfor %}</div></div></div>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div>
+                        <label style="font-size:11px; font-weight:700; display:block; margin-bottom:4px;">Merchant Username:</label>
+                        <input type="text" name="username" class="form-control" placeholder="e.g. ama_boutique" required>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:700; display:block; margin-bottom:4px;">Amount Remitted (GH₵):</label>
+                        <input type="number" step="0.01" name="amount" class="form-control" placeholder="20.00" required>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:700; display:block; margin-bottom:4px;">MoMo Reference / Token:</label>
+                        <input type="text" name="momo_reference" class="form-control" placeholder="Optional...">
+                    </div>
+                    <button type="submit" class="action-btn btn-approve" style="padding:10px;">Verify & Log Payment</button>
+                </form>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Account Handle</th>
+                            <th>Amount</th>
+                            <th>MoMo Token Reference</th>
+                            <th>Status Tag</th>
+                            <th>Settlement Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in ledger_entries %}
+                            <tr>
+                                <td><b>@{{ entry.username }}</b></td>
+                                <td style="font-weight:700; color:var(--danger);">GH₵ {{ "%.2f"|format(entry.amount) }}</td>
+                                <td><code>{{ entry.momo_reference }}</code></td>
+                                <td><span class="badge {% if entry.status == 'Verified' %}badge-verified{% else %}badge-pending{% endif %}">{{ entry.status }}</span></td>
+                                <td>
+                                    {% if entry.status == 'Pending' %}
+                                        <form method="POST" action="/admin/verify-transaction/{{ entry.id }}" style="margin:0;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="action-btn btn-approve">Verify & Approve</button>
+                                        </form>
+                                    {% else %}
+                                        <small style="color:var(--success); font-weight:700;">✓ Core settlement finalized</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="5" style="text-align:center; color:var(--muted); padding:30px;">📭 No transactional payment rows registered in the database ledger.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" id="disputes">
+            <h3 style="margin-top:0; font-size:18px; color:var(--nav);">⚠️ Customer Disputes & Escalation Folders</h3>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Filer</th>
+                            <th>Order ID</th>
+                            <th>Subject Parameter</th>
+                            <th>Escalation Narrative</th>
+                            <th>Logged At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in disputes %}
+                            <tr>
+                                <td><b>@{{ d.reporter_username }}</b></td>
+                                <td><code>#{{ d.order_id or 'N/A' }}</code></td>
+                                <td style="font-weight:700;">{{ d.subject }}</td>
+                                <td><small style="color:#475569;">{{ d.details }}</small></td>
+                                <td><small>{{ d.created_at }}</small></td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="5" style="text-align:center; color:var(--muted); padding:30px;">🔒 Platform channels pristine. No customer transactional disputes logged.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+               <!-- CARD: ESCALATED INFRACTION REPORTS LOG SHEETS -->
+        <div class="card" id="reports">
+            <h3 style="margin-top:0; font-size:18px; color:var(--nav);">🚩 Escalated Infraction Reports Log Sheets</h3>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Accused Offender</th>
+                            <th>Infraction Reason Category</th>
+                            <th>Incident Description</th>
+                            <th>Auditing Action Trigger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in reports %}
+                            <tr>
+                                <td><b>@{{ r.target_username }}</b><br><small style="color:var(--muted);">Category: {{ r.target_role }}</small></td>
+                                <td><span class="badge badge-danger">{{ r.category }}</span></td>
+                                <td><small style="color:#334155; display:block; max-width:300px;">"{{ r.description }}"</small></td>
+                                <td>
+                                    {% if r.status == 'Pending' %}
+                                        <form method="POST" action="/admin/reports/{{ r.id }}/review" style="display:flex; flex-direction:column; gap:4px;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <input type="text" name="admin_note" class="form-control" style="padding:4px; font-size:12px;" placeholder="Enforcement notice detail..." required>
+                                            <select name="action" class="form-control" style="padding:4px; font-size:12px; background:white;">
+                                                <option value="Warned">⚠️ Send Official Warning</option>
+                                                <option value="Suspended">🛑 Suspend Merchant Access</option>
+                                                <option value="Terminated">❌ Terminate Profile Record</option>
+                                                <option value="Dismissed">✓ Dismiss/Clear False Report</option>
+                                            </select>
+                                            <button type="submit" class="action-btn btn-approve" style="padding:4px; font-size:11px;">Execute Enforcement Outcome</button>
+                                        </form>
+                                    {% else %}
+                                        <div style="font-size:12px;">
+                                            <b>Action Outcome:</b> <span style="color:var(--danger); font-weight:700;">{{ r.admin_action }}</span><br>
+                                            <small style="color:var(--muted);">Log: {{ r.admin_note }}</small>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="4" style="text-align:center; color:var(--muted); padding:30px;">🔒 Compliance parameters high. No open vendor fraction reports logged.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CARD: MARKETPLACE ACCOUNTS REGISTRY SHEETS DIRECTORY -->
+        <div class="card" id="users">
+            <h3 style="margin-top:0; font-size:18px; color:var(--nav);">👥 Marketplace Accounts Registry Sheets Directory</h3>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Account Profiles</th>
+                            <th>Contact Details</th>
+                            <th>Status Metric</th>
+                            <th>Administrative Interventions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>
+                                    <b>{{ user.company_name or user.username }}</b><br>
+                                    <small style="color:var(--muted);">Handle: @{{ user.username }} | Level: {{ user.role }}</small>
+                                </td>
+                                <td>
+                                    <small style="display:block;">📧 {{ user.email }}</small>
+                                    {% if user.whatsapp_number %}
+                                        <small style="display:block;">💬 +{{ user.whatsapp_number }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge {% if user.account_status == 'Active' %}badge-verified{% elif user.account_status == 'Warned' %}badge-pending{% else %}badge-danger{% endif %}">
+                                        {{ user.account_status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="display:inline-flex; gap:6px; flex-wrap:wrap;">
+                                        <form method="POST" action="/admin/approve-premium/{{ user.id }}" style="margin:0;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="action-btn" style="background:#fef3c7; border-color:#fcd34d; font-weight:700;">👑 Grant Premium</button>
+                                        </form>
+
+                                        <form method="POST" action="/admin/enforce/{{ user.id }}" style="margin:0; display:inline-flex; gap:4px;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <input type="text" name="reason" class="form-control" style="padding:4px; font-size:12px; max-width:110px;" placeholder="Reason log..." required>
+                                            <select name="action" class="form-control" style="padding:4px; font-size:12px; background:white; max-width:100px;">
+                                                <option value="Active">Restore</option>
+                                                <option value="Warned">Warn</option>
+                                                <option value="Suspended">Suspend</option>
+                                            </select>
+                                            <button type="submit" class="action-btn" style="background:#334155; color:white;">Apply</button>
+                                        </form>
+
+                                        <form method="POST" action="/admin/delete-user/{{ user.id }}" style="margin:0;" onsubmit="return confirm('CRITICAL WARNING: Are you completely certain you want to permanently erase this entire profile and all associated data arrays from the database?');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="action-btn" style="background:var(--danger); color:white; border:none; font-weight:700;">🗑️ Hard Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
 </div>
 
-<div id="inventory" class="panel"><div class="ph"><div><h2>📦 Inventory Control</h2><p>Admin can monitor and correct live stock without changing ownership.</p></div><span class="badge yellow">{{ low_stock_count|default(0) }} Low Stock</span></div><div class="table-wrap"><table><thead><tr><th>Item</th><th>Business</th><th>Flow</th><th>Initial</th><th>Sold</th><th>Remaining</th><th>Status</th><th>Admin Adjustment</th></tr></thead><tbody>{% for p in inventory_products|default([]) %}<tr><td><b>{{ p.title }}</b><br><small class="muted">#{{ p.id }} · GH₵{{ "%.2f"|format(p.price) }}</small></td><td>{{ p.vendor_name or p.seller }}<br><small class="muted">@{{ p.seller }}</small></td><td>{% if p.vendor_role == 'Fast Food' or p.category == 'Fast Food' %}<span class="badge red">🍔 Fast Food</span>{% else %}<span class="badge blue">🛍️ Marketplace</span>{% endif %}</td><td>{{ p.initial_stock_quantity|default(p.stock_quantity, true) }}</td><td>{{ p.sold_quantity|default(0) }}</td><td><b>{{ p.stock_quantity }}</b></td><td>{% if p.stock_quantity|int <= 0 or p.status == 'Sold' %}<span class="badge red">🔴 Sold Out</span>{% elif p.stock_quantity|int <= 3 %}<span class="badge yellow">⚠️ Low</span>{% else %}<span class="badge green">🟢 Available</span>{% endif %}</td><td><form method="POST" action="/admin/inventory/{{ p.id }}" class="form-row">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input class="input" type="number" name="amount" min="0" value="{{ p.stock_quantity }}" required><input type="hidden" name="action" value="set"><button class="btn btn-orange" type="submit">Set</button></form><div style="margin-top:5px"><form method="POST" action="/admin/inventory/{{ p.id }}" style="display:inline">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="amount" value="1"><input type="hidden" name="action" value="add"><button class="btn btn-blue" type="submit">+1</button></form> <form method="POST" action="/admin/inventory/{{ p.id }}" style="display:inline">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="amount" value="1"><input type="hidden" name="action" value="remove"><button class="btn btn-red" type="submit">−1</button></form></div></td></tr>{% else %}<tr><td colspan="8" class="muted" style="text-align:center;padding:30px">No listings yet.</td></tr>{% endfor %}</tbody></table></div></div>
+<script>
+    function evaluateMessageTargetUI(scopeValue) {
+        document.getElementById('msgRoleGroupWrapper').style.display = (scopeValue === 'Group') ? 'block' : 'none';
+        document.getElementById('msgIndividualWrapper').style.display = (scopeValue === 'Individual') ? 'block' : 'none';
+    }
+</script>
+         <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
+            © 2026 Administrator, BizHub Marketplace · Your Local Market, Unified Online
+        </footer>
+</body>
+</html>
 
-<div id="orders" class="panel"><div class="ph"><div><h2>🛒 Order Operations</h2><p>Marketplace and Fast Food orders remain distinguishable.</p></div></div><div class="stack"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"><div class="mini-card"><strong>{{ pending_orders|default(0) }}</strong><span>Pending</span></div><div class="mini-card"><strong>{{ confirmed_orders|default(0) }}</strong><span>Confirmed</span></div><div class="mini-card"><strong>{{ completed_orders|default(0) }}</strong><span>Completed</span></div><div class="mini-card"><strong>{{ cancelled_orders|default(0) }}</strong><span>Cancelled</span></div></div></div></div>
 
-<div id="marketplace" class="panel"><div class="ph"><div><h2>🛍️ Marketplace Management</h2><p>Amazon-style ordinary-product ecosystem.</p></div><span class="badge blue">{{ marketplace_product_count|default(0) }} listings</span></div><div class="table-wrap"><table><thead><tr><th>Product</th><th>Vendor</th><th>Category</th><th>Stock</th><th>Sold</th><th>Location</th><th>Status</th></tr></thead><tbody>{% for p in products|default([]) if p.category != 'Fast Food' %}<tr><td><b>{{ p.title }}</b><br><small class="muted">GH₵{{ "%.2f"|format(p.price) }}</small></td><td>{{ p.vendor_name or p.seller }}<br><small class="muted">@{{ p.seller }}</small></td><td>{{ p.category }}</td><td>{{ p.stock_quantity }}</td><td>{{ p.sold_quantity|default(0) }}</td><td>{{ p.location }}</td><td>{% if p.stock_quantity|int <= 0 or p.status == 'Sold' %}<span class="badge red">Sold Out</span>{% elif p.stock_quantity|int <= 3 %}<span class="badge yellow">Low Stock</span>{% else %}<span class="badge green">Available</span>{% endif %}</td></tr>{% endfor %}</tbody></table></div></div>
-
-<div id="fastfood" class="panel"><div class="ph"><div><h2>🍔 Fast Food Management</h2><p>Uber Eats-style restaurant/menu ecosystem.</p></div><span class="badge red">{{ fast_food_product_count|default(0) }} menu items</span></div><div class="table-wrap"><table><thead><tr><th>Menu Item</th><th>Restaurant</th><th>Price</th><th>Available</th><th>Sold</th><th>Menu Status</th></tr></thead><tbody>{% for p in products|default([]) if p.category == 'Fast Food' %}<tr><td><b>{{ p.title }}</b><br><small class="muted">{{ p.description }}</small></td><td>{{ p.vendor_name or p.seller }}<br><small class="muted">@{{ p.seller }}</small></td><td class="money">GH₵{{ "%.2f"|format(p.price) }}</td><td>{{ p.stock_quantity }}</td><td>{{ p.sold_quantity|default(0) }}</td><td>{% if p.stock_quantity|int <= 0 or p.status == 'Sold' %}<span class="badge red">🔴 Sold Out</span>{% else %}<span class="badge green">🟢 Available</span>{% endif %}</td></tr>{% endfor %}</tbody></table></div></div>
-
-<div id="delivery" class="panel"><div class="ph"><div><h2>🚚 Delivery Control Centre</h2><p>Registered companies and individual delivery providers.</p></div><span class="badge green">{{ delivery_available_count|default(0) }} Available</span></div><div class="table-wrap"><table><thead><tr><th>Provider</th><th>Username</th><th>Location</th><th>Service Area</th><th>Vehicle</th><th>Phone</th><th>Status</th><th>Updated</th></tr></thead><tbody>{% for s in delivery_services|default([]) %}<tr><td>{% if s.logo_file %}<img class="service-logo" src="{{ url_for('static', filename='uploads/' ~ s.logo_file) }}">{% else %}🚚{% endif %} <b>{{ s.service_name }}</b></td><td>@{{ s.username }}</td><td>{{ s.operating_location }}</td><td>{{ s.service_area }}</td><td>{{ s.delivery_type }}</td><td><a href="tel:+{{ s.phone_number }}">{{ s.phone_number }}</a></td><td>{% if s.availability == 'Available' %}<span class="badge green">🟢 Available</span>{% else %}<span class="badge gray">⚪ Offline</span>{% endif %}</td><td><small>{{ (s.updated_at or s.created_at or '')[:16].replace('T',' ') }}</small></td></tr>{% else %}<tr><td colspan="8" class="muted" style="text-align:center;padding:30px">No delivery providers registered yet.</td></tr>{% endfor %}</tbody></table></div></div>
-
-<div id="premium" class="grid2"><div class="panel"><div class="ph"><div><h2>💎 Premium Operations</h2><p>Trial and paid Premium visibility.</p></div></div><div class="stack"><div class="list-row"><span>Active Premium</span><b>{{ premium_count|default(0) }}</b></div><div class="list-row"><span>Active 60-day trials</span><b>{{ trial_count|default(0) }}</b></div><div class="list-row"><span>Requests awaiting approval</span><b class="yellow">{{ premium_requests|default(0) }}</b></div></div></div><div class="panel"><div class="ph"><div><h2>💰 Finance Snapshot</h2><p>Existing ledger controls.</p></div></div><div class="stack"><div class="list-row"><span>Verified revenue</span><b class="money">GH₵{{ "%.2f"|format(total_revenue) }}</b></div><div class="list-row"><span>Pending cash</span><b class="yellow">GH₵{{ "%.2f"|format(pending_momo) }}</b></div><div class="list-row"><span>Verified transactions</span><b>{{ verified_count }}</b></div></div></div></div>
-
-<div id="finance" class="panel"><div class="ph"><div><h2>💰 Cash Flow & MoMo Audit</h2><p>Verify incoming payments and keep the ledger authoritative.</p></div></div><div class="table-wrap"><table><thead><tr><th>Timestamp</th><th>Channel</th><th>Username</th><th>Amount</th><th>MoMo Ref</th><th>Status</th><th>Action</th></tr></thead><tbody>{% for entry in ledger_entries|default([]) %}<tr><td><small>{{ entry.created_at[:16].replace('T',' ') }}</small></td><td><b>{{ entry.transaction_type }}</b></td><td>@{{ entry.username }}</td><td class="money">GH₵{{ "%.2f"|format(entry.amount) }}</td><td><code>{{ entry.momo_reference }}</code></td><td>{% if entry.status == 'Verified' %}<span class="badge green">Verified</span>{% else %}<span class="badge yellow">Pending</span>{% endif %}</td><td>{% if entry.status == 'Pending' %}<form method="POST" action="/admin/verify-transaction/{{ entry.id }}">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-orange">✅ Verify</button></form>{% else %}<span class="green">✓ Settled</span>{% endif %}</td></tr>{% else %}<tr><td colspan="7" class="muted" style="text-align:center;padding:30px">No financial transactions.</td></tr>{% endfor %}</tbody></table></div></div>
-
-<div class="grid2"><div class="panel"><div class="ph"><div><h2>📝 Log Off-Platform Payment</h2><p>Subscription entries are approved immediately and receive a vendor receipt.</p></div></div><form method="POST" action="/admin/log-payment" class="stack">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label class="muted">Username</label><input class="input" style="width:100%;margin:5px 0 10px" name="username" required><label class="muted">Amount (GH₵)</label><input class="input" style="width:100%;margin:5px 0 10px" type="number" step="0.01" min="0.01" name="amount" required><label class="muted">Transaction type</label><select class="input" style="width:100%;margin:5px 0 10px" name="transaction_type"><option>Subscription</option><option>Escrow Purchase</option></select><label class="muted">MoMo reference</label><input class="input" style="width:100%;margin:5px 0 12px" name="momo_reference"><button class="btn btn-orange" style="width:100%;padding:10px">💾 Register Entry</button></form></div>
-<div class="panel"><div class="ph"><div><h2>🧾 Subscription Receipts</h2><p>Permanent admin record of approved subscription payments.</p></div></div><div class="table-wrap"><table><thead><tr><th>Receipt</th><th>Vendor</th><th>Plan</th><th>Amount</th><th>Issued</th><th>Open</th></tr></thead><tbody>{% for receipt in subscription_receipts|default([]) %}<tr><td><b>{{ receipt.receipt_number }}</b></td><td>@{{ receipt.username }}</td><td>{{ receipt.plan_name }}</td><td class="money">GH₵{{ "%.2f"|format(receipt.amount) }}</td><td><small>{{ receipt.issued_at[:16].replace('T',' ') }}</small></td><td><a href="{{ url_for('subscription_receipt', receipt_id=receipt.id) }}">View</a></td></tr>{% else %}<tr><td colspan="6" class="muted" style="text-align:center;padding:30px">No subscription receipts yet.</td></tr>{% endfor %}</tbody></table></div></div></div>
-<div id="accounts" class="panel"><div class="ph"><div><h2>👥 Account Management</h2><p>Customers, Marketplace Vendors, Fast Food and Delivery.</p></div></div><div class="table-wrap"><table><thead><tr><th>User</th><th>Role</th><th>Location</th><th>Listings</th><th>Plan</th><th>Actions</th></tr></thead><tbody>{% for u in users|default([]) %}<tr><td><b>@{{ u.username }}</b><br><small class="muted">{{ u.company_name or 'No brand label' }}</small></td><td>{% if u.role == 'Customer' %}<span class="badge blue">Customer</span>{% elif u.role == 'Vendor' %}<span class="badge yellow">Vendor</span>{% elif u.role == 'Fast Food' %}<span class="badge red">Fast Food</span>{% else %}<span class="badge gray">{{ u.role }}</span>{% endif %}</td><td>{{ u.business_location or '—' }}</td><td>{{ listing_counts.get(u.username,0) }}</td><td>{% if u.role in ['Vendor','Fast Food'] %}{% set sub=subscription_status(u) %}{% if sub.trial %}<span class="badge blue">Trial · {{ sub.expires }}</span>{% elif sub.is_premium %}<span class="badge green">Premium · {{ sub.expires }}</span>{% else %}<span class="badge gray">Basic</span>{% endif %}{% else %}<span class="badge gray">Standard</span>{% endif %}</td><td>{% if u.role in ['Vendor','Fast Food'] and u.upgrade_requested_at %}<form method="POST" action="/admin/approve-premium/{{ u.id }}" style="display:inline" onsubmit="return confirm('Review Premium request for @{{ u.username }}?');">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-orange">Approve</button></form>{% endif %} <form method="POST" action="/admin/delete-user/{{ u.id }}" style="display:inline" onsubmit="return confirm('Permanently delete @{{ u.username }} and their marketplace data? This cannot be undone.');">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-red">Wipe</button></form></td></tr>{% endfor %}</tbody></table></div></div></div>
-
-<div id="enforcement" class="panel"><div class="ph"><div><h2>⚖️ Account Enforcement</h2><p>Apply proportionate action when an account breaks BizHub rules.</p></div><a href="#accounts" class="btn btn-blue" style="text-decoration:none">Open account list</a></div><div class="stack"><p class="muted">Use Warn for a notice, Suspend for temporary restriction, Terminate for serious or repeated violations, and Restore to reactivate an account.</p>{% for u in users|default([]) %}<div class="list-row"><span><b>@{{ u.username }}</b><br><small class="muted">{{ u.account_status|default('Active') }}{% if u.enforcement_reason %} · {{ u.enforcement_reason }}{% endif %}</small></span><form method="POST" action="/admin/enforce/{{ u.id }}" style="display:flex;gap:5px;align-items:center;flex-wrap:wrap"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input class="input" name="reason" placeholder="Reason" required><button class="btn btn-orange" name="action" value="Warned">Warn</button><button class="btn btn-red" name="action" value="Suspended">Suspend</button><button class="btn btn-red" name="action" value="Terminated">Terminate</button><button class="btn btn-blue" name="action" value="Active">Restore</button></form></div>{% else %}<div class="list-row"><span class="muted">No user accounts are available for enforcement.</span><a href="#accounts" class="btn btn-blue" style="text-decoration:none">Open accounts</a></div>{% endfor %}</div></div>
-<div class="panel"><div class="ph"><div><h2>🧾 Admin Audit Log</h2><p>Recent verification and enforcement decisions.</p></div></div><div class="stack">{% for entry in admin_audit_logs|default([]) %}<div class="list-row"><span><b>{{ entry.action }}</b> {% if entry.target_username %}· @{{ entry.target_username }}{% endif %}<br><small class="muted">{{ entry.details }}</small></span><small class="muted">{{ entry.created_at[:16].replace('T',' ') }}</small></div>{% else %}<span class="muted">No admin actions recorded yet.</span>{% endfor %}</div></div>
-<div class="footer-note">BizHub Admin • Protect destructive actions • Keep financial, inventory and verification records authoritative.</div>
-</div>
-</body></html>

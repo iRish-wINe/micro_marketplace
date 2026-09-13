@@ -1,89 +1,285 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full" data-theme="{{ session.get('theme') or 'day' }}">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Promotions | Biz Hub</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Promotions & Campaigns Manager | BizHub</title>
     <style>
-        :root{--bh-bg:#f3f4f6;--bh-card:#fff;--bh-text:#111827;--bh-muted:#6b7280;--bh-border:#e5e7eb;--bh-soft:#f8fafc}
-        html[data-theme="night"]{--bh-bg:#0b1220;--bh-card:#111827;--bh-text:#f8fafc;--bh-muted:#94a3b8;--bh-border:#263244;--bh-soft:#172033}
-        body{background:var(--bh-bg);color:var(--bh-text);transition:background .2s,color .2s}
-        .bh-card{background:var(--bh-card);border-color:var(--bh-border)} .bh-border{border-color:var(--bh-border)} .bh-text{color:var(--bh-text)} .bh-muted{color:var(--bh-muted)} .bh-soft{background:var(--bh-soft)}
-        .bh-input{background:var(--bh-card);color:var(--bh-text);border-color:var(--bh-border)}
-        html[data-theme="night"] header,html[data-theme="night"] footer{background:#0f172a!important;border-color:#263244!important}
-        html[data-theme="night"] a{color:#cbd5e1}
-        html[data-theme="night"] .bh-input{background:#0f172a;color:#f8fafc;border-color:#334155}
+        :root {
+            --nav: #0b192c;
+            --accent: #f59e0b;
+            --bg: #f4f7fb;
+            --text: #172033;
+            --muted: #64748b;
+            --border: #dbe3ed;
+            --danger: #ef4444;
+            --success: #10B981;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 85px 18px 30px; }
+        
+        .bizhub-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--nav); min-height: 58px; padding: 8px 22px; display: flex; align-items: center; gap: 22px; box-shadow: 0 2px 10px #0002; }
+        .bizhub-brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: #fff; min-width: max-content; }
+        .bizhub-brand img { width: 38px; height: 38px; border-radius: 10px; }
+        .bizhub-brand strong { font-size: 18px; line-height: 1.05; }
+        .bizhub-brand strong span { color: var(--accent); }
+        .bizhub-brand small { display: block; color: #cbd5e1; font-size: 10px; margin-top: 2px; }
+        .bizhub-nav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .bizhub-nav a { color: #e2e8f0; text-decoration: none; font-weight: 800; font-size: 13px; padding: 9px 11px; border-radius: 7px; }
+        .bizhub-nav a:hover { background: #ffffff12; color: var(--accent); }
+
+        .wrap { max-width: 1100px; margin: auto; display: grid; grid-template-columns: 1fr; gap: 24px; }
+        @media(min-width: 768px) { .wrap { grid-template-columns: 1fr 1fr; } }
+        
+        .card { background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid #e5e7eb; height: fit-content; }
+        h2, h3 { margin-top: 0; font-weight: 800; color: var(--nav); }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 5px; color: #334155; }
+        .form-control { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+        .form-control:focus { border-color: var(--accent); }
+        
+        .submit-btn { width: 100%; padding: 12px; background: var(--nav); color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 14px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.3px; transition: opacity 0.2s; }
+        .submit-btn:hover { opacity: 0.9; }
+        
+        .promo-log-item { padding: 14px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; background: #fafafa; position: relative; }
+        .badge { display: inline-block; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; margin-bottom: 6px; }
+        .badge-live { background: #D1FAE5; color: #065F46; }
+        .badge-expired { background: #F3F4F6; color: #374151; }
+        .btn-delete-history { background: none; border: none; color: var(--danger); font-size: 12px; font-weight: 700; cursor: pointer; padding: 0; margin-top: 8px; text-decoration: underline; }
     </style>
 </head>
-<body class="min-h-full font-sans antialiased">
-<header class="sticky top-0 z-40 w-full bg-white border-b shadow-sm bh-border">
-    <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8"><div class="flex items-center justify-between h-16 gap-4">
-        <a href="/vendor/{{ vendor['username'] }}" class="flex items-center gap-2 no-underline shrink-0">
-            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 shadow-md text-white font-black">BH</div>
-            <span class="text-xl font-bold tracking-tight bh-text">Biz<span class="text-emerald-600">Hub</span></span>
-        </a>
-        <nav class="flex items-center gap-3 sm:gap-4 text-sm font-medium">
-            <a href="/" class="bh-muted hover:text-emerald-600 no-underline">Market</a>
-            <a href="/vendor/{{ vendor['username'] }}" class="bh-muted hover:text-emerald-600 no-underline">Store</a>
-            <a href="/orders" class="bh-muted hover:text-emerald-600 no-underline">Orders</a>
-            <a href="/settings" class="bh-muted hover:text-emerald-600 no-underline">Account</a>
-            <span class="hidden md:inline bh-muted">@{{ vendor['username'] }}</span>
-        </nav>
-    </div></div>
+<body>
+
+<header class="bizhub-header">
+    <a class="bizhub-brand" href="{{ url_for('home') }}">
+        <img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub">
+        <div><strong>Biz<span>Hub</span></strong><small>Your Local Market, Unified Online</small></div>
+    </a>
+    <nav class="bizhub-nav">
+        <a href="{{ url_for('home') }}">☰ Marketplace</a>
+        <a href="{{ url_for('cart_page') }}">🛒 Your Cart{% if session.get('cart') %} ({{ session.get('cart')|length }}){% endif %}</a>
+        <a href="{{ url_for('vendor_profile', username=session['username']) }}">🏪 My Store</a>
+    </nav>
 </header>
 
-<main class="py-8 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-    <div class="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-            <a href="/vendor/{{ vendor['username'] }}" class="inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700 no-underline">← Back to Store</a>
-            <h1 class="text-2xl sm:text-3xl font-black bh-text mt-4">🔥 Manage Promotions</h1>
-            <p class="text-sm bh-muted mt-1">Create product or store-wide promotions with optional images and short 30-second ads.</p>
-        </div>
-        <div class="bh-card border rounded-2xl px-4 py-3 shadow-sm">
-            <p class="text-[11px] uppercase tracking-wider font-black bh-muted">Promotion Center</p>
-            <p class="text-sm font-bold bh-text mt-1">{{ promotions|length }} campaign{% if promotions|length != 1 %}s{% endif %}</p>
+<div class="wrap">
+    <!-- 👑 LAYER 2: STREAMLINED ACTION FORM CARD ENGINE -->
+    <div class="card">
+        <h2>📣 Launch Promotion Ad Campaign</h2>
+        <p style="font-size:13px; color:var(--muted); margin-top:-5px; margin-bottom:20px;">
+            Set up flash sales or create a brand new deal layout. Media assets auto-sync directly.
+        </p>
+
+        {% if promo_error %}
+            <div style="background-color: #FEF2F2; color: #991B1B; border: 1px solid #FCA5A5; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-weight: 700; font-size: 13px;">
+                ⚠️ {{ promo_error }}
+            </div>
+        {% endif %}
+
+        {% if saved %}
+            <div style="background-color: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-weight: 700; font-size: 13px;">
+                ✅ Success: Your promotion campaign has been launched live!
+            </div>
+        {% endif %}
+
+        <form method="POST" action="/promotions" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <div class="form-group">
+                <label>Promotion Campaign Banner Title:</label>
+                <input type="text" name="title" class="form-control" placeholder="e.g. Special Weekend Lightning Sale!" required>
+            </div>
+
+            <div class="form-group">
+                <label>Campaign Description / Caption:</label>
+                <input type="text" name="description" class="form-control" placeholder="e.g. Massive discounts on select warehouse stocks!">
+            </div>
+
+            <div class="form-group">
+                <label>Promo Method Setup:</label>
+                <select name="product_mode" class="form-control" onchange="document.getElementById('existingGroup').style.display = (this.value == 'existing') ? 'block' : 'none'; document.getElementById('newProductGroup').style.display = (this.value == 'new') ? 'block' : 'none';">
+                    <option value="existing">{% if is_fast_food %}Choose an already published meal{% else %}Choose an already published product{% endif %}</option>
+                    <option value="new">{% if is_fast_food %}Add a new meal to promote{% else %}Add a new product to promote{% endif %}</option>
+                </select>
+            </div>
+
+            <!-- CHOOSE EXISTING SOURCE ITEM -->
+            <div id="existingGroup" class="form-group">
+                <label>{% if is_fast_food %}Select Active Menu Meal:{% else %}Select Catalog Product:{% endif %}</label>
+                <select name="product_id" class="form-control">
+                    <option value="">--- Select Option ---</option>
+                    {% for product in products %}
+                        <option value="{{ product.id }}">{{ product.title }} (GH₵ {{ "%.2f"|format(product.price) }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- STREAMLINED NEW ITEM BUFFER PACK (ZERO DOUBLE UPLOADS) -->
+            <div id="newProductGroup" class="form-group" style="display: none; border-left: 3px solid var(--accent); padding-left: 15px; margin-top: 15px;">
+                <h4 style="font-size: 13px; margin-top: 0; color: var(--nav); text-transform: uppercase;">🆕 New Product Parameters:</h4>
+                <div class="form-group">
+                    <label>Product Title / Name:</label>
+                    <input type="text" name="new_product_title" class="form-control" placeholder="e.g. Authentic Leather Chelsea Boots...">
+                </div>
+                <div class="form-group">
+                    <label>Regular Retail Base Price (GH₵):</label>
+                    <input type="number" step="0.01" name="new_product_price" class="form-control" placeholder="e.g. 250.00">
+                </div>
+                <div class="form-group">
+                    <label>Physical Hub Location:</label>
+                    <input type="text" name="new_product_location" class="form-control" placeholder="e.g. Accra Metro" value="{{ vendor.business_location or '' }}">
+                </div>
+                {% if not is_fast_food %}
+                    <div class="form-group">
+                        <label>Product Category:</label>
+                        <select name="new_product_category" class="form-control">
+                            {% for cat in product_categories if cat != 'Fast Food' %}
+                                <option value="{{ cat }}">{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% endif %}
+                <div class="form-group">
+                    <label>Description / Specification Log:</label>
+                    <textarea name="new_product_description" class="form-control" rows="3" placeholder="Enter specifications, sizes, material info..."></textarea>
+                </div>
+                
+                             <!-- 📸 SINGLE PRIMARY MEDIA INTAKE BUFFER WITH LIVE 'X' CLEAR BUTTONS -->
+                <div style="background: #F8FAFC; padding: 14px; border-radius: 8px; border: 1px dashed var(--border); margin-bottom: 12px;">
+                    <b style="font-size: 12px; display: block; margin-bottom: 6px; color: var(--nav);">📸 Core Product Media Asset (Required):</b>
+                    
+                    <div style="margin-bottom: 10px; position: relative;">
+                        <label style="display:block; font-size:11px; margin-bottom:4px; font-weight: 700;">Upload Cover Image:</label>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="file" id="promoProductImgInput" name="new_product_image" class="form-control" style="padding:4px; flex: 1;" onchange="if(this.value) document.getElementById('clearImgBtn').style.display='inline-block';">
+                            <button type="button" id="clearImgBtn" style="display: none; background: #EF4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer;" onclick="document.getElementById('promoProductImgInput').value=''; this.style.display='none';" aria-label="Cancel image selection">✕ Cancel</button>
+                        </div>
+                    </div>
+                    
+                    <div style="position: relative;">
+                        <label style="display:block; font-size:11px; margin-bottom:4px; font-weight: 700;">OR Upload Showcase Video (Max 20s):</label>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="file" id="promoProductVidInput" name="new_product_video" class="form-control" style="padding:4px; flex: 1;" onchange="if(this.value) document.getElementById('clearVidBtn').style.display='inline-block';">
+                            <button type="button" id="clearVidBtn" style="display: none; background: #EF4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer;" onclick="document.getElementById('promoProductVidInput').value=''; this.style.display='none';" aria-label="Cancel video selection">✕ Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+
+            <div class="form-grid-pricing" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group">
+                    <label>Original Value (GH₵):</label>
+                    <input type="number" step="0.01" name="main_price" class="form-control" placeholder="e.g. 100" required>
+                </div>
+                <div class="form-group">
+                    <label>Discount Percentage (%):</label>
+                    <input type="number" step="0.1" name="discount" class="form-control" placeholder="e.g. 20" min="0" max="100" required>
+                </div>
+            </div>
+
+            <!-- 👑 ITEM QUANTITY BOX (GENERAL VENDORS ONLY) -->
+            {% if not is_fast_food %}
+                <div class="form-group" style="margin-top: 5px;">
+                    <label style="color: #CC0C39; font-weight: 800;">📦 Flash Deal Promo Allocation Quantity:</label>
+                    <input type="number" name="promo_stock_quantity" class="form-control" placeholder="How many items are available at this promo cost?" min="1" required>
+                    <small style="display:block; color:var(--muted); margin-top:2px;">Specifies item stock units allowed under this markdown pricing scheme.</small>
+                </div>
+            {% endif %}
+
+            <!-- 🎬 SHORT 30-SECOND AD SHOWCASE DISPATCHER -->
+            <div style="background: #FFFDF9; border: 1px solid #FCD34D; border-radius: 8px; padding: 14px; margin-top: 15px; margin-bottom: 20px;">
+                <b style="font-size: 13px; display: block; margin-bottom: 4px; color: #B45309;">🎵 Short Promo Ad Video Advertisement (Optional):</b>
+                <p style="margin: 0 0 10px 0; font-size: 11px; color: var(--muted); line-height: 1.4;">Add an optional cinematic 30-second campaign video commercial to slide across Today's Deals modules.</p>
+                <input type="file" name="promo_video" class="form-control" style="padding: 4px; background: white;">
+            </div>
+
+            <div class="form-grid-pricing" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <div class="form-group">
+                    <label>Starts At Schedule:</label>
+                    <input type="datetime-local" name="starts_at" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Ends At Schedule:</label>
+                    <input type="datetime-local" name="ends_at" class="form-control" required>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">🚀 Launch Dynamic Promotion Campaign</button>
+        </form>
+    </div>
+    <!-- 👑 LAYER 3: CAMPAIGN STATEMENT LOGS REGISTRY -->
+    <div class="card" style="flex-grow: 1;">
+        <h3>📋 Historical Promotions Log</h3>
+        <p style="font-size:13px; color:var(--muted); margin-top:-5px; margin-bottom:20px;">
+            Review and track the real-time status of your active, pending, or expired marketing campaigns.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            {% for promo in promotions %}
+                <div class="promo-log-item">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                        <div>
+                            {% if promo.is_live %}
+                                <span class="badge badge-live">● Live & Broadcasting</span>
+                            {% else %}
+                                <span class="badge badge-expired">○ Offline / Inactive</span>
+                            {% endif %}
+                            <b style="display: block; font-size: 15px; color: var(--nav); margin-top: 2px;">{{ promo.title }}</b>
+                        </div>
+                        <span style="font-size: 16px; font-weight: 800; color: #CC0C39; background: #FEF2F2; padding: 4px 8px; border-radius: 4px;">
+                            -{{ promo.discount }}% OFF
+                        </span>
+                    </div>
+
+                    <div style="font-size: 13px; margin-top: 10px; color: var(--text-main); line-height: 1.5;">
+                        {% if promo.product_title %}
+                            📦 <b>Linked Item:</b> {{ promo.product_title }}<br>
+                        {% endif %}
+                        💰 <b>Pricing Structure:</b> GH₵ {{ "%.2f"|format(promo.promo_price) }} <span style="font-size:11px; color:var(--muted); text-decoration:line-through;">(Retail: GH₵ {{ "%.2f"|format(promo.main_price) }})</span><br>
+                        ⏱️ <b>Schedule Bounds:</b> <span style="font-size:11px; color:#475569;">{{ promo.starts_at }} to {{ promo.ends_at }}</span>
+                    </div>
+
+                    {% if promo.active == 1 %}
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); display: flex; gap: 15px; align-items: center;">
+                            <form method="POST" action="/promotions/{{ promo.id }}/deactivate" style="margin:0;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" style="background:none; border:none; color:#C2410C; font-size:12px; font-weight:700; cursor:pointer; padding:0; text-decoration:underline;">
+                                    🛑 Deactivate Campaign
+                                </button>
+                            </form>
+                            
+                            <form method="POST" action="/promotions/{{ promo.id }}/delete-history" style="margin:0;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn-delete-history">
+                                    🗑️ Erase Log Records
+                                </button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);">
+                            <form method="POST" action="/promotions/{{ promo.id }}/delete-history" style="margin:0;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn-delete-history">
+                                    🗑️ Clear Stale History Log
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div style="padding: 40px; text-align: center; color: var(--muted); border: 2px dashed var(--border); border-radius: 8px;">
+                    📭 You haven't configured or uploaded any commercial promotional campaigns yet.
+                </div>
+            {% endfor %}
         </div>
     </div>
 
-    {% if promo_error %}<div class="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm font-bold">⚠️ {{ promo_error }}</div>{% endif %}
-    {% if saved %}<div class="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-bold">✓ Promotion published successfully.</div>{% endif %}
+</div> <!-- Closes .wrap container -->
+       <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
+            © 2026 BizHub Marketplace · Your Local Market, Unified Online
+        </footer>
 
-    <div class="grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-6">
-        <section class="bh-card rounded-2xl border shadow-sm overflow-hidden">
-            <div class="px-6 py-5 border-b bh-border bh-soft">
-                <div class="flex items-start gap-3"><div class="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center text-xl">🔥</div><div><h2 class="text-lg font-black bh-text">Create Promotion</h2><p class="text-xs bh-muted mt-1">Publish a new offer for customers and followers.</p></div></div>
-            </div>
-            <form method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Promotion Type / Product</label><select name="product_id" class="bh-input w-full px-4 py-3 rounded-xl border text-sm font-semibold focus:ring-2 focus:ring-amber-400 outline-none"><option value="">Store-wide promotion</option>{% for product in products %}<option value="{{ product['id'] }}">{{ product['title'] }} — GH₵ {{ '%.2f'|format(product['price']) }}</option>{% endfor %}</select></div>
-                <div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Promo Title</label><input name="title" required maxlength="120" class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-amber-400 outline-none" placeholder="e.g. Weekend special"></div>
-                <div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Description</label><textarea name="description" maxlength="500" rows="3" class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-amber-400 outline-none" placeholder="Tell customers what is included."></textarea></div>
-                <div class="grid sm:grid-cols-2 gap-4"><div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Discount (%)</label><input type="number" name="discount" min="0" max="100" step="0.01" class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-amber-400 outline-none"></div><div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Promo Price (GH₵)</label><input type="number" name="promo_price" min="0" step="0.01" class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-amber-400 outline-none"></div></div>
-                <div class="grid sm:grid-cols-2 gap-4"><div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Starts</label><input type="datetime-local" name="starts_at" required class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-amber-400 outline-none"></div><div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Ends</label><input type="datetime-local" name="ends_at" required class="bh-input w-full px-4 py-3 rounded-xl border text-sm focus:ring-2 focus:ring-amber-400 outline-none"></div></div>
-                <div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Promotion Image</label><input id="promoImage" type="file" name="promo_image" accept="image/png,image/jpeg,image/webp,image/gif" class="bh-input w-full text-xs border rounded-xl px-3 py-3"><img id="promoImagePreview" class="hidden mt-3 w-full max-h-52 object-cover rounded-xl border bh-border" alt="Promotion image preview"></div>
-                <div><label class="block text-xs font-black uppercase tracking-wider bh-muted mb-2">Short Promo Ad Video <span class="normal-case tracking-normal font-semibold">— 30 seconds max</span></label><input id="promoVideo" type="file" name="promo_video" accept="video/mp4,video/webm,video/quicktime" class="bh-input w-full text-xs border rounded-xl px-3 py-3"><video id="promoVideoPreview" class="hidden mt-3 w-full max-h-56 rounded-xl bg-black" controls muted playsinline preload="metadata"></video><p id="promoVideoStatus" class="text-xs bh-muted mt-2">Optional. MP4, WebM or MOV. Maximum 30 seconds.</p></div>
-                <button class="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-white py-3.5 font-black shadow-sm">🔥 Publish Promotion</button>
-            </form>
-        </section>
-
-        <section>
-            <div class="mb-4 flex items-end justify-between gap-3"><div><h2 class="text-xl font-black bh-text">Promotion History</h2><p class="text-sm bh-muted mt-1">Review current and previous campaigns.</p></div></div>
-            <div class="space-y-4">
-            {% for promo in promotions %}<article class="bh-card rounded-2xl border shadow-sm overflow-hidden">
-                {% if promo['image_file'] %}<img src="{{ url_for('static', filename='uploads/' + promo['image_file']) }}" class="w-full max-h-56 object-cover" alt="{{ promo['title'] }}">{% endif %}
-                {% if promo['video_file'] %}<video class="w-full max-h-60 rounded-none bg-black" controls muted playsinline preload="metadata"><source src="{{ url_for('stream_video', filename=promo['video_file']) }}"></video>{% endif %}
-                <div class="p-5"><div class="flex items-start justify-between gap-4"><div class="min-w-0"><div class="flex flex-wrap gap-2 items-center"><h3 class="font-black bh-text">{{ promo['title'] }}</h3>{% if promo['active'] %}<span class="text-[10px] font-black px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">ACTIVE</span>{% else %}<span class="text-[10px] font-black px-2 py-1 rounded-full bg-slate-100 text-slate-500">INACTIVE</span>{% endif %}</div><p class="text-sm bh-muted mt-2">{{ promo['description'] or 'No description.' }}</p>{% if promo['product_title'] %}<p class="text-xs font-bold bh-muted mt-3">Product: {{ promo['product_title'] }}</p>{% else %}<p class="text-xs font-bold bh-muted mt-3">Store-wide promotion</p>{% endif %}{% if promo['discount'] is not none %}<p class="font-black text-amber-600 mt-2">{{ "%.0f"|format(promo['discount']) }}% OFF</p>{% endif %}{% if promo['promo_price'] is not none %}<p class="text-sm font-black text-emerald-600 mt-1">Promo price: GH₵{{ "%.2f"|format(promo['promo_price']) }}</p>{% endif %}<p class="text-xs bh-muted mt-2">{{ promo['starts_at'][:16].replace('T',' ') }} → {{ promo['ends_at'][:16].replace('T',' ') }}</p></div>{% if promo['active'] %}<form method="POST" action="/promotions/{{ promo['id'] }}/deactivate"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="shrink-0 text-xs font-black px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 bh-text">Deactivate</button></form>{% endif %}</div></div>
-            </article>{% else %}<div class="bh-card rounded-2xl border border-dashed p-10 text-center shadow-sm"><div class="text-4xl mb-3">🔥</div><h3 class="font-black bh-text">No promotions created yet.</h3><p class="text-sm bh-muted mt-1">Your published campaigns will appear here.</p></div>{% endfor %}
-            </div>
-        </section>
-    </div>
-</main>
-<footer class="bg-white border-t bh-border py-6 mt-8 text-center text-xs bh-muted">© 2026 Biz Hub. Promotion management.</footer>
-<script>
-const pi=document.getElementById('promoImage'),pp=document.getElementById('promoImagePreview');
-if(pi)pi.addEventListener('change',()=>{const f=pi.files[0];if(!f)return;pp.src=URL.createObjectURL(f);pp.classList.remove('hidden');});
-const pv=document.getElementById('promoVideo'),vv=document.getElementById('promoVideoPreview'),vs=document.getElementById('promoVideoStatus');
-if(pv)pv.addEventListener('change',()=>{const f=pv.files[0];if(!f)return;vv.src=URL.createObjectURL(f);vv.classList.remove('hidden');vv.onloadedmetadata=()=>{if(vv.duration>30){pv.value='';vv.removeAttribute('src');vv.classList.add('hidden');vs.textContent='Video rejected: maximum duration is 30 seconds.';}else vs.textContent='Video selected ('+vv.duration.toFixed(1)+'s).';};});
-</script>
-</body></html>
+</body>
+</html>

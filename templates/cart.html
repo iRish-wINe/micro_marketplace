@@ -42,7 +42,7 @@
     <a class="bh-action" href="{{ url_for('cart_page') }}" aria-current="page"><span class="icon">🛒</span><span><span class="small">Your</span><strong>Cart{% if cart_count %} <span class="bh-badge">{{ cart_count }}</span>{% endif %}</strong></span></a>
   </div>
   <nav class="bh-subbar" aria-label="BizHub marketplace navigation">
-    <a href="{{ url_for('home') }}">☰ &nbsp;All</a><a href="{{ url_for('home') }}#deals">Today's Deals</a><a href="{{ url_for('favorites') }}">Favorites</a><a href="{{ url_for('order_history') }}">Orders</a>{% if session.get('role') in ['Vendor','Fast Food'] %}<a href="{{ url_for('vendor_profile', username=session['username']) }}">My Store</a>{% endif %}<a href="{{ url_for('delivery_services') }}">Find Delivery</a><a href="{{ url_for('home') }}#fast-food">Fast Food</a><a href="{{ url_for('home') }}#categories">Categories</a>{% if session.get('role') in ['Vendor','Fast Food'] %}<a href="{{ url_for('promotions') }}">Manage Your Promos</a>{% endif %}<a href="{{ url_for('settings') }}">Your Account</a><span class="bh-grow"></span>{% if session.get('is_admin') %}<a href="{{ url_for('admin_dashboard') }}">Admin Center</a>{% endif %}
+    <a href="{{ url_for('home') }}">☰ &nbsp;All</a><a href="{{ url_for('promo_marketplace') }}">Today's Deals</a><a href="{{ url_for('favorites') }}">Favorites</a><a href="{{ url_for('order_history') }}">Orders</a>{% if session.get('role') in ['Vendor','Fast Food'] %}<a href="{{ url_for('vendor_profile', username=session['username']) }}">My Store</a>{% endif %}<a href="{{ url_for('delivery_services') }}">Find Delivery</a><a href="{{ url_for('home') }}#fast-food">Fast Food</a><a href="{{ url_for('home') }}#categories">Categories</a>{% if session.get('role') in ['Vendor','Fast Food'] %}<a href="{{ url_for('promotions') }}">Manage Your Promos</a>{% endif %}<a href="{{ url_for('settings') }}">Your Account</a><span class="bh-grow"></span>{% if session.get('is_admin') %}<a href="{{ url_for('admin_dashboard') }}">Admin Center</a>{% endif %}
   </nav>
 </header>
 
@@ -60,15 +60,24 @@
                 <div class="cart-row">
                     <div>
                         <div class="item-title">{{ item.title }}</div>
-                        <div class="item-meta">From {{ item.business_label or item.seller }} · GH₵{{ "%.2f"|format(item.price) }} each</div>
-                        <form method="POST" action="{{ url_for('update_cart', product_id=item.id) }}" class="qty">
+                        <div class="item-meta">From {{ item.business_label or item.seller }} · GH₵{{ "%.2f"|format(item.get("cart_unit_price", item.price)) }} each{% if item.get("cart_unit_price", item.price) < item.price %} · Promo price{% endif %}</div>
+                                           <!-- 👑 FIXED DEDICATED CART PAGE INCREMENT CONTROLLER -->
+                    <div style="display: flex; align-items: center; gap: 8px; justify-content: center;">
+                        <form method="POST" action="/update-cart/{{ item.id }}" style="margin:0; display:inline;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                            <button type="submit" name="quantity" value="{{ [item.cart_quantity - 1, 0]|max }}" aria-label="Decrease quantity">−</button>
-                            <input type="number" name="quantity" value="{{ item.cart_quantity }}" min="0" max="{{ item.stock_quantity }}" aria-label="Quantity">
-                            <button type="submit" name="quantity" value="{{ [item.cart_quantity + 1, item.stock_quantity]|min }}" aria-label="Increase quantity">+</button>
-                            <span class="stock">{{ item.stock_quantity }} available</span>
+                            <input type="hidden" name="action_direction" value="decrease">
+                            <button type="submit" style="padding: 4px 10px; font-weight: 900; background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 4px; cursor: pointer;">-</button>
+                        </form>
+                        
+                        <b style="font-size: 15px; min-width: 24px; text-align: center; display: inline-block;">{{ item.cart_quantity }}</b>
+                        
+                        <form method="POST" action="/update-cart/{{ item.id }}" style="margin:0; display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="action_direction" value="increase">
+                            <button type="submit" style="padding: 4px 10px; font-weight: 900; background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 4px; cursor: pointer;">+</button>
                         </form>
                     </div>
+
                     <div class="item-price">GH₵{{ "%.2f"|format(item.discounted_line_total) }}</div>
                 </div>
                 {% endfor %}
@@ -130,5 +139,9 @@
   });
 })();
 </script>
+        <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
+            © 2026 BizHub Marketplace · Your Local Market, Unified Online
+        </footer>
 </body>
 </html>

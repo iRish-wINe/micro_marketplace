@@ -9,7 +9,7 @@
 *{box-sizing:border-box}
 body{font-family:system-ui,sans-serif;background:var(--bg);color:#172033;margin:0}
 a{color:var(--blue);font-weight:800;text-decoration:none}
-.header{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;box-shadow:0 2px 12px #0000000b}
+.header{background:#1a365d;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;box-shadow:0 2px 12px #0000000b}
 .header-inner{max-width:1180px;margin:auto;padding:12px 20px}
 .topbar{display:flex;align-items:center;gap:18px;justify-content:space-between;flex-wrap:wrap}
 .brand{font-size:26px;font-weight:900;color:var(--navy);white-space:nowrap}.brand span{color:var(--orange)}
@@ -30,30 +30,15 @@ input,textarea,select,button{font:inherit;padding:9px;border:1px solid #cbd5e1;b
 </style>
 </head>
 <body>
-<header class="header">
-  <div class="header-inner">
-    <div class="topbar">
-      <a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a>
-      <form class="search" method="get" action="{{ url_for('home') }}">
-        <input name="search" placeholder="Search products, stores, categories...">
-        <button type="submit">Search</button>
-      </form>
-      <div class="account">
-        {% if user %}<b>@{{ user.username }}</b> · {{ user.role }}{% endif %}
-      </div>
-    </div>
-    <nav class="navlinks" aria-label="Main navigation">
-      <a href="{{ url_for('home') }}">Home</a>
-      <a href="{{ url_for('order_history') }}">Orders</a>
-      {% if user.role == 'Customer' %}<a href="{{ url_for('favorites') }}">Favorites</a>{% endif %}
-      {% if user.role in ['Vendor','Fast Food'] %}<a href="{{ url_for('promotions') }}">Promotions</a><a href="{{ url_for('vendor_profile', username=user.username) }}">My store</a>{% endif %}
-      {% if user.role == 'Delivery Service' %}<a href="{{ url_for('delivery_dashboard') }}">Delivery dashboard</a>{% endif %}
-      <a href="{{ url_for('notifications') }}">Notifications{% if unread_notifications_count %} ({{ unread_notifications_count }}){% endif %}</a>
-      <a href="{{ url_for('settings') }}">Account settings</a>
-      <a href="{{ url_for('logout') }}">Logout</a>
-    </nav>
-  </div>
+<header class="bizhub-header">
+<a class="bizhub-brand" href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub"><div><strong>Biz<span>Hub</span></strong><small>Your Local Market, Unified Online</small></div></a>
+<nav class="bizhub-nav">
+<a href="{{ url_for('home') }}">☰ Marketplace</a>
+<a href="{{ url_for('cart_page') }}">🛒 Your Cart{% if session.get('cart') %} ({{ session.get('cart')|length }}){% endif %}</a>
+{% if session.get('role') in ['Vendor','Fast Food'] %}<a href="{{ url_for('vendor_profile', username=session['username']) }}">🏪 My Store</a>{% endif %}
+</nav>
 </header>
+
 
 <main class="wrap">
   <div class="page-title">
@@ -62,6 +47,16 @@ input,textarea,select,button{font:inherit;padding:9px;border:1px solid #cbd5e1;b
   </div>
 
   {% if verification_sent %}<div class="notice">✓ Your verification request has been submitted. BizHub will notify you after review.</div>{% endif %}
+
+  <section class="card" style="margin-bottom:16px">
+    <h2>BizHub tools at a glance</h2>
+    <p class="muted">Use this page as your central hub for account trust, rewards, shopping support, vendor tools, and delivery activity.</p>
+    <div class="row"><strong>🛍️ Marketplace</strong> — Browse current listings, stores, and active deals.</div>
+    <div class="row"><strong>🔔 Notifications</strong> — Stay on top of order, store, delivery, and BizHub updates.</div>
+    {% if user.role in ['Vendor','Fast Food'] %}<div class="row"><strong>🏪 Store tools</strong> — Manage your published listings, promotions, coupons, and store activity.</div>{% endif %}
+    {% if user.role == 'Customer' %}<div class="row"><strong>🛒 Shopping support</strong> — Keep track of saved searches, reviews, rewards, and disputes.</div>{% endif %}
+    {% if user.role == 'Delivery Service' %}<div class="row"><strong>🚚 Delivery support</strong> — Manage delivery-service activity and your BizHub account.</div>{% endif %}
+  </section>
 
   <div class="grid">
     <section class="card">
@@ -74,6 +69,7 @@ input,textarea,select,button{font:inherit;padding:9px;border:1px solid #cbd5e1;b
       {% endif %}
       {% if not verification_request or verification_request.status != 'Pending' %}
       <form method="post" action="{{ url_for('request_verification') }}" class="form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <textarea name="user_message" maxlength="2000" placeholder="Optional: tell BizHub about your business, what you would like us to know, or anything relevant to your verification review."></textarea>
         <button type="submit">Request verification review</button>
       </form>
@@ -94,6 +90,7 @@ input,textarea,select,button{font:inherit;padding:9px;border:1px solid #cbd5e1;b
       <h2 style="margin-top:16px">Create a coupon</h2>
       <p class="muted">Codes are uppercase. A customer can redeem each coupon once. Set a total redemption limit, or leave it at 0 for unlimited redemptions.</p>
       <form method="post" action="{{ url_for('create_coupon') }}" class="form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <input name="code" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9_-]{2,31}" placeholder="Coupon code e.g. SAVE10" required>
         <input name="description" maxlength="200" placeholder="Offer description" required>
         <input name="discount" type="number" min="0.01" max="100" step="0.01" placeholder="Discount %" required>
@@ -110,12 +107,14 @@ input,textarea,select,button{font:inherit;padding:9px;border:1px solid #cbd5e1;b
     {% if user.role == 'Customer' %}
     <section class="card">
       <h2>Saved searches</h2><p class="muted">Save a search and revisit it when you are ready to shop.</p>
-      <form method="post" action="{{ url_for('save_search') }}" class="form"><input name="query" placeholder="e.g. phones in Accra" required><button>Save search</button></form>
+      <form method="post" action="{{ url_for('save_search') }}" class="form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input name="query" placeholder="e.g. phones in Accra" required><button>Save search</button></form>
       {% for search in saved_searches %}<div class="row">🔎 {{ search.query }}</div>{% else %}<p class="muted">No saved searches yet.</p>{% endfor %}
     </section>
     <section class="card">
       <h2>Order or payment dispute</h2><p class="muted">Send a dispute to BizHub for review.</p>
-      <form method="post" action="{{ url_for('submit_dispute') }}" class="form"><input name="subject" value="Order or payment dispute"><textarea name="details" placeholder="Explain what happened" required></textarea><button>Submit dispute</button></form>
+      <form method="post" action="{{ url_for('submit_dispute') }}" class="form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input name="subject" value="Order or payment dispute"><textarea name="details" placeholder="Explain what happened" required></textarea><button>Submit dispute</button></form>
     </section>
     {% endif %}
 
@@ -130,7 +129,7 @@ input,textarea,select,button{font:inherit;padding:9px;border:1px solid #cbd5e1;b
         {% if dr.updated_at %}<div class="muted small">Updated {{ dr.updated_at[:16].replace('T',' ') }}</div>{% endif %}
         {% if dr.status == 'Delivered' and dr.id not in rated_request_ids %}
         <form method="POST" action="{{ url_for('rate_delivery', request_id=dr.id) }}" class="form" style="margin-top:10px">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
           <select name="rating" required aria-label="Delivery rating"><option value="5">★★★★★ Excellent</option><option value="4">★★★★☆ Good</option><option value="3">★★★☆☆ Average</option><option value="2">★★☆☆☆ Poor</option><option value="1">★☆☆☆☆ Terrible</option></select>
           <input type="text" name="comment" maxlength="1000" placeholder="Leave a comment (optional)">
           <button type="submit">Submit rating</button>
@@ -146,6 +145,10 @@ input,textarea,select,button{font:inherit;padding:9px;border:1px solid #cbd5e1;b
       {% for review in reviews %}<div class="row"><strong>{{ review.company_name or review.vendor_username }}</strong><div class="stars">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</div>{{ review.comment }}</div>{% else %}<p class="muted">Reviews you write will appear here.</p>{% endfor %}
     </section>
   </div>
+          <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
+            © 2026 BizHub Marketplace · Your Local Market, Unified Online
+        </footer>
 </main>
 </body>
 </html>

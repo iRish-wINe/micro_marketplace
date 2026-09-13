@@ -2,78 +2,107 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Find Delivery | BizHub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find Delivery Services - BizHub</title>
 <style>
-:root{--navy:#0B192C;--orange:#F59E0B;--bg:#EAEDED;--border:#D5D9D9;--green:#166534;--red:#B91C1C}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:#0F172A}
-.nav{background:var(--navy);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.nav-left,.nav-right{display:flex;align-items:center;gap:12px}.nav a{color:#fff;text-decoration:none;font-size:11px;font-weight:800}.brand{font-weight:900;font-size:20px}.brand span{color:var(--orange)}
-.badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--orange);color:#111;font-size:10px;font-weight:900}
-.wrap{max-width:1100px;margin:20px auto;padding:0 14px}.search{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}.search input{flex:1;min-width:180px;padding:10px;border:1px solid var(--border);border-radius:6px}.search button{padding:10px 15px;border:1px solid #E5A000;background:var(--orange);border-radius:6px;font-weight:900;cursor:pointer}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}.card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-.logo{width:48px;height:48px;object-fit:cover;border-radius:7px;float:left;margin-right:10px;background:#F8FAFC}.card h3{margin:0 0 4px}.meta{clear:both;padding-top:12px;font-size:11px;line-height:1.7;color:#475569}
-.status-badge{display:inline-block;margin-top:6px;padding:3px 7px;border-radius:999px;font-size:10px;font-weight:900}.status-badge.available{background:#DCFCE7;color:var(--green)}.status-badge.unavailable{background:#F1F5F9;color:#64748B}
-.contact{display:block;width:100%;margin-top:12px;text-align:center;background:var(--orange);color:#111;text-decoration:none;padding:9px;border:0;border-radius:6px;font-size:11px;font-weight:900;cursor:pointer}
-.report{display:block;margin-top:8px;text-align:center;color:var(--red);font-size:11px;font-weight:800;text-decoration:none}
-@media(max-width:600px){.nav-left,.nav-right{width:100%;justify-content:space-between}.brand{font-size:17px}}
+:root{--nav:#0b192c;--accent:#f59e0b;--bg:#f4f7fb;--text:#172033;--muted:#64748b;--border:#dbe3ed;--uber-black:#000000;--uber-gray-border:#e2e2e2;}
+*{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:85px 18px 30px}
+.bizhub-header{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav);min-height:58px;padding:8px 22px;display:flex;align-items:center;gap:22px;box-shadow:0 2px 10px #0002}
+.bizhub-brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:#fff;min-width:max-content}.bizhub-brand img{width:38px;height:38px;border-radius:10px}.bizhub-brand strong{font-size:18px;line-height:1.05}.bizhub-brand strong span{color:var(--accent)}.bizhub-brand small{display:block;color:#cbd5e1;font-size:10px;margin-top:2px}
+.bizhub-nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.bizhub-nav a{color:#e2e8f0;text-decoration:none;font-weight:800;font-size:13px;padding:9px 11px;border-radius:7px}.bizhub-nav a:hover{background:#ffffff12;color:var(--accent)}
+.container{max-width:1200px;margin:0 auto;}
+.search-box{background:white;padding:20px;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:24px;box-shadow:0 2px 4px rgba(0,0,0,0.02);}
+.form-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+@media(min-width:768px){.form-grid{grid-template-columns:1fr 1fr auto;}}
+.form-control{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;}
+.form-control:focus{border-color:var(--nav);}
+.btn-search{background:var(--nav);color:white;border:none;border-radius:6px;padding:10px 24px;font-weight:700;cursor:pointer;font-size:14px;}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;}
+.uber-card{background:white;border-radius:12px;border:1px solid var(--uber-gray-border);padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.04);display:flex;flex-direction:column;justify-content:space-between;}
+.status-badge{display:inline-block;padding:4px 8px;font-size:11px;font-weight:800;border-radius:20px;text-transform:uppercase;margin-top:6px;}
+.status-available{background:#ecfdf5;color:#15803d;}
+.status-unavailable{background:#f1f5f9;color:#475569;}
+.btn-action{display:block;text-align:center;text-decoration:none;padding:12px;border-radius:6px;font-size:13px;font-weight:700;margin-top:16px;transition:opacity 0.2s;}
+.btn-action:hover{opacity:0.9;}
 </style>
 </head>
 <body>
-<div class="nav">
-  <div class="nav-left">
-    <div class="brand">Biz<span>Hub</span> · Find Delivery</div>
-  </div>
-  <div class="nav-right">
-    {% if session.get('username') %}
-      <a href="{{ url_for('notifications') }}">🔔 Notifications{% if unread_notifications_count %} <span class="badge">{{ unread_notifications_count }}</span>{% endif %}</a>
-      {% if session.get('role') == 'Delivery Service' %}<a href="{{ url_for('delivery_dashboard') }}">Dashboard</a>{% endif %}
-      <a href="{{ url_for('home') }}">← Back to Market</a>
-    {% else %}
-      <a href="{{ url_for('login') }}">Login</a>
-      <a href="{{ url_for('home') }}">← Back to Market</a>
-    {% endif %}
-  </div>
-</div>
-<div class="wrap">
-  <form class="search" method="GET" action="{{ url_for('delivery_services') }}">
-    <input name="location" value="{{ location }}" placeholder="Search by city">
-    <input name="company" value="{{ company }}" placeholder="Search by delivery company">
-    <button type="submit">Search</button>
-  </form>
 
-  <div class="grid">
-    {% for service in services %}
-      <div class="card">
-        {% if service.logo_file %}<img class="logo" src="{{ url_for('static',filename='uploads/' ~ service.logo_file) }}" alt="{{ service.service_name }}">{% endif %}
-        <h3>{{ service.service_name }}</h3>
-        <div class="status-badge {% if service.availability == 'Available' %}available{% else %}unavailable{% endif %}">
-          {% if service.availability == 'Available' %}🟢 Available{% else %}⚪ Unavailable{% endif %}
-        </div>
-        <div class="meta">
-          📍 {{ service.operating_location }}<br>
-          🗺️ {{ service.service_area }}<br>
-          🛵 {{ service.delivery_type }}<br>
-          📞 Phone / WhatsApp: {{ service.phone_number }}<br>
-          {% if service.avg_rating %}
-            <span style="color:#F59E0B;font-weight:900;">{% for i in range(service.avg_rating|int) %}★{% endfor %}{% for i in range(5 - service.avg_rating|int) %}☆{% endfor %}</span>
-            <b>{{ service.avg_rating }}</b>/5
-            <span style="color:#64748B;">({{ service.rating_count }} review{{ 's' if service.rating_count != 1 else '' }})</span>
-          {% else %}<span style="color:#94A3B8;font-size:10px;">No ratings yet</span>{% endif %}
-        </div>
-        {% if service.availability == 'Available' %}
-          <form method="POST" action="{{ url_for('contact_delivery', service_id=service.id) }}">
-            <button class="contact" type="submit">💬 Contact via WhatsApp</button>
-          </form>
+<header class="bizhub-header">
+<a class="bizhub-brand" href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub"><div><strong>Biz<span>Hub</span></strong><small>Your Local Market, Unified Online</small></div></a>
+<nav class="bizhub-nav">
+<a href="{{ url_for('home') }}">☰ Marketplace</a>
+<a href="{{ url_for('cart_page') }}">🛒 Your Cart{% if session.get('cart') %} ({{ session.get('cart')|length }}){% endif %}</a>
+{% if session.get('role') in ['Vendor','Fast Food'] %}<a href="{{ url_for('vendor_profile', username=session['username']) }}">🏪 My Store</a>{% endif %}
+</nav>
+</header>
+
+<div class="container">
+    <!-- SEARCH ENGINE INTERFACE -->
+    <div class="search-box">
+        <form method="GET" action="/delivery/services">
+            <div class="form-grid">
+                <input type="text" name="location" value="{{ location }}" placeholder="Filter by city location or area..." class="form-control">
+                <input type="text" name="company" value="{{ company }}" placeholder="Search company name..." class="form-control">
+                <button type="submit" class="btn-search">🔍 Search Fleet</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- SERVICES LOOP DISPATCH MATRIX -->
+    <div class="services-grid">
+        {% for s in services %}
+            <div class="uber-card">
+                <div style="text-align: center; margin-bottom: 16px;">
+                    {% if s.logo_file %}
+                        <img src="{{ url_for('static', filename='uploads/' + s.logo_file) }}" alt="logo" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid #000; margin-bottom: 10px; background:#fafafa;">
+                    {% else %}
+                        <div style="width: 72px; height: 72px; border-radius: 50%; background: #000; color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; margin: 0 auto 10px auto;">🚗</div>
+                    {% endif %}
+                    
+                    <h2 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 800; letter-spacing: -0.5px;">{{ s.service_name }}</h2>
+                    <p style="margin: 0 0 8px 0; color: var(--muted); font-size: 13px;">@{{ s.username }}</p>
+                    
+                    {% if s.availability == 'Available' %}
+                        <span class="status-badge status-available">● Available Now</span>
+                    {% else %}
+                        <span class="status-badge status-unavailable">○ Busy / Offline</span>
+                    {% endif %}
+                </div>
+
+                <div style="font-size: 13px; border-top: 1px solid #e2e8f0; padding-top: 12px; margin-bottom: 12px; flex-grow:1;">
+                    <div style="margin-bottom: 6px;"><b>📍 Location:</b> {{ s.operating_location }}</div>
+                    <div style="margin-bottom: 6px;"><b>🗺️ Coverage:</b> {{ s.service_area }}</div>
+                    <div style="margin-bottom: 6px;"><b>⚡ Vehicle:</b> {{ s.delivery_type }}</div>
+                    {% if s.avg_rating %}
+                        <div><b>⭐ Rating:</b> {{ s.avg_rating }} / 5.0 ({{ s.rating_count }} ratings)</div>
+                    {% else %}
+                        <div><b>⭐ Rating:</b> No ratings yet</div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {% if s.availability == 'Available' and session.get('role') in ['Vendor', 'Fast Food'] %}
+                        <form method="POST" action="/delivery/request/{{ s.id }}" style="margin-bottom:6px;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="text" name="message" placeholder="Enter delivery order items & instructions..." class="form-control" style="font-size:12px; margin-bottom:6px;" required>
+                            <button type="submit" class="btn-action" style="width:100%; border:none; background:#276ef1; color:white; font-weight:700; cursor:pointer;">📦 Send Dispatch Request</button>
+                        </form>
+                    {% endif %}
+                    
+                    <form method="POST" action="/delivery/contact/{{ s.id }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit" class="btn-action" style="width:100%; border:1px solid #000; background:white; color:#000; font-weight:700; cursor:pointer;">💬 Contact via WhatsApp</button>
+                    </form>
+                </div>
+            </div>
         {% else %}
-          <div class="meta">Contact unavailable while this service is unavailable.</div>
-        {% endif %}
-        <a class="report" href="{{ url_for('report_user', user_id=service.user_id) }}">Report this delivery service</a>
-      </div>
-    {% else %}
-      <div class="card">No delivery services found for these search terms.</div>
-    {% endfor %}
-  </div>
+            <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--muted); background: white; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                📭 No active, available delivery service partners found matching your search.
+            </div>
+        {% endfor %}
+    </div>
 </div>
+
 </body>
 </html>

@@ -6,7 +6,29 @@
     <title>Orders | Biz Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="min-h-screen bg-slate-100 text-slate-900 font-sans antialiased">
+<body>
+
+<!-- 👑 PREMIUM AMAZON-STYLE UNIFORM HEADER -->
+<style>
+:root{--nav:#0b192c;--accent:#f59e0b;--bg:#f4f7fb;--text:#172033;--muted:#64748b;--border:#dbe3ed}
+*{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:78px 18px 30px}
+.bizhub-header{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav);min-height:58px;padding:8px 22px;display:flex;align-items:center;gap:22px;box-shadow:0 2px 10px #0002}
+.bizhub-brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:#fff;min-width:max-content}.bizhub-brand img{width:38px;height:38px;border-radius:10px}.bizhub-brand strong{font-size:18px;line-height:1.05}.bizhub-brand strong span{color:var(--accent)}.bizhub-brand small{display:block;color:#cbd5e1;font-size:10px;margin-top:2px}
+.bizhub-nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.bizhub-nav a{color:#e2e8f0;text-decoration:none;font-weight:800;font-size:13px;padding:9px 11px;border-radius:7px}.bizhub-nav a:hover{background:#ffffff12;color:var(--accent)}
+.wrap{max-width:850px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}.top a,.item a{color:#1d4ed8;font-weight:800;text-decoration:none}.count{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:#ef4444;color:#fff;font-size:12px}.item{background:#fff;padding:16px;border-radius:10px;margin:10px 0;box-shadow:0 3px 15px #0000000b;border:1px solid #e5e7eb}.unread{border-left:5px solid #f59e0b}.item.opened{border:2px solid var(--accent);box-shadow:0 6px 24px #0002}.message-large{font-size:18px;line-height:1.7;color:#172033;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin:12px 0;white-space:pre-wrap}.item p{color:#64748b;line-height:1.5}.item form{display:inline}.item button,.mark-all{padding:8px 10px;border:1px solid #dbe3ed;border-radius:7px;background:#fff;color:#334155;font-weight:800;cursor:pointer}
+@media(max-width:650px){.bizhub-header{padding:7px 10px;gap:10px}.bizhub-brand small{display:none}.bizhub-nav a{padding:8px 7px;font-size:12px}body{padding-top:74px}}
+</style>
+</head>
+<body>
+<header class="bizhub-header">
+<a class="bizhub-brand" href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub"><div><strong>Biz<span>Hub</span></strong><small>Your Local Market, Unified Online</small></div></a>
+<nav class="bizhub-nav">
+<a href="{{ url_for('home') }}">☰ Marketplace</a>
+<a href="{{ url_for('cart_page') }}">🛒 Your Cart{% if session.get('cart') %} ({{ session.get('cart')|length }}){% endif %}</a>
+{% if session.get('role') in ['Vendor','Fast Food'] %}<a href="{{ url_for('vendor_profile', username=session['username']) }}">🏪 My Store</a>{% endif %}
+</nav>
+</header>
+
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
 
@@ -22,6 +44,7 @@
             </div>
             {% if unread_notifications_count %}
             <form method="POST" action="{{ url_for('mark_all_order_notifications_read') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 shadow-sm text-xs font-black">
                     Mark all notifications read
                 </button>
@@ -53,6 +76,7 @@
                         </a>
                         {% if not n['is_read'] %}
                         <form method="POST" action="{{ url_for('mark_order_notification_read', notification_id=n['id']) }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                             <button type="submit" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-black">
                                 Read
                             </button>
@@ -110,9 +134,11 @@
                         {% if order['payment_status']=='Marked paid' and order['status']=='Pending' %}
                         <div class="flex flex-wrap gap-2">
                             <form method="POST" action="{{ url_for('confirm_order', order_id=order['id']) }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                 <button type="submit" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm">Confirm Order</button>
                             </form>
                             <form method="POST" action="{{ url_for('cancel_order', order_id=order['id']) }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                 <button type="submit" class="px-4 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-black text-sm">Cancel</button>
                             </form>
                         </div>
@@ -178,7 +204,8 @@
                     </div>
 
                     {% if order['payment_status']=='Unpaid' and order['status']=='Pending' %}
-                    <form method="POST" action="{{ url_for('payment_sent', order_id=order['id']) }}" class="mt-5">
+                    <form method="POST" action="{{ url_for('mark_payment_sent', order_id=order['id']) }}" class="mt-5">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                         <button type="submit" class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-3 font-black">I Have Sent Payment</button>
                     </form>
                     {% endif %}
@@ -194,7 +221,10 @@
         </div>
         {% endif %}
     </section>
-
+        <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
+<footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
+            © 2026 BizHub Marketplace · Your Local Market, Unified Online
+</footer>
 </main>
 </body>
 </html>

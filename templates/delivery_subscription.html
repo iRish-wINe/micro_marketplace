@@ -1,327 +1,212 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#0B192C">
-    <title>Manage Accounts | BizHub Delivery</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Manage Fleet Premium | BizHub Fleet</title>
     <style>
         :root {
-            --navy:#0B192C;
-            --navy2:#13243A;
-            --orange:#F59E0B;
-            --orange-soft:#FFF7ED;
-            --blue:#1D4ED8;
-            --green:#166534;
-            --green-soft:#DCFCE7;
-            --bg:#EAEDED;
-            --text:#0F172A;
-            --muted:#64748B;
-            --border:#D5D9D9;
-            --white:#fff;
+            --uber-black: #000000;
+            --uber-dark: #1F1F1F;
+            --uber-gray-light: #F6F6F6;
+            --uber-gray-border: #E2E2E2;
+            --uber-blue: #276EF1;
+            --accent: #F59E0B;
+            --success-green: #05A357;
+            --danger-red: #E11900;
+            --text-main: #333333;
+            --text-muted: #6B6B6B;
+            --radius: 12px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        * { box-sizing:border-box; }
-        body {
-            margin:0;
-            padding:env(safe-area-inset-top) 16px calc(34px + env(safe-area-inset-bottom));
-            background:var(--bg);
-            color:var(--text);
-            font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
-        }
-        .nav {
-            max-width:900px;
-            margin:0 auto;
-            padding:12px 0 18px;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            gap:18px;
-        }
-        .brand {
-            color:var(--navy);
-            font-size:21px;
-            font-weight:900;
-            text-decoration:none;
-            white-space:nowrap;
-        }
-        .brand span { color:var(--orange); }
-        .nav-actions { display:flex; gap:10px; align-items:center; }
-        .nav-link {
-            color:var(--blue);
-            font-size:12px;
-            font-weight:800;
-            text-decoration:none;
-            padding:8px 10px;
-            border-radius:7px;
-        }
-        .nav-link:hover { background:#F8FAFC; }
-        .wrap { max-width:900px; margin:8px auto 0; }
-        .hero {
-            background:linear-gradient(135deg,var(--navy),var(--navy2));
-            color:#fff;
-            border-radius:14px;
-            padding:27px 28px;
-            box-shadow:0 5px 18px rgba(15,23,42,.14);
-            position:relative;
-            overflow:hidden;
-        }
-        .hero:after {
-            content:"";
-            position:absolute;
-            width:180px;
-            height:180px;
-            border-radius:50%;
-            right:-65px;
-            top:-75px;
-            background:rgba(245,158,11,.12);
-        }
-        .eyebrow {
-            margin:0 0 7px;
-            color:#FCD34D;
-            font-size:11px;
-            font-weight:900;
-            letter-spacing:.08em;
-            text-transform:uppercase;
-        }
-        .hero h1 { margin:0 0 8px; font-size:29px; line-height:1.15; }
-        .hero p { margin:0; max-width:680px; color:#CBD5E1; line-height:1.55; font-size:14px; }
-        .status-row {
-            display:flex;
-            flex-wrap:wrap;
-            gap:10px;
-            margin-top:18px;
-            position:relative;
-            z-index:1;
-        }
-        .status-pill {
-            display:inline-flex;
-            align-items:center;
-            gap:7px;
-            padding:8px 11px;
-            border-radius:999px;
-            background:rgba(255,255,255,.10);
-            border:1px solid rgba(255,255,255,.14);
-            color:#fff;
-            font-size:12px;
-            font-weight:800;
-        }
-        .status-dot { width:7px; height:7px; border-radius:50%; background:#4ADE80; }
-        .grid {
-            display:grid;
-            grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);
-            gap:18px;
-            margin-top:18px;
-        }
-        .card {
-            background:var(--white);
-            border:1px solid var(--border);
-            border-radius:13px;
-            padding:23px;
-            box-shadow:0 3px 12px rgba(0,0,0,.055);
-        }
-        .card h2 { margin:0 0 7px; font-size:20px; }
-        .card-subtitle { margin:0 0 18px; color:var(--muted); font-size:13px; line-height:1.5; }
-        .price { color:var(--blue); font-size:32px; font-weight:900; line-height:1; margin:14px 0 5px; }
-        .price small { color:var(--muted); font-size:12px; font-weight:800; }
-        .feature-list { padding-left:19px; margin:18px 0 0; color:#475569; line-height:1.85; font-size:13px; }
-        .feature-list li { padding-left:3px; }
-        .active {
-            margin-top:19px;
-            padding:14px;
-            border-radius:9px;
-            background:var(--green-soft);
-            color:var(--green);
-            font-weight:800;
-            font-size:13px;
-            border:1px solid #BBF7D0;
-        }
-        .active small { display:block; margin-top:4px; font-weight:600; color:#15803D; }
-        .button {
-            display:block;
-            width:100%;
-            margin-top:18px;
-            padding:13px 15px;
-            border:0;
-            border-radius:8px;
-            background:var(--orange);
-            color:#111827;
-            text-align:center;
-            text-decoration:none;
-            font-weight:900;
-            font-size:14px;
-            cursor:pointer;
-            box-shadow:0 2px 4px rgba(0,0,0,.08);
-        }
-        .button:hover { filter:brightness(.97); }
-        .secondary {
-            background:#F8FAFC;
-            border:1px solid var(--border);
-            color:var(--blue);
-            margin-top:9px;
-            box-shadow:none;
-        }
-        .notice {
-            margin:18px 0 0;
-            padding:14px 16px;
-            border-left:4px solid var(--orange);
-            border-radius:8px;
-            background:var(--orange-soft);
-            font-size:13px;
-            line-height:1.5;
-        }
-        .account-row {
-            display:flex;
-            justify-content:space-between;
-            gap:18px;
-            padding:11px 0;
-            border-bottom:1px solid #EEF2F7;
-            font-size:13px;
-        }
-        .account-row:last-child { border-bottom:0; padding-bottom:0; }
-        .account-label { color:var(--muted); }
-        .account-value { font-weight:800; text-align:right; overflow-wrap:anywhere; }
-        .mini-title { margin:0 0 10px; font-size:14px; font-weight:900; }
-        .info-list { margin:0; padding-left:18px; color:#475569; font-size:13px; line-height:1.75; }
-        .support {
-            margin-top:18px;
-            padding:16px;
-            border-radius:10px;
-            background:#F8FAFC;
-            border:1px solid var(--border);
-            color:#475569;
-            font-size:12px;
-            line-height:1.55;
-        }
-        .support strong { color:var(--text); }
-        .receipts { margin-top:18px; }
-        .receipt {
-            display:flex;
-            justify-content:space-between;
-            gap:12px;
-            align-items:center;
-            padding:12px 0;
-            border-bottom:1px solid #EEF2F7;
-            font-size:12px;
-        }
-        .receipt:last-child { border-bottom:0; }
-        .receipt a { color:var(--blue); font-weight:800; text-decoration:none; white-space:nowrap; }
-        .empty { color:var(--muted); font-size:13px; margin:0; }
-        @media (max-width:700px) {
-            body { padding-left:12px; padding-right:12px; }
-            .nav { align-items:flex-start; }
-            .nav-actions { flex-wrap:wrap; justify-content:flex-end; gap:3px; }
-            .hero { padding:23px 20px; }
-            .hero h1 { font-size:25px; }
-            .grid { grid-template-columns:1fr; }
-            .card { padding:20px; }
-        }
-        @media (max-width:470px) {
-            .nav { flex-direction:column; gap:7px; }
-            .nav-actions { width:100%; justify-content:flex-start; }
-            .account-row { flex-direction:column; gap:3px; }
-            .account-value { text-align:left; }
-        }
+
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--uber-gray-light); color: var(--uber-black); margin: 0; padding-bottom: 60px; -webkit-font-smoothing: antialiased; }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
+
+        .bh-global-header { background: var(--uber-black); color: white; min-height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-sizing: border-box; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .bh-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: white; font-weight: 900; font-size: 22px; }
+        .bh-brand span { color: var(--accent); }
+        .bh-nav { display: flex; align-items: center; gap: 8px; }
+        .bh-nav a { color: #E2E8F0; text-decoration: none; font-weight: 700; font-size: 13px; padding: 10px 14px; border-radius: 8px; transition: var(--transition); }
+        .bh-nav a:hover { background: rgba(255, 255, 255, 0.1); color: var(--accent); }
+        .bh-nav a.active-dashboard-btn { background: var(--accent); color: var(--uber-black) !important; font-weight: 800; }
+
+        .portal-grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 30px; }
+        @media(min-width: 992px) { .portal-grid { grid-template-columns: 1fr 380px; } }
+
+        .uber-card { background: white; border-radius: var(--radius); border: 1px solid var(--uber-gray-border); padding: 28px; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.03); height: fit-content; }
+        .uber-title { font-size: 22px; font-weight: 800; margin-top: 0; margin-bottom: 10px; letter-spacing: -0.5px; color: var(--uber-black); }
+        .uber-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 0; margin-bottom: 20px; line-height: 1.5; }
+
+        .feature-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; font-size: 14px; color: var(--text-main); line-height: 1.4; }
+        .feature-icon { color: var(--success-green); font-size: 18px; font-weight: bold; }
+
+        .price-tag { font-size: 32px; font-weight: 900; color: var(--uber-black); margin: 20px 0; letter-spacing: -1px; }
+        .price-tag span { font-size: 14px; font-weight: 600; color: var(--text-muted); letter-spacing: 0; }
+
+        /* 🔥 DYNAMIC HIGH-VISIBILITY ACTIONS BUTTON */
+        .action-btn-whatsapp { background-color: #FFA41C; color: #0F1111; border: 1px solid #FF9900; text-decoration: none; display: block; text-align: center; padding: 14px; border-radius: 8px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.3px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: var(--transition); width: 100%; box-sizing: border-box; cursor: pointer; }
+        .action-btn-whatsapp:hover { background-color: #F59200; transform: translateY(-1px); }
+        
+        .alert-banner { padding: 16px; border-radius: var(--radius); margin-top: 24px; font-size: 14px; font-weight: 700; line-height: 1.5; }
+        .alert-success { background-color: rgba(5,163,87,0.08); color: #046A36; border: 1px solid rgba(5,163,87,0.2); }
+        
+        .overview-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--uber-gray-light); font-size: 14px; }
+        .overview-row:last-child { border-bottom: none; }
+        .overview-label { color: var(--text-muted); font-weight: 500; }
+        .overview-value { color: var(--uber-black); font-weight: 700; text-align: right; }
     </style>
 </head>
 <body>
-    <nav class="nav">
-        <a class="brand" href="{{ url_for('delivery_dashboard') }}">Biz<span>Hub</span> Delivery</a>
-        <div class="nav-actions">
-            <a class="nav-link" href="{{ url_for('delivery_dashboard') }}">Back to Dashboard</a>
-        </div>
-    </nav>
 
-    <main class="wrap">
-        <section class="hero">
-            <p class="eyebrow">Account Management</p>
-            <h1>Premium Delivery Service</h1>
-            <p>Manage your delivery-service membership, review your current status, and upgrade through BizHub when you are ready.</p>
-            <div class="status-row">
-                <span class="status-pill"><span class="status-dot"></span>{{ subscription.name }}</span>
-                {% if subscription.expires %}<span class="status-pill">Active until {{ subscription.expires }}</span>{% endif %}
-            </div>
-        </section>
+    <!-- 👑 UBER PREMIUM HEADER NAVIGATION MATRIX -->
+    <header class="bh-global-header">
+        <a class="bh-brand" href="/delivery">
+            <span>B</span>BizHub Fleet
+        </a>
+        <nav class="bh-nav">
+            <a href="/">☰ Marketplace</a>
+            <a href="/delivery" class="active-dashboard-btn">↩ Back to Dashboard</a>
+        </nav>
+    </header>
 
+    <main class="container">
         {% if requested %}
-        <div class="notice">
-            <strong>Premium request recorded.</strong><br>
-            Send your payment receipt through WhatsApp so BizHub can activate or extend your subscription.
-        </div>
+            <div class="alert-banner alert-success">
+                ✅ <b>Premium request recorded.</b><br>
+                Send your payment receipt through WhatsApp so BizHub can activate or extend your subscription.
+            </div>
         {% endif %}
 
-        <div class="grid">
-            <section class="card">
-                <h2>Delivery Premium</h2>
-                <p class="card-subtitle">Premium keeps your service visible to vendors and gives you access to BizHub delivery-service features.</p>
-                <div class="price">GH₵ 20 <small>/ month after trial</small></div>
+        <!-- ACCOUNT TOP HEADER OVERVIEW BLOCK -->
+        <div class="uber-card" style="background: linear-gradient(135deg, var(--uber-dark) 0%, var(--uber-black) 100%); color: white; margin-top: 24px; border: none;">
+            <span style="color: var(--accent); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px;">Account Management</span>
+            <h1 style="color: white; font-size: 26px; font-weight: 800; margin: 0 0 8px 0; letter-spacing: -0.5px;">Premium Delivery Service</h1>
+            <p style="color: #cbd5e1; font-size: 14px; margin: 0 0 16px 0; line-height: 1.5; max-width: 700px;">Manage your delivery-service membership, review your current status, and upgrade through BizHub when you are ready.</p>
+            
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                <span style="background: rgba(5,163,87,0.2); color: #34D399; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(5,163,87,0.4);">
+                    ● {{ subscription.name }}
+                </span>
+                {% if subscription.expires %}
+                    <span style="background: rgba(255,255,255,0.1); color: white; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px;">
+                        Active until {{ subscription.expires }}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
 
-                <ul class="feature-list">
-                    <li>First 5 months free for eligible new Delivery Service accounts</li>
-                    <li>Appear in vendor delivery-service searches</li>
-                    <li>Set your service to Available or Unavailable</li>
-                    <li>Receive vendor delivery requests through BizHub notifications and configured contact channels</li>
-                </ul>
+        <div class="portal-grid">
+            
+            <!-- COLUMN 1: INTERACTIVE BILLING CARD LAYER -->
+            <div class="uber-card">
+                <h2 class="uber-title">Delivery Premium</h2>
+                <p class="uber-subtitle">Premium keeps your service visible to vendors and gives you access to BizHub delivery-service features.</p>
+                
+                <div class="price-tag">
+                    GH₵ 20 <span>/ month after trial</span>
+                </div>
 
-                {% if subscription.is_premium %}
-                <div class="active">
-                    {% if subscription.trial %}
-                        Free trial active until {{ subscription.expires }}
-                        <small>Your account currently has Premium access during the 5-month free trial.</small>
+                <div style="margin-bottom: 24px;">
+                    <div class="feature-row"><span class="feature-icon">✓</span><div>First 5 months free for eligible new Delivery Service accounts</div></div>
+                    <div class="feature-row"><span class="feature-icon">✓</span><div>Appear in vendor delivery-service searches</div></div>
+                    <div class="feature-row"><span class="feature-icon">✓</span><div>Set your service to Available or Unavailable</div></div>
+                    <div class="feature-row"><span class="feature-icon">✓</span><div>Receive vendor delivery requests through BizHub notifications and configured contact channels</div></div>
+                </div>
+
+                <div style="background-color: var(--uber-gray-light); border: 1px solid var(--uber-gray-border); border-radius: var(--radius); padding: 16px; margin-bottom: 24px; font-size: 13px; line-height: 1.5;">
+                    {% if subscription.is_premium %}
+                        {% if subscription.trial %}
+                            <div style="color: var(--success-green); font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                                🎁 Free trial active until {{ subscription.expires }}
+                            </div>
+                            <div style="color: var(--text-muted); margin-top: 4px;">Your account currently has Premium access during the 5-month free trial.</div>
+                        {% else %}
+                            <div style="color: var(--success-green); font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                                👑 Premium active until {{ subscription.expires }}
+                            </div>
+                            <div style="color: var(--text-muted); margin-top: 4px;">You can subscribe again through WhatsApp to renew or extend your Premium service.</div>
+                        {% endif %}
                     {% else %}
-                        Premium active until {{ subscription.expires }}
-                        <small>You can subscribe again through WhatsApp to renew or extend your Premium service.</small>
+                        <div style="color: var(--danger-red); font-weight: 800;">○ Plan Status: Inactive / Basic</div>
+                        <div style="color: var(--text-muted); margin-top: 4px;">Subscribe to activate premium feature routing.</div>
                     {% endif %}
                 </div>
-                {% endif %}
 
-                <a class="button" href="https://wa.me/{{ payment_number }}?text={{ upgrade_message|urlencode }}" target="_blank" rel="noopener">Subscribe to Premium</a>
+                                              <!-- 🚀 BULLETPROOF WEB-GATEWAY LINK: ZERO SYMBOL OVERLAPS -->
+                {% set wa_number = payment_number or '233558272972' %}
+                {% set wa_company = service.service_name if (service and service.service_name) else (user.company_name or user.username) %}
+                {% set wa_message = user.username ~ ' of ' ~ wa_company ~ ' wants to upgrade to premium. Send account details!' %}
+               <!-- 🚀 UNIFORM BACKEND-CALCULATED DISPATCH URL LAYER -->
+<a href="{{ whatsapp_upgrade_url }}" target="_blank" rel="noopener noreferrer" class="action-btn-whatsapp">
+    Subscribe to Premium
+</a>
 
-                {% if not subscription.is_premium %}
-                <form method="post" action="{{ url_for('request_premium') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    <button class="button secondary" type="submit">Mark Premium Request</button>
-                </form>
-                {% endif %}
-            </section>
 
-            <aside>
-                <section class="card">
-                    <h2>Account Overview</h2>
-                    <p class="card-subtitle">Your current BizHub Delivery Service account.</p>
-                    <div class="account-row"><span class="account-label">Username</span><span class="account-value">{{ user.username }}</span></div>
-                    <div class="account-row"><span class="account-label">Company</span><span class="account-value">{{ user.company_name or (service.service_name if service else user.username) }}</span></div>
-                    <div class="account-row"><span class="account-label">Plan</span><span class="account-value">{{ subscription.name }}</span></div>
-                    {% if subscription.expires %}<div class="account-row"><span class="account-label">Access through</span><span class="account-value">{{ subscription.expires }}</span></div>{% endif %}
-                </section>
 
-                <section class="card" style="margin-top:18px">
-                    <h2>After the free trial</h2>
-                    <p class="card-subtitle">The first 5 months are free for eligible new Delivery Service accounts.</p>
-                    <ul class="info-list">
-                        <li>Premium access continues at <strong>GH₵20 per month</strong> when you subscribe.</li>
-                        <li>If Premium expires, your service will no longer be treated as Premium/available for vendor delivery-service matching.</li>
-                        <li>You can return here and use <strong>Subscribe to Premium</strong> to renew.</li>
-                    </ul>
-                </section>
-            </aside>
-        </div>
-
-        {% if receipts %}
-        <section class="card receipts">
-            <h2>Subscription History</h2>
-            <p class="card-subtitle">Receipts recorded for this Delivery Service account.</p>
-            {% for receipt in receipts %}
-            <div class="receipt">
-                <span><strong>{{ receipt.receipt_number }}</strong> · GH₵{{ "%.2f"|format(receipt.amount) }}</span>
-                <a href="{{ url_for('subscription_receipt', receipt_id=receipt.id) }}">View receipt</a>
             </div>
-            {% endfor %}
-        </section>
-        {% endif %}
 
-        <div class="support">
-            <strong>Need help?</strong> Use the Subscribe to Premium button to open WhatsApp with your account details already prepared for BizHub. After payment, send your receipt so the account can be activated or extended.
+            <!-- COLUMN 2: REGISTRY PROFILE SUMMARY -->
+            <div>
+                <div class="uber-card">
+                    <h3 style="margin-top:0; font-size:16px; font-weight:800; color:var(--uber-black); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:18px; border-bottom:2px solid var(--uber-gray-light); padding-bottom:6px;">
+                        Account Overview
+                    </h3>
+                    <p style="font-size:13px; color:var(--text-muted); margin-top:0; margin-bottom:15px;">Your current BizHub Delivery Service account configuration metrics.</p>
+                    
+                    <div class="overview-row"><span class="overview-label">Username</span><span class="overview-value">{{ user.username }}</span></div>
+                    <div class="overview-row"><span class="overview-label">Company</span><span class="overview-value">{{ user.company_name or (service.service_name if service else user.username) }}</span></div>
+                    <div class="overview-row"><span class="overview-label">Plan</span><span class="overview-value">{{ subscription.name }}</span></div>
+                    {% if subscription.expires %}
+                        <div class="overview-row"><span class="overview-label">Access through</span><span class="overview-value">{{ subscription.expires }}</span></div>
+                    {% endif %}
+                </div>
+
+                <div class="uber-card">
+                    <h3 style="margin-top:0; font-size:15px; font-weight:800; color:var(--uber-black); text-transform:uppercase; margin-bottom:12px;">After the free trial</h3>
+                    <p style="font-size:13px; color:var(--text-main); line-height:1.5; margin:0 0 12px 0;">The first 5 months are free for eligible new Delivery Service accounts.</p>
+                    <ul style="margin:0; padding-left:18px; font-size:12px; color:var(--text-muted); line-height:1.6;">
+                        <li>Premium access continues at <b>GH₵20 per month</b> when you subscribe.</li>
+                        <li>If Premium expires, your service will no longer be treated as Premium/available for vendor delivery-service matching.</li>
+                        <li>You can return here and use <b>Subscribe to Premium</b> to renew.</li>
+                    </ul>
+                </div>
+
+                {% if receipts %}
+                    <div class="uber-card">
+                        <h4 style="margin-top:0; margin-bottom:12px; font-size:13px; font-weight:800; text-transform:uppercase; color:var(--text-muted);">📋 Subscription History</h4>
+                        <div style="max-height: 150px; overflow-y: auto; font-size: 12px; border: 1px solid var(--uber-gray-border); border-radius: 6px; background:#fafafa;">
+                            {% for receipt in receipts %}
+                                <div style="padding: 10px 12px; border-bottom:1px solid var(--uber-gray-border); display:flex; justify-content:space-between; align-items:center;">
+                                    <div>
+                                        <div style="font-weight:700; color:var(--uber-black);">{{ receipt.receipt_number }}</div>
+                                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Issued Statement Receipt</div>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <b style="color:var(--success-green); display:block; font-size:13px;">GH₵ {{ "%.2f"|format(receipt.amount) }}</b>
+                                        <a href="/subscription/receipt/{{ receipt.id }}" style="font-size:11px; color:var(--uber-blue); text-decoration:none; font-weight:700;">View receipt ➔</a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
         </div>
+
+        <!-- STABLE SYSTEM FOOTER DEALS INFO -->
+        <div class="uber-card" style="margin-top:24px; padding:16px 20px; background:#f8fafc; border-style:dashed;">
+            <p style="margin:0; font-size:13px; color:var(--text-main); line-height:1.5;">
+                <b>Need help?</b> Use the Subscribe to Premium button to open WhatsApp with your account details already prepared for BizHub. After payment, send your receipt so the account can be activated or extended.
+            </p>
+        </div>
+
+        <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
+            © 2026 BizHub Marketplace · Your Local Market, Unified Online
+        </footer>
     </main>
+
 </body>
 </html>
+

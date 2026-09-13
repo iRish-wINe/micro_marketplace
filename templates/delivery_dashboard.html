@@ -1,116 +1,298 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Delivery Dashboard | BizHub</title>
-<style>
-:root{--navy:#0B192C;--orange:#F59E0B;--bg:#EAEDED;--border:#D5D9D9;--green:#166534;--red:#B91C1C;--blue:#1D4ED8}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:#0F172A}.nav{background:var(--navy);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.nav a{color:#fff;text-decoration:none;font-size:11px;font-weight:800}.brand{font-weight:900;font-size:20px}.brand span{color:var(--orange)}.nav-right{display:flex;gap:12px;align-items:center}.badge{display:inline-flex;min-width:18px;height:18px;padding:0 5px;align-items:center;justify-content:center;border-radius:999px;background:var(--orange);color:#111;font-size:10px;font-weight:900}.wrap{max-width:1100px;margin:20px auto;padding:0 14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}.card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:14px}.wide{grid-column:1/-1}.card h2,.card h3{margin:0 0 10px}.muted{color:#64748B;font-size:12px;line-height:1.6}.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #E5E7EB}.row:first-child{border-top:0}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900;background:#F1F5F9;color:#475569}.pill.Accepted{background:#DBEAFE;color:#1E40AF}.pill.Picked{background:#FEF3C7;color:#92400E}.pill.Delivered{background:#DCFCE7;color:var(--green)}.pill.Declined{background:#FEE2E2;color:var(--red)}.btn{border:0;border-radius:6px;padding:8px 10px;background:var(--orange);font-weight:900;cursor:pointer}.btn.secondary{background:#E2E8F0}.btn.danger{background:#FECACA;color:#7F1D1D}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.note{padding:10px;background:#F8FAFC;border-radius:6px;font-size:12px;line-height:1.6}.notification{padding:12px 0;border-top:1px solid #E5E7EB}.notification:first-child{border-top:0}.unread{font-weight:800}.small{font-size:10px;color:#64748B}.verify{display:flex;flex-direction:column;gap:9px}.verify textarea{min-height:90px;resize:vertical;padding:9px;border:1px solid var(--border);border-radius:6px;font:inherit}.status{font-size:12px;font-weight:800}.success{color:var(--green)}.pending{color:#92400E}.rejected{color:var(--red)}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Driver Partner Console | BizHub Fleet</title>
+    <style>
+        /* 👑 BIZHUB FLEET DESIGN SYSTEM (UBER RIDE ENTERPRISE LIGHT/DARK MATRIX) */
+        :root {
+            --uber-black: #000000;
+            --uber-dark: #1F1F1F;
+            --uber-gray-light: #F6F6F6;
+            --uber-gray-border: #E2E2E2;
+            --uber-blue: #276EF1;
+            --accent: #F59E0B;
+            --success-green: #05A357;
+            --danger-red: #E11900;
+            --text-main: #333333;
+            --text-muted: #6B6B6B;
+            --radius: 12px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--uber-gray-light); color: var(--uber-black); margin: 0; padding-bottom: 40px; }
+        .container { width: 100%; max-width: 1440px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
+
+        /* BIZHUB UNIFORM BLACK NAVBAR */
+        .bh-global-header { background: var(--uber-black); color: white; min-height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-sizing: border-box; position: sticky; top: 0; z-index: 1000; }
+        .bh-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: white; font-weight: 900; font-size: 22px; }
+        .bh-brand span { color: var(--accent); }
+        .bh-nav { display: flex; align-items: center; gap: 8px; }
+        .bh-nav a { color: #E2E8F0; text-decoration: none; font-weight: 700; font-size: 13px; padding: 10px 14px; border-radius: 8px; transition: var(--transition); }
+        .bh-nav a:hover { background: rgba(255, 255, 255, 0.1); color: var(--accent); }
+        .bh-nav a.active { background: white; color: var(--uber-black); }
+
+        /* INTERFACE GRID INFRASTRUCTURE */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 24px; }
+        @media(min-width: 992px) { .dashboard-grid { grid-template-columns: 380px 1fr; } }
+
+        .uber-card { background: white; border-radius: var(--radius); border: 1px solid var(--uber-gray-border); padding: 24px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(0,0,0,0.04); height: fit-content; margin-bottom: 24px; }
+        .uber-title { font-size: 18px; font-weight: 800; margin-top: 0; margin-bottom: 18px; letter-spacing: -0.5px; color: var(--uber-black); border-bottom: 2px solid var(--uber-gray-light); padding-bottom: 8px; }
+
+        .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-online { background-color: rgba(5,163,87,0.12); color: var(--success-green); }
+        .status-offline { background-color: rgba(225,25,0,0.12); color: var(--danger-red); }
+
+        .toggle-status-btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: var(--transition); text-align: center; margin-top: 15px; }
+        .btn-go-online { background-color: var(--uber-blue); color: white; }
+        .btn-go-offline { background-color: var(--uber-gray-light); color: var(--uber-black); border: 1px solid var(--uber-gray-border); }
+
+        /* LIVE ORDER LOG REQUEST CARDS */
+        .request-item { background: white; border: 1px solid var(--uber-gray-border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; position: relative; }
+        .request-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .request-badge { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
+        .badge-pending { background: #FFF7ED; color: #C2410C; border: 1px solid #FED7AA; }
+        .badge-accepted { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+        .badge-delivered { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
+        
+        .route-map-mock { position: relative; height: 8px; background: #E2E8F0; border-radius: 999px; margin: 16px 0; overflow: hidden; }
+        .route-line { position: absolute; left: 0; top: 0; height: 100%; background: var(--uber-blue); width: 35%; transition: var(--transition); }
+        .route-line.trip-progress-pickedup { width: 70%; background: var(--success-green); }
+        .route-line.trip-progress-delivered { width: 100%; background: var(--success-green); }
+
+        .action-row { display: flex; gap: 10px; margin-top: 15px; }
+        .action-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; text-decoration: none; display: block; }
+        .btn-accept { background: var(--uber-blue); color: white; }
+        .btn-complete { background: var(--success-green); color: white; }
+        .btn-decline { background: #FFF5F5; color: var(--danger-red); border: 1px solid #FED7D7; }
+        
+        .list-unstyled { list-style: none; padding: 0; margin: 0; }
+        .notification-item { padding: 12px; border-bottom: 1px solid var(--uber-gray-border); font-size: 13px; }
+        .notification-item:last-child { border-bottom: none; }
+    </style>
 </head>
 <body>
-<div class="nav">
-  <div class="brand">Biz<span>Hub</span> · Delivery Service</div>
-  <div class="nav-right">
-    <a href="{{ url_for('notifications') }}">🔔 Notifications{% if unread_count %} <span class="badge">{{ unread_count }}</span>{% endif %}</a>
-    <a href="{{ url_for('delivery_services') }}">Find Delivery</a>
-    <a href="{{ url_for('settings') }}">Account</a>
-    <a href="{{ url_for('delivery_manage_accounts') }}">Manage Accounts</a>
-    <a href="{{ url_for('logout') }}">Logout</a>
-  </div>
-</div>
-<div class="wrap">
-  {% if welcome_message %}
-  <div id="delivery-welcome" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,.62);padding:16px;">
-    <div style="width:100%;max-width:430px;background:#fff;border:1px solid #D5D9D9;border-radius:18px;padding:28px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.28);">
-      <div style="width:52px;height:52px;margin:0 auto 12px;border-radius:16px;background:#DCFCE7;color:#166534;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:900;">✓</div>
-      <div style="font-size:23px;font-weight:900;color:#0B192C;">Welcome to BizHub</div>
-      <div style="font-size:14px;color:#64748B;line-height:1.55;margin-top:8px;">Your delivery service account is ready. Your dashboard is now set up.</div>
-    </div>
-  </div>
-  <script>
-    window.setTimeout(function(){
-      const welcome=document.getElementById('delivery-welcome');
-      if(welcome){ welcome.style.transition='opacity .35s ease'; welcome.style.opacity='0'; window.setTimeout(()=>welcome.remove(),400); }
-    },5000);
-  </script>
-  {% endif %}
 
-  <div class="grid">
-    <div class="card">
-      <h2>{{ service.service_name if service else (user.company_name or user.username) }}</h2>
-      {% if service %}
-        <div class="muted">📍 {{ service.operating_location }} · 🗺️ {{ service.service_area }} · 🛵 {{ service.delivery_type }}</div>
-        <div class="actions">
-          <form method="POST" action="{{ url_for('delivery_availability') }}">
-            <input type="hidden" name="availability" value="{% if service.availability == 'Available' %}Unavailable{% else %}Available{% endif %}">
-            <button class="btn" type="submit">Set {{ 'Unavailable' if service.availability == 'Available' else 'Available' }}</button>
-          </form>
-          <span class="pill">{{ service.availability }}</span>
-        </div>
-      {% else %}<div class="muted">No delivery service profile was found for this account.</div>{% endif %}
-    </div>
+    <!-- 👑 UBER CONSOLE HEADER WITH PRIMARY MARKETPLACE NAVIGATION -->
+    <header class="bh-global-header">
+        <a class="bh-brand" href="/delivery">
+            <span>B</span>BizHub Fleet
+        </a>
+        <nav class="bh-nav">
+            <a href="/">☰ Marketplace</a>
+            <a href="/delivery" class="active">🚗 Driver Terminal</a>
+            <a href="/delivery/manage-accounts">💳 Manage Account</a>
+            <a href="/logout" style="color: var(--danger-red);">🚪 Sign Out</a>
+        </nav>
+    </header>
 
-    <div class="card">
-      <h3>Verification</h3>
-      {% if verification_request %}
-        <div class="status {% if verification_request.status == 'Approved' %}success{% elif verification_request.status == 'Rejected' %}rejected{% else %}pending{% endif %}">{{ verification_request.status }}</div>
-        {% if verification_request.user_message %}<div class="note" style="margin-top:8px"><b>Your message:</b><br>{{ verification_request.user_message }}</div>{% endif %}
-        {% if verification_request.note %}<div class="note" style="margin-top:8px"><b>BizHub review:</b><br>{{ verification_request.note }}</div>{% endif %}
-        {% if verification_request.status != 'Pending' %}
-          <div class="muted" style="margin-top:8px">You may submit another request if you need a new review.</div>
-        {% endif %}
-      {% endif %}
-      {% if not verification_request or verification_request.status != 'Pending' %}
-        <form class="verify" method="POST" action="{{ url_for('request_verification') }}">
-          <label for="user_message"><b>Message to BizHub (optional)</b> <span title="Tell BizHub anything useful about your verification request.">ⓘ</span></label>
-          <textarea id="user_message" name="user_message" maxlength="2000" placeholder="Add an optional message for the BizHub verification team."></textarea>
-          <button class="btn" type="submit">Request Verification</button>
-        </form>
-      {% else %}<div class="muted" style="margin-top:8px">A verification request is already pending.</div>{% endif %}
-    </div>
-  </div>
-
-  <div class="card wide">
-    <h3>Delivery Requests</h3>
-    {% for req in delivery_requests %}
-      <div class="row">
-        <div>
-          <b>{{ req.vendor_company_name or req.vendor_username }}</b>
-          <div class="muted">@{{ req.vendor_username }} · {{ req.message }}</div>
-          <div class="small">Request #{{ req.id }} · {{ req.created_at }}</div>
-        </div>
-        <div style="text-align:right">
-          <span class="pill {{ req.status|replace(' ','') }}">{{ req.status }}</span>
-          {% if req.status == 'Requested' %}
-            <div class="actions">
-              <form method="POST" action="{{ url_for('update_delivery_request', request_id=req.id) }}"><input type="hidden" name="status" value="Accepted"><button class="btn" type="submit">Accept</button></form>
-              <form method="POST" action="{{ url_for('update_delivery_request', request_id=req.id) }}"><input type="hidden" name="status" value="Declined"><button class="btn danger" type="submit">Decline</button></form>
+    <main class="container">
+        {% if welcome_message %}
+            <div style="background-color: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 16px; border-radius: var(--radius); margin-top: 24px; font-weight: 700; font-size: 14px;">
+                🎉 Welcome to BizHub! Your delivery service account is ready. Your dashboard is now set up.
             </div>
-          {% elif req.status == 'Accepted' %}
-            <form class="actions" method="POST" action="{{ url_for('update_delivery_request', request_id=req.id) }}"><input type="hidden" name="status" value="Picked Up"><button class="btn" type="submit">Mark Picked Up</button></form>
-          {% elif req.status == 'Picked Up' %}
-            <form class="actions" method="POST" action="{{ url_for('update_delivery_request', request_id=req.id) }}"><input type="hidden" name="status" value="Delivered"><button class="btn" type="submit">Mark Delivered</button></form>
-          {% endif %}
-        </div>
-      </div>
-    {% else %}<div class="muted">No delivery requests yet.</div>{% endfor %}
-  </div>
-
-  <div class="card wide">
-    <h3>Notifications</h3>
-    {% for notification in notifications %}
-      <div class="notification {% if not notification.is_read %}unread{% endif %}">
-        <div><b>{{ notification.title }}</b></div>
-        <div class="muted">{{ notification.message }}</div>
-        <div class="small">{{ notification.created_at }}</div>
-        {% if not notification.is_read %}
-          <form method="POST" action="{{ url_for('mark_notification_read', notification_id=notification.id) }}" style="margin-top:6px"><button class="btn secondary" type="submit">Mark as read</button></form>
         {% endif %}
-      </div>
-    {% else %}<div class="muted">No notifications yet.</div>{% endfor %}
-  </div>
-</div>
+
+        <div class="dashboard-grid">
+            
+            <!-- LEFT COLUMN: STATUS CONTROL & IDENTITY -->
+            <div>
+                <!-- SERVICE PROFILE CARD -->
+                <div class="uber-card">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        {% if service and service.logo_file %}
+                            <img src="{{ url_for('static', filename='uploads/' + service.logo_file) }}" alt="logo" style="width: 84px; height: 84px; border-radius: 50%; object-fit: cover; border: 3px solid var(--uber-black); background: #F8FAFC; margin-bottom: 12px;">
+                        {% else %}
+                            <div style="width: 84px; height: 84px; border-radius: 50%; background: var(--uber-black); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; margin: 0 auto 12px auto;">🚗</div>
+                        {% endif %}
+                        
+                        <h2 style="margin: 0 0 4px 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">
+                            {{ service.service_name if service else (user.company_name or user.username) }}
+                        </h2>
+                        
+                        <div style="margin-top: 8px; margin-bottom: 14px;">
+                            {% if service and service.availability == 'Available' %}
+                                <span class="status-pill status-online">● Online & Available</span>
+                            {% else %}
+                                <span class="status-pill status-offline">○ Offline / Unavailable</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if service %}
+                        <div style="font-size: 13px; border-top: 1px solid var(--uber-gray-border); padding-top: 14px; margin-bottom: 15px; line-height: 1.6;">
+                            <div><strong>📍 Hub Location:</strong> {{ service.operating_location }}</div>
+                            <div><strong>🗺️ Coverage Area:</strong> {{ service.service_area }}</div>
+                            <div><strong>🛵 Transit Mode:</strong> {{ service.delivery_type }}</div>
+                        </div>
+                    {% else %}
+                        <p style="font-size: 13px; color: var(--danger-red); text-align: center; font-weight: 600;">⚠️ No delivery service profile was found for this account.</p>
+                    {% endif %}
+
+                    <form method="POST" action="/delivery/availability">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        {% if service and service.availability == 'Available' %}
+                            <input type="hidden" name="availability" value="Unavailable">
+                            <button type="submit" class="toggle-status-btn btn-go-offline">Set Unavailable</button>
+                        {% else %}
+                            <input type="hidden" name="availability" value="Available">
+                            <button type="submit" class="toggle-status-btn btn-go-online">Set Available</button>
+                        {% endif %}
+                    </form>
+                </div>
+
+                                <!-- VERIFICATION FLOW BOX -->
+                <div class="uber-card">
+                    <h4 style="margin-top: 0; font-size: 14px; font-weight: 800; text-transform: uppercase; color: var(--uber-dark); letter-spacing: 0.3px;">🛡️ Verification Portal</h4>
+                    {% if verification_request %}
+                        <div style="padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 700; margin-bottom: 10px; background: #FFF7ED; color: #C2410C; border: 1px solid #FED7AA;">
+                            Status: {{ verification_request.status }}
+                        </div>
+                        {% if verification_request.user_message %}
+                            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4;">
+                                <b>Your message:</b> {{ verification_request.user_message }}
+                            </div>
+                        {% endif %}
+                        {% if verification_request.note %}
+                            <div style="font-size: 12px; background: var(--uber-gray-light); padding: 10px; border-radius: 6px; color: var(--uber-black); border: 1px solid var(--uber-gray-border); line-height: 1.4;">
+                                <b>BizHub review:</b> {{ verification_request.note }}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
+                    {% if not verification_request or verification_request.status != 'Pending' %}
+                        <form method="POST" action="/verification/request" style="margin-top: 12px;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <label style="display: block; font-size: 11px; font-weight: 700; margin-bottom: 4px; color: var(--text-main);">Message to BizHub (optional) ⓘ</label>
+                            <input type="text" name="user_message" class="form-control" style="width:100%; padding:10px; border:1px solid var(--uber-gray-border); border-radius:6px; font-size:13px; margin-bottom:8px; background: var(--uber-gray-light);" placeholder="Provide additional verification context...">
+                            <button type="submit" style="width:100%; padding:12px; background:var(--uber-black); color:white; border:none; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer; text-transform:uppercase; letter-spacing:0.3px;">Request Verification</button>
+                        </form>
+                    {% else %}
+                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px; font-style: italic;">A verification request is already pending.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: LIVE TRIP FEED & NOTIFICATIONS GRID -->
+            <div>
+                              <!-- 👑 NEW REGISTRANT ONBOARDING RULES & PLATFORM GUIDELINES -->
+                <div class="uber-card" style="border-left: 4px solid var(--accent); background-color: #FFFDF9; margin-bottom: 20px;">
+                    <h4 style="margin-top: 0; font-size: 14px; font-weight: 800; text-transform: uppercase; color: var(--uber-black); letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+                        📜 Driver Partner Code of Conduct & Rules
+                    </h4>
+                    <p style="font-size: 13px; color: var(--text-main); line-height: 1.5; margin: 4px 0 12px 0;">
+                        Welcome to the BizHub Fleet network! To maintain data tracking accuracy, preserve secure payment transactions, and protect your commercial dispatcher privileges across Ghana, all driver partners must strictly follow these rules:
+                    </p>
+                    <div style="font-size: 12px; line-height: 1.6; color: var(--text-main); display: grid; grid-template-columns: 1fr; gap: 8px;">
+                        <div style="display: flex; align-items: flex-start; gap: 6px;">
+                            <span style="color: var(--accent);">•</span>
+                            <div><b>Maintain Accurate Availability:</b> Only set your status to <span style="color: var(--success-green); font-weight:700;">Online</span> if you are genuinely ready to mount motorcycle/vehicle transits immediately.</div>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 6px;">
+                            <span style="color: var(--accent);">•</span>
+                            <div><b>Prompt Status Tracking:</b> Update your trip progress bar inputs instantly (Arrived at Pickup ➔ Mark Delivered) to keep the ordering vendor's dashboard synchronized.</div>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 6px;">
+                            <span style="color: var(--accent);">•</span>
+                            <div><b>Fair Pricing & Integrity:</b> Honor the delivery markdown values agreed upon during your direct merchant WhatsApp arrangement loops. Misleading or fraudulent overcharging results in immediate profile suspension.</div>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 6px;">
+                            <span style="color: var(--accent);">•</span>
+                            <div><b>Zero Tolerance for Conduct Violations:</b> Any abusive behavior or failed delivery disputes reported by verified clients will route directly to the Admin Center for immediate enforcement actions.</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--uber-gray-border); text-align: right;">
+                        <a href="/rules" style="font-size: 11px; font-weight: 800; color: var(--uber-blue); text-decoration: none; text-transform: uppercase;">View Full Platform Rules & Regulations ➔</a>
+                    </div>
+                </div>
+
+                <div class="uber-card">
+                    <h3 class="uber-title">⚡ Live Delivery Requests Feed</h3>
+                    <div id="tripQueueContainer">
+                        {% for req in requests %}
+                            <div class="request-item">
+                                <div class="request-header">
+                                    <div>
+                                        <strong style="font-size: 16px; color: var(--uber-black);">{{ req.vendor_company_name or req.vendor_username }}</strong>
+                                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">@{{ req.vendor_username }} · Request #{{ req.id }}</div>
+                                    </div>
+                                    <span class="request-badge {% if req.status == 'Requested' %}badge-pending{% elif req.status == 'Accepted' or req.status == 'Picked Up' %}badge-accepted{% else %}badge-delivered{% endif %}">
+                                        {{ req.status }}
+                                    </span>
+                                </div>
+
+                                <div style="font-size: 13px; line-height: 1.4; color: #111; background: var(--uber-gray-light); padding: 12px; border-radius: 8px; border: 1px solid var(--uber-gray-border); margin-bottom: 12px;">
+                                    {{ req.message }}
+                                </div >
+
+                                <div class="route-map-mock">
+                                    <div class="route-line {% if req.status == 'Picked Up' %}trip-progress-pickedup{% elif req.status == 'Delivered' %}trip-progress-delivered{% endif %}"></div>
+                                </div>
+
+                                <div class="action-row">
+                                    {% if req.status == 'Requested' %}
+                                        <form method="POST" action="/delivery/requests/{{ req.id }}/status" style="flex: 1; display: flex; gap: 8px;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <input type="hidden" name="status" value="Accepted">
+                                            <button type="submit" class="action-btn btn-accept">Accept</button>
+                                        </form>
+                                        <form method="POST" action="/delivery/requests/{{ req.id }}/status" style="flex: 1;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <input type="hidden" name="status" value="Declined">
+                                            <button type="submit" class="action-btn btn-decline">Decline</button>
+                                        </form>
+                                    {% elif req.status == 'Accepted' %}
+                                        <form method="POST" action="/delivery/requests/{{ req.id }}/status" style="width: 100%;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <input type="hidden" name="status" value="Picked Up">
+                                            <button type="submit" class="action-btn btn-accept" style="width:100%; background-color: var(--uber-black);">Mark Picked Up</button>
+                                        </form>
+                                    {% elif req.status == 'Picked Up' %}
+                                        <form method="POST" action="/delivery/requests/{{ req.id }}/status" style="width: 100%;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <input type="hidden" name="status" value="Delivered">
+                                            <button type="submit" class="action-btn btn-complete" style="width:100%;">Mark Delivered</button>
+                                        </form>
+                                    {% else %}
+                                        <div style="font-size: 13px; font-weight: 700; color: var(--success-green); padding: 4px 0;">
+                                            ✓ Trip Successfully Fulfilled & Closed
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div style="padding: 40px; text-align: center; color: var(--text-muted); background: white; border-radius: var(--radius); border: 2px dashed var(--uber-gray-border);">
+                                📭 No delivery requests yet.
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="uber-card">
+                    <h3 class="uber-title">🔔 System Notifications</h3>
+                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--uber-gray-border); border-radius: 8px;">
+                        <ul class="list-unstyled">
+                            {% for notification in notifications %}
+                                <li class="notification-item">
+                                    <div style="font-weight: 700; color: var(--uber-black);">{{ notification.title }}</div>
+                                    <div style="color: var(--text-main); margin-top: 2px;">{{ notification.message }}</div>
+                                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">{{ notification.created_at }}</div>
+                                </li>
+                            {% else %}
+                                <li style="padding: 20px; text-align: center; color: var(--text-muted);">No notifications yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+                <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
+            © 2026 BizHub Marketplace · Your Local Market, Unified Online
+        </footer>
+    </main>
 </body>
 </html>
+

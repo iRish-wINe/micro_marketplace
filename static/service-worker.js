@@ -15,3 +15,11 @@ self.addEventListener('fetch',e=>{
     e.respondWith(caches.match(e.request).then(x=>x||fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r;})));
   }
 });
+
+
+
+/* BizHub base service worker. The Flask /service-worker.js route appends the
+   notification handlers so this file intentionally contains no duplicate push
+   listeners. */
+self.addEventListener('install', function(event) { self.skipWaiting(); });
+self.addEventListener('activate', function(event) { event.waitUntil(self.clients.claim()); });
