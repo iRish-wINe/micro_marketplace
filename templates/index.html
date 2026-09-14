@@ -12,11 +12,11 @@
     <meta name="apple-mobile-web-app-title" content="BizHub">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/icon-192.png') }}?v=4">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=4">
     <style>
-                 /* 👑 STANDARDIZED CORE APPERANCE THEME CSS MATRIX */
+        /* 👑 STANDARDIZED CORE APPERANCE THEME CSS MATRIX */
         :root {
-            --bg-abyssal: #0B192C;
+            --bg-abyssal: #0F172A;
             --primary: #1E3A8A;
             --primary-light: #3B82F6;
             --accent: #F59E0B;
@@ -30,23 +30,32 @@
             --radius-sm: 8px;
             --radius-lg: 12px;
             --shadow-sm: 0 1px 2px rgba(15,23,42,0.05);
-            --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 🌙 NIGHT THEME PROPERTY SCOPES OVERRIDE */
-        :root.night-theme {
-            --bg-abyssal: #050C16;
-            --primary: #02060822;
-            --primary-light: #1E293B;
-            --accent: #F59E0B;
-            --success: #10B981;
-            --danger: #EF4444;
-            --bg-light: #0B192C; 
-            --bg-card: #1E293B;
-            --text-main: #F8FAFC;
-            --text-muted: #94A3B8; 
-            --border-color: #334155; 
+        /* 👑 🦉 TWITTER HIGH-DENSITY DIM NIGHT THEME PROPERTY OVERRIDE */
+        :root.night-theme, .night-theme body {
+            --bg-abyssal: #15202B !important;      /* Twitter's Iconic Dark Blue Background */
+            --bg-light: #15202B !important;        /* Smooth Global Continuity Canvas */
+            --bg-card: #1E2732 !important;         /* Twitter Slate Card Blocks */
+            --text-main: #F7F9F9 !important;       /* Pristine High-Contrast Off-White Text */
+            --text-muted: #8899A6 !important;      /* Muted Ice-Blue Descriptive Labels */
+            --border-color: #38444D !important;    /* Twitter Slate Segment Borders */
+            --primary: #1D9BF0 !important;         /* Twitter Vivid Accent Blue */
+            --primary-light: #1A8CD8 !important;   
+            --nav: #1E2732 !important;
+        }
+
+        /* 🚀 Global Override Elements Cascade to Enforce Theme Uniformity */
+        .night-theme .card, .night-theme .sidebar, .night-theme .sidebar-card, .night-theme .auth-shell {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+        .night-theme input, .night-theme select, .night-theme textarea {
+            background-color: #15202B !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
         }
 
                 
@@ -204,6 +213,25 @@
             .master-catalog-grid .card, 
             .grid .card {
                 flex: 0 0 230px !important;
+                scroll-snap-align: start !important;
+                box-sizing: border-box !important;
+                margin: 0 !important;
+            }
+            /* Fast Food Kitchens: Amazon-style swipeable row on phones */
+            .kitchen-swipe-grid {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                gap: 12px !important;
+                overflow-x: auto !important;
+                scroll-snap-type: x mandatory !important;
+                padding: 10px 4px 20px 4px !important;
+                -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: none !important;
+            }
+            .kitchen-swipe-grid::-webkit-scrollbar { display: none !important; }
+            .kitchen-swipe-grid article {
+                flex: 0 0 240px !important;
                 scroll-snap-align: start !important;
                 box-sizing: border-box !important;
                 margin: 0 !important;
@@ -394,9 +422,9 @@
     </div>
 
 {% if request.args.get('cart_added') == '1' %}
-    <div id="basketMobilePopup" class="basket-mobile-popup" role="button" tabindex="0" aria-label="Item added to basket. Scroll down to see your basket.">
+    <div id="basketMobilePopup" class="basket-mobile-popup" role="button" tabindex="0" aria-label="Item added to basket. Click to buy in Your cart.">
         🛒 <strong>Item added to basket</strong>
-        <span>Scroll down to see your basket</span>
+        <span>Click to buy in Your cart</span>
     </div>
 {% endif %}
 
@@ -460,50 +488,68 @@
       <a class="bh-action" href="{{ url_for('login') }}"><span><span class="small">New to BizHub?</span><strong>Create account</strong></span></a>
     {% endif %}
   </div>
-<nav class="bh-subbar" aria-label="BizHub marketplace navigation" style="display: flex; align-items: center; background: #232F3E; padding: 0 20px; min-height: 40px; gap: 15px; position: relative; overflow-x: auto; white-space: nowrap; scrollbar-width: none;">
+<!-- 👑 AMAZON-STYLE HIGH-DENSITY MOBILE COMPATIBLE SUBBAR MATRIX -->
+<nav class="bh-subbar" aria-label="BizHub marketplace navigation" style="display: flex; align-items: center; background: #232F3E; padding: 0 14px; min-height: 42px; gap: 14px; position: relative; overflow-x: auto !important; -webkit-overflow-scrolling: touch; white-space: nowrap !important; scrollbar-width: none; width: 100%;">
+    <style>
+        /* Force hidden default scroll indicators while keeping the line fluidly swipeable on phones */
+        .bh-subbar::-webkit-scrollbar { display: none !important; }
+        .bh-subbar a { color: #FFFFFF !important; text-decoration: none !important; font-size: 13px !important; font-weight: 700 !important; display: inline-block !important; flex-shrink: 0 !important; padding: 4px 2px; }
+        .bh-subbar a:hover { color: #F59E0B !important; }
+    </style>
+
     <!-- 👑 THE AMAZON ALL SIDEBAR HAMBURGER TOGGLER BUTTON -->
-    <a href="javascript:void(0);" onclick="toggleAmazonSidebarMenu(true);" style="color: #FFFFFF; text-decoration: none; font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 6px; padding: 8px 0; flex-shrink: 0;">
+    <a href="javascript:void(0);" onclick="toggleAmazonSidebarMenu(true);" style="font-weight: 800 !important; display: flex !important; align-items: center; gap: 4px;">
         ☰ All
     </a>
     
-    <a href="{{ url_for('home') }}" style="color: white; text-decoration: none; font-size: 13px; font-weight: 700;">Marketplace</a>
-    <a href="{{ url_for('features') }}" style="color: white; text-decoration: none; font-size: 13px; font-weight: 700;">Features</a>
-    <a href="{{ url_for('promo_marketplace') }}" style="color: white; text-decoration: none; font-size: 13px; font-weight: 700;">Today's Deals</a>
+    <a href="{{ url_for('home') }}">Marketplace</a>
 
-    <!-- 👑 REAL-TIME ALERTS BELL IN THE NEW SUBBAR STYLE -->
-    <a href="/notifications" style="position: relative; display: inline-flex; align-items: center; gap: 4px; color: white; text-decoration: none; font-size: 13px; font-weight: 700;">
+    <!-- 👑 THE VENDOR PREMIUM MANAGING LINK ROUTER WITH THE DIAMOND EMOJI ATTACHED -->
+    {% if session.get('role') in ['Vendor', 'Fast Food'] %}
+        <a href="{{ url_for('subscription') }}" style="color: #F59E0B !important; font-weight: 800 !important;">
+            💎 Manage Account
+        </a>
+    {% else %}
+        <a href="{{ url_for('features') }}">Features</a>
+    {% endif %}
+
+    <a href="{{ url_for('promo_marketplace') }}">Today's Deals</a>
+
+    <!-- 👑 REAL-TIME ALERTS BELL IN THE HIGH-DENSITY SUBBAR STYLE -->
+    <a href="/notifications" style="position: relative; display: inline-flex !important; align-items: center; gap: 3px;">
         🔔 Alerts
         {% if customer_notification_count and customer_notification_count|int > 0 %}
-            <span style="background: #EF4444; color: #FFFFFF; font-size: 9px; font-weight: 900; min-width: 15px; height: 16px; padding: 0 4px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: 2px; line-height: 1;">
+            <span style="background: #EF4444; color: #FFFFFF; font-size: 9px; font-weight: 900; min-width: 15px; height: 15px; border-radius: 50%; display: flex; align-items: center; justify-content: center; line-height: 1; margin-left: 1px;">
                 {{ customer_notification_count }}
             </span>
         {% endif %}
     </a>
 
-    <a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}" style="color: white; text-decoration: none; font-size: 13px; font-weight: 700;">Favorites</a>
-    <a href="{{ url_for('all_stores') }}" style="color: white; text-decoration: none; font-size: 13px; font-weight: 700;">All Stores</a>
-    <a href="{{ url_for('fast_food_stores') }}" style="color: white; text-decoration: none; font-size: 13px; font-weight: 700;">Fast Food</a>
+    <a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">Favorites</a>
+    <a href="{{ url_for('all_stores') }}">All Stores</a>
+    <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
     
     {% if session.get('username') %}
-      <a href="{{ url_for('order_history') }}" style="color: white; text-decoration: none; font-size: 13px; font-weight: 700;">Orders</a>
+      <a href="{{ url_for('order_history') }}">Orders</a>
     {% endif %}
     
     {% if session.get('role') in ['Vendor', 'Fast Food'] %}
-      <a href="{{ url_for('vendor_profile', username=session['username']) }}" style="color: white; text-decoration: none; font-size: 13px; font-weight: 700;">My Store</a>
-      <a href="{{ url_for('delivery_services') }}" style="color: white; text-decoration: none; font-size: 13px; font-weight: 700;">Find Delivery</a>
-      <a href="{{ url_for('promotions') }}" style="color: white; text-decoration: none; font-size: 13px; font-weight: 700;">Manage Your Promos</a>
+      <a href="{{ url_for('vendor_profile', username=session['username']) }}">My Store</a>
+      <a href="{{ url_for('delivery_services') }}">Find Delivery</a>
+      <a href="{{ url_for('promotions') }}">Manage Your Promos</a>
     {% endif %}
       
     {% if session.get('role') == 'Delivery Service' %}
-      <a href="/delivery" style="background-color: var(--accent); color: #000 !important; font-weight: 900; border-radius: 4px; padding: 4px 10px; font-size: 13px; text-decoration: none;">🚗 Back to Dashboard</a>
+      <a href="/delivery" style="background-color: #F59E0B; color: #000000 !important; font-weight: 900 !important; border-radius: 4px; padding: 4px 10px; font-size: 13px; text-decoration: none;">🚗 Back to Dashboard</a>
     {% endif %}
 
-    <a href="{{ url_for('settings') if session.get('username') else url_for('login') }}" style="color: white; text-decoration: none; font-size: 13px; font-weight: 700;">Your Account</a>
+    <a href="{{ url_for('settings') if session.get('username') else url_for('login') }}">Your Account</a>
     
     {% if session.get('is_admin') %}
-      <a href="{{ url_for('admin_dashboard') }}" style="color: #F59E0B; text-decoration: none; font-size: 13px; font-weight: 700;">Admin Center</a>
+      <a href="{{ url_for('admin_dashboard') }}" style="color: #F59E0B !important; font-weight: 800 !important;">Admin Center</a>
     {% endif %}
 </nav>
+
 
 <!-- 👑 BIZHUB CORE THEME REPLICA SLIDING SIDEBAR DESK OVERLAY -->
 <div id="amazonGlobalOverlay" style="position: fixed; inset: 0; background: rgba(5,12,22,0.65); z-index: 999999; display: none;" onclick="toggleAmazonSidebarMenu(false);">
@@ -633,7 +679,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
             <div><h2 style="margin:0;color:#9a3412;font-size:20px;font-weight:900;">🍔 Fast Food Kitchens</h2><p style="margin:4px 0 0;color:#9a3412;font-size:12px;">Restaurant-style kitchens — open a kitchen to browse its menu.</p></div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;">
+        <div class="kitchen-swipe-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;">
         {% for kitchen in fast_food_vendors %}
             <article style="background:#fff;border:1px solid #fed7aa;border-radius:12px;padding:14px;">
                 {% if kitchen.company_logo %}<img src="{{ url_for('static', filename='uploads/' + kitchen.company_logo) }}" alt="{{ kitchen.business_label }}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;margin-bottom:8px;">{% endif %}
@@ -676,9 +722,15 @@
 
     <div class="container">
         <div class="layout">
-            <!-- PANEL 1: SIDEBAR CONTAINER -->
+
+           
+                             <!-- PANEL 1: SIDEBAR CONTAINER (CLEANED FOR VENDOR EXCLUSIVITY) -->
             <div>
+                <!-- Form console removed here. Product publishing lives inside Vendor Profiles. -->
             </div>
+ 
+                      
+                                   
             <!-- PANEL 2: MAIN MARKETPLACE FEED -->
             <div>
 
@@ -815,74 +867,99 @@
  
                 </div>
                 <div class="grid" id="masterCatalogGrid">
-                    {% for product in products %}
-                        <div class="card">
-                            <!-- 👑 DYNAMIC MULTI-MEDIA RENDERING ENGINE ENGINE FIXED -->
-                            <div class="card-media-wrapper" style="background-color: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; height: 170px;">
- {% if product.video_file %}
-        <video class="card-img" controls autoplay muted playsinline loop preload="metadata">
-            <source src="{{ url_for('stream_video', filename=product.video_file) }}">
-            Your browser does not support video playback.
-        </video>
-    {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' %}
-        <a href="{{ url_for('static', filename='uploads/' + product.image_file) }}" target="_blank" rel="noopener noreferrer" aria-label="Open full-size image of {{ product.title }}" style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;text-decoration:none;">
-            <img class="card-img"
-                 src="{{ url_for('static', filename='uploads/' + product.image_file) }}"
-                 alt="{{ product.title }}"
-                 onerror="this.style.display='none'; this.parentElement.parentElement.classList.add('media-missing');">
-        </a>
-    {% else %}
-        <div style="color:#9CA3AF;font-size:12px;padding:20px;text-align:center;">Media unavailable</div>
-    {% endif %}
-
-    <span class="loc-badge">📍 {{ product.location }}</span>
-</div>
+                     <!-- 👑 BIZHUB HIGH-PERFORMANCE CHRONOLOGICAL TIERED PRODUCT CARD LOOP ENGINE -->
+                    {% for product in processed_items %}
+                        <div class="card product-card-wrapper" style="background:#FFF; border:1px solid var(--border-color); border-radius:12px; padding:16px; position:relative; display:flex; flex-direction:column; justify-content:space-between; box-sizing:border-box;">
                             
-                            <div class="card-body">
-                                <div class="card-brand-wrapper">
-                                    {% if vendor_logos.get(product.seller) %}
-                                        <img class="card-logo-circle" src="{{ url_for('static', filename='uploads/' + vendor_logos[product.seller]) }}" alt="logo">
-                                    {% else %}
-                                        <div class="card-logo-circle" style="display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; color:white; background:var(--primary-light);">BH</div>
-                                    {% endif %}
-                                    <a href="/vendor/{{ product.seller }}" class="card-brand" style="text-decoration:none;">🏬 {{ product.business_label }}</a>
-                                    {% if product.is_verified %}<span title="Verified Store" style="display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:999px;background:#E8F1FF;color:#1D4ED8;font-size:9px;font-weight:900;white-space:nowrap;">✓ Verified Store</span>{% endif %}
-                                </div>
-                                <h4 class="card-title">{{ product.title }}</h4>
-                                <div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div>
-                                {% if product.status == 'Sold' or product.stock_quantity|int <= 0 %}
-                                    <div class="stock-badge stock-sold">🔴 SOLD OUT</div>
-                                {% elif product.stock_quantity|int <= 3 %}
-                                    <div class="stock-badge stock-low">⚠️ Only {{ product.stock_quantity }} left</div>
+                            <!-- 👑 DYNAMIC CHRONOLOGICAL TIER BADGES INTAKE MODULE -->
+                            <div style="position:absolute; top:12px; left:12px; z-index:10; display:flex; flex-direction:column; gap:4px; max-width:calc(100% - 24px);">
+                                <span style="background: rgba(11,25,44,0.9); backdrop-filter:blur(4px); color: #FFF; font-size:10px; font-weight:800; padding:4px 8px; border-radius:4px; text-transform:uppercase; letter-spacing:0.3px; width:fit-content; box-shadow:0 2px(4px) rgba(0,0,0,0.1); white-space: nowrap;">
+                                    {{ product.display_badge }}
+                                </span>
+                                <span style="background:#F1F5F9; color:#475569; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; width:fit-content; border:1px solid #E2E8F0; white-space: nowrap;">📍 {{ product.business_location or 'Accra' }}</span>
+                            </div>
+
+                            <!-- DYNAMIC MULTI-MEDIA RENDERING CONTAINER -->
+                            <div style="width:100%; height:160px; display:flex; align-items:center; justify-content:center; background:#FFF; border-radius:8px; overflow:hidden; margin-top:32px; margin-bottom:12px; position:relative; border:1px solid rgba(0,0,0,0.04);">
+                                {% if product.video_file %}
+                                    <video style="width:100%; height:100%; object-fit:cover; background:#000;" controls autoplay muted playsinline loop preload="metadata">
+                                        <source src="{{ url_for('stream_video', filename=product.video_file) }}">
+                                    </video>
+                                {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' %}
+                                    <a href="{{ url_for('static', filename='uploads/' + product.image_file) }}" target="_blank" rel="noopener noreferrer" style="display:flex; width:100%; height:100%; align-items:center; justify-content:center;">
+                                        <img src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}" style="max-width:100%; max-height:100%; object-fit:contain;">
+                                    </a>
                                 {% else %}
-                                    <div class="stock-badge stock-good">✓ {{ product.stock_quantity }} available</div>
+                                    <div style="color:#9CA3AF; font-size:12px; padding:20px; text-align:center;">Media unavailable</div>
                                 {% endif %}
-                                <p class="card-text">{{ product.description }}</p>
-                                <div class="card-metadata">Owner: @{{ product.seller }}</div>
+                            </div>
+
+                            <!-- CARD CORE INFORMATION CONTENTS -->
+                            <div style="flex-grow:1; display:flex; flex-direction:column;">
+                                <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                                    <a href="/vendor/{{ product.seller }}" style="text-decoration:none; font-size:12px; font-weight:700; color:var(--primary-light);">🏪 {{ product.business_label or product.seller }}</a>
+                                </div>
                                 
-                                <div class="card-actions">
-                                    {% if session.get('username') == product.seller %}
-                                        <a href="/delete-item/{{ product.id }}" class="btn-action btn-delete">🗑️ Delete</a>
+                                <h4 style="font-size:15px; font-weight:700; margin:0 0 6px 0; color:var(--text-main); height:38px; overflow:hidden; line-height:1.25;" title="{{ product.title }}">{{ product.title }}</h4>
+                                
+                                <!-- DYNAMIC INTEGRATED PRICING ENGINE -->
+                                {% if product.is_promo %}
+                                    <div style="font-size:11px; color:#767676; text-decoration:line-through; font-weight:600;">List: GH₵ {{ "%.2f"|format(product.promo_original_price) }}</div>
+                                    <div style="font-size:18px; font-weight:800; color:#B12704; margin-bottom:8px;">GH₵ {{ "%.2f"|format(product.promo_effective_price) }} <span style="font-size:14px; animation: pulseFire 1s infinite; display:inline-block;">🔥</span></div>
+                                {% else %}
+                                    <div style="font-size:18px; font-weight:800; color:var(--text-main); margin-bottom:8px; margin-top:14px;">GH₵ {{ "%.2f"|format(product.price) }}</div>
+                                {% endif %}
+                                
+                                <p style="font-size:12px; color:var(--text-muted); margin:0 0(12px) 0; height:32px; overflow:hidden; line-height:1.35;">{{ product.description }}</p>
+                                
+                                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; border-top:1px dashed #E2E8F0; padding-top:6px; font-size:11px; font-weight:600; color:#64748B;">
+                                    <span>Owner: @{{ product.seller }}</span>
+                                    {% if product.is_kitchen %}
+                                        <span style="color:var(--success);">🍟 Hot Meal</span>
                                     {% else %}
-                                        {% set contact_name = product.business_label or product.seller %}
-                                        {% set inquiry_message = ' Hello ' ~ contact_name ~ ' , I saw your ' ~ product.title ~ ' on Biz Hub and I want to know more about it' %}
-                                        {% set quick_buy_message = 'Hi ' ~ contact_name ~ ' , i want to buy your ' ~ product.title ~ ' on biz hub. lets arrange for payment and delivery.' %}
-                                        <a href="https://wa.me/{{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}?text={{ inquiry_message|urlencode }}" class="btn-action btn-cart" target="_blank" rel="noopener">❓ Inquiry</a>
-                                        <a href="https://wa.me/{{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}?text={{ quick_buy_message|urlencode }}" class="btn-action btn-momo" target="_blank" rel="noopener">💬 Quick Buy</a>
+                                        <span>📦 {{ product.stock_quantity }} items left</span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- 👑 HARMONIZED INTERACTIVE ACTION CONTROLS -->
+                                <div style="margin-top:auto; display:flex; flex-direction:column; gap:6px;">
+                                    
+                                    <!-- WHATSAPP PRE-FILLED INQUIRY STRING BINDING -->
+                                    {% set contact_name = product.business_label or product.seller %}
+                                    {% set inquiry_message = 'Hello ' ~ contact_name ~ ', I saw your listing for "' ~ product.title ~ '" on BizHub and I would love to make an inquiry about it!' %}
+
+                                    
+                                    <div style="display: flex; gap: 6px; width: 100%;">
+                                                                                <!-- 🚀 FIXED DOMAIN GATEWAY SLASH: CLEARS SITE CANNOT BE REACHED BUGS -->
+                                        <a href="https://wa.me/{{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}?text={{ inquiry_message|urlencode }}" class="btn-action" style="flex: 1; text-align: center; text-decoration: none; background: #FFF; color: #111; border: 1px solid #CBD5E1; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;" target="_blank" rel="noopener noreferrer">
+                                            💬 Inquire
+                                        </a>
+
+
                                         {% if product.status == 'Sold' or product.stock_quantity|int <= 0 %}
-                                            <span class="btn-action" style="background:#E5E7EB;color:#6B7280;cursor:not-allowed;text-align:center;">🔴 Sold Out</span>
+                                            <span class="btn-action" style="flex: 1; background: #E5E7EB; color: #6B7280; cursor: not-allowed; text-align: center; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1;">🔴 Sold Out</span>
                                         {% else %}
-                                            <a href="/add-to-cart/{{ product.id }}" class="btn-action btn-cart">🛒 Add to Basket</a>
+                                            <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="btn-action" style="flex: 1; text-align: center; text-decoration: none; background: #FFD814; color: #111; border: 1px solid #FCD200; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; appearance:none; -webkit-appearance:none;">🛒 Add to Basket</a>
                                         {% endif %}
+                                    </div>
+
+                                    <!-- 🔒 HARD-LOCKED EXPLICIT SECURITY CHECKPOINT -->
+                                    {% if session.get('username') and session.get('username') == product.seller %}
+                                        <div style="background: #FFF5F5; border: 1px solid #FED7D7; padding: 6px 12px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; margin-top: 2px; box-sizing: border-box;">
+                                            <span style="font-size: 11px; color: var(--danger); font-weight: 700;">🏪 Store Asset Dashboard</span>
+                                            <a href="/delete-item/{{ product.id }}" style="color: var(--danger); font-size: 11px; font-weight: 800; text-decoration: underline;" onclick="return confirm('Confirm permanent deletion? This action cannot be reversed.');">🗑️ Delete Listing</a>
+                                        </div>
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
                     {% else %}
-                        <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); background: white; border-radius: 4px; border: 1px dashed var(--border-color);">
-                            📭 No matching items found.
+                        <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); background: white; border-radius: 8px; border: 1px dashed var(--border-color); font-weight: 600; width: 100%;">
+                            📭 No matching marketplace items found right now.
                         </div>
                     {% endfor %}
+
+
                 </div>
             </div>
 
@@ -1048,13 +1125,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const basket = document.getElementById("basket");
     if (!basketPopup) return;
 
+    // Toast now redirects straight to the Your cart page
     const goToBasket = function() {
-        if (!basket) return;
-        basketPopup.style.pointerEvents = "none";
-        const navbar = document.querySelector(".bh-global-header");
-        const headerOffset = navbar ? navbar.getBoundingClientRect().height + 10 : 10;
-        const targetY = Math.max(0, basket.getBoundingClientRect().top + window.scrollY - headerOffset);
-        window.scrollTo({ top: targetY, behavior: "smooth" });
+        window.location.href = "/cart";
     };
     basketPopup.addEventListener("click", goToBasket);
     basketPopup.addEventListener("touchend", function(event) {
@@ -1167,17 +1240,6 @@ function changeBasketQty(button, delta){
     input.value=qty;
     submitBasketQty(form);
 }
-    <!-- 👑 BIZHUB HIGH-CONVERTING INTERACTIVE MOBILE TOAST POPUP NOTIFICATION -->
-    <div id="bizhubCartToast" style="position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 420px; background: var(--bg-abyssal); border: 2px solid var(--accent); padding: 14px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: space-between; gap: 12px; z-index: 99999; cursor: pointer; transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-sizing: border-box;" onclick="window.location.href='/cart';">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 20px; animation: pulseFire 1.2s infinite;">🛒</span>
-            <div>
-                <b style="color: #FFFFFF; font-size: 14px; display: block; letter-spacing: -0.2px;">Item added to basket!</b>
-                <span style="color: var(--accent); font-size: 12px; font-weight: 700;">Click here to view your basket ➔</span>
-            </div>
-        </div>
-        <div style="color: #FFFFFF; opacity: 0.6; font-size: 18px; font-weight: bold; padding: 0 4px;" onclick="event.stopPropagation(); document.getElementById('bizhubCartToast').style.bottom = '-100px';">×</div>
-    </div>
 </script>
 <script>
         // Real-time notification lifecycle dispatcher trigger
@@ -1199,5 +1261,16 @@ function changeBasketQty(button, delta){
             }
         });
 </script>
+    <!-- 👑 BIZHUB HIGH-CONVERTING INTERACTIVE MOBILE TOAST POPUP NOTIFICATION -->
+    <div id="bizhubCartToast" style="position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 420px; background: var(--bg-abyssal); border: 2px solid var(--accent); padding: 14px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: space-between; gap: 12px; z-index: 99999; cursor: pointer; transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-sizing: border-box;" onclick="window.location.href='/cart';">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 20px; animation: pulseFire 1.2s infinite;">🛒</span>
+            <div>
+                <b style="color: #FFFFFF; font-size: 14px; display: block; letter-spacing: -0.2px;">Item added to basket</b>
+                <span style="color: var(--accent); font-size: 12px; font-weight: 700;">Click to buy in Your cart ➔</span>
+            </div>
+        </div>
+        <div style="color: #FFFFFF; opacity: 0.6; font-size: 18px; font-weight: bold; padding: 0 4px;" onclick="event.stopPropagation(); document.getElementById('bizhubCartToast').style.bottom = '-100px';">×</div>
+    </div>
 </body>
 </html> 

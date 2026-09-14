@@ -1,154 +1,331 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BizHub Features</title>
-<style>
-:root{--navy:#12335b;--blue:#1d4ed8;--orange:#f59e0b;--bg:#f4f7fb;--muted:#64748b;--border:#dbe3ed;--green:#15803d}
-*{box-sizing:border-box}
-body{font-family:system-ui,sans-serif;background:var(--bg);color:#172033;margin:0}
-a{color:var(--blue);font-weight:800;text-decoration:none}
-.header{background:#1a365d;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;box-shadow:0 2px 12px #0000000b}
-.header-inner{max-width:1180px;margin:auto;padding:12px 20px}
-.topbar{display:flex;align-items:center;gap:18px;justify-content:space-between;flex-wrap:wrap}
-.brand{font-size:26px;font-weight:900;color:var(--navy);white-space:nowrap}.brand span{color:var(--orange)}
-.search{display:flex;gap:7px;flex:1;max-width:520px}.search input{flex:1}
-.navlinks{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}.navlinks a{padding:7px 9px;border-radius:7px}.navlinks a:hover{background:#f8fafc}
-.account{font-size:13px;color:var(--muted);white-space:nowrap}.account b{color:#172033}
-.wrap{max-width:1180px;margin:auto;padding:22px 20px 40px}
-.page-title{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px}.page-title h1{margin:0;color:var(--navy);font-size:26px}.muted{color:var(--muted);font-size:13px;line-height:1.55}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
-.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:0 3px 15px #0000000b}.card h2{margin:0 0 8px;color:var(--navy);font-size:18px}.card h3{margin:14px 0 6px;color:var(--navy);font-size:14px}
-.row{padding:11px 0;border-bottom:1px solid #e5e7eb;font-size:13px}.row:last-child{border-bottom:0}.form{display:grid;gap:9px;margin-top:12px}
-input,textarea,select,button{font:inherit;padding:9px;border:1px solid #cbd5e1;border-radius:7px}textarea{min-height:90px;resize:vertical}button{background:var(--orange);border-color:var(--orange);color:#111827;font-weight:800;cursor:pointer}.secondary{background:#fff;border-color:#cbd5e1;color:#334155}.danger{color:#b91c1c}
-.info{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border:1px solid #94a3b8;border-radius:50%;font-size:12px;color:#475569;cursor:help;margin-left:5px;vertical-align:middle}
-.notice{padding:10px 12px;border-radius:8px;background:#ecfdf5;color:var(--green);border:1px solid #bbf7d0;font-size:13px;margin-bottom:12px}.warning{background:#fffbeb;color:#92400e;border-color:#fde68a}
-.points{font-size:38px;font-weight:900;color:var(--orange)}.stars{color:var(--orange);font-size:16px}.status{font-weight:800}.delivered{color:var(--green)}
-.small{font-size:12px}.pill{display:inline-block;padding:3px 7px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:11px;font-weight:800}
-@media(max-width:700px){.search{order:3;max-width:none;width:100%}.header-inner,.wrap{padding-left:12px;padding-right:12px}.navlinks{overflow:auto;flex-wrap:nowrap}.page-title h1{font-size:22px}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features & Account Tools | BizHub</title>
+    <style>
+        :root {
+            --nav: #0b192c;
+            --accent: #f59e0b;
+            --bg: #f4f7fb;
+            --text: #172033;
+            --muted: #64748b;
+            --border: #dbe3ed;
+            --success: #06C167;
+            --danger: #CC0C39;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 85px 18px 40px; }
+        
+        .bizhub-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--nav); min-height: 58px; padding: 8px 22px; display: flex; align-items: center; gap: 22px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .bizhub-brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: #fff; }
+        .bizhub-brand img { width: 38px; height: 38px; border-radius: 10px; }
+        .bizhub-brand strong { font-size: 18px; line-height: 1.05; }
+        .bizhub-brand strong span { color: var(--accent); }
+        .bizhub-nav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+        .bizhub-nav a { color: #e2e8f0; text-decoration: none; font-weight: 800; font-size: 13px; padding: 9px 11px; border-radius: 7px; }
+        .bizhub-nav a:hover { background: #ffffff12; color: var(--accent); }
+
+        .wrap { max-width: 1100px; margin: auto; display: grid; grid-template-columns: 1fr; gap: 24px; }
+        @media(min-width: 768px) { .wrap { grid-template-columns: 280px 1fr; } }
+        
+        .sidebar-card { background: #fff; padding: 20px; border-radius: 12px; border: 1px solid var(--border); height: fit-content; position: sticky; top: 85px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01); }
+        .sidebar-card h3 { margin-top: 0; font-size: 12px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 12px; }
+        .sidebar-card ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar-card li { margin-bottom: 10px; font-size: 14px; font-weight: 600; color: #334155; display: flex; align-items: center; gap: 8px; }
+        
+        .main-dash { display: flex; flex-direction: column; gap: 24px; }
+        .card { background: #fff; padding: 24px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        h1, h2, h3 { margin-top: 0; color: var(--nav); font-weight: 800; letter-spacing: -0.3px; }
+        p { line-height: 1.5; color: #334155; font-size: 14.5px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #334155; }
+        .form-control { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; background: #fff; }
+        .form-control:focus { border-color: var(--accent); }
+        
+        .submit-btn { padding: 10px 16px; background: var(--nav); color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; transition: opacity 0.2s; }
+        .submit-btn:hover { opacity: 0.9; }
+        
+        .reward-badge { background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); color: white; padding: 20px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; border-left: 5px solid var(--accent); }
+        .points-val { font-size: 32px; font-weight: 900; color: var(--accent); }
+        
+        .log-row { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13.5px; display: flex; justify-content: space-between; align-items: center; }
+        .log-row:last-child { border-bottom: none; }
+        
+        .rating-stars { display: flex; gap: 4px; margin-top: 6px; }
+        .rating-stars select { padding: 6px; border-radius: 4px; border: 1px solid var(--border); font-size: 12px; background: white; font-weight: 700; }
+        
+        @media(max-width:767px){ body{padding-top:80px;} .sidebar-card{position:static; margin-bottom:10px;} }
+    </style>
 </head>
 <body>
+
 <header class="bizhub-header">
-<a class="bizhub-brand" href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub"><div><strong>Biz<span>Hub</span></strong><small>Your Local Market, Unified Online</small></div></a>
-<nav class="bizhub-nav">
-<a href="{{ url_for('home') }}">☰ Marketplace</a>
-<a href="{{ url_for('cart_page') }}">🛒 Your Cart{% if session.get('cart') %} ({{ session.get('cart')|length }}){% endif %}</a>
-{% if session.get('role') in ['Vendor','Fast Food'] %}<a href="{{ url_for('vendor_profile', username=session['username']) }}">🏪 My Store</a>{% endif %}
-</nav>
+    <a class="bizhub-brand" href="{{ url_for('home') }}">
+        <img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub">
+        <div><strong>Biz<span>Hub</span></strong></div>
+    </a>
+    <nav class="bizhub-nav">
+        <a href="{{ url_for('home') }}">☰ Marketplace</a>
+        <a href="{{ url_for('cart_page') }}">🛒 Your Cart{% if session.get('cart') %} ({{ session.get('cart')|length }}){% endif %}</a>
+        {% if session.get('role') in ['Vendor','Fast Food'] %}<a href="{{ url_for('vendor_profile', username=session['username']) }}">🏪 My Store</a>{% endif %}
+    </nav>
 </header>
 
+<div class="wrap">
+    
+    <!-- LEFT CONTEXT SIDEBAR -->
+    <aside class="sidebar-card">
+        <h3>🎯 Overview Menu</h3>
+        <ul>
+            <li>🛍️ <a href="{{ url_for('home') }}" style="color:inherit; text-decoration:none;">Marketplace Feed</a></li>
+            <li>🔔 <a href="/notifications" style="color:inherit; text-decoration:none;">Inbox Alerts</a></li>
+            {% if user.role in ['Vendor','Fast Food'] %}
+                <li style="color:var(--success);">🏪 Verified Vendor</li>
+            {% elif user.role == 'Delivery Service' %}
+                <li style="color:var(--accent);">🚚 Fleet Dispatch</li>
+            {% else %}
+                <li style="color:var(--primary-light);">🛒 Shopper Account</li>
+            {% endif %}
+        </ul>
+    </aside>
 
-<main class="wrap">
-  <div class="page-title">
-    <div><h1>Features &amp; account tools</h1><p class="muted">Trust, rewards, promotions, delivery tracking, and account support in one place.</p></div>
-    <a href="{{ url_for('home') }}">← Marketplace</a>
-  </div>
+    <!-- RIGHT MAIN FEED DESK -->
+    <main class="main-dash">
+        
+        <div class="card" style="border-left: 5px solid var(--nav);">
+            <h1 style="font-size:24px; margin-bottom:8px;">Features &amp; Account Tools</h1>
+            <p style="margin:0; color:var(--muted); font-weight:500;">Manage corporate loyalty metrics, verification validations, promotional coupon structures, and order dispute ledgers in one secure hub.</p>
+        </div>
 
-  {% if verification_sent %}<div class="notice">✓ Your verification request has been submitted. BizHub will notify you after review.</div>{% endif %}
+        {% if verification_sent %}
+            <div style="background-color: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 14px; border-radius: 8px; font-weight: 700; font-size: 14px;">
+                ✓ Success: Your marketplace verification review request has been securely filed inside the audit workspace!
+            </div>
+        {% endif %}
 
-  <section class="card" style="margin-bottom:16px">
-    <h2>BizHub tools at a glance</h2>
-    <p class="muted">Use this page as your central hub for account trust, rewards, shopping support, vendor tools, and delivery activity.</p>
-    <div class="row"><strong>🛍️ Marketplace</strong> — Browse current listings, stores, and active deals.</div>
-    <div class="row"><strong>🔔 Notifications</strong> — Stay on top of order, store, delivery, and BizHub updates.</div>
-    {% if user.role in ['Vendor','Fast Food'] %}<div class="row"><strong>🏪 Store tools</strong> — Manage your published listings, promotions, coupons, and store activity.</div>{% endif %}
-    {% if user.role == 'Customer' %}<div class="row"><strong>🛒 Shopping support</strong> — Keep track of saved searches, reviews, rewards, and disputes.</div>{% endif %}
-    {% if user.role == 'Delivery Service' %}<div class="row"><strong>🚚 Delivery support</strong> — Manage delivery-service activity and your BizHub account.</div>{% endif %}
-  </section>
+        <!-- SECTION: LOYALTY REWARDS -->
+        <div class="card">
+            <h2>⭐ Corporate Loyalty Rewards Status</h2>
+            <div class="reward-badge">
+                <div>
+                    <span style="font-size:12px; text-transform:uppercase; font-weight:800; opacity:0.8; display:block; letter-spacing:0.5px;">Accrued Balance Metric</span>
+                    <b style="font-size:15px;">BizHub Member Wallet</b>
+                </div>
+                <div class="points-val">{{ loyalty.points }} <span style="font-size:14px; font-weight:700; color:white;">Points</span></div>
+            </div>
+            <p style="margin-top:15px; font-size:12px; color:var(--muted); line-height:1.4; margin-bottom:0;">
+                💡 <b>Rule Matrix:</b> Eligible completed marketplace orders automatically generate 1 point per whole currency unit of the final checkout cost statement. Duplicate rewards for identical transaction tokens are locked out.
+            </p>
+        </div>
 
-  <div class="grid">
-    <section class="card">
-      <h2>Trust &amp; verification <span class="info" title="Verification is a BizHub trust review for eligible Vendor, Fast Food, and Delivery Service accounts. BizHub reviews the request and notifies you of the outcome. Verification does not guarantee sales, payment, or delivery performance.">i</span></h2>
-      <p class="muted">Request a BizHub verification review for your business or delivery service.</p>
-      {% if verification_request %}
-        <div class="row"><span class="pill">{{ verification_request.status }}</span>{% if verification_request.created_at %} · submitted {{ verification_request.created_at[:16].replace('T',' ') }}{% endif %}</div>
-        {% if verification_request.user_message %}<div class="row"><b>Your message</b><br>{{ verification_request.user_message }}</div>{% endif %}
-        {% if verification_request.note and verification_request.status != 'Pending' %}<div class="row"><b>Review note</b><br>{{ verification_request.note }}</div>{% endif %}
-      {% endif %}
-      {% if not verification_request or verification_request.status != 'Pending' %}
-      <form method="post" action="{{ url_for('request_verification') }}" class="form">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <textarea name="user_message" maxlength="2000" placeholder="Optional: tell BizHub about your business, what you would like us to know, or anything relevant to your verification review."></textarea>
-        <button type="submit">Request verification review</button>
-      </form>
-      {% else %}<p class="muted">You already have a pending verification request. Please wait for the review outcome.</p>{% endif %}
-    </section>
+        <!-- SECTION: VENDOR ANALYTICS & COUPONS -->
+        {% if analytics %}
+            <div class="card" style="border-top: 4px solid var(--success);">
+                <h2>📈 Store Performance Analytics</h2>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:20px;">
+                    <div style="background:#f8fafc; border:1px solid var(--border); padding:12px; border-radius:6px; text-align:center;">
+                        <b style="font-size:22px; color:var(--nav);">{{ analytics.listings }}</b>
+                        <span style="display:block; font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; margin-top:2px;">Active Items</span>
+                    </div>
+                    <div style="background:#f8fafc; border:1px solid var(--border); padding:12px; border-radius:6px; text-align:center;">
+                        <b style="font-size:22px; color:var(--accent);">{{ analytics.views }}</b>
+                        <span style="display:block; font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; margin-top:2px;">Total Product Views</span>
+                    </div>
+                    <div style="background:#f8fafc; border:1px solid var(--border); padding:12px; border-radius:6px; text-align:center;">
+                        <b style="font-size:22px; color:var(--success);">{{ analytics.sold_units }}</b>
+                        <span style="display:block; font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; margin-top:2px;">Units Fulfilled</span>
+                    </div>
+                </div>
 
-    <section class="card">
-      <h2>Loyalty rewards</h2>
-      <p class="muted">Your BizHub loyalty balance.</p>
-      <div class="points">{{ loyalty.points }} <small style="font-size:14px;color:#64748b">points</small></div>
-      <p class="muted">Current rule: eligible completed orders earn 1 point per whole currency unit of the final order total. Duplicate rewards for the same order are blocked.</p>
-    </section>
+                <h3 style="border-top: 1px solid var(--border); padding-top:15px; font-size:16px;">🎟️ Issue Promotional Coupon Codes</h3>
+                <form method="POST" action="/create-coupon" style="background:#fafafa; border:1px solid var(--border); padding:16px; border-radius:8px; display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px; align-items:flex-end;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="form-group" style="margin:0;">
+                        <label>Coupon Reference Code:</label>
+                        <input type="text" name="code" class="form-control" placeholder="e.g. FESTIVE20" required style="text-transform:uppercase;">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Discount Percentage (%):</label>
+                        <input type="number" name="discount" class="form-control" placeholder="e.g. 15" min="1" max="100" required>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Total Redemption Limit:</label>
+                        <input type="number" name="max_redemptions" class="form-control" placeholder="0 for unlimited" value="0">
+                    </div>
+                    <div class="form-group" style="margin:0; grid-column: 1/-1; margin-top:10px;">
+                        <label>Brief Description Caption:</label>
+                        <input type="text" name="description" class="form-control" placeholder="e.g. Take 15% off shoes on orders today..." required>
+                    </div>
+                    <button type="submit" class="submit-btn" style="grid-column: 1/-1; margin-top:12px; background:var(--success);">Generate Active Store Coupon</button>
+                </form>
 
-    {% if analytics %}
-    <section class="card">
-      <h2>Vendor analytics</h2>
-      <div class="row"><strong>{{ analytics.listings }}</strong> listings · <strong>{{ analytics.views }}</strong> views · <strong>{{ analytics.sold_units }}</strong> units sold</div>
-      <h2 style="margin-top:16px">Create a coupon</h2>
-      <p class="muted">Codes are uppercase. A customer can redeem each coupon once. Set a total redemption limit, or leave it at 0 for unlimited redemptions.</p>
-      <form method="post" action="{{ url_for('create_coupon') }}" class="form">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <input name="code" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9_-]{2,31}" placeholder="Coupon code e.g. SAVE10" required>
-        <input name="description" maxlength="200" placeholder="Offer description" required>
-        <input name="discount" type="number" min="0.01" max="100" step="0.01" placeholder="Discount %" required>
-        <input name="expires_at" type="date" aria-label="Expiry date (optional)">
-        <input name="max_redemptions" type="number" min="0" step="1" value="0" placeholder="Maximum total redemptions (0 = unlimited)">
-        <button type="submit">Create coupon</button>
-      </form>
-      {% for coupon in coupons %}
-      <div class="row"><strong>{{ coupon.code }}</strong> · {{ coupon.discount }}% · {{ coupon.description }}{% if coupon.expires_at %} · expires {{ coupon.expires_at }}{% endif %}{% if coupon.max_redemptions|default(0)|int > 0 %} · limit {{ coupon.max_redemptions }}{% endif %}</div>
-      {% else %}<p class="muted">No coupons created yet.</p>{% endfor %}
-    </section>
-    {% endif %}
+                <h4 style="margin-bottom:8px; margin-top:20px; font-size:13px; text-transform:uppercase; color:var(--muted);">📋 Active Issued Merchant Coupons</h4>
+                <div style="border:1px solid var(--border); border-radius:8px; background:white; overflow:hidden;">
+                    {% for coupon in coupons %}
+                        <div class="log-row">
+                            <div>
+                                <code style="font-size:14px; background:#f1f5f9; padding:2px 6px; border-radius:4px; font-weight:700; color:var(--danger);">{{ coupon.code }}</code>
+                                <span style="font-size:13px; margin-left:8px; color:#334155;">{{ coupon.description }}</span>
+                            </div>
+                            <div style="text-align:right; font-size:12px; color:var(--muted);">
+                                <b style="color:var(--success); font-size:13px;">-{{ coupon.discount }}% OFF</b>
+                                {% if coupon.max_redemptions|default(0)|int > 0 %}<div style="font-size:10px;">Max Limit: {{ coupon.max_redemptions }}</div>{% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <p style="padding:16px; text-align:center; color:var(--muted); margin:0; font-style:italic;">📭 No custom promotional coupon codes created yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
 
-    {% if user.role == 'Customer' %}
-    <section class="card">
-      <h2>Saved searches</h2><p class="muted">Save a search and revisit it when you are ready to shop.</p>
-      <form method="post" action="{{ url_for('save_search') }}" class="form">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input name="query" placeholder="e.g. phones in Accra" required><button>Save search</button></form>
-      {% for search in saved_searches %}<div class="row">🔎 {{ search.query }}</div>{% else %}<p class="muted">No saved searches yet.</p>{% endfor %}
-    </section>
-    <section class="card">
-      <h2>Order or payment dispute</h2><p class="muted">Send a dispute to BizHub for review.</p>
-      <form method="post" action="{{ url_for('submit_dispute') }}" class="form">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input name="subject" value="Order or payment dispute"><textarea name="details" placeholder="Explain what happened" required></textarea><button>Submit dispute</button></form>
-    </section>
-    {% endif %}
+        <!-- SECTION: TRUST PROFILE -->
+        <div class="card">
+            <h2>🆔 Trust Profile & Verification Reviews</h2>
+            <p>File or review your active authentication request status to display verified vendor or delivery fleet verification badges across the public marketplace channels.</p>
+            
+            {% if verification_request %}
+                <div style="background:#f8fafc; border:1px solid var(--border); padding:16px; border-radius:8px; margin-bottom:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <b>Request Pipeline Audit State:</b>
+                        <span class="badge {% if verification_request.status == 'Pending' %}badge-pending{% elif verification_request.status == 'Approved' %}badge-verified{% else %}badge-danger{% endif %}">
+                            {{ verification_request.status }}
+                        </span>
+                    </div>
+                    {% if verification_request.user_message %}
+                        <div style="margin-top:10px; font-size:13px; color:#475569; background:white; padding:10px; border-radius:6px; border:1px solid var(--border);">
+                            <b>Your Sent Statement:</b> "{{ verification_request.user_message }}"
+                        </div>
+                    {% endif %}
+                    {% if verification_request.note and verification_request.status != 'Pending' %}
+                        <div style="margin-top:8px; font-size:13px; color:var(--nav); background:#fffbeb; padding:10px; border-radius:6px; border:1px solid #fef3c7;">
+                            <b>Reviewer Audit Note:</b> {{ verification_request.note }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
 
-    {% if user.role in ['Vendor','Fast Food'] %}
-    <section class="card">
-      <h2>Delivery tracking</h2>
-      <p class="muted">Track delivery requests made to delivery providers. A provider can move a request through Requested → Accepted → Picked Up → Delivered, or Declined.</p>
-      {% for dr in delivery_requests %}
-      <div class="row">
-        <strong>{{ dr.service_name }}</strong><br>
-        <span class="status {% if dr.status == 'Delivered' %}delivered{% endif %}">{{ dr.status }}</span> · {{ dr.message }}
-        {% if dr.updated_at %}<div class="muted small">Updated {{ dr.updated_at[:16].replace('T',' ') }}</div>{% endif %}
-        {% if dr.status == 'Delivered' and dr.id not in rated_request_ids %}
-        <form method="POST" action="{{ url_for('rate_delivery', request_id=dr.id) }}" class="form" style="margin-top:10px">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-          <select name="rating" required aria-label="Delivery rating"><option value="5">★★★★★ Excellent</option><option value="4">★★★★☆ Good</option><option value="3">★★★☆☆ Average</option><option value="2">★★☆☆☆ Poor</option><option value="1">★☆☆☆☆ Terrible</option></select>
-          <input type="text" name="comment" maxlength="1000" placeholder="Leave a comment (optional)">
-          <button type="submit">Submit rating</button>
-        </form>
-        {% elif dr.id in rated_request_ids %}<p class="muted">✓ You rated this delivery.</p>{% endif %}
-      </div>
-      {% else %}<p class="muted">No delivery requests yet.</p>{% endfor %}
-    </section>
-    {% endif %}
+            {% if not verification_request or verification_request.status != 'Pending' %}
+                <form method="POST" action="/request-verification" style="background:#fafafa; border:1px solid var(--border); padding:16px; border-radius:8px; margin-top:12px;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="form-group">
+                        <label>Message to Audit Team / Credentials Statement:</label>
+                        <textarea name="user_message" class="form-control" rows="3" placeholder="Provide information regarding your shop origin, registration number, or MoMo setup parameters to secure top branding badges..." required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">File Formal Verification Request</button>
+                </form>
+            {% else %}
+                <div style="background:#eff6ff; color:#1e40af; padding:12px 16px; border-radius:6px; font-size:13px; font-weight:600; border:1px solid #bfdbfe;">
+                    ⏳ You already have an open verification ticket pending platform appraisal. Please wait for outcomes.
+                </div>
+            {% endif %}
+        </div>
 
-    <section class="card">
-      <h2>Your reviews</h2>
-      {% for review in reviews %}<div class="row"><strong>{{ review.company_name or review.vendor_username }}</strong><div class="stars">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</div>{{ review.comment }}</div>{% else %}<p class="muted">Reviews you write will appear here.</p>{% endfor %}
-    </section>
-  </div>
-          <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
-        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
-            © 2026 BizHub Marketplace · Your Local Market, Unified Online
-        </footer>
-</main>
+        <!-- SECTION: USER-SPECIFIC UTILITIES -->
+        {% if user.role == 'Customer' %}
+            <div class="card" style="border-top: 4px solid var(--danger);">
+                <h2>⚠️ File Order or Payment Settlement Dispute</h2>
+                <p>Encountered transactional discrepancies, broken merchandise delivery boxes, or unauthorized charges? File formal escalations below to alert system monitoring logs.</p>
+                <form method="POST" action="/submit-dispute" style="background:#fafafa; border:1px solid var(--border); padding:16px; border-radius:8px;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="form-group">
+                        <label>Associated Order ID Token Reference:</label>
+                        <input type="text" name="order_id" class="form-control" placeholder="e.g. 1042 or leave empty for broad payment logs...">
+                    </div>
+                    <div class="form-group">
+                        <label>Dispute Subject Parameter:</label>
+                        <input type="text" name="subject" class="form-control" placeholder="e.g. Undelivered MoMo Paid Bundle" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Detailed Incident Narrative / Specification Log:</label>
+                        <textarea name="details" class="form-control" rows="3" placeholder="Describe context, timestamps, item names, and merchant conversation threads completely..." required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn" style="background:var(--danger);">File Formal Dispute Statement</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>🔎 Saved Searches Log</h2>
+                <div style="border:1px solid var(--border); border-radius:8px; background:white; overflow:hidden;">
+                    {% for search in saved_searches %}
+                        <div class="log-row">
+                            <span>🔎 <b>Query Pattern:</b> "{{ search.query }}"</span>
+                            <a href="/?company_search={{ search.query|urlencode }}" class="action-btn" style="font-size:11px;">Search Again ➔</a>
+                        </div>
+                    {% else %}
+                        <p style="padding:20px; text-align:center; color:var(--muted); margin:0; font-style:italic;">📭 No saved searches configured in your profile history sheet yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- SECTION: LOGISTICS REQUESTS (VENDORS & KITCHENS ONLY) -->
+        {% if user.role in ['Vendor','Fast Food'] %}
+            <div class="card">
+                <h2>🚚 Logistics Carrier Request Trackers</h2>
+                <p>Review real-time status progressions assigned to logistics carrier requests (Requested ➔ Accepted ➔ Picked Up ➔ Delivered).</p>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    {% for dr in delivery_requests %}
+                        <div style="background:#f8fafc; border:1px solid var(--border); padding:14px; border-radius:8px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <b>Carrier Name: {{ dr.service_name }}</b>
+                                <span class="badge {% if dr.status == 'Delivered' %}badge-verified{% elif dr.status == 'Declined' %}badge-danger{% else %}badge-pending{% endif %}">{{ dr.status }}</span>
+                            </div>
+                            <p style="font-size:13px; margin:0 0 8px 0; color:#475569;">Memo Context: "{{ dr.message }}"</p>
+                            
+                            {% if dr.status == 'Delivered' and dr.id not in rated_request_ids %}
+                                <form method="POST" action="/rate-delivery/{{ dr.id }}" style="border-top:1px dashed var(--border); padding-top:10px; margin-top:8px;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">Rate Carrier Performance:</label>
+                                    <div class="rating-stars">
+                                        <select name="rating">
+                                            <option value="5">★★★★★ Excellent Performance</option>
+                                            <option value="4">★★★★☆ Good Logistics Service</option>
+                                            <option value="3">★★★☆☆ Average Response</option>
+                                            <option value="2">★★☆☆• Poor Route Fulfillment</option>
+                                            <option value="1">★☆☆☆☆ Unacceptable Infractions</option>
+                                        </select>
+                                        <button type="submit" class="action-btn btn-approve" style="padding:4px 10px; font-size:11px;">Submit</button>
+                                    </div>
+                                </form>
+                            {% elif dr.id in rated_request_ids %}
+                                <small style="color:var(--success); font-weight:700; display:block; border-top:1px dashed var(--border); padding-top:6px;">✓ Carrier performance metric rating logged.</small>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <p style="padding:20px; text-align:center; color:var(--muted); margin:0; border:1px dashed var(--border); border-radius:6px; font-style:italic;">📭 No localized delivery service request sheets found.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- SECTION: REVIEW HISTORY (ALL USERS) -->
+        <div class="card">
+            <h2>📋 Written Storefront Profile Reviews History</h2>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                {% for review in reviews %}
+                    <div style="padding:12px; border:1px solid var(--border); border-radius:8px; background:#fafafa;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <b>Target Merchant: {{ review.company_name or review.vendor_username }}</b>
+                            <span style="color:var(--accent); font-weight:700;">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</span>
+                        </div>
+                        <p style="margin:0; font-size:13px; color:#475569;">"{{ review.comment }}"</p>
+                    </div>
+                {% else %}
+                    <p style="padding:20px; text-align:center; color:var(--muted); margin:0; font-style:italic;">📝 Reviews and star ratings you publish across merchant profiles will generate listings here.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<footer style="margin-top: 50px; padding: 20px 0; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 13px; font-weight: 600;">
+    © 2026 BizHub Marketplace · Your Local Market, Unified Online
+</footer>
+
 </body>
 </html>
