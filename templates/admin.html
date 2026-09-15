@@ -356,49 +356,62 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for user in users %}
-                            <tr>
-                                <td>
+                          {% for user in users %}
+                            <tr style="border-bottom: 1px solid var(--border); transition: var(--transition);">
+                                <td style="padding: 12px 8px; vertical-align: middle;">
                                     <b>{{ user.company_name or user.username }}</b><br>
-                                    <small style="color:var(--muted);">Handle: @{{ user.username }} | Level: {{ user.role }}</small>
+                                    <small style="color:var(--muted); font-weight: 600;">Handle: @{{ user.username }} | Level: {{ user.role }}</small>
+                                    
+                                    <!-- 👑 SECURED CELL ARCHITECTURE: Points terminal placed safely inside the user profile info block data cell -->
+                                    <div style="margin-top: 6px; background: rgba(29, 155, 240, 0.04); padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px; border: 1px dashed rgba(29, 155, 240, 0.2); box-sizing: border-box;">
+                                        <form method="POST" action="/admin/adjust-points" style="margin: 0; display: flex; align-items: center; gap: 6px;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                                            <span style="font-size: 11px; font-weight: 800; color: #1D9BF0; text-transform: uppercase; letter-spacing: 0.3px;">🪙 Points Override:</span>
+                                            <input type="number" name="points" style="width: 65px; padding: 4px 6px; border-radius: 4px; border: 1px solid #CBD5E1; font-size: 11px; font-weight: 700;" placeholder="Balance...">
+                                            <button type="submit" style="background: #1D9BF0; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; transition: var(--transition);">Save</button>
+                                        </form>
+                                    </div>
                                 </td>
-                                <td>
-                                    <small style="display:block;">📧 {{ user.email }}</small>
+                                <td style="padding: 12px 8px; vertical-align: middle;">
+                                    <small style="display:block; font-weight: 600;">📧 {{ user.email }}</small>
                                     {% if user.whatsapp_number %}
-                                        <small style="display:block;">💬 +{{ user.whatsapp_number }}</small>
+                                        <small style="display:block; font-weight: 600; margin-top: 2px;">💬 +{{ user.whatsapp_number }}</small>
                                     {% endif %}
                                 </td>
-                                <td>
-                                    <span class="badge {% if user.account_status == 'Active' %}badge-verified{% elif user.account_status == 'Warned' %}badge-pending{% else %}badge-danger{% endif %}">
+                                <td style="padding: 12px 8px; vertical-align: middle; text-align: center;">
+                                    <span class="badge {% if user.account_status == 'Active' %}badge-verified{% elif user.account_status == 'Warned' %}badge-pending{% else %}badge-danger{% endif %}" style="font-weight: 800; font-size: 11px; padding: 4px 8px; border-radius: 4px;">
                                         {{ user.account_status }}
                                     </span>
-                                </td>
-                                <td>
-                                    <div style="display:inline-flex; gap:6px; flex-wrap:wrap;">
+                                </td >
+                                <td style="padding: 12px 8px; vertical-align: middle; text-align: right;">
+                                    <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content: flex-end; align-items: center;">
                                         <form method="POST" action="/admin/approve-premium/{{ user.id }}" style="margin:0;">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                            <button type="submit" class="action-btn" style="background:#fef3c7; border-color:#fcd34d; font-weight:700;">👑 Grant Premium</button>
+                                            <button type="submit" class="action-btn" style="background:#fef3c7; border: 1px solid #fcd34d; font-weight:700; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">👑 Grant Premium</button>
                                         </form>
 
-                                        <form method="POST" action="/admin/enforce/{{ user.id }}" style="margin:0; display:inline-flex; gap:4px;">
+                                        <form method="POST" action="/admin/enforce/{{ user.id }}" style="margin:0; display:inline-flex; gap:4px; align-items: center;">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                            <input type="text" name="reason" class="form-control" style="padding:4px; font-size:12px; max-width:110px;" placeholder="Reason log..." required>
-                                            <select name="action" class="form-control" style="padding:4px; font-size:12px; background:white; max-width:100px;">
+                                            <input type="text" name="reason" class="form-control" style="padding:6px; font-size:12px; max-width:110px; border-radius: 6px; border: 1px solid var(--border);" placeholder="Reason log..." required>
+                                            <select name="action" class="form-control" style="padding:6px; font-size:12px; background:white; max-width:100px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer;">
                                                 <option value="Active">Restore</option>
                                                 <option value="Warned">Warn</option>
                                                 <option value="Suspended">Suspend</option>
                                             </select>
-                                            <button type="submit" class="action-btn" style="background:#334155; color:white;">Apply</button>
+                                            <button type="submit" class="action-btn" style="background:#334155; color:white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px;">Apply</button>
                                         </form>
 
                                         <form method="POST" action="/admin/delete-user/{{ user.id }}" style="margin:0;" onsubmit="return confirm('CRITICAL WARNING: Are you completely certain you want to permanently erase this entire profile and all associated data arrays from the database?');">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                            <button type="submit" class="action-btn" style="background:var(--danger); color:white; border:none; font-weight:700;">🗑️ Hard Delete</button>
+                                            <button type="submit" class="action-btn" style="background:var(--danger); color:white; border:none; font-weight:700; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">🗑️ Hard Delete</button>
                                         </form>
                                     </div>
                                 </td>
                             </tr>
                         {% endfor %}
+
+                                  
                     </tbody>
                 </table>
             </div>

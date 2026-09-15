@@ -181,17 +181,16 @@
         /* ==========================================================================
            👑 BIZHUB HIGH-PERFORMANCE UNBREAKABLE MULTI-VIEWPORT CAROUSEL LAYOUTS 
            ========================================================================== */
-
-        /* 🖥️ LAPTIONS & DESKTOP WIDESCREEN: Fluid auto-fill that stretches full width and width of screen */
+        /* 🖥️ DESKTOPS, LAPTOPS & WIDESCREENS: Expands smoothly into balanced grid columns */
         #masterCatalogGrid, .master-catalog-grid, .grid {
             display: grid !important;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
-            gap: 22px !important;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+            gap: 20px !important;
             padding: 15px 0 30px 0 !important;
             width: 100% !important;
         }
 
-        /* 📱 SMARTPHONES ONLY: Isolates swiping carousels strictly to small screens */
+        /* 📱 SMARTPHONES ONLY (Isolates swiping rows strictly to phone viewports) */
         @media (max-width: 767px) {
             #masterCatalogGrid, .master-catalog-grid, .grid {
                 display: flex !important;
@@ -203,6 +202,7 @@
                 padding: 10px 4px 20px 4px !important;
                 -webkit-overflow-scrolling: touch !important;
                 scrollbar-width: none !important;
+                width: 100% !important;
             }
             #masterCatalogGrid::-webkit-scrollbar, 
             .master-catalog-grid::-webkit-scrollbar, 
@@ -217,6 +217,8 @@
                 box-sizing: border-box !important;
                 margin: 0 !important;
             }
+        }
+  
             /* Fast Food Kitchens: Amazon-style swipeable row on phones */
             .kitchen-swipe-grid {
                 display: flex !important;
@@ -236,7 +238,7 @@
                 box-sizing: border-box !important;
                 margin: 0 !important;
             }
-        }
+        
 
 
    
@@ -797,7 +799,9 @@
                         <h3 style="margin:0; font-size:18px; color:var(--bg-abyssal); font-weight:800;">🛍️ Your Listings</h3>
                         <span style="font-size:12px;font-weight:800;color:#475569;background:#F1F5F9;border:1px solid #CBD5E1;padding:7px 10px;border-radius:8px;">{{ your_marketplace_products|length }} published</span>
                     </div>
-                                    <div class="master-catalog-grid" id="masterCatalogGrid">
+                                                    <!-- 👑 FIXED DESKTOP EXPANSION CORE: FORCES PROPORTIONAL MULTI-COLUMN GRID CANVAS -->
+                <div class="grid master-catalog-grid" id="masterCatalogGrid" style="display: grid !important; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important; gap: 20px !important; width: 100% !important; box-sizing: border-box;">
+
 
                     {% for product in products %}
                         <!-- 🚀 UPDATE THIS CARD LINE TO INCLUDE THE CONDITION MODIFIER -->
@@ -921,43 +925,48 @@
                                     {% endif %}
                                 </div>
 
-                                <!-- 👑 HARMONIZED INTERACTIVE ACTION CONTROLS -->
+                                                               <!-- 👑 HARMONIZED INTERACTIVE ACTION CONTROLS -->
                                 <div style="margin-top:auto; display:flex; flex-direction:column; gap:6px;">
                                     
-                                    <!-- WHATSAPP PRE-FILLED INQUIRY STRING BINDING -->
                                     {% set contact_name = product.business_label or product.seller %}
                                     {% set inquiry_message = 'Hello ' ~ contact_name ~ ', I saw your listing for "' ~ product.title ~ '" on BizHub and I would love to make an inquiry about it!' %}
-
                                     
-                                    <div style="display: flex; gap: 6px; width: 100%;">
-                                                                                <!-- 🚀 FIXED DOMAIN GATEWAY SLASH: CLEARS SITE CANNOT BE REACHED BUGS -->
-                                        <a href="https://wa.me/{{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}?text={{ inquiry_message|urlencode }}" class="btn-action" style="flex: 1; text-align: center; text-decoration: none; background: #FFF; color: #111; border: 1px solid #CBD5E1; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;" target="_blank" rel="noopener noreferrer">
-                                            💬 Inquire
-                                        </a>
-
-
-                                        {% if product.status == 'Sold' or product.stock_quantity|int <= 0 %}
-                                            <span class="btn-action" style="flex: 1; background: #E5E7EB; color: #6B7280; cursor: not-allowed; text-align: center; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1;">🔴 Sold Out</span>
-                                        {% else %}
-                                            <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="btn-action" style="flex: 1; text-align: center; text-decoration: none; background: #FFD814; color: #111; border: 1px solid #FCD200; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; appearance:none; -webkit-appearance:none;">🛒 Add to Basket</a>
-                                        {% endif %}
-                                    </div>
-
-                                    <!-- 🔒 HARD-LOCKED EXPLICIT SECURITY CHECKPOINT -->
+                                    <!-- 🔒 SECURITY BLOCK: Identifies asset ownership handles explicitly -->
                                     {% if session.get('username') and session.get('username') == product.seller %}
-                                        <div style="background: #FFF5F5; border: 1px solid #FED7D7; padding: 6px 12px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; margin-top: 2px; box-sizing: border-box;">
-                                            <span style="font-size: 11px; color: var(--danger); font-weight: 700;">🏪 Store Asset Dashboard</span>
-                                            <a href="/delete-item/{{ product.id }}" style="color: var(--danger); font-size: 11px; font-weight: 800; text-decoration: underline;" onclick="return confirm('Confirm permanent deletion? This action cannot be reversed.');">🗑️ Delete Listing</a>
+                                        <div style="background: #F8FAFC; border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box; width: 100%;">
+                                            <span style="font-size: 11px; color: var(--muted); font-weight: 700;">🏪 Your Asset Dashboard</span>
+                                            <a href="/delete-item/{{ product.id }}" style="color: var(--danger); font-size: 11px; font-weight: 800; text-decoration: underline;" onclick="return confirm('Confirm permanent deletion? This action cannot be reversed.');">🗑️ Delete</a>
+                                        </div>
+                                    {% else %}
+                                        <div style="display: flex; gap: 6px; width: 100%;">
+                                            <a href="https://wa.me/{{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}?text={{ inquiry_message|urlencode }}" class="btn-action" style="flex: 1; text-align: center; text-decoration: none; background: #FFF; color: #111; border: 1px solid #CBD5E1; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;" target="_blank" rel="noopener noreferrer">
+                                                💬 Inquire
+                                            </a>
+
+                                            {% if product.status == 'Sold' or product.stock_quantity|int <= 0 %}
+                                                <span class="btn-action" style="flex: 1; background: #E5E7EB; color: #6B7280; cursor: not-allowed; text-align: center; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1;">🔴 Sold Out</span>
+                                            {% else %}
+                                                <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="btn-action" style="flex: 1; text-align: center; text-decoration: none; background: #FFD814; color: #111; border: 1px solid #FCD200; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; appearance:none; -webkit-appearance:none;">🛒 Add to Basket</a>
+                                            {% endif %}
                                         </div>
                                     {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    {% else %}
-                        <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); background: white; border-radius: 8px; border: 1px dashed var(--border-color); font-weight: 600; width: 100%;">
+                                </div> <!-- Closes .card-actions container element -->
+
+                            </div> <!-- Closes .card-body core information elements -->
+                        </div> <!-- Closes .card product-card-wrapper component -->
+                    {% endfor %}
+                    
+                    <!-- 👑 CORRECT FACTORIZED LOCATION OUTSIDE LOOP FOR FALLBACK NOTICE -->
+                    {% if not processed_items %}
+                        <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); background: white; border-radius: 8px; border: 1px dashed var(--border-color); font-weight: 600; width: 100%; box-sizing: border-box;">
                             📭 No matching marketplace items found right now.
                         </div>
-                    {% endfor %}
+                    {% endif %}
+
+                </div> <!-- 🚀 SEALS MASTER GRID CONTAINER FOR HIGH-DENSITY LAPTOP RENDERS -->
+
+                                          
+                
 
 
                 </div>

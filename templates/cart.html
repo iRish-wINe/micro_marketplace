@@ -88,15 +88,45 @@
             {% endif %}
         </section>
 
-        <aside class="card summary">
-            <div class="card-head"><h2>Cart Summary</h2></div>
+        <!-- 👑 THE COUPON ENTRY ENGINE SITS OUTSIDE AND ABOVE THE SUMMARY CARD -->
+        <div style="background: var(--bg-card, #FFF); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color, #E2E8F0); margin-bottom: 16px; box-sizing: border-box; text-align: left;">
+            {% if not active_coupon %}
+                <form method="POST" action="/apply-coupon" style="margin: 0; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div style="flex-grow: 1; min-width: 200px;">
+                        <label style="display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; color: #64748B;">🎟️ Have a Promo Code / Coupon?</label>
+                        <input type="text" name="code" class="form-control" placeholder="e.g. DISCOUNT30" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color, #CBD5E1); font-size: 14px; text-transform: uppercase;" required>
+                    </div>
+                    <button type="submit" style="background: var(--nav, #0B192C); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; margin-top: 22px;">Apply Code</button>
+                </form>
+            {% else %}
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(6, 193, 103, 0.05); border: 1px dashed var(--success, #06C167); padding: 12px; border-radius: 8px;">
+                    <div>
+                        <span style="color: var(--success, #06C167); font-weight: 800; font-size: 13px;">✓ Active Coupon Applied: <code style="background: #FFF; padding: 2px 6px; border-radius: 4px;">{{ active_coupon.code }}</code></span>
+                        <small style="display: block; color: #64748B; font-size: 11px; margin-top: 2px;">Enjoy {{ active_coupon.discount }}% OFF items from this merchant.</small>
+                    </div>
+                    <form method="POST" action="/remove-coupon" style="margin: 0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit" style="background: none; border: none; color: var(--danger, #EF4444); font-weight: 800; font-size: 12px; cursor: pointer; text-decoration: underline;">Remove Code</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 👑 THE MAIN CART SUMMARY CARD ENVELOPE REMAINS CRISTINE AND UNTOUCHED -->
+        <aside class="card summary">           
+            <div class="card-head">
+                <h2>Cart Summary</h2>
+            </div>
+            <!-- Rest of your summary card details like subtotal rows continue below safely -->
+    
             <div class="summary-body">
                 {% if cart_items %}
                     <div class="summary-line"><span>Items</span><strong>{{ cart_count }}</strong></div>
                     {% if discount_total %}<div class="summary-line discount"><span>Discount</span><span>− GH₵{{ "%.2f"|format(discount_total) }}</span></div>{% endif %}
                     <div class="summary-line total"><span>Total</span><span>GH₵{{ "%.2f"|format(cart_total) }}</span></div>
                     {% for order in seller_orders %}
-                        <div class="seller"><div class="seller-name">Pay {{ order.seller }}</div><a class="pay" href="whatsapp://send?phone={{ order.number }}&text={{ order.whatsapp_text }}">💬 Pay Vendor on WhatsApp</a></div>
+                        <div class="seller"><div class="seller-name">Pay {{ order.seller }}</div><a class="pay" href="whatsapp://send?phone={{ order.number }}&text={{ order.whatsapp_text }}">💬 Pay Vendor via WhatsApp</a></div>
                     {% endfor %}
                     <a class="clear" href="{{ url_for('clear_cart') }}">Empty Basket</a>
                 {% else %}

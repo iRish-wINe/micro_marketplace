@@ -1041,6 +1041,77 @@ def save_company_logo(upload):
     upload.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
     return filename
 
+@app.route("/publish-product", methods=["POST"])
+def publish_product():
+    """👑 BIZHUB DEDICATED ISOLATED PRODUCT CREATION SYSTEM: Prevents mobile CSRF blank-screen crashes."""
+    if "username" not in session or session.get("role") not in ["Vendor", "Fast Food"]:
+        return redirect(url_for("home"))
+        
+    vendor = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+    if not vendor:
+        return redirect(url_for("home"))
+        
+    # Check subscription listings volume restrictions safely
+    subscription = subscription_status(vendor)
+    listing_count_row = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ?", (session["username"],), one=True)
+    listing_count = listing_count_row["count"] if listing_count_row else 0
+    
+    if not subscription["is_premium"] and listing_count >= 3:
+        return redirect(url_for("vendor_profile", username=session["username"], listing_error="Basic accounts can list up to 3 products. Upgrade to Premium for unlimited listings."))
+
+    price = request.form.get("price")
+    is_fast_food = bool(vendor.get("role") == "Fast Food")
+    
+    title = request.form.get("meal_name" if is_fast_food else "title")
+    description = request.form.get("meal_description" if is_fast_food else "description")
+    category = "Fast Food" if is_fast_food else (request.form.get("category", "Other").strip() or "Other")
+    stock_quantity = request.form.get("stock_quantity", "1")
+    location = request.form.get("location", "").strip() or vendor.get("business_location") or "Accra"
+    
+    file = request.files.get("product_image")
+    video = request.files.get("product_video")
+    
+    has_image = bool(file and file.filename)
+    has_video = bool(video and video.filename)
+    
+    if not is_fast_food and has_image == has_video:
+        return redirect(url_for("vendor_profile", username=session["username"], listing_error="Choose exactly one media option: Image OR Showcase Video."))
+
+    filename = ""
+    if has_image:
+        ext = os.path.splitext(secure_filename(file.filename))[1].lower()
+        if ext not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
+            return redirect(url_for("vendor_profile", username=session["username"], listing_error="Images must be PNG, JPG, JPEG, WEBP, or GIF."))
+        filename = f"product-{uuid.uuid4().hex}{ext}"
+        file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+    else:
+        filename = "fast-food-placeholder.svg" if is_fast_food else ""
+
+    video_filename = None
+    if has_video:
+        ext = os.path.splitext(video.filename)[1].lower()
+        if not subscription["is_premium"]:
+            return redirect(url_for("vendor_profile", username=session["username"], listing_error="Upgrade to Premium Store to attach showcase video ad loops."))
+        if ext not in VIDEO_EXTENSIONS:
+            return redirect(url_for("vendor_profile", username=session["username"], listing_error="Videos must be MP4, WebM, or MOV files."))
+        video_filename = f"video-{uuid.uuid4().hex}{ext}"
+        video.save(os.path.join(app.config["UPLOAD_FOLDER"], video_filename))
+
+    stock_quantity = 1 if is_fast_food else int(stock_quantity or 1)
+
+    if title and price and description:
+        b_label = vendor.get("company_name") or vendor.get("username") or "Individual Vendor"
+        query_db(
+            "INSERT INTO products (title, price, description, image_file, video_file, stock_quantity, initial_stock_quantity, sold_quantity, status, seller, seller_email, seller_whatsapp, location, business_label, category) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?)",
+            (title, float(price), description, filename, video_filename, stock_quantity, stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"), location, b_label, category)
+        )
+        
+        # Trigger favorite store push notifications automatically
+        notify_favorite_customers(vendor["id"], "product", f"{b_label} added a new item", title, url_for("vendor_profile", username=vendor["username"]))
+        
+    return redirect(url_for("vendor_profile", username=vendor["username"]))
+
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     """👑 BIZHUB SMART MARKETPLACE CONTROLLER: Handles product creation and tiered chronological feed ranking."""
@@ -1137,7 +1208,8 @@ def home():
         if location_match_check:
             return redirect(url_for("all_stores", company_search=location_match_check["business_location"]))
 
-    # Core Query Execution: Tag promotions and join business labels cleanly
+    
+    # Core Query Execution: Tag promotions and join business labels cleanly (EXCLUDES FAST FOOD FROM HOME FEED)
     raw_products = query_db("""
         SELECT p.*, 
                u.company_name AS business_label, u.business_location, u.role AS seller_role,
@@ -1146,8 +1218,9 @@ def home():
                (SELECT promo_price FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS promo_effective_price
         FROM products p
         JOIN users u ON p.seller = u.username
-        WHERE p.status = 'Available' AND p.stock_quantity > 0
+        WHERE p.status = 'Available' AND p.stock_quantity > 0 AND p.category != 'Fast Food'
     """) or []
+
 
     # Get user's favorites map context safely
     favorited_sellers = set()
@@ -1391,15 +1464,22 @@ def add_to_cart(product_id):
     product = query_db("SELECT id, stock_quantity, status, category, title, seller, price FROM products WHERE id = ?", (product_id,), one=True)
     if not product:
         return redirect(url_for("home"))
-    if int(product.get("stock_quantity") or 0) < 1 or product.get("status") == "Sold":
+    
+    is_food = bool(product.get("category") == "Fast Food")
+    
+    # Standard physical vendors are stock-restricted, fast food menu items are infinite
+    if not is_food and (int(product.get("stock_quantity") or 0) < 1 or product.get("status") == "Sold"):
         return redirect(url_for("home", listing_error="This product is sold out."))
+        
     cart = session.get("cart") or {}
     if isinstance(cart, list):
         cart = {str(pid): 1 for pid in cart}
     key = str(product_id)
     current = int(cart.get(key, 0) or 0)
-    if current >= int(product["stock_quantity"]):
+    
+    if not is_food and current >= int(product["stock_quantity"]):
         return redirect(url_for("home", listing_error=f"Only {product['stock_quantity']} available for {product['title']}."))
+        
     cart[key] = current + 1
     session["cart"] = cart
     session.modified = True
@@ -1412,6 +1492,8 @@ def add_to_cart(product_id):
                 (user["id"], product["id"], product["title"], product["seller"], float(product["price"]), 1, cart[key], datetime.now(timezone.utc).isoformat())
             )
     return redirect(url_for("home", cart_added="1"))
+
+
 
 @app.route("/cart")
 def cart_page():
@@ -1439,33 +1521,53 @@ def cart_page():
         placeholders = ",".join("?" for _ in ids)
         items_in_db = query_db(f"SELECT * FROM products WHERE id IN ({placeholders})", ids) or []
         for item in items_in_db:
-            qty = min(int(cart.get(str(item["id"]), 1)), max(0, int(item.get("stock_quantity") or 0)))
-            if qty <= 0 or item.get("status") == "Sold":
+            is_food = bool(item.get("category") == "Fast Food")
+            
+            # 🍟 FAST FOOD VELOCITY EXPANSION MATRIX: Unlocks ordering limits for food menu items
+            if is_food:
+                qty = max(1, int(cart.get(str(item["id"]), 1)))
+            else:
+                # 📦 PHYSICAL VENDORS BOUNDARY LOCK: Clamps securely to physical warehouse stock units
+                qty = min(int(cart.get(str(item["id"]), 1)), max(0, int(item.get("stock_quantity") or 0)))
+                
+            if qty <= 0 or (not is_food and item.get("status") == "Sold"):
                 continue
+                
             item["cart_quantity"] = qty
             item_promo = active_promo_for_product(item["id"])
             item["cart_unit_price"] = promo_effective_price(item, item_promo)
             item["cart_line_total"] = item["cart_unit_price"] * qty
+            
             item_discount = 0.0
             if active_coupon and item["seller"] == active_coupon["username"]:
                 item_discount = item["cart_line_total"] * float(active_coupon["discount"]) / 100
+                
             item["discount_amount"] = item_discount
             item["discounted_line_total"] = item["cart_line_total"] - item_discount
             cart_items.append(item)
             cart_total += item["discounted_line_total"]
             discount_total += item_discount
+            
             seller_number = normalize_whatsapp_number(item["seller_whatsapp"])
             seller_key = (item["seller"], seller_number)
             seller_order = seller_orders.setdefault(seller_key, {"seller": item["seller"], "number": seller_number, "items": [], "total": 0.0})
             seller_order["items"].append(item)
             seller_order["total"] += item["discounted_line_total"]
 
+
+    # 👑 WHATSAPP COUPON LOG INTERCEPTOR MATRIX
     for seller_order in seller_orders.values():
-        message = f"Hello {seller_order['seller']}, I want to buy these products on Biz Hub:\n"
+        message = f"Hello {seller_order['seller']}, I want to buy these products on BizHub:\n"
         for item in seller_order["items"]:
             message += f"- {item['title']} (GH₵{item['price']}) in {item['location']}\n"
+            
+        # If an active coupon is applied, automatically inject it into the text header!
+        if active_coupon and active_coupon["username"] == seller_order['seller']:
+            message += f"\n🎟️ Coupon Applied: '{active_coupon['code']}' (-{active_coupon['discount']}% OFF on BizHub)"
+            
         message += f"\nTotal Cost: GH₵{seller_order['total']:.2f}. Let's arrange for payment and delivery."
         seller_order["whatsapp_text"] = quote(message)
+
 
     history = query_db(
         "SELECT id, product_id, title, seller, price, quantity_added, cart_quantity_after, added_at FROM cart_history WHERE user_id = ? ORDER BY id DESC LIMIT 200",
@@ -1497,17 +1599,23 @@ def cart_page():
 
 @app.route("/update-cart/<int:product_id>", methods=["POST"])
 def update_cart(product_id):
-    """👑 CORE INCREMENT ENGINE: Seamlessly updates item volumes across multi-viewport drawers."""
+    """👑 CORE INCREMENT ENGINE: Allows infinite meal ordering while protecting physical vendor stock limits."""
     cart = session.get("cart") or {}
     if isinstance(cart, list):
         cart = {str(pid): 1 for pid in cart}
     key = str(product_id)
     
-    # Extract the requested delta or explicit target assignment count safely
     action_direction = request.form.get("action_direction")
-    product = query_db("SELECT id, stock_quantity, status FROM products WHERE id = ?", (product_id,), one=True)
-    available_stock = int(product["stock_quantity"] or 0) if product else 0
+    product = query_db("SELECT id, stock_quantity, status, category FROM products WHERE id = ?", (product_id,), one=True)
     
+    if not product:
+        cart.pop(key, None)
+        session["cart"] = cart
+        session.modified = True
+        return redirect(url_for("cart_page"))
+
+    is_food = bool(product.get("category") == "Fast Food")
+    available_stock = int(product["stock_quantity"] or 0)
     current_qty = int(cart.get(key, 0))
     
     if action_direction == "increase":
@@ -1518,19 +1626,27 @@ def update_cart(product_id):
         try: requested_qty = int(request.form.get("quantity", "0"))
         except (TypeError, ValueError): requested_qty = 0
 
-    if not product or product["status"] == "Sold" or available_stock <= 0 or requested_qty <= 0:
+    if requested_qty <= 0:
         cart.pop(key, None)
     else:
-        cart[key] = min(requested_qty, available_stock)
+        if is_food:
+            # 🍟 FAST FOOD KITCHEN MENU INFLECTION: Allows infinite meal quantities
+            cart[key] = requested_qty
+        else:
+            # 📦 PHYSICAL VENDORS BLOCK: Clamps tightly to physical stock warehouse bounds
+            if product["status"] == "Sold" or available_stock <= 0:
+                cart.pop(key, None)
+            else:
+                cart[key] = min(requested_qty, available_stock)
 
     session["cart"] = cart
     session.modified = True
     
-    # 🚀 INTELLIGENT SOURCE REDIRECT: Checks if the post instruction came from the Cart tab or Homepage
     client_referrer = request.referrer or ""
     if "/cart" in client_referrer:
         return redirect(url_for("cart_page"))
     return redirect(url_for("home", _anchor="basket"))
+
 
 
    
@@ -2874,6 +2990,30 @@ def admin_dashboard():
     verified_count = verified_count_row["count"] if verified_count_row and verified_count_row["count"] is not None else 0
     
     return render_template("admin.html", users=users, subscription_status=subscription_status, listing_counts=listing_counts, ledger_entries=ledger_entries, subscription_receipts=subscription_receipts, reports=reports, verification_requests=verification_requests, disputes=disputes, admin_audit_logs=admin_audit_logs, total_revenue=total_revenue, pending_momo=pending_momo, verified_count=verified_count)
+
+@app.route("/admin/adjust-points", methods=["POST"])
+def admin_adjust_points():
+    """👑 ADMIN OVERRIDE: Manually adjust customer loyalty points balances."""
+    if not is_admin():
+        return redirect(url_for("admin_login"))
+    user_id = request.form.get("user_id")
+    try:
+        points = int(request.form.get("points", 0))
+    except ValueError:
+        return redirect(url_for("admin_dashboard"))
+        
+    now = datetime.now(timezone.utc).isoformat()
+    query_db("UPDATE loyalty_accounts SET points = ?, updated_at = ? WHERE user_id = ?", (points, now, user_id))
+    return redirect(url_for("admin_dashboard", points_updated="1"))
+
+@app.route("/admin/delete-coupon/<int:coupon_id>", methods=["POST"])
+def admin_delete_coupon(coupon_id):
+    """👑 ADMIN OVERRIDE: Force delete/revoke any vendor coupon code instantly."""
+    if not is_admin():
+        return redirect(url_for("admin_login"))
+    query_db("DELETE FROM coupons WHERE id = ?", (coupon_id,))
+    return redirect(url_for("admin_dashboard", coupon_deleted="1"))
+
 
 @app.route("/admin/verification/<int:request_id>", methods=["POST"])
 def review_verification(request_id):

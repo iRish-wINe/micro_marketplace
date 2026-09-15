@@ -120,6 +120,20 @@
             </div>
         </div>
 
+                <!-- 📢 BIZHUB VENDOR LOGISTICS FULFILLMENT WARNING ALERT (OWNER COMPULSORY INTELLIGENCE) -->
+        {% if is_owner %}
+            <div style="background: rgba(245, 158, 11, 0.06); border-left: 6px solid #F59E0B; padding: 14px 16px; border-radius: 8px; margin-top: 15px; margin-bottom: 18px; box-sizing: border-box; width: 100%;">
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                    <span style="font-size: 18px; margin-top: -2px;">📢</span>
+                    <div style="font-size: 13.5px; line-height: 1.45; color: var(--text-main);">
+                        <b style="color: #D97706; text-transform: uppercase; font-size: 11px; tracking-spacing: 0.5px; display: block; margin-bottom: 4px;">⚠️ Compulsory Fulfillment Requirement:</b>
+                        Placing an inquiry or communicating on WhatsApp does not automatically deduct your stock inventory. **You must confirm payment directly in your <a href="/orders" style="color: #D97706; font-weight: 800; text-decoration: underline;">Orders Page Dashboard</a> to verify and confirm payment manually after a customer makes a purchase** to seal the transaction, update store inventory or stock ledger entries, and clear pending customer tracking rows safely.
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+
         <!-- 👑 THE UNIVERSALLY VISIBLE COMPILER CONTROL FOR NEW RELEASES IN THE SIDECAR CANVAS -->
         {% if is_owner %}
         <div class="profile-board-card" style="border-top: 4px solid var(--accent);">
@@ -127,7 +141,9 @@
                 {% if vendor.role == 'Fast Food' %}🍔 Publish Fresh Kitchen Meal{% else %}📦 Publish Product Listing{% endif %}
             </h3>
             
-            <form method="POST" action="/" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- 🚀 RE-ROUTED DIRECTLY TO YOUR NEW SECURE BALANCED ENDPOINT FOR IPHONES -->
+            <form method="POST" action="/publish-product" enctype="multipart/form-data" style="margin-top: 15px; display: flex; flex-direction: column; gap: 14px;">
+
                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 
                 <div class="form-group">
