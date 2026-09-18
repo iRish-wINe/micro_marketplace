@@ -101,7 +101,7 @@
         .nav-links a:hover { color: var(--accent); background: rgba(255,255,255,0.05); }
 
         .search-hero { background-color: var(--bg-abyssal); padding: 15px 0; color: white; }
-        .search-panel { display: flex; flex-wrap: wrap; background: white; border-radius: var(--radius-sm); overflow: hidden; box-shadow: var(--shadow-sm); max-width: 1100px; margin: 0 auto; width: 100%; border: 1px solid rgba(0,0,0,0.2); padding: 2px; box-sizing: border-box; }
+        .search-panel { display: flex; flex-wrap: nowrap;overflow-x: auto; background: white; border-radius: var(--radius-sm); overflow: hidden; box-shadow: var(--shadow-sm); max-width: 1100px; margin: 0 auto; width: 100%; border: 1px solid rgba(0,0,0,0.2); padding: 2px; box-sizing: border-box; }
         .search-panel select, .search-panel input { border: none; padding: 12px 16px; font-size: 14px; outline: none; color: var(--text-main); box-sizing: border-box; }
         .filter-select { background: #F3F3F3; font-weight: 700; border-right: 1px solid var(--border-color) !important; cursor: pointer; color: #444 !important; }
         .search-input { flex-grow: 1; min-width: 240px; }
@@ -398,7 +398,144 @@
             50% { transform: scale(1.15); filter: drop-shadow(0 0 4px #CC0C39); }
             100% { transform: scale(1); }
         }
+/* =========================================================
+   MOBILE HORIZONTAL NAVIGATION WITHOUT PAGE OVERFLOW
+   ========================================================= */
 
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+.bh-global-header {
+    position: sticky;
+    top: 0;
+    z-index: 10000;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.bh-topbar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.bh-subbar {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    gap: 14px !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto;
+    min-height: 42px;
+
+    padding: 0 12px !important;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    white-space: nowrap !important;
+
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+}
+
+.bh-subbar::-webkit-scrollbar {
+    display: none;
+}
+
+.bh-subbar > a {
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+
+    width: auto !important;
+    min-width: max-content !important;
+    max-width: none !important;
+
+    align-items: center;
+    justify-content: center;
+
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+
+    padding: 10px 3px !important;
+}
+
+/* Do not allow the spacer to create unwanted width */
+.bh-subbar .bh-grow {
+    display: none !important;
+}
+
+/* Prevent large header items from forcing the page wider */
+.bh-brand,
+.bh-action,
+.bh-search {
+    min-width: 0;
+    max-width: 100%;
+}
+
+@media (max-width: 767px) {
+    .bh-topbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 6px;
+        padding: 7px 8px;
+    }
+
+    .bh-brand {
+        overflow: hidden;
+        white-space: nowrap;
+        font-size: 19px;
+    }
+
+    .bh-action {
+        max-width: 120px;
+        overflow: hidden;
+    }
+
+    .bh-action strong {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .bh-search {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .bh-search input {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .bh-subbar {
+        gap: 13px !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+
+    .bh-subbar > a {
+        font-size: 12px !important;
+        padding: 10px 2px !important;
+    }
+}
                 
             
 </style>
@@ -457,7 +594,6 @@
 
 <style id="bizhub-global-header-styles">
 :root{--bh-navy:#131921;--bh-navy2:#232f3e;--bh-orange:#ff9900;--bh-yellow:#febd69}
-.bh-global-header{position:sticky;top:0;z-index:10000;font-family:Arial,Helvetica,sans-serif;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .bh-global-header{position:relative;z-index:10000;font-family:Arial,Helvetica,sans-serif;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .bh-topbar{min-height:64px;background:var(--bh-navy);display:flex;align-items:center;gap:10px;padding:8px 14px;box-sizing:border-box}
 .bh-brand{display:flex;align-items:center;gap:7px;text-decoration:none;color:#fff;font-weight:900;letter-spacing:-.5px;font-size:22px;line-height:1;white-space:nowrap;padding:8px 7px;border:1px solid transparent;border-radius:3px}.bh-brand:hover{border-color:#fff;color:#fff}.bh-brand-mark{font-size:23px}.bh-brand-sub{display:block;font-size:10px;letter-spacing:1.1px;color:#febd69;margin-top:3px;font-weight:700}
@@ -498,193 +634,16 @@
       
     {% else %}
       <a class="bh-action" href="{{ url_for('login') }}"><span class="icon">👤</span><span><span class="small">Welcome</span><strong>Sign in</strong></span></a>
-      <a class="bh-action bh-create-account" href="{{ url_for('login') }}">
-    <span>
-        <span class="small">New to BizHub?</span>
-        <strong>Create account</strong>
-    </span>
-</a>
+      <a class="bh-action" href="{{ url_for('login') }}"><span><span class="small">New to BizHub?</span><strong>Create account</strong></span></a>
     {% endif %}
   </div>
 <!-- 👑 AMAZON-STYLE HIGH-DENSITY MOBILE COMPATIBLE SUBBAR MATRIX -->
-<nav class="bh-subbar" aria-label="BizHub marketplace navigation" <nav class="bh-subbar" aria-label="BizHub marketplace navigation"></nav>
+<nav class="bh-subbar" aria-label="BizHub marketplace navigation" style="display: flex; align-items: center; background: #232F3E; padding: 0 14px; min-height: 42px; gap: 14px; position: relative; overflow-x: auto !important; -webkit-overflow-scrolling: touch; white-space: nowrap !important; scrollbar-width: none; width: 100%;">
     <style>
         /* Force hidden default scroll indicators while keeping the line fluidly swipeable on phones */
         .bh-subbar::-webkit-scrollbar { display: none !important; }
         .bh-subbar a { color: #FFFFFF !important; text-decoration: none !important; font-size: 13px !important; font-weight: 700 !important; display: inline-block !important; flex-shrink: 0 !important; padding: 4px 2px; }
         .bh-subbar a:hover { color: #F59E0B !important; }
-        /* =========================================================
-   GLOBAL STICKY HEADER
-   ========================================================= */
-
-.bh-global-header {
-    position: sticky !important;
-    top: 0;
-    z-index: 10000;
-    width: 100%;
-    max-width: 100vw;
-}
-
-.bh-topbar,
-.bh-subbar {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-}
-
-/* Prevent any page-level horizontal overflow */
-html,
-body {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-}
-
-img,
-video,
-iframe,
-input,
-select,
-textarea,
-button {
-    max-width: 100%;
-}
-
-/* =========================================================
-   MOBILE HEADER
-   ========================================================= */
-
-@media (max-width: 767px) {
-    .bh-topbar {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 6px;
-        align-items: center;
-        padding: 7px 8px;
-        min-height: 0;
-    }
-
-    .bh-brand {
-        min-width: 0;
-        overflow: hidden;
-        font-size: 19px;
-        padding: 6px 3px;
-    }
-
-    .bh-brand > span:last-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .bh-action {
-        min-width: 0;
-        padding: 5px 6px;
-    }
-
-    .bh-action .small {
-        display: none;
-    }
-
-    .bh-action strong {
-        font-size: 11px;
-        white-space: nowrap;
-    }
-
-    .bh-action .icon {
-        font-size: 18px;
-    }
-
-    /* Keep the account link visible but remove the duplicate create-account button */
-    .bh-create-account {
-        display: none !important;
-    }
-
-    .bh-search {
-        grid-column: 1 / -1;
-        order: 3;
-        width: 100%;
-        min-width: 0;
-        height: 40px;
-    }
-
-    .bh-search input {
-        min-width: 0;
-        width: 100%;
-        font-size: 13px;
-    }
-
-    .bh-search button {
-        width: 45px;
-        flex: 0 0 45px;
-    }
-
-    /*
-     * Display all navigation links inside the phone width.
-     * The menu wraps to additional rows instead of forcing
-     * the user to swipe horizontally.
-     */
-    .bh-subbar {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        align-items: stretch !important;
-        justify-content: stretch;
-        gap: 4px !important;
-        padding: 5px 6px !important;
-        min-height: 0;
-        overflow: visible !important;
-        white-space: normal !important;
-        scrollbar-width: none;
-    }
-
-    .bh-subbar::-webkit-scrollbar {
-        display: none;
-    }
-
-    .bh-subbar a {
-        display: flex !important;
-        flex: 1 1 calc(33.333% - 5px) !important;
-        min-width: 0 !important;
-        max-width: none !important;
-        flex-shrink: 1 !important;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 9px 4px !important;
-        border-radius: 5px;
-        font-size: 11px !important;
-        line-height: 1.15;
-        white-space: normal !important;
-        overflow-wrap: anywhere;
-    }
-
-    .bh-subbar a:first-child {
-        flex-basis: calc(33.333% - 5px) !important;
-    }
-
-    .bh-subbar .bh-grow {
-        display: none;
-    }
-
-    .container {
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-
-    .layout {
-        width: 100%;
-        min-width: 0;
-    }
-
-    .marketplace-hero,
-    .amazon-billboard,
-    .fastFoodKitchens {
-        max-width: 100%;
-        min-width: 0;
-    }
-}
     </style>
 
     <!-- 👑 THE AMAZON ALL SIDEBAR HAMBURGER TOGGLER BUTTON -->
@@ -715,11 +674,8 @@ button {
         {% endif %}
     
 
-   </a>
-
-<a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">
-    Favorites
-</a>
+    <a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">Favorites</a>
+    </a>
     <a href="{{ url_for('cart_page') }}" style="display: inline-flex !important; align-items: center; gap: 4px;">
     🛒 Cart
     {% if cart_items %}
