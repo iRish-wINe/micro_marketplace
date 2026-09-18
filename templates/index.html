@@ -12,6 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="BizHub">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+    <link rel="icon" type="image/png" href="/static/uploads/bizhub-app-icon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=4">
     <style>
         /* 👑 STANDARDIZED CORE APPERANCE THEME CSS MATRIX */
@@ -181,43 +182,41 @@
         /* ==========================================================================
            👑 BIZHUB HIGH-PERFORMANCE UNBREAKABLE MULTI-VIEWPORT CAROUSEL LAYOUTS 
            ========================================================================== */
-        /* 🖥️ DESKTOPS, LAPTOPS & WIDESCREENS: Expands smoothly into balanced grid columns */
-        #masterCatalogGrid, .master-catalog-grid, .grid {
-            display: grid !important;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
-            gap: 20px !important;
-            padding: 15px 0 30px 0 !important;
-            width: 100% !important;
+        /* 🖥️ LAPTOPS & DESKTOPS: Expands into balanced wide grid tiles */
+        @media (min-width: 768px) {
+            #masterCatalogGrid {
+                display: grid !important;
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+                gap: 20px !important;
+                width: 100% !important;
+            }
         }
 
-        /* 📱 SMARTPHONES ONLY (Isolates swiping rows strictly to phone viewports) */
+        /* 📱 MOBILE PHONES: Activates clean Amazon-style horizontal touch swiping rows */
         @media (max-width: 767px) {
-            #masterCatalogGrid, .master-catalog-grid, .grid {
+            #masterCatalogGrid {
                 display: flex !important;
                 flex-direction: row !important;
                 flex-wrap: nowrap !important;
                 gap: 12px !important;
                 overflow-x: auto !important;
-                scroll-snap-type: x mandatory !important;
-                padding: 10px 4px 20px 4px !important;
                 -webkit-overflow-scrolling: touch !important;
-                scrollbar-width: none !important;
+                scrollbar-width: none !important; /* Hides default ugly scrollbars */
                 width: 100% !important;
+                scroll-snap-type: x mandatory !important;
+                padding-bottom: 15px !important;
             }
-            #masterCatalogGrid::-webkit-scrollbar, 
-            .master-catalog-grid::-webkit-scrollbar, 
-            .grid::-webkit-scrollbar {
-                display: none !important;
+            #masterCatalogGrid::-webkit-scrollbar {
+                display: none !important; /* Hides webkit scroll trackers */
             }
-            #masterCatalogGrid .card, 
-            .master-catalog-grid .card, 
-            .grid .card {
-                flex: 0 0 230px !important;
+            /* Forces each product card container to lock into a uniform mobile size bounds */
+            #masterCatalogGrid .product-card-wrapper {
+                flex: 0 0 250px !important;
                 scroll-snap-align: start !important;
                 box-sizing: border-box !important;
-                margin: 0 !important;
             }
         }
+
   
             /* Fast Food Kitchens: Amazon-style swipeable row on phones */
             .kitchen-swipe-grid {
@@ -408,12 +407,13 @@
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/bizhub-app-icon.svg') }}?v=3">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/icon-192.png') }}?v=3">
 </head>
-<body data-bizhub-logged-in="{{ '1' if session.get('username') else '0' }}">
+    <body data-bizhub-logged-in="{{ '1' if session.get('username') else '0' }}">
 
     <div id="bizhub-splash-screen" aria-label="BizHub loading">
         <div class="splash-brand">
             <div class="splash-logo-wrap">
-                <img class="splash-logo-image" src="{{ url_for('static', filename='uploads/bizhub-app-icon.svg') }}" alt="BizHub">
+                <!-- 🌀 FIXED: Extensions matched cleanly from .svg over to .png to eliminate the broken asset error -->
+                <img class="splash-logo-image" src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub" style="border-radius: 14px;">
             </div>
             <div class="splash-title">Biz<span>Hub</span></div>
             <p class="splash-motto">Your Local Market, Unified Online</p>
@@ -421,6 +421,7 @@
             <div class="splash-spinner" aria-hidden="true"></div>
             <div class="splash-caption">Local commerce • One marketplace</div>
         </div>
+
     </div>
 
 {% if request.args.get('cart_added') == '1' %}
@@ -431,21 +432,26 @@
 {% endif %}
 
 
-    {% if welcome_message %}
-    <div id="new-registrant-welcome" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4">
-        <div class="w-full max-w-md rounded-3xl bg-white p-7 text-center shadow-2xl border border-emerald-100">
-            <div class="mx-auto mb-3 w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl">✓</div>
-            <div class="font-black text-slate-900 text-xl">Welcome to Biz Hub</div>
-            <div class="text-sm text-slate-600 mt-2">Your BizHub account is ready. Welcome to your local marketplace.</div>
+ {% if welcome_message %}
+    <div id="new-registrant-welcome" style="position:fixed; inset:0; z-index:99999; display:flex; align-items:center; justify-content:center; background:rgba(11,25,44,0.75); padding:16px;">
+        <div style="width:100%; max-width:400px; background:var(--bg-card); border:2px solid var(--accent); border-radius:16px; padding:28px 24px; text-align:center; box-shadow:0 12px 32px rgba(0,0,0,0.35);">
+            <div style="width:52px; height:52px; border-radius:50%; background:rgba(16,185,129,0.15); color:var(--success); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; font-size:26px; font-weight:bold;">✓</div>
+            <div style="font-size:20px; font-weight:900; color:var(--text-main); margin-bottom:8px;">Welcome to BizHub!</div>
+            <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">Your account is ready. Welcome to your local marketplace.</div>
         </div>
     </div>
     <script>
         window.setTimeout(function(){
-            const welcome=document.getElementById('new-registrant-welcome');
-            if(welcome){ welcome.style.transition='opacity .35s ease'; welcome.style.opacity='0'; window.setTimeout(()=>welcome.remove(),400); }
-        },4000);
+            const welcome = document.getElementById('new-registrant-welcome');
+            if (welcome) { 
+                welcome.style.transition = 'opacity .35s ease, transform .35s ease'; 
+                welcome.style.opacity = '0'; 
+                welcome.style.transform = 'scale(0.95)';
+                window.setTimeout(() => welcome.remove(), 350); 
+            }
+        }, 3500);
     </script>
-    {% endif %}
+    {% endif %}  
 
 
 
@@ -466,25 +472,29 @@
   <div class="bh-topbar">
     <a class="bh-brand" href="{{ url_for('home') }}" aria-label="BizHub home"><span class="bh-brand-mark">B</span><span>BizHub<span class="bh-brand-sub">SHOP • SELL • CONNECT</span></span></a>
     <!-- 👑 PERSONALIZED DYNAMIC CUSTOMER LOCATION ENGINE -->
-    <a class="bh-location" href="{{ url_for('home') }}">
+    <!-- 👑 ROLE-BASED DYNAMIC LOCATION HEADER -->
+    <div class="bh-location">
         <span>📍</span>
         <span>
-            {% if session.get('business_location') %}
-                <small style="color: var(--text-muted); font-weight: 600;">Ordering from</small>
-                <strong style="color: var(--accent); font-weight: 800; font-size: 13px;">{{ session.get('business_location') }}</strong>
-            {% else %}
-                <small style="color: var(--text-muted); font-weight: 600;">Delivering to</small>
-                <strong style="color: #FFFFFF; font-weight: 800; font-size: 13px;">Ghana</strong>
-            {% endif %}
+            {% if session.get('role') in ['Vendor', 'Fast Food'] %}
+            <small style="color: var(--text-muted); font-weight: 600;">Delivering from</small>
+            <strong style="color: var(--accent); font-weight: 800; font-size: 13px;">{{ session.get('user_location') or session.get('business_location') or 'Accra' }}</strong>
+        {% elif session.get('role') == 'Delivery Service' %}
+                <small style="color: var(--text-muted); font-weight: 600;">Dispatching from</small>
+                <strong style="color: var(--accent); font-weight: 800; font-size: 13px;">{{ session.get('user_location') or session.get('business_location') or 'Accra' }}</strong>
+        {% else %}
+            <small style="color: var(--text-muted); font-weight: 600;">Ordering from</small>
+            <strong style="color: var(--accent); font-weight: 800; font-size: 13px;">{{ session.get('user_location') or session.get('business_location') or 'Accra' }}</strong>
+        {% endif %}
         </span>
-    </a>
+    </div>
 
     <form class="bh-search" method="get" action="{{ url_for('home') }}" role="search"><input name="company_search" value="{{ company_search }}" placeholder="Search item or company" aria-label="Search BizHub"><button type="submit" aria-label="Search">🔍</button></form>
     {% if session.get('username') %}
       <a class="bh-action" href="{{ url_for('settings') }}"><span class="icon">👤</span><span><span class="small">Hello,</span><strong>{{ session.get('username') }}{% if session.get('role') %} <span class="bh-role-pill">{{ session.get('role') }}</span>{% endif %}</strong></span></a>
-      <a class="bh-action hide-md" href="{{ url_for('order_history') }}"><span><span class="small">Track &amp;</span><strong>Orders</strong></span></a>
-      <a class="bh-action" href="{{ url_for('notifications') }}"><span class="icon">🔔</span><span><span class="small">BizHub</span><strong>Alerts{% if vendor_notification_count or customer_notification_count %} <span class="bh-badge">{{ vendor_notification_count if session.get('role') in ['Vendor','Fast Food'] else customer_notification_count }}</span>{% endif %}</strong></span></a>
-      <a class="bh-action" href="{{ url_for('cart_page') }}"><span class="icon">🛒</span><span><span class="small">Your</span><strong>Cart{% if cart_items %} <span class="bh-badge">{{ cart_items|length }}</span>{% endif %}</strong></span></a>
+      
+      
+      
     {% else %}
       <a class="bh-action" href="{{ url_for('login') }}"><span class="icon">👤</span><span><span class="small">Welcome</span><strong>Sign in</strong></span></a>
       <a class="bh-action" href="{{ url_for('login') }}"><span><span class="small">New to BizHub?</span><strong>Create account</strong></span></a>
@@ -525,9 +535,18 @@
                 {{ customer_notification_count }}
             </span>
         {% endif %}
-    </a>
+    
 
     <a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">Favorites</a>
+    </a>
+    <a href="{{ url_for('cart_page') }}" style="display: inline-flex !important; align-items: center; gap: 4px;">
+    🛒 Cart
+    {% if cart_items %}
+        <span style="background: var(--bh-orange); color: #111; font-size: 10px; font-weight: 900; min-width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center; justify-content: center; line-height: 1;">
+            {{ cart_items|length }}
+        </span>
+    {% endif %}
+</a>
     <a href="{{ url_for('all_stores') }}">All Stores</a>
     <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
     
@@ -547,9 +566,7 @@
 
     <a href="{{ url_for('settings') if session.get('username') else url_for('login') }}">Your Account</a>
     
-    {% if session.get('is_admin') %}
-      <a href="{{ url_for('admin_dashboard') }}" style="color: #F59E0B !important; font-weight: 800 !important;">Admin Center</a>
-    {% endif %}
+
 </nav>
 
 
@@ -609,9 +626,7 @@
     <div class="container">
             <!-- 👑 BIZHUB PREMIUM LIVE PREDICTIVE AUTOCOMPLETE HINTS SEARCH SYSTEM -->
             <form method="GET" action="/" style="margin: 0; padding: 0; width: 100%; display: flex; align-items: center; position: relative;">
-                <input type="text" id="liveSearchField" name="company_search" value="{{ company_search or '' }}" autocomplete="off" placeholder="Search vendors, stores, or locations..." class="search-input" style="width: 100%; outline: none; padding-right: 40px;" oninput="fetchBizHubSuggestions(this.value)">
-                <button type="submit" style="background: none; border: none; cursor: pointer; padding: 0 10px; font-size: 16px; margin-left: -35px; z-index: 10;">🔍</button>
-                
+               
                 <!-- 🔮 LIVE DYNAMIC FLOATING POPUP HINTS OVERLAY DRAWER -->
                 <div id="searchSuggestionsDropdown" style="position: absolute; top: 100%; left: 0; right: 0; background: #FFFFFF; border: 1px solid #D5D9D9; border-radius: 8px; margin-top: 5px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); display: none; z-index: 99999; max-height: 320px; overflow-y: auto; box-sizing: border-box;"></div>
             </form>
@@ -799,8 +814,11 @@
                         <h3 style="margin:0; font-size:18px; color:var(--bg-abyssal); font-weight:800;">🛍️ Your Listings</h3>
                         <span style="font-size:12px;font-weight:800;color:#475569;background:#F1F5F9;border:1px solid #CBD5E1;padding:7px 10px;border-radius:8px;">{{ your_marketplace_products|length }} published</span>
                     </div>
-                                                    <!-- 👑 FIXED DESKTOP EXPANSION CORE: FORCES PROPORTIONAL MULTI-COLUMN GRID CANVAS -->
-                <div class="grid master-catalog-grid" id="masterCatalogGrid" style="display: grid !important; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important; gap: 20px !important; width: 100% !important; box-sizing: border-box;">
+                                
+                                <!-- 👑 FIXED AMAZON SLIDER DECK CANVAS CONSOLE -->
+                <div class="grid master-catalog-grid" id="masterCatalogGrid" style="box-sizing: border-box;">
+
+
 
 
                     {% for product in products %}
@@ -1041,7 +1059,7 @@
                 <a href="tel:+233540901856" aria-label="Call BizHub">📞 <span>Phone</span><b>0540901856</b></a>
             </div>
         </div>
-        <div class="contact-footer-bottom">© 2026 BizHub Marketplace · Your Local Market, Unified Online · <a href="/rules" style="color:#E2E8F0;text-decoration:none;">Rules &amp; Regulations</a></div>
+        <div class="contact-footer-bottom">      © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Subsidiary Of The TOZOTS 🇬🇭 Company· <a href="/rules" style="color:#E2E8F0;text-decoration:none;">Rules &amp; Regulations</a></div>
     </footer>
 
     <!-- JAVASCRIPT MASTER OPERATIONS CONTROL PACK -->

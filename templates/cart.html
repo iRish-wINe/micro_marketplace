@@ -44,7 +44,7 @@
     <a class="bh-action" href="{{ url_for('cart_page') }}" aria-current="page"><span class="icon">🛒</span><span><span class="small">Your</span><strong>Cart{% if cart_count %} <span class="bh-badge">{{ cart_count }}</span>{% endif %}</strong></span></a>
   </div>
   <nav class="bh-subbar" aria-label="BizHub marketplace navigation">
-    <a href="{{ url_for('home') }}">☰ &nbsp;All</a><a href="{{ url_for('promo_marketplace') }}">Today's Deals</a><a href="{{ url_for('favorites') }}">Favorites</a><a href="{{ url_for('order_history') }}">Orders</a>{% if session.get('role') in ['Vendor','Fast Food'] %}<a href="{{ url_for('vendor_profile', username=session['username']) }}">My Store</a>{% endif %}<a href="{{ url_for('delivery_services') }}">Find Delivery</a><a href="{{ url_for('home') }}#fast-food">Fast Food</a><a href="{{ url_for('home') }}#categories">Categories</a>{% if session.get('role') in ['Vendor','Fast Food'] %}<a href="{{ url_for('promotions') }}">Manage Your Promos</a>{% endif %}<a href="{{ url_for('settings') }}">Your Account</a><span class="bh-grow"></span>{% if session.get('is_admin') %}<a href="{{ url_for('admin_dashboard') }}">Admin Center</a>{% endif %}
+    <a href="{{ url_for('home') }}">☰ &nbsp;All</a><a href="{{ url_for('promo_marketplace') }}">Today's Deals</a><a href="{{ url_for('favorites') }}">Favorites</a><a href="{{ url_for('order_history') }}">Orders</a>{% if session.get('role') in ['Vendor','Fast Food'] %}{% endif %}<a href="{{ url_for('home') }}#fast-food">Fast Food</a><a href="{{ url_for('home') }}#categories">Categories</a>{% if session.get('role') in ['Vendor','Fast Food'] %}{% endif %}<a href="{{ url_for('features') }}">Features</a><a href="{{ url_for('settings') }}">Your Account</a><span class="bh-grow"></span>{% if session.get('is_admin') %}<a href="{{ url_for('admin_dashboard') }}">Admin Center</a>{% endif %}
   </nav>
 </header>
 
@@ -173,7 +173,7 @@
 </script>
         <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
         <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
-            © 2026 BizHub Marketplace · Your Local Market, Unified Online
+                © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS 🇬🇭 Company
         </footer>
 </body>
 </html>

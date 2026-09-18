@@ -18,17 +18,15 @@
             --success: #10B981;
         }
         * { box-sizing: border-box; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 85px 18px 30px; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0 18px 30px; }
         
-        .bizhub-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--nav); min-height: 58px; padding: 8px 22px; display: flex; align-items: center; gap: 22px; box-shadow: 0 2px 10px #0002; }
-        .bizhub-brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: #fff; min-width: max-content; }
-        .bizhub-brand img { width: 38px; height: 38px; border-radius: 10px; }
-        .bizhub-brand strong { font-size: 18px; line-height: 1.05; }
-        .bizhub-brand strong span { color: var(--accent); }
-        .bizhub-brand small { display: block; color: #cbd5e1; font-size: 10px; margin-top: 2px; }
-        .bizhub-nav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        .bizhub-nav a { color: #e2e8f0; text-decoration: none; font-weight: 800; font-size: 13px; padding: 9px 11px; border-radius: 7px; }
-        .bizhub-nav a:hover { background: #ffffff12; color: var(--accent); }
+        /* 🚀 TOP HEADER & NAVIGATION STYLES FROM ALL_STORES */
+        .top { background: #131921; color: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+        .brand { font-size: 22px; font-weight: 900; color: #fff; text-decoration: none; }
+        .brand span { color: #ff9900; }
+        .nav { background: #232f3e; display: flex; gap: 4px; overflow: auto; white-space: nowrap; padding: 0 10px; margin-bottom: 24px; }
+        .nav a { color: #fff; padding: 11px 12px; font-weight: 700; font-size: 13px; text-decoration: none; }
+        .nav a:hover { background: rgba(255, 255, 255, 0.1); }
 
         .wrap { max-width: 1100px; margin: auto; display: grid; grid-template-columns: 1fr; gap: 24px; }
         @media(min-width: 768px) { .wrap { grid-template-columns: 1fr 1fr; } }
@@ -53,17 +51,8 @@
 </head>
 <body>
 
-<header class="bizhub-header">
-    <a class="bizhub-brand" href="{{ url_for('home') }}">
-        <img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub">
-        <div><strong>Biz<span>Hub</span></strong><small>Your Local Market, Unified Online</small></div>
-    </a>
-    <nav class="bizhub-nav">
-        <a href="{{ url_for('home') }}">☰ Marketplace</a>
-        <a href="{{ url_for('cart_page') }}">🛒 Your Cart{% if session.get('cart') %} ({{ session.get('cart')|length }}){% endif %}</a>
-        <a href="{{ url_for('vendor_profile', username=session['username']) }}">🏪 My Store</a>
-    </nav>
-</header>
+<header class="top"><a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a><div style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</div></header>
+<nav class="nav"><a href="{{ url_for('home') }}">☰ Marketplace</a><a href="{{ url_for('all_stores') }}">All Stores</a><a href="{{ url_for('fast_food_stores') }}">Fast Food</a><a href="{{ url_for('features') if session.get('username') else url_for('login') }}">Features</a><a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">Favorites</a><a href="{{ url_for('settings') if session.get('username') else url_for('login') }}">Your Account</a>{% if session.get('role') in ['Vendor','Fast Food'] %}{% endif %}</nav>
 
 <div class="wrap">
     <!-- 👑 LAYER 2: STREAMLINED ACTION FORM CARD ENGINE -->
@@ -119,35 +108,57 @@
 
             <!-- STREAMLINED NEW ITEM BUFFER PACK (ZERO DOUBLE UPLOADS) -->
             <div id="newProductGroup" class="form-group" style="display: none; border-left: 3px solid var(--accent); padding-left: 15px; margin-top: 15px;">
-                <h4 style="font-size: 13px; margin-top: 0; color: var(--nav); text-transform: uppercase;">🆕 New Product Parameters:</h4>
-                <div class="form-group">
-                    <label>Product Title / Name:</label>
-                    <input type="text" name="new_product_title" class="form-control" placeholder="e.g. Authentic Leather Chelsea Boots...">
-                </div>
-                <div class="form-group">
-                    <label>Regular Retail Base Price (GH₵):</label>
-                    <input type="number" step="0.01" name="new_product_price" class="form-control" placeholder="e.g. 250.00">
-                </div>
-                <div class="form-group">
-                    <label>Physical Hub Location:</label>
-                    <input type="text" name="new_product_location" class="form-control" placeholder="e.g. Accra Metro" value="{{ vendor.business_location or '' }}">
-                </div>
-                {% if not is_fast_food %}
-                    <div class="form-group">
-                        <label>Product Category:</label>
-                        <select name="new_product_category" class="form-control">
-                            {% for cat in product_categories if cat != 'Fast Food' %}
-                                <option value="{{ cat }}">{{ cat }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                {% endif %}
-                <div class="form-group">
-                    <label>Description / Specification Log:</label>
-                    <textarea name="new_product_description" class="form-control" rows="3" placeholder="Enter specifications, sizes, material info..."></textarea>
-                </div>
+         <!-- 👑 RESTORED HIGH-DENSITY CATEGORY ROUTING FIELD SET -->
+        <h4>🆕 {% if is_fast_food %}New Fast Food Meal Parameters:{% else %}New Product Parameters:{% endif %}</h4>
+
+        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom: 12px;">
+            <label style="font-size:12px; font-weight:700;">{% if is_fast_food %}Meal / Drink Title Name:{% else %}Product Title / Name:{% endif %}</label>
+            <input type="text" name="new_product_title" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1;" placeholder="e.g. Jollof Rice Special, Casual Sneakers">
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom: 12px;">
+            <label style="font-size:12px; font-weight:700;">Regular Retail Base Price (GH₵):</label>
+            <input type="number" step="0.01" name="new_product_price" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1;" placeholder="0.00">
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom: 12px;">
+            <label style="font-size:12px; font-weight:700;">Physical Hub Location:</label>
+            <input type="text" name="new_product_location" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1;" value="{{ vendor.business_location or '' }}">
+        </div>
+
+        <!-- 🍟 UBER EATS SYSTEM SPECIFIC MENU SELECTION FIELDS (EXCLUSIVE TO KITCHENS) -->
+        {% if is_fast_food %}
+        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom: 12px;">
+            <label style="font-size:12px; font-weight:700;">Menu List Category Section:</label>
+            <select name="menu_type" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; background:white; font-size:14px;">
+                <option value="Main Dishes">🍛 Main Dishes</option>
+                <option value="Sides">🍟 Sides & Appetizers</option>
+                <option value="Drinks">🥤 Beverages & Drinks</option>
+                <option value="Desserts">🍰 Desserts & Sweets</option>
+            </select>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom: 12px;">
+            <label style="font-size:12px; font-weight:700;">Accompaniments (Served With):</label>
+            <input type="text" name="served_with" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1;" placeholder="e.g. Fried Plantain, Coleslaw, Chilled Shito">
+        </div>
+        {% else %}
+        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom: 12px;">
+            <label style="font-size:12px; font-weight:700;">Product Category:</label>
+            <select name="new_product_category" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; background:white;">
+                {% for cat in product_categories if cat != 'Fast Food' %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom: 12px;">
+            <label style="font-size:12px; font-weight:700;">Description / Specification Log:</label>
+            <textarea name="new_product_description" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; font-family:inherit;" placeholder="Describe promo deal contents..."></textarea>
+        </div>
+
                 
-                             <!-- 📸 SINGLE PRIMARY MEDIA INTAKE BUFFER WITH LIVE 'X' CLEAR BUTTONS -->
+                <!-- 📸 SINGLE PRIMARY MEDIA INTAKE BUFFER WITH LIVE 'X' CLEAR BUTTONS -->
                 <div style="background: #F8FAFC; padding: 14px; border-radius: 8px; border: 1px dashed var(--border); margin-bottom: 12px;">
                     <b style="font-size: 12px; display: block; margin-bottom: 6px; color: var(--nav);">📸 Core Product Media Asset (Required):</b>
                     
@@ -167,7 +178,7 @@
                         </div>
                     </div>
                 </div>
-
+            </div>
 
             <div class="form-grid-pricing" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div class="form-group">
@@ -210,6 +221,7 @@
             <button type="submit" class="submit-btn">🚀 Launch Dynamic Promotion Campaign</button>
         </form>
     </div>
+
     <!-- 👑 LAYER 3: CAMPAIGN STATEMENT LOGS REGISTRY -->
     <div class="card" style="flex-grow: 1;">
         <h3>📋 Historical Promotions Log</h3>
@@ -271,17 +283,17 @@
                 </div>
             {% else %}
                 <div style="padding: 40px; text-align: center; color: var(--muted); border: 2px dashed var(--border); border-radius: 8px;">
-                    📭 You haven't configured or uploaded any commercial promotional campaigns yet.
+                     You haven't configured or uploaded any commercial promotional campaigns yet.
                 </div>
             {% endfor %}
         </div>
     </div>
 
-</div> <!-- Closes .wrap container -->
-       <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
-        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
-            © 2026 BizHub Marketplace · Your Local Market, Unified Online
-        </footer>
+</div>
+
+<footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 13px; font-weight: 600;">
+        © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS 🇬🇭 Company
+</footer>
 
 </body>
 </html>

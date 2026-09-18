@@ -3,108 +3,242 @@
 <html lang="en" {% if app_theme == 'night' %}class="night-theme"{% endif %}>
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Find Delivery Services - BizHub</title>
-<style>
-:root{--nav:#0b192c;--accent:#f59e0b;--bg:#f4f7fb;--text:#172033;--muted:#64748b;--border:#dbe3ed;--uber-black:#000000;--uber-gray-border:#e2e2e2;}
-*{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:85px 18px 30px}
-.bizhub-header{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav);min-height:58px;padding:8px 22px;display:flex;align-items:center;gap:22px;box-shadow:0 2px 10px #0002}
-.bizhub-brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:#fff;min-width:max-content}.bizhub-brand img{width:38px;height:38px;border-radius:10px}.bizhub-brand strong{font-size:18px;line-height:1.05}.bizhub-brand strong span{color:var(--accent)}.bizhub-brand small{display:block;color:#cbd5e1;font-size:10px;margin-top:2px}
-.bizhub-nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.bizhub-nav a{color:#e2e8f0;text-decoration:none;font-weight:800;font-size:13px;padding:9px 11px;border-radius:7px}.bizhub-nav a:hover{background:#ffffff12;color:var(--accent)}
-.container{max-width:1200px;margin:0 auto;}
-.search-box{background:white;padding:20px;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:24px;box-shadow:0 2px 4px rgba(0,0,0,0.02);}
-.form-grid{display:grid;grid-template-columns:1fr;gap:12px;}
-@media(min-width:768px){.form-grid{grid-template-columns:1fr 1fr auto;}}
-.form-control{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;}
-.form-control:focus{border-color:var(--nav);}
-.btn-search{background:var(--nav);color:white;border:none;border-radius:6px;padding:10px 24px;font-weight:700;cursor:pointer;font-size:14px;}
-.services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;}
-.uber-card{background:white;border-radius:12px;border:1px solid var(--uber-gray-border);padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.04);display:flex;flex-direction:column;justify-content:space-between;}
-.status-badge{display:inline-block;padding:4px 8px;font-size:11px;font-weight:800;border-radius:20px;text-transform:uppercase;margin-top:6px;}
-.status-available{background:#ecfdf5;color:#15803d;}
-.status-unavailable{background:#f1f5f9;color:#475569;}
-.btn-action{display:block;text-align:center;text-decoration:none;padding:12px;border-radius:6px;font-size:13px;font-weight:700;margin-top:16px;transition:opacity 0.2s;}
-.btn-action:hover{opacity:0.9;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Delivery Services - BizHub</title>
+    <style>
+        :root {
+            --nav: #0b192c;
+            --accent: #f59e0b;
+            --bg: #f4f7fb;
+            --text: #172033;
+            --muted: #64748b;
+            --border: #dbe3ed;
+            --uber-black: #000000;
+            --uber-gray-border: #e2e2e2;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #f3f4f6;
+            color: #111827;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        a { text-decoration: none; }
+        
+        /* Shared Header & Nav styles matching all_stores.html */
+        .top {
+            background: #131921;
+            color: #fff;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .brand {
+            font-size: 22px;
+            font-weight: 900;
+            color: #fff;
+        }
+        .brand span { color: #ff9900; }
+        .nav {
+            background: #232f3e;
+            display: flex;
+            gap: 4px;
+            overflow: auto;
+            white-space: nowrap;
+            padding: 0 10px;
+        }
+        .nav a {
+            color: #fff;
+            padding: 11px 12px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        /* Page Layout & Components */
+        .container {
+            max-width: 1180px;
+            margin: 24px auto;
+            padding: 0 16px;
+        }
+        .search-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        @media(min-width:768px) {
+            .form-grid { grid-template-columns: 1fr 1fr auto; }
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+        .form-control:focus { border-color: #232f3e; }
+        .btn-search {
+            background: #131921;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 24px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .uber-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--uber-gray-border);
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 800;
+            border-radius: 20px;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+        .status-available { background: #ecfdf5; color: #15803d; }
+        .status-unavailable { background: #f1f5f9; color: #475569; }
+        .btn-action {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-top: 16px;
+            transition: opacity 0.2s;
+        }
+        .btn-action:hover { opacity: 0.9; }
+    </style>
 </head>
+
 <body>
 
-<header class="bizhub-header">
-<a class="bizhub-brand" href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub"><div><strong>Biz<span>Hub</span></strong><small>Your Local Market, Unified Online</small></div></a>
-<nav class="bizhub-nav">
-<a href="{{ url_for('home') }}">☰ Marketplace</a>
-<a href="{{ url_for('cart_page') }}">🛒 Your Cart{% if session.get('cart') %} ({{ session.get('cart')|length }}){% endif %}</a>
-{% if session.get('role') in ['Vendor','Fast Food'] %}<a href="{{ url_for('vendor_profile', username=session['username']) }}">🏪 My Store</a>{% endif %}
-</nav>
-</header>
+    <!-- SHARED HEADER -->
+    <header class="top">
+        <a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a>
+        <div style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</div>
+    </header>
 
-<div class="container">
-    <!-- SEARCH ENGINE INTERFACE -->
-    <div class="search-box">
-        <form method="GET" action="/delivery/services">
-            <div class="form-grid">
-                <input type="text" name="location" value="{{ location }}" placeholder="Filter by city location or area..." class="form-control">
-                <input type="text" name="company" value="{{ company }}" placeholder="Search company name..." class="form-control">
-                <button type="submit" class="btn-search">🔍 Search Fleet</button>
-            </div>
-        </form>
-    </div>
+    <!-- NAVIGATION (Omitting 'Find Delivery') -->
+    <nav class="nav">
+        <a href="{{ url_for('home') }}">☰ Marketplace</a>
+        <a href="{{ url_for('all_stores') }}">All Stores</a>
+        <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
+        <a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">Favorites</a>
+        <a href="{{ url_for('settings') if session.get('username') else url_for('login') }}">Your Account</a>
+        {% if session.get('role') in ['Vendor','Fast Food'] %}
+            <a href="{{ url_for('vendor_profile', username=session['username']) }}">My Store</a>
+        {% endif %}
+    </nav>
 
-    <!-- SERVICES LOOP DISPATCH MATRIX -->
-    <div class="services-grid">
-        {% for s in services %}
-            <div class="uber-card">
-                <div style="text-align: center; margin-bottom: 16px;">
-                    {% if s.logo_file %}
-                        <img src="{{ url_for('static', filename='uploads/' + s.logo_file) }}" alt="logo" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid #000; margin-bottom: 10px; background:#fafafa;">
-                    {% else %}
-                        <div style="width: 72px; height: 72px; border-radius: 50%; background: #000; color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; margin: 0 auto 10px auto;">🚗</div>
-                    {% endif %}
-                    
-                    <h2 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 800; letter-spacing: -0.5px;">{{ s.service_name }}</h2>
-                    <p style="margin: 0 0 8px 0; color: var(--muted); font-size: 13px;">@{{ s.username }}</p>
-                    
-                    {% if s.availability == 'Available' %}
-                        <span class="status-badge status-available">● Available Now</span>
-                    {% else %}
-                        <span class="status-badge status-unavailable">○ Busy / Offline</span>
-                    {% endif %}
+    <div class="container">
+        <!-- SEARCH ENGINE INTERFACE -->
+        <div class="search-box">
+            <form method="GET" action="/delivery/services">
+                <div class="form-grid">
+                    <input type="text" name="location" value="{{ location }}" placeholder="Filter by city location or area..." class="form-control">
+                    <input type="text" name="company" value="{{ company }}" placeholder="Search company name..." class="form-control">
+                    <button type="submit" class="btn-search">🔍 Search Fleet</button>
                 </div>
+            </form>
+        </div>
 
-                <div style="font-size: 13px; border-top: 1px solid #e2e8f0; padding-top: 12px; margin-bottom: 12px; flex-grow:1;">
-                    <div style="margin-bottom: 6px;"><b>📍 Location:</b> {{ s.operating_location }}</div>
-                    <div style="margin-bottom: 6px;"><b>🗺️ Coverage:</b> {{ s.service_area }}</div>
-                    <div style="margin-bottom: 6px;"><b>⚡ Vehicle:</b> {{ s.delivery_type }}</div>
-                    {% if s.avg_rating %}
-                        <div><b>⭐ Rating:</b> {{ s.avg_rating }} / 5.0 ({{ s.rating_count }} ratings)</div>
-                    {% else %}
-                        <div><b>⭐ Rating:</b> No ratings yet</div>
-                    {% endif %}
-                </div>
+        <!-- SERVICES LOOP DISPATCH MATRIX -->
+        <div class="services-grid">
+            {% for s in services %}
+                <div class="uber-card">
+                    <div style="text-align: center; margin-bottom: 16px;">
+                        {% if s.logo_file %}
+                            <img src="{{ url_for('static', filename='uploads/' + s.logo_file) }}" alt="logo" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid #000; margin-bottom: 10px; background:#fafafa;">
+                        {% else %}
+                            <div style="width: 72px; height: 72px; border-radius: 50%; background: #000; color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; margin: 0 auto 10px auto;">🚗</div>
+                        {% endif %}
+                        
+                        <h2 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 800; letter-spacing: -0.5px;">{{ s.service_name }}</h2>
+                        <p style="margin: 0 0 8px 0; color: var(--muted); font-size: 13px;">@{{ s.username }}</p>
+                        
+                        {% if s.availability == 'Available' %}
+                            <span class="status-badge status-available">● Available Now</span>
+                        {% else %}
+                            <span class="status-badge status-unavailable">○ Busy / Offline</span>
+                        {% endif %}
+                    </div>
 
-                <div>
-                    {% if s.availability == 'Available' and session.get('role') in ['Vendor', 'Fast Food'] %}
-                        <form method="POST" action="/delivery/request/{{ s.id }}" style="margin-bottom:6px;">
+                    <div style="font-size: 13px; border-top: 1px solid #e2e8f0; padding-top: 12px; margin-bottom: 12px; flex-grow:1;">
+                        <div style="margin-bottom: 6px;"><b>📍 Location:</b> {{ s.operating_location }}</div>
+                        <div style="margin-bottom: 6px;"><b>🗺️ Coverage:</b> {{ s.service_area }}</div>
+                        <div style="margin-bottom: 6px;"><b>⚡ Vehicle:</b> {{ s.delivery_type }}</div>
+                                            <!-- 📞 NEW: DIRECT MOBILE CONTACT ROW INJECTED FOR VENDORS -->
+                    <p style="margin: 0 0 6px 0; font-size: 13.5px; color: var(--text-main);">
+                        <b>📞 Contact Mobile:</b> 
+                        <code style="font-size: 13px; font-weight: 700; background: rgba(0,0,0,0.04); padding: 2px 6px; border-radius: 4px; color: #111;">
+                            +{{ s.phone_number }}
+                        </code>
+                    </p>
+
+                        {% if s.avg_rating %}
+                            <div><b>⭐ Rating:</b> {{ s.avg_rating }} / 5.0 ({{ s.rating_count }} ratings)</div>
+                        {% else %}
+                            <div><b>⭐ Rating:</b> No ratings yet</div>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        {% if s.availability == 'Available' and session.get('role') in ['Vendor', 'Fast Food'] %}
+                            <form method="POST" action="/delivery/request/{{ s.id }}" style="margin-bottom:6px;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <input type="text" name="message" placeholder="Enter delivery order items & instructions..." class="form-control" style="font-size:12px; margin-bottom:6px;" required>
+                                <button type="submit" class="btn-action" style="width:100%; border:none; background:#276ef1; color:white; font-weight:700; cursor:pointer;">📦 Send Dispatch Request</button>
+                            </form>
+                        {% endif %}
+                        
+                        <form method="POST" action="/delivery/contact/{{ s.id }}">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                            <input type="text" name="message" placeholder="Enter delivery order items & instructions..." class="form-control" style="font-size:12px; margin-bottom:6px;" required>
-                            <button type="submit" class="btn-action" style="width:100%; border:none; background:#276ef1; color:white; font-weight:700; cursor:pointer;">📦 Send Dispatch Request</button>
+                            <button type="submit" class="btn-action" style="width:100%; border:1px solid #000; background:white; color:#000; font-weight:700; cursor:pointer;">💬 Contact via WhatsApp</button>
                         </form>
-                    {% endif %}
-                    
-                    <form method="POST" action="/delivery/contact/{{ s.id }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                        <button type="submit" class="btn-action" style="width:100%; border:1px solid #000; background:white; color:#000; font-weight:700; cursor:pointer;">💬 Contact via WhatsApp</button>
-                    </form>
+                    </div>
                 </div>
-            </div>
-        {% else %}
-            <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--muted); background: white; border-radius: 12px; border: 1px dashed #cbd5e1;">
-                📭 No active, available delivery service partners found matching your search.
-            </div>
-        {% endfor %}
+            {% else %}
+                <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--muted); background: white; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                    📭 No active, available delivery service partners found matching your search.
+                </div>
+            {% endfor %}
+        </div>
     </div>
-</div>
+
+  <!-- 👑 CLEAN OFFICIAL LOGISTICS PLATFORM FOOTER -->
+<footer style="margin-top: 40px; padding: 20px 0; border-top: 1px solid var(--border-color); text-align: center; color: var(--text-muted, #718096); font-size: 13px; font-weight: 600;">
+         © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS 🇬🇭 Company
+</footer>
+
 
 </body>
 </html>

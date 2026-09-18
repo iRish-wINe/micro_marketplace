@@ -26,16 +26,15 @@
         }
 
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 90px 16px 40px; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 0 16px 40px; }
         
-        .bizhub-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: var(--nav-bg); min-height: 58px; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .bizhub-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #fff; }
-        .bizhub-brand img { width: 36px; height: 36px; border-radius: 8px; }
-        .bizhub-brand strong { font-size: 17px; }
-        .bizhub-brand strong span { color: #F59E0B; }
-        
-        .bizhub-nav { display: flex; align-items: center; gap: 12px; }
-        .bizhub-nav a { color: #E2E8F0; text-decoration: none; font-weight: 700; font-size: 13px; }
+        /* 🚀 TOP HEADER & NAVIGATION STYLES FROM ALL_STORES */
+        .top { background: #131921; color: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+        .brand { font-size: 22px; font-weight: 900; color: #fff; text-decoration: none; }
+        .brand span { color: #ff9900; }
+        .nav { background: #232f3e; display: flex; gap: 4px; overflow: auto; white-space: nowrap; padding: 0 10px; margin-bottom: 24px; }
+        .nav a { color: #fff; padding: 11px 12px; font-weight: 700; font-size: 13px; text-decoration: none; }
+        .nav a:hover { background: rgba(255, 255, 255, 0.1); }
 
         .container { width: 100%; max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
         .nav-actions-row { display: flex; gap: 10px; margin-bottom: 5px; }
@@ -62,17 +61,14 @@
         
         .help-note { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
 
-        /* 👑 TWITTER THEME SELECTOR INTERACTIVE RADIO CARDS - ZERO VS CODE ERRORS */
         .appearance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 500px; }
         .mode-label { cursor: pointer; position: relative; display: block; margin: 0; }
         .mode-label input { position: absolute; top: 12px; right: 12px; z-index: 5; }
         .mode-card { padding: 16px; border-radius: 8px; text-align: center; transition: all 0.2s ease; background: var(--bg-card); border: 2px solid var(--border-color); }
         
-         /* 👑 STANDARDIZED CORE APPEARANCE CARDS - ZERO EDITOR WARNINGS */
         .day-select-border { border-color: var(--accent-green); }
         .night-select-border { border-color: var(--primary-blue); }
 
-        /* Fallback muted borders when a card is not active */
         .mode-card-inactive { border-color: var(--border-color) !important; }
 
         .btn-logout { background: var(--danger-red); color: white; padding: 10px 20px; font-weight: 700; font-size: 13px; border-radius: 6px; border: none; cursor: pointer; text-decoration: none; }
@@ -86,17 +82,20 @@
 </head>
 <body>
 
-<header class="bizhub-header">
-    <a class="bizhub-brand" href="{{ url_for('home') }}">
-        <img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub">
-        <div><strong>Biz<span>Hub</span></strong></div>
-    </a>
-    <nav class="bizhub-nav">
-        <a href="{{ url_for('home') }}">☰ Marketplace</a>
-        <a href="{{ url_for('cart_page') }}">🛒 Your Cart</a>
-        <a href="/vendor/{{ session.get('username') }}"> My Store</a>
-    </nav>
+<header class="top">
+    <a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a>
+    <div style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</div>
 </header>
+<nav class="nav">
+    <a href="{{ url_for('home') }}">☰ Marketplace</a>
+    <a href="{{ url_for('all_stores') }}">All Stores</a>
+    <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
+    <a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">Favorites</a>
+    <a href="{{ url_for('features') if session.get('username') else url_for('login') }}">Features</a>
+    {% if session.get('role') in ['Vendor','Fast Food'] %}
+
+    {% endif %}
+</nav>
 
 <div class="container">
     
@@ -105,7 +104,6 @@
         <a href="/vendor/{{ session.get('username') }}" class="top-btn btn-mystore">🏪 My Store</a>
     </div>
 
-    <!-- MAIN FORM PIPELINE (ZERO MANDATORY SUBMISSION RESTRICIONS ON VALUES) -->
     <form method="POST" action="/settings" enctype="multipart/form-data" style="margin:0; display:flex; flex-direction:column; gap:20px;">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
@@ -118,7 +116,6 @@
                     <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">Manage your identity, business profile, contact details, storefront preferences, security and appearance.</p>
                 </div>
                 <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
-
             </div>
         </div>
 
@@ -130,14 +127,7 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label>Username</label>
-                    <input
-    type="text"
-    name="username"
-    class="form-control"
-    value="{{ user.username or '' }}"
-    required
->
-
+                    <input type="text" name="username" class="form-control" value="{{ user.username or '' }}" required>
                 </div>
                 <div class="form-group">
                     <label>Email Address</label>
@@ -169,7 +159,7 @@
                 <div class="help-note">Product listing locations can still be specified separately.</div>
             </div>
 
-                       <div class="form-group" style="margin-top:12px;">
+            <div class="form-group" style="margin-top:12px;">
                 <label>Business Logo</label>
                 <input type="file" name="company_logo" class="form-control" style="padding:4px;" accept="image/*">
                 {% if user.company_logo %}
@@ -193,45 +183,24 @@
             <h3>🎨 Appearance</h3>
             <p class="card-caption">Choose the interface style for your account.</p>
             
-<div class="appearance-grid">
-    <label class="mode-label">
-        <input
-            type="radio"
-            name="theme"
-            value="day"
-            {% if app_theme == "day" %}checked{% endif %}
-            onchange="switchThemeLive('day')"
-        >
-        <div class="mode-card day-select-border">
-            <div style="font-size:24px; margin-bottom:4px;"></div>
-            <b style="font-size:13.5px; display:block;">Day</b>
-            <span style="font-size:11px; color:var(--text-muted);">
-                Light interface
-            </span>
+            <div class="appearance-grid">
+                <label class="mode-label">
+                    <input type="radio" name="theme" value="day" {% if app_theme == "day" %}checked{% endif %} onchange="switchThemeLive('day')">
+                    <div class="mode-card day-select-border">
+                        <b style="font-size:13.5px; display:block;">Day</b>
+                        <span style="font-size:11px; color:var(--text-muted);">Light interface</span>
+                    </div>
+                </label>
+
+                <label class="mode-label">
+                    <input type="radio" name="theme" value="night" {% if app_theme == "night" %}checked{% endif %} onchange="switchThemeLive('night')">
+                    <div class="mode-card night-select-border">
+                        <b style="font-size:13.5px; display:block;">Night</b>
+                        <span style="font-size:11px; color:var(--text-muted);">Dark interface</span>
+                    </div>
+                </label>
+            </div>
         </div>
-    </label>
-
-    <label class="mode-label">
-        <input
-            type="radio"
-            name="theme"
-            value="night"
-            {% if app_theme == "night" %}checked{% endif %}
-            onchange="switchThemeLive('night')"
-        >
-        <div class="mode-card night-select-border">
-            <div style="font-size:24px; margin-bottom:4px;"></div>
-            <b style="font-size:13.5px; display:block;">Night</b>
-            <span style="font-size:11px; color:var(--text-muted);">
-                Dark interface
-            </span>
-        </div>
-    </label>
-</div>
-
-        
-                
-
 
         <!-- CARD 6: SECURITY MANAGEMENT -->
         <div class="card">
@@ -249,8 +218,7 @@
                 </div>
             </div>
             
-            <!-- 👑 DEDICATED WHATSAPP PASSWORD RESET GATEWAY BRIDGE TAB -->
-            <a href="https://wa.me" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-reset" style="display: inline-flex; align-items: center; gap: 8px; background: #00A884; color: #FFFFFF; text-decoration: none; padding: 10px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; border: none; margin-top: 15px; width: fit-content;">
+            <a href="https://wa.me" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-reset">
                 💬 Reset Password via WhatsApp
             </a>
         </div>
@@ -263,30 +231,21 @@
         
     </form>
 </div>
+
 <script>
 function switchThemeLive(themeMode) {
     const rootElement = document.documentElement;
-
     if (themeMode === "night") {
         rootElement.classList.add("night-theme");
     } else {
         rootElement.classList.remove("night-theme");
     }
 }
-
-        
-        // 🚀 OPTIONAL: Send a silent background network request to save the user's preference on the server without refreshing the page!
-        fetch('/api/save-theme', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ theme: themeMode })
-        }).catch(() => {});
-
 </script>
-        <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
-        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
-            © 2026 BizHub Marketplace · Your Local Market, Unified Online
-        </footer>
+
+<footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
+    © 2026 BizHub Marketplace · Your Local Market, Unified Online
+</footer>
+
 </body>
 </html>
-

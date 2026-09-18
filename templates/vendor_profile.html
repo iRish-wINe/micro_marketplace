@@ -6,17 +6,16 @@
     <title>{{ vendor.company_name or vendor.username }} Storefront | BizHub</title>
     <style>
         :root {
-            --nav: #0b192c;
-            --accent: #f59e0b;
-            --bg: #f4f7fb;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #dbe3ed;
+            --nav: #0B192C;
+            --accent: #F59E0B;
+            --bg: #F4F7FB;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --border-color: #DBE3ED;
             --success: #06C167;
-            --danger: #cc0c39;
-            --bg-card: #ffffff;
+            --bg-card: #FFFFFF;
+            --danger: #EF4444;
         }
-
         :root.night-theme {
             --bg: #15202B !important;
             --bg-card: #1E2732 !important;
@@ -25,260 +24,330 @@
             --border-color: #38444D !important;
             --nav: #1E2732 !important;
         }
-
         * { box-sizing: border-box; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text-main); margin: 0; padding: 85px 16px 40px; }
-        
-        .bizhub-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: var(--nav); min-height: 58px; padding: 8px 22px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
-        .bizhub-brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: #fff; font-weight: 900; font-size: 20px; }
-        .bizhub-brand span { color: var(--accent); }
-
-        .layout-container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 24px; }
-        @media(min-width: 992px) { .layout-container { grid-template-columns: minmax(320px, 380px) 1fr; } }
-
-        .profile-board-card { background: var(--bg-card); padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.01); display: flex; flex-direction: column; height: fit-content; }
-        .logo-frame { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border-color); background: #f8fafc; margin-bottom: 15px; }
-        
-        .badge-partner { background: rgba(6,193,103,0.1); color: var(--success); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.3px; width: fit-content; }
-        .badge-premium { background: rgba(245,158,11,0.1); color: var(--accent); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.3px; width: fit-content; }
-        
-        .btn-action { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; border-radius: 8px; font-size: 13.5px; font-weight: 700; text-decoration: none; border: 1px solid var(--border-color); cursor: pointer; transition: transform 0.2s; white-space: nowrap; }
-        .btn-action:hover { transform: translateY(-1px); }
-
-        .form-control { width: 100%; padding: 11px 14px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; background: var(--bg); color: var(--text-main); }
-        .form-control:focus { border-color: var(--accent); }
-        
-        /* 👑 CUTE RESET ASSET MEDIA BUTTONS SLOTS STYLE */
-        .cute-media-slot { background: var(--bg); border: 1px dashed var(--border-color); padding: 12px; border-radius: 8px; position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
-        .cute-x-trigger { background: var(--danger); color: white; border: none; width: 26px; height: 26px; border-radius: 50%; font-size: 12px; font-weight: 900; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(204,12,57,0.25); transition: scale 0.2s; padding: 0; line-height: 1; }
-        .cute-x-trigger:hover { scale: 1.1; }
-
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
-        .product-card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
-        .product-media { width: 100%; height: 150px; background: #000; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; padding: 78px 16px 40px; }
+        .bizhub-clean-header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: #0B192C; min-height: 56px; padding: 6px 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
+        .brand-text-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: white; font-weight: 800; font-size: 19px; }
+        .brand-text-logo img { width: 34px; height: 34px; border-radius: 6px; }
+        .brand-text-logo span { color: #F59E0B; }
+        .clean-nav-stripe { display: flex; align-items: center; gap: 14px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+        .clean-nav-stripe::-webkit-scrollbar { display: none; }
+        .clean-nav-stripe a { color: #E2E8F0 !important; text-decoration: none !important; font-size: 13.5px !important; font-weight: 700 !important; padding: 6px 4px; transition: all 0.2s; }
+        .clean-nav-stripe a:hover { color: #F59E0B !important; }
+        .container { max-width: 900px; margin: 20px auto; display: flex; flex-direction: column; gap: 24px; width:100%; }
+        .card { background: var(--bg-card); padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .btn-action { display: inline-block; padding: 8px 16px; border-radius: 6px; font-weight: 700; text-decoration: none; font-size: 13px; cursor: pointer; border: none; text-align: center; }
     </style>
 </head>
 <body>
 
-<header class="bizhub-header">
-    <a class="bizhub-brand" href="{{ url_for('home') }}">🗲 Biz<span>Hub</span></a>
-    <nav style="display:flex; gap:12px;">
-        <a href="{{ url_for('home') }}" style="color:white; text-decoration:none; font-weight:700; font-size:13px;">Marketplace</a>
+     <!-- 👑 FIXED DYNAMIC RESPONSIVE BRAND CONTAINER ENVELOPE -->
+    <a class="brand-text-logo" href="{{ url_for('home') }}" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: white; width: auto; min-width: max-content; overflow: visible;">
+        <img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub" style="width: 34px; height: 34px; border-radius: 6px;">
+        <div style="font-size: 19px; font-weight: 800; color: white; line-height: 1; display: inline-flex; align-items: center; white-space: nowrap;">
+            Biz<span style="color: #F59E0B;">Hub</span>
+            {% if vendor.role == 'Fast Food' %}
+                <span style="font-size: 16px; font-weight: 800; color: #06C167; margin-left: 6px; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(6,193,103,0.1); padding: 2px 6px; border-radius: 4px;">Kitchen</span>
+            <span style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</span>    
+            {% endif %}
+            
+        </div>
+    </a>
+
+
+    <nav class="clean-nav-stripe">
+        <a href="{{ url_for('home') }}">☰ Marketplace</a>
+        <a href="{{ url_for('all_stores') }}">All Stores</a>
+        <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
+        <a href="{{ url_for('favorites') }}">Favorites</a>
+        <a href="{{ url_for('features') }}">🎯 Features</a>
+        <a href="{{ url_for('order_history') }}">Orders</a>
+        <a href="{{ url_for('settings') }}">Your Account</a>
     </nav>
 </header>
 
-<div class="layout-container">
-    
-    <!-- LEFT SIDEBAR LAYER: CORE USER BOARD & MANAGEMENT SWITCHES -->
-    <aside style="display:flex; flex-direction:column; gap:20px;">
-        
-        <div class="profile-board-card">
+<div class="container">
+
+    <!-- PROFILE HERO BANNER COVER CARD -->
+    <div class="card" style="text-align: left; position: relative;">
+        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
             {% if vendor.company_logo %}
-                <img src="{{ url_for('static', filename='uploads/' + vendor.company_logo) }}" class="logo-frame" alt="Logo">
+                <img src="{{ url_for('static', filename='uploads/' + vendor.company_logo) }}" alt="Logo" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
             {% else %}
-                <div class="logo-frame" style="display:grid; place-items:center; font-weight:900; background:var(--nav); color:white; font-size:24px;">BH</div>
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: #E2E8F0; display: grid; place-items: center; font-size: 28px;">🏪</div>
             {% endif %}
             
-            <h2 style="font-size:22px; margin:0 0 6px 0;">{{ vendor.company_name or vendor.username }}</h2>
-            
-            <div style="margin-bottom:12px;">
-                {% if vendor.role == 'Fast Food' %}
-                    <span class="badge-partner">● BizHub Kitchens Partner</span>
-                {% else %}
-                    <span class="badge-premium">💎 BizHub Top Brand Store</span>
-                {% endif %}
-            </div>
-            
-            <p style="margin:0 0 14px 0; font-size:13px; color:var(--text-muted); font-weight:500;">
-                📍 Location: <b>{{ vendor.business_location or 'Ghana' }}</b> · Handle: <b>@{{ vendor.username }}</b>
-            </p>
-            
-            <p style="margin:0 0 18px 0; font-size:13.5px; line-height:1.45; color:var(--text-main);">
-                {% if vendor.role == 'Fast Food' %}
-                    Welcome to our digital kitchen feed! Review our fresh local meals, specialty side menus, and active daily food promotions below. High-speed courier delivery is dispatched instantly.
-                {% else %}
-                    Welcome to our official business storefront terminal. Browse our active verified warehouse item counts, standard retail product lines, and active lightning markdown campaigns listed below.
-                {% endif %}
-            </p>
-            
-            <!-- 👑 TYING THE BUTTON GROUP DIRECTLY INSIDE THE BIO PROFILE BOARD CARD FOR UNIFORMITY -->
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--border-color);">
-                {% if session.get('username') and session.get('username') != vendor.username %}
-                    <form method="POST" action="/favorites/toggle/{{ vendor.username }}" style="margin: 0; display: inline; flex: 1;">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                        <button type="submit" class="btn-action" style="background: var(--bg-card); color: var(--text-main); width: 100%;">
-                            {% if favorite %}❤️ Saved{% else %}🤍 Add Kitchen{% endif %}
-                        </button>
-                    </form>
-                    <a href="/report/{{ vendor.id }}" class="btn-action" style="background: #FFF5F5; color: var(--danger); border-color: #FED7D7;">🚩 Report</a>
-                {% endif %}
-
-                {% if is_owner %}
-                    <a href="{{ url_for('settings') }}" class="btn-action" style="background: var(--nav); color: white; flex: 1;">⚙️ Settings</a>
-                    <a href="{{ url_for('promotions') }}" class="btn-action" style="background: var(--accent); color: #111; border-color: #FF9900; flex: 1;">📣 Promos</a>
-                {% endif %}
+            <div style="flex-grow: 1;">
+                <h1 style="margin: 0; font-size: 24px;">{{ vendor.company_name or vendor.username }}</h1>
+                <p style="margin: 4px 0 0 0; color: var(--text-muted); font-weight: 600;">
+                    @{{ vendor.username }} · 📍 {{ vendor.business_location or 'Accra' }} · 
+                    <span style="color: var(--success);">{% if vendor.role == 'Fast Food' %}Kitchen Partner{% else %}{{ vendor.role }}{% endif %}</span>
+                </p>
             </div>
         </div>
 
-                <!-- 📢 BIZHUB VENDOR LOGISTICS FULFILLMENT WARNING ALERT (OWNER COMPULSORY INTELLIGENCE) -->
-        {% if is_owner %}
-            <div style="background: rgba(245, 158, 11, 0.06); border-left: 6px solid #F59E0B; padding: 14px 16px; border-radius: 8px; margin-top: 15px; margin-bottom: 18px; box-sizing: border-box; width: 100%;">
-                <div style="display: flex; align-items: flex-start; gap: 10px;">
-                    <span style="font-size: 18px; margin-top: -2px;">📢</span>
-                    <div style="font-size: 13.5px; line-height: 1.45; color: var(--text-main);">
-                        <b style="color: #D97706; text-transform: uppercase; font-size: 11px; tracking-spacing: 0.5px; display: block; margin-bottom: 4px;">⚠️ Compulsory Fulfillment Requirement:</b>
-                        Placing an inquiry or communicating on WhatsApp does not automatically deduct your stock inventory. **You must confirm payment directly in your <a href="/orders" style="color: #D97706; font-weight: 800; text-decoration: underline;">Orders Page Dashboard</a> to verify and confirm payment manually after a customer makes a purchase** to seal the transaction, update store inventory or stock ledger entries, and clear pending customer tracking rows safely.
-                    </div>
+        <div style="margin-top: 15px; display: flex; gap: 8px; flex-wrap: wrap;">
+            {% if not is_owner %}
+                <form method="POST" action="/favorites/toggle/{{ vendor.username }}" style="margin: 0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="btn-action" style="background: var(--bg); color: var(--text-main); border: 1px solid var(--border-color);">
+                        {% if favorite %}❤️ Saved{% else %}🤍 Add to Favorites{% endif %}
+                    </button>
+                </form>
+                <a href="/report/{{ vendor.id }}" class="btn-action" style="background: #FFF5F5; color: var(--danger); border: 1px solid #FED7D7;">🚩 Report Store</a>
+            {% else %}
+                <a href="{{ url_for('settings') }}" class="btn-action" style="background: #0B192C; color: white;">⚙️ Edit Profile</a>
+                <a href="{{ url_for('promotions') }}" class="btn-action" style="background: var(--accent); color: #111;">📣 Manage Promos</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 📢 VENDOR LOGISTICS FULFILLMENT WARNING ALERT -->
+    {% if is_owner and vendor.role == 'Fast Food' %}
+        <div style="background: rgba(245, 158, 11, 0.06); border-left: 6px solid #F59E0B; padding: 14px 16px; border-radius: 8px; box-sizing: border-box; width: 100%; text-align: left;">
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                <span style="font-size: 18px; margin-top: -2px;">📢</span>
+                <div style="font-size: 13.5px; line-height: 1.45; color: var(--text-main);">
+                    <b style="color: #D97706; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">⚠️ Compulsory Fulfillment Requirement:</b>
+                    Placing an inquiry or communicating on WhatsApp does not automatically deduct inventory. **You must navigate directly to your <a href="/orders" style="color: #D97706; font-weight: 800; text-decoration: underline;">Orders Page Dashboard</a> to verify and confirm payment manually after a customer makes a purchase** to seal the transaction, update store inventory ledger entries, and clear pending customer tracking rows safely.
                 </div>
             </div>
-        {% endif %}
-
-
-        <!-- 👑 THE UNIVERSALLY VISIBLE COMPILER CONTROL FOR NEW RELEASES IN THE SIDECAR CANVAS -->
-        {% if is_owner %}
-        <div class="profile-board-card" style="border-top: 4px solid var(--accent);">
-            <h3 style="font-size:16px; margin-bottom:12px;">
-                {% if vendor.role == 'Fast Food' %}🍔 Publish Fresh Kitchen Meal{% else %}📦 Publish Product Listing{% endif %}
-            </h3>
-            
-                        <!-- 🚀 RE-ROUTED DIRECTLY TO YOUR NEW SECURE BALANCED ENDPOINT FOR IPHONES -->
-            <form method="POST" action="/publish-product" enctype="multipart/form-data" style="margin-top: 15px; display: flex; flex-direction: column; gap: 14px;">
-
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                
-                <div class="form-group">
-                    <input type="text" name="{% if vendor.role == 'Fast Food' %}meal_name{% else %}title{% endif %}" class="form-control" placeholder="{% if vendor.role == 'Fast Food' %}e.g. Jollof Rice, Pizza{% else %}e.g. Nike Sneakers, Laptop{% endif %}" required>
-                </div>
-                
-                <div class="form-group">
-                    <input type="number" step="0.01" name="price" class="form-control" placeholder="Price Tag Cost (GH₵)" required>
-                </div>
-                
-                <div class="form-group">
-                    <textarea name="{% if vendor.role == 'Fast Food' %}meal_description{% else %}description{% endif %}" class="form-control" rows="3" placeholder="Description details..." style="font-family:inherit;" required></textarea>
-                </div>
-                
-                  {% if vendor.role != 'Fast Food' %}
-                <!-- 👑 CATEGORY DROPDOWN AND STOCK INVENTORY ASSIGNMENTS FOR GENERAL STORES -->
-                <div class="form-group" style="margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size:12px; font-weight:700; color:var(--text-main);">Product Department Category:</label>
-                    <select name="category" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color, #CBD5E1); background:white; cursor:pointer; font-size:14px; color:var(--text-main);">
-                        {% for category in product_categories %}
-                            {% if category != 'Fast Food' %}
-                                <option value="{{ category }}">{{ category }}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="form-group" style="margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size:12px; font-weight:700; color:var(--text-main);">Available Units Inventory Stock:</label>
-                    <input type="number" name="stock_quantity" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color, #CBD5E1); font-size:14px; background:var(--bg-body); color:var(--text-main);" placeholder="e.g. 5" value="1">
-                </div>
-                {% endif %}
-                
-                <div class="form-group" style="margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size:12px; font-weight:700; color:var(--text-main);">Fulfillment Dispatch Hub / Location:</label>
-                    <input type="text" name="location" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color, #CBD5E1); font-size:14px; background:var(--bg-body); color:var(--text-main);" value="{{ session.get('business_location') or 'Accra' }}" required>
-                </div>
-                
-                <!-- 📸 PREMIUM FILE ATTACHMENTS DISPATCH MATRIX WITH CUTE LIVE '✕ CANCEL' TRIPPERS -->
-                <div class="form-group" style="margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size:12px; font-weight:700; color:var(--text-main);">Choose File Asset (Image OR 20s Showcase Video):</label>
-                    <div style="border:1px dashed var(--border-color, #CBD5E1); border-radius:8px; padding:14px; background:rgba(0,0,0,0.01); display:flex; flex-direction:column; gap:12px;">
-                        
-                        <!-- Image Upload Channel Box -->
-                        <div>
-                            <small style="display:block; font-weight:700; margin-bottom:4px; color:var(--text-muted);">📸 Cover Image File:</small>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <input type="file" id="profileProductImgInput" name="product_image" accept="image/*" style="padding:4px; border-radius:4px; width:100%; background:#fff;" onchange="if(this.value) document.getElementById('cancelProfileImgBtn').style.display='inline-block';">
-                                <button type="button" id="cancelProfileImgBtn" style="display: none; background: #EF4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; white-space: nowrap;" onclick="document.getElementById('profileProductImgInput').value=''; this.style.display='none';">✕ Cancel</button>
-                            </div>
-                        </div>
-                        
-                        <!-- Video Upload Channel Box -->
-                        <div style="border-top:1px dashed var(--border-color, #E2E8F0); padding-top:10px;">
-                            <small style="display:block; font-weight:700; margin-bottom:4px; color:var(--text-muted);">🎬 OR Premium Ad Video (Max 20s):</small>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <input type="file" id="profileProductVidInput" name="product_video" accept="video/*" style="padding:4px; border-radius:4px; width:100%; background:#fff;" onchange="if(this.value) document.getElementById('cancelProfileVidBtn').style.display='inline-block';">
-                                <button type="button" id="cancelProfileVidBtn" style="display: none; background: #EF4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; white-space: nowrap;" onclick="document.getElementById('profileProductVidInput').value=''; this.style.display='none';">✕ Cancel</button>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-                
-                <button type="submit" style="margin-top:6px; background:#FFA41C; color:#111; border:1px solid #FF9900; padding:12px; border-radius:6px; font-weight:800; font-size:14px; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px;">🚀 Publish to Live Market</button>
-             </form>
         </div>
-        {% endif %}
+    {% endif %}
 
-        <!-- ==========================================================================
-           📋 AVAILABLE STORE INVENTORY MATRIX CONTAINER
-           ========================================================================== -->
-        <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-top: 24px; box-shadow: var(--shadow-sm);">
-            <h3 style="margin-top: 0; font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 8px; color: var(--text-main);">
-                📦 Available Store Inventory ({{ product_count }} items)
-            </h3>
+    <!-- 🍟 PRODUCT PUBLISHING CONSOLE PANEL -->
+    {% if is_owner %}
+    <div class="card" style="text-align: left; max-width: 650px; margin: 0;">
+        <h3 style="margin-top:0; font-size:18px; font-weight:800;">🚀 {% if vendor.role == 'Fast Food' %}Publish Fresh Kitchen Meal{% else %}Publish Product Listing{% endif %}</h3>
+        <form method="POST" action="/publish-product" enctype="multipart/form-data" style="margin-top: 15px; display: flex; flex-direction: column; gap: 14px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             
-            <div class="grid" id="masterCatalogGrid" style="margin-top: 15px;">
-                {% for product in products %}
-                    <div class="card product-card-wrapper" style="background:#FFF; border:1px solid var(--border-color); border-radius:12px; padding:16px; position:relative; display:flex; flex-direction:column; justify-content:space-between; box-sizing:border-box;">
-                        
-                        <!-- Dynamic Media Wrapper -->
-                        <div style="width:100%; height:160px; display:flex; align-items:center; justify-content:center; background:#FFF; border-radius:8px; overflow:hidden; margin-bottom:12px; position:relative;">
-                            {% if product.video_file %}
-                                <video style="width:100%; height:100%; object-fit:cover; background:#000;" controls autoplay muted playsinline loop preload="metadata">
-                                    <source src="{{ url_for('stream_video', filename=product.video_file) }}">
-                                </video>
-                            {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' %}
-                                <img src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}" style="max-width:100%; max-height:100%; object-fit:contain;">
-                            {% else %}
-                                <div style="color:#9CA3AF; font-size:12px; padding:20px; text-align:center;">Media unavailable</div>
-                            {% endif %}
-                            <span class="loc-badge">📍 {{ product.location }}</span>
-                        </div>
-
-                        <div style="flex-grow:1; display:flex; flex-direction:column;">
-                            <h4 style="font-size:15px; font-weight:700; margin:0 0 6px 0; color:var(--text-main); height:38px; overflow:hidden; line-height:1.25;">{{ product.title }}</h4>
-                            
-                            <!-- Dynamic Pricing -->
-                            {% if product.active_promo %}
-                                <div style="font-size:11px; color:#767676; text-decoration:line-through; font-weight:600;">List: GH₵ {{ "%.2f"|format(product.promo_original_price) }}</div>
-                                <div style="font-size:18px; font-weight:800; color:#B12704; margin-bottom:8px;">GH₵ {{ "%.2f"|format(product.promo_effective_price) }} 🔥</div>
-                            {% else %}
-                                <div style="font-size:18px; font-weight:800; color:var(--text-main); margin-bottom:8px;">GH₵ {{ "%.2f"|format(product.price) }}</div>
-                            {% endif %}
-                            
-                            <p style="font-size:12px; color:var(--text-muted); margin:0 0 12px 0; height:32px; overflow:hidden; line-height:1.35;">{{ product.description }}</p>
-                            
-                            <div style="margin-top:auto; display:flex; flex-direction:column; gap:6px;">
-                                {% if not is_owner %}
-                                    <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="btn-action btn-cart" style="text-align:center; text-decoration:none; background:#FFD814; color:#111; border:1px solid #FCD200; padding:8px 0; font-weight:700; font-size:12px; border-radius:6px;">🛒 Add to Basket</a>
-                                {% else %}
-                                    <div style="background:#FFF5F5; border:1px solid #FED7D7; padding:6px 12px; border-radius:6px; display:flex; align-items:center; justify-content:space-between; box-sizing:border-box;">
-                                        <span style="font-size:11px; color:var(--danger); font-weight:700;">🏪 Store Asset</span>
-                                        <a href="/delete-item/{{ product.id }}" style="color:var(--danger); font-size:11px; font-weight:800; text-decoration:underline;" onclick="return confirm('Confirm permanent deletion? This action cannot be reversed.');">🗑️ Delete</a>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                {% else %}
-                    <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); background: white; border-radius: 8px; border: 1px dashed var(--border-color); font-weight: 600; width: 100%;">
-                        🔹 No published listings found for this storefront.
-                    </div>
-                {% endfor %}
+            <div style="display:flex; flex-direction:column; gap:4px;">
+                <label style="font-size:12px; font-weight:700;">{% if vendor.role == 'Fast Food' %}Meal / Drink Name:{% else %}Product Title Headline:{% endif %}</label>
+                <input type="text" name="{% if vendor.role == 'Fast Food' %}meal_name{% else %}title{% endif %}" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color);" placeholder="e.g. Jollof Rice, Nike Sneakers" required>
             </div>
+            
+            <div style="display:flex; flex-direction:column; gap:4px;">
+                <label style="font-size:12px; font-weight:700;">Price Tag Cost (GH₵):</label>
+                <input type="number" step="0.01" name="price" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color);" placeholder="0.00" required>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:4px;">
+                <label style="font-size:12px; font-weight:700;">{% if vendor.role == 'Fast Food' %}Meal Description / Ingredients:{% else %}Product Details Description:{% endif %}</label>
+                <textarea name="{% if vendor.role == 'Fast Food' %}meal_description{% else %}description{% endif %}" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); font-family:inherit;" placeholder="Describe parameters..." required></textarea>
+            </div>
+
+            {% if vendor.role == 'Fast Food' %}
+            <div style="display:flex; flex-direction:column; gap:4px;">
+                <label style="font-size:12px; font-weight:700;">Menu List Category Section:</label>
+                <select name="menu_type" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); background:white;">
+                    <option value="Main Dishes">🍛 Main Dishes</option>
+                    <option value="Sides">🍟 Sides & Appetizers</option>
+                    <option value="Drinks">🥤 Beverages & Drinks</option>
+                    <option value="Desserts">🍰 Desserts & Sweets</option>
+                </select>
+<!-- Form Controls & Media Selection Section -->
+{% if is_owner and vendor.role == 'Fast Food' %}
+  <div class="menu-form-group">
+    <label for="accompaniments">Accompaniments (Served With):</label>
+    <!-- Accompaniments Input Field Here -->
+  </div>
+{% else %}
+  <div class="menu-form-group">
+    <label for="category">Product Department Category:</label>
+    <select name="category" id="category">
+      {% for category in product_categories if category != 'Fast Food' %}
+        <option value="{{ category }}">{{ category }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="menu-form-group">
+    <label for="stock">Available Units Inventory Stock:</label>
+    <!-- Stock Input Field Here -->
+  </div>
+{% endif %}
+
+<!-- Media Asset Upload Controls -->
+<fieldset class="media-upload-section">
+  <legend>Fulfillment Dispatch Location & Media Assets</legend>
+  <p>Choose File Asset (Image OR 20s Video):</p>
+
+  <div class="file-input-group">
+    <label for="bizhubProductImageInput">📸 Cover Image File:</label>
+    <input 
+      type="file" 
+      id="bizhubProductImageInput" 
+      accept="image/*" 
+      onchange="handleMediaSelectionToggle('image')"
+    >
+    <button 
+      type="button" 
+      id="clearImageBtn" 
+      class="btn-cancel" 
+      style="display: none;" 
+      onclick="resetSelectedMediaField('image')"
+    >✕ Cancel</button>
+  </div>
+
+  <div class="file-input-group">
+    <label for="bizhubProductVideoInput">🎬 OR Premium Ad Video (Max 20s):</label>
+    <input 
+      type="file" 
+      id="bizhubProductVideoInput" 
+      accept="video/*" 
+      onchange="handleMediaSelectionToggle('video')"
+    >
+    <button 
+      type="button" 
+      id="clearVideoBtn" 
+      class="btn-cancel" 
+      style="display: none;" 
+      onclick="resetSelectedMediaField('video')"
+    >✕ Cancel</button>
+  </div>
+
+  <button type="submit" class="btn-primary">🚀 Publish to Live Market</button>
+</fieldset>
+
+<!-- Customer Menu Filter Navigation -->
+{% if vendor.role == 'Fast Food' and not is_owner %}
+  <nav class="menu-navigation">
+    <h3>🍔 Browse Our Menu Sections:</h3>
+    <ul class="filter-list">
+      <li><button type="button" onclick="executeKitchenMenuFilter('All-Meals')">✨ Show Full Digital Menu (All Dishes)</button></li>
+      <li><button type="button" onclick="executeKitchenMenuFilter('Main Dishes')">🍛 Main Dishes & Special Packages</button></li>
+      <li><button type="button" onclick="executeKitchenMenuFilter('Sides')">🍟 Sides, Snacks & Appetizers</button></li>
+      <li><button type="button" onclick="executeKitchenMenuFilter('Drinks')">🥤 Chilled Beverages & Soft Drinks</button></li>
+      <li><button type="button" onclick="executeKitchenMenuFilter('Desserts')">🍰 Pastries, Sweets & Desserts</button></li>
+    </ul>
+  </nav>
+{% endif %}
+
+<!-- Product Catalog -->
+<section class="catalog-section">
+  <h2>
+    📦 {% if is_owner and vendor.role == 'Fast Food' %}📋 Your Organized Menu Categories & History{% else %}Available Catalog Products{% endif %} 
+    ({{ product_count }} items)
+  </h2>
+
+  <!-- Main Product Display Grid -->
+  <div class="product-grid">
+    {% for product in products if product.menu_type == 'Main Dishes' or not is_owner or vendor.role != 'Fast Food' %}
+      <article class="bizhub-menu-item-row" data-menu-section="{{ product.menu_type }}">
+        <div class="product-media">
+          {% if product.image_file and product.image_file != 'fast-food-placeholder.svg' %}
+            <img src="{{ product.image_file }}" alt="{{ product.title }}">
+          {% else %}
+            <span class="media-placeholder">Media Asset View</span>
+          {% endif %}
         </div>
 
-    </div> <!-- Closes main layout .container / .wrap grid -->
+        <div class="product-details">
+          <h3>{{ product.title }}</h3>
+          {% if product.served_with %}
+            <p class="served-with">🍱 Served with: {{ product.served_with }}</p>
+          {% endif %}
+          <p class="price">GH₵ {{ "%.2f"|format(product.price) }}</p>
+          <p class="description">{{ product.description }}</p>
+        </div>
 
-    <footer style="margin-top: 60px; padding: 20px 0; border-top: 1px solid var(--border-color); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
-        © 2026 BizHub Marketplace · Your Local Market, Unified Online
-    </footer>
+        <div class="product-actions">
+          {% if not is_owner %}
+            <button type="button" class="btn-cart">🛒 Add to Basket</button>
+          {% else %}
+            <span class="badge">🏪 Menu Listing</span>
+            <button type="button" class="btn-danger">🗑️ Delete</button>
+          {% endif %}
+        </div>
+      </article>
+    {% endfor %}
+  </div>
 
+  <!-- Owner Listing History Categories -->
+  {% if is_owner and vendor.role == 'Fast Food' %}
+    {% set sections = [
+      ('Main Dishes', 'Main Dishes'),
+      ('Sides', 'Sides & Appetizers'),
+      ('Drinks', 'Beverages & Drinks'),
+      ('Desserts', 'Pastries & Desserts')
+    ] %}
+
+    {% for section_key, section_label in sections %}
+      <div class="listing-history-group">
+        <h3>Your Listing History for {{ section_label }}</h3>
+        {% for product in products if product.menu_type == section_key %}
+          <div class="history-item">
+            <h4>{{ product.title }}</h4>
+            <p>GH₵ {{ "%.2f"|format(product.price) }}</p>
+            <button type="button" class="btn-danger">🗑️ Delete Listing</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  {% endif %}
+</section>
+
+<footer class="footer">
+  <p>© 2026 BizHub Marketplace · Your Local Market, Unified Online · A Subsidiary Of The TOZOTS 🇬🇭 Company</p>
+</footer>
+
+<!-- Modern JS Scripts -->
+<script>
+        function handleMediaSelectionToggle(selectedMediaTypeCode) {
+            const imgInput = document.getElementById('bizhubProductImageInput');
+            const videoInput = document.getElementById('bizhubProductVideoInput');
+            const clearImg = document.getElementById('clearImageBtn');
+            const clearVideo = document.getElementById('clearVideoBtn');
+
+            const isKitchenStore = '{{ vendor.role }}' === 'Fast Food';
+
+            if (selectedMediaTypeCode === 'image' && imgInput.files.length > 0) {
+                clearImg.style.display = 'inline-block';
+                if (!isKitchenStore) {
+                    videoInput.value = '';
+                    videoInput.disabled = true;
+                    clearVideo.style.display = 'none';
+                }
+            } else if (selectedMediaTypeCode === 'video' && videoInput.files.length > 0) {
+                clearVideo.style.display = 'inline-block';
+                if (!isKitchenStore) {
+                    imgInput.value = '';
+                    imgInput.disabled = true;
+                    clearImg.style.display = 'none';
+                }
+            }
+        }
+
+        function resetSelectedMediaField(mediaTypeToClear) {
+            const imgInput = document.getElementById('bizhubProductImageInput');
+            const videoInput = document.getElementById('bizhubProductVideoInput');
+            const clearImg = document.getElementById('clearImageBtn');
+            const clearVideo = document.getElementById('clearVideoBtn');
+
+            if (mediaTypeToClear === 'image') {
+                imgInput.value = '';
+                clearImg.style.display = 'none';
+                videoInput.disabled = false;
+            } else if (mediaTypeToClear === 'video') {
+                videoInput.value = '';
+                clearVideo.style.display = 'none';
+                imgInput.disabled = false;
+            }
+        }
+
+    function executeKitchenMenuFilter(selectedSectionName) {
+        const menuCards = document.getElementsByClassName('bizhub-menu-item-row');
+        for (let i = 0; i < menuCards.length; i++) {
+            const targetCard = menuCards[i];
+            const cardSection = targetCard.getAttribute('data-menu-section');
+            
+            if (selectedSectionName === 'All-Meals' || cardSection === selectedSectionName) {
+                targetCard.style.display = 'flex';
+            } else {
+                targetCard.style.display = 'none';
+            }
+        }
+    }
+</script>
 </body>
 </html>
-
-             

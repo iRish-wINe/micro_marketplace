@@ -1,12 +1,31 @@
 {
-  "name": "BizHub Marketplace",
-  "short_name": "BizHub",
+  "name": "Biz Hub - Your Local Market, Unified Online",
+  "short_name": "Biz Hub",
+  "description": "Discover local products, meals, vendors, and companies in one online marketplace.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0B192C",
   "theme_color": "#0B192C",
+  "lang": "en-GH",
   "icons": [
-    {"src":"/static/uploads/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
-    {"src":"/static/uploads/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+    {
+      "src": "/static/uploads/bizhub-app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/uploads/bizhub-app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/uploads/bizhub-app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

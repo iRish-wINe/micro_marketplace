@@ -18,6 +18,7 @@
             --danger-red: #E11900;
             --text-main: #333333;
             --text-muted: #6B6B6B;
+            --border-color: #E2E2E2;
             --radius: 12px;
             --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -36,7 +37,8 @@
         .portal-grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 30px; }
         @media(min-width: 992px) { .portal-grid { grid-template-columns: 1fr 380px; } }
 
-        .uber-card { background: white; border-radius: var(--radius); border: 1px solid var(--uber-gray-border); padding: 28px; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.03); height: fit-content; }
+        .uber-card { background: white; border-radius: var(--radius); border: 1px solid var(--uber-gray-border); padding: 28px; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.03); height: fit-content; margin-bottom: 24px; }
+        .uber-card:last-child { margin-bottom: 0; }
         .uber-title { font-size: 22px; font-weight: 800; margin-top: 0; margin-bottom: 10px; letter-spacing: -0.5px; color: var(--uber-black); }
         .uber-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 0; margin-bottom: 20px; line-height: 1.5; }
 
@@ -46,17 +48,22 @@
         .price-tag { font-size: 32px; font-weight: 900; color: var(--uber-black); margin: 20px 0; letter-spacing: -1px; }
         .price-tag span { font-size: 14px; font-weight: 600; color: var(--text-muted); letter-spacing: 0; }
 
-        /* 🔥 DYNAMIC HIGH-VISIBILITY ACTIONS BUTTON */
-        .action-btn-whatsapp { background-color: #FFA41C; color: #0F1111; border: 1px solid #FF9900; text-decoration: none; display: block; text-align: center; padding: 14px; border-radius: 8px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.3px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: var(--transition); width: 100%; box-sizing: border-box; cursor: pointer; }
-        .action-btn-whatsapp:hover { background-color: #F59200; transform: translateY(-1px); }
+        /* Black CTA Button Styling */
+        .btn-upgrade-action { background-color: #000000; color: white; border: 1px solid #000000; text-decoration: none; display: block; text-align: center; padding: 14px; border-radius: 8px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.3px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: var(--transition); width: 100%; box-sizing: border-box; cursor: pointer; }
+        .btn-upgrade-action:hover { background-color: #1a1a1a; border-color: #1a1a1a; opacity: 0.95; transform: translateY(-1px); }
         
         .alert-banner { padding: 16px; border-radius: var(--radius); margin-top: 24px; font-size: 14px; font-weight: 700; line-height: 1.5; }
         .alert-success { background-color: rgba(5,163,87,0.08); color: #046A36; border: 1px solid rgba(5,163,87,0.2); }
-        
-        .overview-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--uber-gray-light); font-size: 14px; }
-        .overview-row:last-child { border-bottom: none; }
-        .overview-label { color: var(--text-muted); font-weight: 500; }
-        .overview-value { color: var(--uber-black); font-weight: 700; text-align: right; }
+
+        .info-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+        .info-table td { padding: 10px 0; border-bottom: 1px solid var(--uber-gray-light); }
+        .info-table td:first-child { color: var(--text-muted); font-weight: 500; }
+        .info-table td:last-child { color: var(--uber-black); font-weight: 700; text-align: right; }
+
+        .receipt-row { padding: 12px 0; border-bottom: 1px solid var(--uber-gray-light); display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .receipt-row:last-child { border-bottom: none; }
+
+        @keyframes modalPop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -100,93 +107,104 @@
 
         <div class="portal-grid">
             
-            <!-- COLUMN 1: INTERACTIVE BILLING CARD LAYER -->
-            <div class="uber-card">
-                <h2 class="uber-title">Delivery Premium</h2>
-                <p class="uber-subtitle">Premium keeps your service visible to vendors and gives you access to BizHub delivery-service features.</p>
-                
-                <div class="price-tag">
-                    GH₵ 20 <span>/ month after trial</span>
-                </div>
-
-                <div style="margin-bottom: 24px;">
-                    <div class="feature-row"><span class="feature-icon">✓</span><div>First 5 months free for eligible new Delivery Service accounts</div></div>
-                    <div class="feature-row"><span class="feature-icon">✓</span><div>Appear in vendor delivery-service searches</div></div>
-                    <div class="feature-row"><span class="feature-icon">✓</span><div>Set your service to Available or Unavailable</div></div>
-                    <div class="feature-row"><span class="feature-icon">✓</span><div>Receive vendor delivery requests through BizHub notifications and configured contact channels</div></div>
-                </div>
-
-                <div style="background-color: var(--uber-gray-light); border: 1px solid var(--uber-gray-border); border-radius: var(--radius); padding: 16px; margin-bottom: 24px; font-size: 13px; line-height: 1.5;">
-                    {% if subscription.is_premium %}
-                        {% if subscription.trial %}
-                            <div style="color: var(--success-green); font-weight: 800; display: flex; align-items: center; gap: 6px;">
-                                🎁 Free trial active until {{ subscription.expires }}
-                            </div>
-                            <div style="color: var(--text-muted); margin-top: 4px;">Your account currently has Premium access during the 5-month free trial.</div>
-                        {% else %}
-                            <div style="color: var(--success-green); font-weight: 800; display: flex; align-items: center; gap: 6px;">
-                                👑 Premium active until {{ subscription.expires }}
-                            </div>
-                            <div style="color: var(--text-muted); margin-top: 4px;">You can subscribe again through WhatsApp to renew or extend your Premium service.</div>
-                        {% endif %}
-                    {% else %}
-                        <div style="color: var(--danger-red); font-weight: 800;">○ Plan Status: Inactive / Basic</div>
-                        <div style="color: var(--text-muted); margin-top: 4px;">Subscribe to activate premium feature routing.</div>
-                    {% endif %}
-                </div>
-
-                                              <!-- 🚀 BULLETPROOF WEB-GATEWAY LINK: ZERO SYMBOL OVERLAPS -->
-                {% set wa_number = payment_number or '233558272972' %}
-                {% set wa_company = service.service_name if (service and service.service_name) else (user.company_name or user.username) %}
-                {% set wa_message = user.username ~ ' of ' ~ wa_company ~ ' wants to upgrade to premium. Send account details!' %}
-               <!-- 🚀 UNIFORM BACKEND-CALCULATED DISPATCH URL LAYER -->
-<a href="{{ whatsapp_upgrade_url }}" target="_blank" rel="noopener noreferrer" class="action-btn-whatsapp">
-    Subscribe to Premium
-</a>
-
-
-
-            </div>
-
-            <!-- COLUMN 2: REGISTRY PROFILE SUMMARY -->
+            <!-- COLUMN 1: SUBSCRIPTION PLANS & FEATURES -->
             <div>
                 <div class="uber-card">
-                    <h3 style="margin-top:0; font-size:16px; font-weight:800; color:var(--uber-black); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:18px; border-bottom:2px solid var(--uber-gray-light); padding-bottom:6px;">
+                    <!-- DYNAMIC STATUS INFO BANNERS -->
+                    {% if subscription.is_premium %}
+                        <div style="border-left: 6px solid var(--success-green); background: rgba(5,163,87,0.06); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                            <h3 style="color: var(--success-green); margin: 0 0 6px 0; font-size: 16px; font-weight: 800;">🥳 Premium Fleet Status Active</h3>
+                            <p style="margin: 0; font-size: 14px; font-weight: 600; color: var(--text-main);">Your active delivery route verification tags are fully unconstrained. Thank you for dispatching on BizHub! Expiration: {{ subscription.expires or 'Active' }}</p>
+                        </div>
+                    {% endif %}
+
+                    {% if requested %}
+                        <div style="border-left: 6px solid var(--uber-blue); background: rgba(39,110,241,0.06); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                            <h3 style="margin: 0 0 4px 0; font-weight: 800; color: var(--uber-blue); font-size: 16px;">⏳ Verification Request Recorded</h3>
+                            <p style="margin: 0; font-size: 13px; font-weight: 600; color: var(--text-main);">Admin checking is active. Your premium driver matching routes will toggle open the exact moment payment references are verified.</p>
+                        </div>
+                    {% endif %}
+
+                    <span style="font-size:11px; font-weight:800; color:var(--accent); text-transform:uppercase; display:block; letter-spacing:0.5px;">Scale Your Logistics Revenue</span>
+                    <h2 class="uber-title" style="margin-top: 4px;">Biz Hub Driver Premium Fleet Subscriptions</h2>
+                    <p class="uber-subtitle">Unlock real-time high-density vendor request match streams, active availability toggles, premium profile verification check badges, and top-priority catalog table positions.</p>
+                    
+                    <div class="price-tag">
+                        GH₵ 20 <span>/ month after trial</span>
+                    </div>
+
+                    <div style="margin-bottom: 24px;">
+                        <div class="feature-row"><span class="feature-icon">✓</span><div>First 5 months free for eligible new Delivery Service accounts</div></div>
+                        <div class="feature-row"><span class="feature-icon">✓</span><div>Appear in vendor delivery-service searches</div></div>
+                        <div class="feature-row"><span class="feature-icon">✓</span><div>Toggle <b>'Available/Online'</b> status instantly</div></div>
+                        <div class="feature-row"><span class="feature-icon">✓</span><div>Receive vendor delivery requests through BizHub notifications and configured contact channels</div></div>
+                        <div class="feature-row"><span class="feature-icon">✓</span><div>Earn high-conversion <b>Verified Fleet</b> trust stars</div></div>
+                    </div>
+
+                    {% if subscription.is_premium %}
+                        {% if subscription.trial %}
+                            <div style="background: rgba(245,158,11,0.05); padding: 14px; border-radius: 8px; border: 1px dashed var(--accent); margin-bottom: 20px;">
+                                <b style="color: var(--accent);">🎁 Free trial active until {{ subscription.expires }}</b>
+                                <p style="margin: 5px 0 0 0; font-size: 13.5px; color: var(--text-muted);">Your account currently has full Premium routing access parameters during the 5-month free trial.</p>
+                            </div>
+                        {% else %}
+                            <div style="background: rgba(5,163,87,0.05); padding: 14px; border-radius: 8px; border: 1px dashed var(--success-green); margin-bottom: 20px;">
+                                <b style="color: var(--success-green);">👑 Premium active until {{ subscription.expires }}</b>
+                                <p style="margin: 5px 0 0 0; font-size: 13.5px; color: var(--text-muted);">Your paid subscription loop token is running smoothly across the dispatch marketplace networks.</p>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div style="background: rgba(0,0,0,0.02); padding: 14px; border-radius: 8px; border: 1px solid var(--uber-gray-border); margin-bottom: 20px;">
+                            <b style="color: #111;">○ Plan Status: Inactive / Basic</b>
+                            <p style="margin: 5px 0 0 0; font-size: 13.5px; color: var(--text-muted);">Subscribe to activate premium feature routing matching protocols.</p>
+                        </div>
+                    {% endif %}
+
+                    <button type="button" class="btn-upgrade-action" onclick="handleFleetInterception('{{ subscription.code }}', '{{ subscription.name }}');">
+                        🚀 Subscribe for Upgrade
+                    </button>
+                </div>
+            </div>
+
+            <!-- COLUMN 2: REGISTRY PROFILE SUMMARY & HISTORY -->
+            <div>
+                <div class="uber-card">
+                    <h3 style="margin-top:0; font-size:16px; font-weight:800; color:var(--uber-black); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:14px; border-bottom:2px solid var(--uber-gray-light); padding-bottom:8px;">
                         Account Overview
                     </h3>
-                    <p style="font-size:13px; color:var(--text-muted); margin-top:0; margin-bottom:15px;">Your current BizHub Delivery Service account configuration metrics.</p>
+                    <p style="font-size:13px; color:var(--text-muted); margin-top:0; margin-bottom:16px;">Your current BizHub Delivery Service account configuration metrics.</p>
                     
-                    <div class="overview-row"><span class="overview-label">Username</span><span class="overview-value">{{ user.username }}</span></div>
-                    <div class="overview-row"><span class="overview-label">Company</span><span class="overview-value">{{ user.company_name or (service.service_name if service else user.username) }}</span></div>
-                    <div class="overview-row"><span class="overview-label">Plan</span><span class="overview-value">{{ subscription.name }}</span></div>
-                    {% if subscription.expires %}
-                        <div class="overview-row"><span class="overview-label">Access through</span><span class="overview-value">{{ subscription.expires }}</span></div>
-                    {% endif %}
-                </div>
+                    <table class="info-table">
+                        <tr><td>Username</td><td>{{ user.username }}</td></tr>
+                        <tr><td>Company</td><td>{{ user.company_name or (service.service_name if service else user.username) }}</td></tr>
+                        <tr><td>Plan</td><td>{{ subscription.name }}</td></tr>
+                        {% if subscription.expires %}
+                            <tr><td>Access through</td><td>{{ subscription.expires }}</td></tr>
+                        {% endif %}
+                    </table>
 
-                <div class="uber-card">
-                    <h3 style="margin-top:0; font-size:15px; font-weight:800; color:var(--uber-black); text-transform:uppercase; margin-bottom:12px;">After the free trial</h3>
-                    <p style="font-size:13px; color:var(--text-main); line-height:1.5; margin:0 0 12px 0;">The first 5 months are free for eligible new Delivery Service accounts.</p>
-                    <ul style="margin:0; padding-left:18px; font-size:12px; color:var(--text-muted); line-height:1.6;">
+                    <h4 style="margin-top: 20px; margin-bottom: 8px; font-size: 14px; color: var(--uber-black);">After the free trial</h4>
+                    <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 10px 0; line-height: 1.5;">The first 5 months are free for eligible new Delivery Service accounts.</p>
+                    <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: var(--text-muted); line-height: 1.6;">
                         <li>Premium access continues at <b>GH₵20 per month</b> when you subscribe.</li>
-                        <li>If Premium expires, your service will no longer be treated as Premium/available for vendor delivery-service matching.</li>
-                        <li>You can return here and use <b>Subscribe to Premium</b> to renew.</li>
+                        <li>If Premium expires, your service will no longer be treated as Premium/available for vendor delivery-service matching loops.</li>
+                        <li>You can return right here and click <b>Subscribe to Premium</b> to renew or extend.</li>
                     </ul>
                 </div>
 
                 {% if receipts %}
                     <div class="uber-card">
-                        <h4 style="margin-top:0; margin-bottom:12px; font-size:13px; font-weight:800; text-transform:uppercase; color:var(--text-muted);">📋 Subscription History</h4>
-                        <div style="max-height: 150px; overflow-y: auto; font-size: 12px; border: 1px solid var(--uber-gray-border); border-radius: 6px; background:#fafafa;">
+                        <h4 style="margin-top:0; margin-bottom:12px; font-size:13px; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.5px;">📋 Subscription History</h4>
+                        <div style="max-height: 220px; overflow-y: auto;">
                             {% for receipt in receipts %}
-                                <div style="padding: 10px 12px; border-bottom:1px solid var(--uber-gray-border); display:flex; justify-content:space-between; align-items:center;">
+                                <div class="receipt-row">
                                     <div>
-                                        <div style="font-weight:700; color:var(--uber-black);">{{ receipt.receipt_number }}</div>
+                                        <b style="color: var(--text-main);">{{ receipt.receipt_number }}</b>
                                         <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Issued Statement Receipt</div>
                                     </div>
                                     <div style="text-align:right;">
-                                        <b style="color:var(--success-green); display:block; font-size:13px;">GH₵ {{ "%.2f"|format(receipt.amount) }}</b>
-                                        <a href="/subscription/receipt/{{ receipt.id }}" style="font-size:11px; color:var(--uber-blue); text-decoration:none; font-weight:700;">View receipt ➔</a>
+                                        <b style="color: var(--success-green); display:block; font-size:13px; margin-bottom:2px;">GH₵ {{ "%.2f"|format(receipt.amount) }}</b>
+                                        <a href="{{ url_for('subscription_receipt', receipt_id=receipt.id) }}" style="color: var(--uber-blue); font-size: 11px; font-weight: 700; text-decoration: none;">View receipt ➔</a>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -194,6 +212,7 @@
                     </div>
                 {% endif %}
             </div>
+
         </div>
 
         <!-- STABLE SYSTEM FOOTER DEALS INFO -->
@@ -203,12 +222,70 @@
             </p>
         </div>
 
-        <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
-        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
-            © 2026 BizHub Marketplace · Your Local Market, Unified Online
+        <!-- 👑 CLEAN OFFICIAL LOGISTICS PLATFORM FOOTER -->
+        <footer style="margin-top: 40px; padding: 20px 0; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
+            © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS 🇬🇭 Company
         </footer>
     </main>
 
+    <!-- 👑 IN-APP MOBILE MONEY PAYMENT INSTRUCTIONS MODAL CONSOLE LAYOUT -->
+    <div id="bizhubFleetPaymentModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 2000; align-items: center; justify-content: center; padding: 16px;" onclick="if(event.target === this) this.style.display='none';">
+        <div style="background: #ffffff; color: var(--text-main); width: 100%; max-width: 480px; padding: 24px; border-radius: 16px; border: 1px solid var(--uber-gray-border); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); animation: modalPop 0.25s cubic-bezier(0.4, 0, 0.2, 1); text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px dashed var(--uber-gray-border); padding-bottom: 10px;">
+                <h3 style="margin: 0; font-size: 16px; color: var(--uber-blue); font-weight: 700;">💳 Mobile Money Transfer Settlement</h3>
+                <button type="button" style="background: none; border: none; font-size: 20px; font-weight: bold; cursor: pointer; color: var(--text-muted);" onclick="document.getElementById('bizhubFleetPaymentModal').style.display='none';">✕</button>
+            </div>
+            
+            <p style="font-size: 14px; line-height: 1.5; margin: 0 0 15px 0;">
+                To process your logistics fleet elevation and activate premium vendor-matching request privileges, please execute your wallet transaction matching the data bounds below:
+            </p>
+            
+            <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); padding: 14px; border-radius: 8px; margin-bottom: 18px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="font-size: 13px;"><b>💸 Payable Value:</b> <span style="color: var(--success-green); font-weight: 800;">GH₵ 20.00 / 30 Days</span></div>
+                <div style="font-size: 13px;"><b>📱 BizHub MoMo Mobile:</b> <code style="font-size: 14px; font-weight: 800; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #111;">0558272972</code></div>
+                <div style="font-size: 13px;"><b>📌 Required Reference ID:</b> <code style="font-size: 13px; font-weight: 800; background: #fee2e2; padding: 2px 6px; border-radius: 4px; color: #cc0c39;">{{ user.username }} - Upgrade my delivery service</code></div>
+            </div>
+
+            <form method="POST" action="/request-premium" style="margin: 0;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn-upgrade-action" style="background: #000000; border-color: #000000; color: white; margin-top: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+                    ✔️ I Have Made The Payment
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 👑 FLEET WARNING MODAL -->
+    <div id="bizhubFleetWarningModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 2000; align-items: center; justify-content: center; padding: 16px;" onclick="if(event.target === this) this.style.display='none';">
+        <div style="background: #ffffff; color: var(--text-main); width: 100%; max-width: 480px; padding: 24px; border-radius: 16px; border: 1px solid var(--uber-gray-border); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); animation: modalPop 0.25s cubic-bezier(0.4, 0, 0.2, 1); text-align: left; border-top: 5px solid var(--accent);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px dashed var(--uber-gray-border); padding-bottom: 10px;">
+                <h3 style="margin: 0; font-size: 16px; color: var(--accent); font-weight: 700;">📊 Fleet Privileges Active</h3>
+                <button type="button" style="background: none; border: none; font-size: 20px; font-weight: bold; cursor: pointer; color: var(--text-muted);" onclick="document.getElementById('bizhubFleetWarningModal').style.display='none';">✕</button>
+            </div>
+            
+            <div style="text-align: center; padding: 10px 0;">
+                <div style="font-size: 48px; margin-bottom: 10px;">👑</div>
+                <b style="font-size: 16px; display: block; margin-bottom: 8px;">Your Carrier Account is on Premium Level</b>
+                <p style="font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin: 0 0 20px 0;">
+                    Your premium trial or paid operational routing token is fully active on the marketplace! There is no need to make a duplicate transaction right now. Please wait until your active access cycle approaches expiration before applying extensions.
+                </p>
+            </div>
+
+            <button type="button" class="btn-upgrade-action" style="background: #000000; color: white; border-color: #000000; margin-top: 5px;" onclick="document.getElementById('bizhubFleetWarningModal').style.display='none';">
+                👍 Understood, Back to Dashboard
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function handleFleetInterception(currentPlanCode, subNameCode) {
+            if (currentPlanCode === 'premium' || subNameCode === 'Premium Delivery' || subNameCode === 'Free trial') {
+                document.getElementById('bizhubFleetWarningModal').style.display = 'flex';
+            } else {
+                document.getElementById('bizhubFleetPaymentModal').style.display = 'flex';
+            }
+        }
+    </script>
+
 </body>
 </html>
-

@@ -269,12 +269,12 @@
     <link
         rel="icon"
         type="image/png"
-        href="{{ url_for('static', filename='uploads/icon-192.png') }}?v=2"
+        href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=2"
     >
 
     <link
         rel="apple-touch-icon"
-        href="{{ url_for('static', filename='uploads/icon-192.png') }}?v=2"
+        href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=2"
     >
 </head>
 
@@ -291,8 +291,17 @@
         <section class="auth-hero" aria-label="BizHub welcome">
             <div class="auth-hero-copy">
                 <span class="hero-kicker">🇬🇭 BizHub Marketplace</span>
-                <h1>Welcome back to <span>BizHub</span></h1>
-                <p>Your Local Market, Unified Online — shop local products, discover trusted stores, and connect with Ghanaian businesses.</p>
+                 <!-- 👑 THE NEW BIZHUB HIGH-CONVERSION TWO-COLUMN HERO CANVAS -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; align-items: center; max-width: 1100px; margin: 0 auto; width: 100%;">
+            
+            <!-- LEFT COLUMN: CRISP STANDARD DISPLAY GRAPHIC (REPLACES OLD TEXT-ONLY HERO) -->
+            <div style="border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.08); background: #fff; border: 1px solid #E2E8F0;">
+                <img src="{{ url_for('static', filename='uploads/bizhub-app-login_banner.png') }}" alt="Welcome to BizHub" style="width: 100%; height: auto; display: block; object-fit: cover;">
+            </div>
+
+            <!-- RIGHT COLUMN: YOUR EXISTING INPUT ACCESS ACCORDION FORM FORMS (Keep your tags safe here) -->
+            <div>
+
             </div>
         </section>
 
@@ -575,7 +584,7 @@
                         >
 
                             <option value="Individual">
-                                Individual Native Trader
+                                Individual Shopper
                             </option>
 
                             <option value="Registered Business">
@@ -827,7 +836,7 @@
     </div>
 
     <div class="auth-footer">
-        © 2026 BizHub Marketplace · Your Local Market, Unified Online
+     © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS 🇬🇭 Company
     </div>
 
 
