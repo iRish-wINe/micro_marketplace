@@ -31,7 +31,7 @@
             background-color: var(--bg-light);
             color: var(--text-main);
             margin: 0;
-            padding: 40px 20px;
+            padding: 20px 10px;
             min-height: 100vh;
 
             display: flex;
@@ -39,6 +39,7 @@
             align-items: center;
             justify-content: center;
         }
+          
 
         .auth-brand {
             font-size: 28px;
@@ -53,7 +54,7 @@
             color: var(--accent);
         }
 
-        .auth-shell { width:100%; max-width:1100px; display:grid; grid-template-columns:minmax(0,1.05fr) minmax(380px,.95fr); background:#fff; border:1px solid var(--border-color); border-radius:var(--radius-lg); overflow:hidden; box-shadow:0 8px 28px rgba(15,23,42,.10); }
+        .auth-shell { width:100%; max-width:1100px; display:grid; grid-template-columns:minmax(0,1.05fr) minmax(min(100%, 380px),.95fr); background:#fff; border:1px solid var(--border-color); border-radius:var(--radius-lg); overflow:hidden; box-shadow:0 8px 28px rgba(15,23,42,.10); }
         .auth-hero { min-height:720px; position:relative; background:#0B192C url("{{ url_for('static', filename='uploads/bizhub-login-hero.png') }}") center center / cover no-repeat; display:flex; align-items:flex-end; padding:38px; }
         .auth-hero::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(11,25,44,.05) 10%,rgba(11,25,44,.88) 100%); }
         .auth-hero-copy { position:relative; z-index:2; color:#fff; max-width:470px; }
