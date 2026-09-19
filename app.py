@@ -853,6 +853,19 @@ def notification_context():
             row = query_db("SELECT COUNT(*) AS count FROM notifications WHERE recipient_id = ? AND is_read = 0", (user["id"],), one=True)
             unread_notifications_count = row["count"] if row else 0
     return {"unread_notifications_count": unread_notifications_count}
+    # 🔔 ADD THIS ROUTE RIGHT HERE FOR LIVE BACKGROUND CHECKING:
+@app.route("/api/unread-notifications-count")
+def api_unread_notifications_count():
+    if not session.get("username"):
+        return {"unread_count": 0}
+    
+    user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
+    if not user:
+        return {"unread_count": 0}
+        
+    row = query_db("SELECT COUNT(*) AS count FROM notifications WHERE recipient_id = ? AND is_read = 0", (user["id"],), one=True)
+    unread_count = row["count"] if row else 0
+    return {"unread_count": unread_count}
 
 def issue_subscription_receipt(entry_id):
     entry = query_db("SELECT * FROM financial_ledger WHERE id = ? AND transaction_type = 'Subscription'", (entry_id,), one=True)

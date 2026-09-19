@@ -719,13 +719,12 @@ html, body {
         </div>
     </div>
 
-    <!-- LOWER SUBBAR STRIPE: SWIPEABLE LINK MATRIX INCLUDING CART NODE -->
+<!-- LOWER SUBBAR STRIPE: SWIPEABLE LINK MATRIX INCLUDING CART NODE -->
     <nav class="bh-subbar" style="min-height: 42px; background: #232f3e; display: flex; align-items: center; gap: 2px; padding: 0 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; box-sizing: border-box; border-top: 1px solid rgba(255,255,255,0.05);">
-       <!-- AFTER -->
         <a href="javascript:void(0)" onclick="toggleAmazonSidebarMenu(true); return false;" style="color: #febd69 !important; text-decoration: none; font-size: 13px; font-weight: 700; cursor: pointer;">☰ All</a>
         <a href="{{ url_for('promo_marketplace') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Today's Deals</a>
         
-        <!-- 🛒 RESTORED CART ROUTE WITH DYNAMIC NOTIFICATION ROUND COUNT PILLS -->
+        <!-- 🛒 CART ROUTE WITH DYNAMIC NOTIFICATION ROUND COUNT PILLS -->
         <a href="{{ url_for('cart_page') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
             🛒 Your Cart 
             {% if cart_count and cart_count|int > 0 %}
@@ -737,20 +736,35 @@ html, body {
         <a href="{{ url_for('features') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">🎯 Features</a>
         <a href="{{ url_for('all_stores') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">All Stores</a>
         <a href="{{ url_for('fast_food_stores') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Fast Food</a>
-        
-        <!-- DYNAMIC ACCOUNT VISIBILITY FOR VENDORS AND LOGGED IN SESSIONS -->
+        <!-- 🚨 FIND AND REPLACE YOUR OLD 'Biz Alerts' LINK WITH THIS BLOCK: -->
+        <a href="/notifications" class="bell-wrapper">
+    <span id="notification-bell" class="{% if unread_notifications_count > 0 %}bell-shake-active{% endif %}">🔔</span> 
+    Biz Alerts🔔
+</a>
+
+        <!-- 1, 2, 3: VENDOR AND ROLE-SPECIFIC DYNAMIC HEADER NAVIGATORS -->
         {% if session.get('username') %}
             <a href="{{ url_for('order_history') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Orders</a>
             <a href="{{ url_for('settings') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Your Account</a>
-{% if session.get('role') in ['Vendor', 'Fast Food'] and kitchen is defined and kitchen %}
-   <a href="{{ url_for('vendor_profile', username=kitchen.username) }}" class="btn-action" style="display:block;text-align:center;margin-top:10px;background:#ea580c;color:#fff;text-decoration:none;">
-       🍔 Order Your Food Now — Buy from {{ kitchen.business_label or kitchen.username }}
-   </a>
-{% elif session.get('role') in ['Vendor', 'Fast Food'] %}
-   <a href="{{ url_for('vendor_profile', username=session.get('username')) }}" class="btn-action" style="display:block;text-align:center;margin-top:10px;background:#ea580c;color:#fff;text-decoration:none;">
-       🍔 View Your Kitchen Profile
-   </a>
-{% endif %}
+
+            <!-- 2. Manage Accounts navigator for Vendors only -->
+            {% if session.get('role') in ['Vendor', 'Fast Food'] %}
+                <a href="{{ url_for('subscription') }}" style="color: #febd69; text-decoration: none; font-size: 13px; font-weight: 700;">💳 Manage Accounts</a>
+                <!-- 3. Find Delivery navigator for Vendors only -->
+                <a href="{{ url_for('delivery_service') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">🚚 Find Delivery</a>
+            {% endif %}
+
+            <!-- 3. Back to Dashboard navigator for Delivery Service only -->
+            {% if session.get('role') == 'Delivery Service' %}
+                <a href="{{ url_for('delivery_dashboard') }}" style="color: #febd69; text-decoration: none; font-size: 13px; font-weight: 700;">🔙 Back to Dashboard</a>
+            {% endif %}
+
+            <!-- 1. My Store / My Kitchen header link (hidden from Delivery Services & Customers) -->
+            {% if session.get('role') == 'Fast Food' %}
+                <a href="{{ url_for('vendor_profile', username=session.get('username')) }}" style="color: #ea580c; text-decoration: none; font-size: 13px; font-weight: 800;">🍳 My Kitchen</a>
+            {% elif session.get('role') == 'Vendor' %}
+                <a href="{{ url_for('vendor_profile', username=session.get('username')) }}" style="color: #febd69; text-decoration: none; font-size: 13px; font-weight: 800;">🏪 My Store</a>
+            {% endif %}
         {% endif %}
     </nav>
 </div>
@@ -1497,5 +1511,34 @@ function changeBasketQty(button, delta){
         </div>
         <div style="color: #FFFFFF; opacity: 0.6; font-size: 18px; font-weight: bold; padding: 0 4px;" onclick="event.stopPropagation(); document.getElementById('bizhubCartToast').style.bottom = '-100px';">×</div>
     </div>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const bellElement = document.getElementById("notification-bell");
+        
+        // Polling function that requests unread details asynchronously
+        function checkLiveNotifications() {
+            fetch("/api/unread-notifications-count")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.unread_count > 0) {
+                        // Unread notification found! Trigger dynamic shake rules
+                        if (!bellElement.classList.contains("bell-shake-active")) {
+                            bellElement.classList.add("bell-shake-active");
+                        }
+                    } else {
+                        // Total cleared or marked read, stop the movement
+                        bellElement.classList.remove("bell-shake-active");
+                    }
+                })
+                .catch(err => console.log("Notification link polling error safely caught:", err));
+        }
+
+        // Run checking loops every 5 seconds (5000 milliseconds)
+        if (bellElement) {
+            setInterval(checkLiveNotifications, 5000);
+        }
+    });
+</script>
+
 </body>
 </html> 
