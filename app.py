@@ -845,6 +845,7 @@ def award_loyalty_points(user_id, order_id, order_total):
     query_db("UPDATE orders SET loyalty_points_earned = ? WHERE id = ?", (points, order_id))
     return points
 
+@app.context_processor
 def notification_context():
     unread_notifications_count = 0
     if session.get("username"):

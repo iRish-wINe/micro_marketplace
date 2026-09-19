@@ -738,7 +738,8 @@ html, body {
         <a href="{{ url_for('fast_food_stores') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Fast Food</a>
         <!-- 🚨 FIND AND REPLACE YOUR OLD 'Biz Alerts' LINK WITH THIS BLOCK: -->
         <a href="/notifications" class="bell-wrapper">
-    <span id="notification-bell" class="{% if unread_notifications_count > 0 %}bell-shake-active{% endif %}">🔔</span> 
+    <!-- Update line 741 in templates/index.html to look like this: -->
+<span id="notification-bell" class="{% if (unread_notifications_count | default(0)) > 0 %}bell-shake-active{% endif %}">🔔</span>
     Biz Alerts🔔
 </a>
 
