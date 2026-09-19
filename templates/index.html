@@ -605,106 +605,65 @@ body {
 @media(max-width:560px){.bh-topbar{gap:5px;padding:7px}.bh-brand{font-size:19px}.bh-brand-sub{display:none}.bh-action{padding:6px 5px}.bh-action .small{display:none}.bh-action strong{font-size:11px}.bh-action .icon{font-size:19px}.bh-subbar a{font-size:12px;padding:10px 9px}.bh-search{height:40px}}
 .promo-owner{border:2px solid #10B981}.promo-favorite{border:2px solid #F59E0B}.promo-active{border:2px solid #E5E7EB} .promo-marketplace-card{background:#b91c1c!important;color:#fff!important;border-color:#991b1b!important}.promo-marketplace-card .card-title,.promo-marketplace-card .card-text,.promo-marketplace-card .card-brand,.promo-marketplace-card .card-metadata{color:#fff!important}.promo-marketplace-card .card-brand-wrapper a{color:#fff!important}.promo-marketplace-card .card-text{opacity:.9}.promo-marketplace-card .card-price{color:#fff!important}.promo-marketplace-card .promo-old-price{text-decoration:line-through;color:rgba(255,255,255,.7)}
 </style>
-<header class="bh-global-header" role="banner">
-  <div class="bh-topbar">
-    <a class="bh-brand" href="{{ url_for('home') }}" aria-label="BizHub home"><span class="bh-brand-mark">B</span><span>BizHub<span class="bh-brand-sub">SHOP • SELL • CONNECT</span></span></a>
-    <!-- 👑 PERSONALIZED DYNAMIC CUSTOMER LOCATION ENGINE -->
-    <!-- 👑 ROLE-BASED DYNAMIC LOCATION HEADER -->
-    <div class="bh-location">
-        <span>📍</span>
-        <span>
-            {% if session.get('role') in ['Vendor', 'Fast Food'] %}
-            <small style="color: var(--text-muted); font-weight: 600;">Delivering from</small>
-            <strong style="color: var(--accent); font-weight: 800; font-size: 13px;">{{ session.get('user_location') or session.get('business_location') or 'Accra' }}</strong>
-        {% elif session.get('role') == 'Delivery Service' %}
-                <small style="color: var(--text-muted); font-weight: 600;">Dispatching from</small>
-                <strong style="color: var(--accent); font-weight: 800; font-size: 13px;">{{ session.get('user_location') or session.get('business_location') or 'Accra' }}</strong>
-        {% else %}
-            <small style="color: var(--text-muted); font-weight: 600;">Ordering from</small>
-            <strong style="color: var(--accent); font-weight: 800; font-size: 13px;">{{ session.get('user_location') or session.get('business_location') or 'Accra' }}</strong>
-        {% endif %}
-        </span>
+<!-- ==========================================================================
+   👑 BIZHUB PREMIUM HIGH-DENSITY SECURE STICKY HEADER NAVIGATION MATRIX
+   ========================================================================== -->
+<div class="bh-global-header" style="position: fixed; top: 0; left: 0; right: 0; z-index: 10000; background: #131921; box-shadow: 0 2px 12px rgba(0,0,0,0.18); width: 100%; max-width: 100%; box-sizing: border-box;">
+    
+    <!-- PRIMARY UPPER BAR: BRAND LOGO & SYSTEM SEARCH INPUT -->
+    <div class="bh-topbar" style="min-height: 64px; display: flex; align-items: center; gap: 12px; padding: 8px 14px; box-sizing: border-box; width: 100%; max-width: 100%;">
+        
+        
+        <a class="bh-brand" href="{{ url_for('home') }}" style="display: flex; align-items: center; gap: 7px; text-decoration: none; color: #fff; font-weight: 900; font-size: 22px; white-space: nowrap; flex-shrink: 0;">
+            <span class="bh-brand-mark">B</span>
+            <div>
+                Biz<span>Hub</span>
+                <span class="bh-brand-sub" style="display: block; font-size: 10px; color: #febd69; font-weight: 700; letter-spacing: 0.5px;">MARKETPLACE</span>
+            </div>
+        </a>
+
+        <!-- Center Predictive Autocomplete Inputs Form Box -->
+        <form method="GET" action="/" class="bh-search" style="display: flex; flex: 1; height: 42px; border-radius: 5px; overflow: hidden; background: #fff; margin: 0; position: relative;">
+            <input type="text" name="company_search" value="{{ company_search or '' }}" autocomplete="off" placeholder="Search item, vendor or location..." style="border: 0; outline: 0; flex: 1; padding: 0 14px; font-size: 15px; color: #111;" oninput="if(typeof fetchBizHubSuggestions === 'function') fetchBizHubSuggestions(this.value)">
+            <button type="submit" style="width: 52px; border: 0; background: #febd69; color: #111; font-size: 18px; cursor: pointer;">🔍</button>
+        </form>
+
+        <!-- Right Side Direct Actions/Pills Map -->
+        <div style="display: flex; align-items: center; gap: 10px; color: white; flex-shrink: 0;">
+            {% if session.get('username') %}
+                <span style="font-size: 12px; font-weight: 700; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #febd69;">👤 {{ session['username'] }}</span>
+            {% else %}
+                <a href="{{ url_for('login') }}" style="color: white; text-decoration: none; font-size: 12px; font-weight: 700;">Sign In</a>
+            {% endif %}
+        </div>
     </div>
 
-    <form class="bh-search" method="get" action="{{ url_for('home') }}" role="search"><input name="company_search" value="{{ company_search }}" placeholder="Search item or company" aria-label="Search BizHub"><button type="submit" aria-label="Search">🔍</button></form>
-    {% if session.get('username') %}
-      <a class="bh-action" href="{{ url_for('settings') }}"><span class="icon">👤</span><span><span class="small">Hello,</span><strong>{{ session.get('username') }}{% if session.get('role') %} <span class="bh-role-pill">{{ session.get('role') }}</span>{% endif %}</strong></span></a>
-      
-      
-      
-    {% else %}
-      <a class="bh-action" href="{{ url_for('login') }}"><span class="icon">👤</span><span><span class="small">Welcome</span><strong>Sign in</strong></span></a>
-      <a class="bh-action" href="{{ url_for('login') }}"><span><span class="small">New to BizHub?</span><strong>Create account</strong></span></a>
-    {% endif %}
-  </div>
-<!-- 👑 AMAZON-STYLE HIGH-DENSITY MOBILE COMPATIBLE SUBBAR MATRIX -->
-<nav class="bh-subbar" aria-label="BizHub marketplace navigation" style="display: flex; align-items: center; background: #232F3E; padding: 0 14px; min-height: 42px; gap: 14px; position: relative; overflow-x: auto !important; -webkit-overflow-scrolling: touch; white-space: nowrap !important; scrollbar-width: none; width: 100%;">
-    <style>
-        /* Force hidden default scroll indicators while keeping the line fluidly swipeable on phones */
-        .bh-subbar::-webkit-scrollbar { display: none !important; }
-        .bh-subbar a { color: #FFFFFF !important; text-decoration: none !important; font-size: 13px !important; font-weight: 700 !important; display: inline-block !important; flex-shrink: 0 !important; padding: 4px 2px; }
-        .bh-subbar a:hover { color: #F59E0B !important; }
-    </style>
-
-    <!-- 👑 THE AMAZON ALL SIDEBAR HAMBURGER TOGGLER BUTTON -->
-    <a href="javascript:void(0);" onclick="toggleAmazonSidebarMenu(true);" style="font-weight: 800 !important; display: flex !important; align-items: center; gap: 4px;">
-        ☰ All
-    </a>
-    
-    <a href="{{ url_for('home') }}">Marketplace</a>
-
-    <!-- 👑 THE VENDOR PREMIUM MANAGING LINK ROUTER WITH THE DIAMOND EMOJI ATTACHED -->
-    {% if session.get('role') in ['Vendor', 'Fast Food'] %}
-        <a href="{{ url_for('subscription') }}" style="color: #F59E0B !important; font-weight: 800 !important;">
-            💎 Manage Account
-        </a>
-    {% else %}
-        <a href="{{ url_for('features') }}">Features</a>
-    {% endif %}
-
-    <a href="{{ url_for('promo_marketplace') }}">Today's Deals</a>
-
-    <!-- 👑 REAL-TIME ALERTS BELL IN THE HIGH-DENSITY SUBBAR STYLE -->
-    <a href="/notifications" style="position: relative; display: inline-flex !important; align-items: center; gap: 3px;">
-        🔔 Alerts
-        {% if customer_notification_count and customer_notification_count|int > 0 %}
-            <span style="background: #EF4444; color: #FFFFFF; font-size: 9px; font-weight: 900; min-width: 15px; height: 15px; border-radius: 50%; display: flex; align-items: center; justify-content: center; line-height: 1; margin-left: 1px;">
-                {{ customer_notification_count }}
-            </span>
+    <!-- LOWER SUBBAR: HORIZONTAL OVERFLOW SCROLL LINK STRIPE LAYER -->
+    <nav class="bh-subbar" style="min-height: 42px; background: #232f3e; display: flex; align-items: center; gap: 4px; padding: 0 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; box-sizing: border-box; border-top: 1px solid rgba(255,255,255,0.05);">
+        <a href="{{ url_for('home') }}" style="color: #febd69 !important; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">☰ All</a>
+        <a href="{{ url_for('promo_marketplace') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">Today's Deals</a>
+        <a href="{{ url_for('favorites') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">Favorites</a>
+        <a href="{{ url_for('features') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">🎯 Features</a>
+        <a href="{{ url_for('all_stores') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">All Stores</a>
+        <a href="{{ url_for('fast_food_stores') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">Fast Food</a>
+        
+        {% if session.get('username') %}
+            <a href="{{ url_for('order_history') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">Orders</a>
+            <a href="{{ url_for('settings') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">Your Account</a>
         {% endif %}
-    
+    </nav>
+</div>
 
-    <a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">Favorites</a>
-    </a>
-    <a href="{{ url_for('cart_page') }}" style="display: inline-flex !important; align-items: center; gap: 4px;">
-    🛒 Cart
-    {% if cart_items %}
-        <span style="background: var(--bh-orange); color: #111; font-size: 10px; font-weight: 900; min-width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center; justify-content: center; line-height: 1;">
-            {{ cart_items|length }}
-        </span>
-    {% endif %}
-</a>
-    <a href="{{ url_for('all_stores') }}">All Stores</a>
-    <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
-    
-    {% if session.get('username') %}
-      <a href="{{ url_for('order_history') }}">Orders</a>
-    {% endif %}
-    
-    {% if session.get('role') in ['Vendor', 'Fast Food'] %}
-      <a href="{{ url_for('vendor_profile', username=session['username']) }}">My Store</a>
-      <a href="{{ url_for('delivery_services') }}">Find Delivery</a>
-      <a href="{{ url_for('promotions') }}">Manage Your Promos</a>
-    {% endif %}
-      
-    {% if session.get('role') == 'Delivery Service' %}
-      <a href="/delivery" style="background-color: #F59E0B; color: #000000 !important; font-weight: 900 !important; border-radius: 4px; padding: 4px 10px; font-size: 13px; text-decoration: none;">🚗 Back to Dashboard</a>
-    {% endif %}
+<!-- 👑 COMPULSORY RESPONSIVE SCROLL HEIGHT FIX (STOPS HEADER FLOATING UNDERNEATH FEED LISTINGS) -->
+<style>
+    body { padding-top: 106px !important; }
+    @media (max-width: 900px) {
+        body { padding-top: 148px !important; }
+        .bh-topbar { flex-wrap: wrap; gap: 8px; padding-bottom: 10px; }
+        .bh-search { order: 5; flex-basis: 100%; width: 100%; max-width: 100%; }
+    }
+</style>
 
-    <a href="{{ url_for('settings') if session.get('username') else url_for('login') }}">Your Account</a>
-    
-
-</nav>
 
 
 <!-- 👑 BIZHUB CORE THEME REPLICA SLIDING SIDEBAR DESK OVERLAY -->
