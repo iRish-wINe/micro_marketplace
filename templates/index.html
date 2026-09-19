@@ -742,12 +742,15 @@ html, body {
         {% if session.get('username') %}
             <a href="{{ url_for('order_history') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Orders</a>
             <a href="{{ url_for('settings') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Your Account</a>
-            {% if session.get('role') in ['Vendor', 'Fast Food'] %}
-   <!-- Kitchen link fix -->
-<a href="{{ url_for('vendor_profile', username=kitchen.username) }}" class="btn-action" style="display:block;text-align:center;margin-top:10px;background:#ea580c;color:#fff;text-decoration:none;">
-    🍔 Order Your Food Now — Buy from {{ kitchen.business_label or kitchen.username }}
-</a>
-            {% endif %}
+{% if session.get('role') in ['Vendor', 'Fast Food'] and kitchen is defined and kitchen %}
+   <a href="{{ url_for('vendor_profile', username=kitchen.username) }}" class="btn-action" style="display:block;text-align:center;margin-top:10px;background:#ea580c;color:#fff;text-decoration:none;">
+       🍔 Order Your Food Now — Buy from {{ kitchen.business_label or kitchen.username }}
+   </a>
+{% elif session.get('role') in ['Vendor', 'Fast Food'] %}
+   <a href="{{ url_for('vendor_profile', username=session.get('username')) }}" class="btn-action" style="display:block;text-align:center;margin-top:10px;background:#ea580c;color:#fff;text-decoration:none;">
+       🍔 View Your Kitchen Profile
+   </a>
+{% endif %}
         {% endif %}
     </nav>
 </div>
