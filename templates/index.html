@@ -752,7 +752,7 @@ html, body {
             {% if session.get('role') in ['Vendor', 'Fast Food'] %}
                 <a href="{{ url_for('subscription') }}" style="color: #febd69; text-decoration: none; font-size: 13px; font-weight: 700;">💳 Manage Accounts</a>
                 <!-- 3. Find Delivery navigator for Vendors only -->
-                <a href="{{ url_for('delivery_service') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">🚚 Find Delivery</a>
+                <a href="{{ url_for('delivery_services') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">🚚 Find Delivery</a>
             {% endif %}
 
             <!-- 3. Back to Dashboard navigator for Delivery Service only -->
