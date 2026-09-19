@@ -51,7 +51,15 @@
         .card h3 { margin: 0 0 4px 0; font-size: 16px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px; }
         .card-caption { font-size: 13px; color: var(--text-muted); margin: 0 0 20px 0; line-height: 1.4; }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 12px; }
+ .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 560px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; color: var(--nav-bg); letter-spacing: 0.3px; }
         .night-theme .form-group label { color: var(--text-muted); }
@@ -78,24 +86,411 @@
         .btn-cancel { background: none; border: none; color: var(--text-main); font-weight: 600; font-size: 13px; cursor: pointer; text-decoration: none; padding: 10px 16px; border-radius: 6px; }
         .btn-cancel:hover { background: rgba(0,0,0,0.04); }
         .btn-save-master { background: var(--accent-green); color: white; border: none; font-weight: 700; font-size: 13px; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-    </style>
+/* ===============================
+   PROFESSIONAL RESPONSIVE UPDATE
+   =============================== */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-width: 0;
+    overflow-x: hidden;
+    background: var(--bg-body);
+    padding: 0 0 40px;
+}
+
+/* Header */
+.top {
+    width: 100%;
+    min-height: 64px;
+    padding: 12px clamp(16px, 4vw, 48px);
+    background: #131921;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.brand {
+    flex: 0 0 auto;
+    font-size: clamp(20px, 3vw, 25px);
+    letter-spacing: -0.4px;
+}
+
+.top > div {
+    color: #cbd5e1;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Navigation */
+.nav {
+    width: 100%;
+    min-height: 44px;
+    margin: 0 0 28px;
+    padding: 0 clamp(8px, 3vw, 40px);
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+}
+
+.nav::-webkit-scrollbar {
+    height: 4px;
+}
+
+.nav::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.3);
+    border-radius: 10px;
+}
+
+.nav a {
+    flex: 0 0 auto;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 13px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.nav a:hover,
+.nav a:focus-visible {
+    background: rgba(255,255,255,.12);
+}
+
+/* Main content */
+.container {
+    width: min(100% - 32px, 1040px);
+    margin: 0 auto;
+    gap: 18px;
+}
+
+form {
+    width: 100%;
+}
+
+/* Back and store buttons */
+.nav-actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
+}
+
+.top-btn {
+    min-height: 40px;
+    padding: 9px 15px;
+    border-radius: 5px;
+    transition: transform .15s ease, opacity .15s ease;
+}
+
+.top-btn:hover,
+.btn-save-master:hover,
+.btn-logout:hover {
+    opacity: .9;
+    transform: translateY(-1px);
+}
+
+/* Cards */
+.card {
+    border-radius: 10px;
+    padding: clamp(18px, 3vw, 28px);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .06);
+}
+
+.card-header-group {
+    align-items: center;
+}
+
+.card h2 {
+    font-size: clamp(22px, 4vw, 28px);
+    letter-spacing: -.5px;
+}
+
+.card h3 {
+    font-size: 17px;
+}
+
+.card-caption {
+    max-width: 700px;
+    margin-bottom: 22px;
+}
+
+/* Forms */
+.form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.form-control {
+    min-width: 0;
+    min-height: 44px;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(29, 155, 240, .14);
+}
+
+textarea.form-control {
+    resize: vertical;
+}
+
+/* File input */
+input[type="file"].form-control {
+    cursor: pointer;
+    padding: 7px;
+}
+
+/* Appearance selector */
+.appearance-grid {
+    width: 100%;
+    max-width: 560px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mode-card {
+    min-height: 82px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 17px 12px;
+    border: 2px solid var(--border-color);
+    transition: border-color .15s ease, background .15s ease,
+                box-shadow .15s ease, transform .15s ease;
+}
+
+.mode-label:hover .mode-card {
+    transform: translateY(-1px);
+}
+
+.mode-label input {
+    accent-color: var(--accent-green);
+}
+
+.mode-label input:checked + .mode-card {
+    border-color: var(--accent-green);
+    background: rgba(6, 193, 103, .07);
+    box-shadow: 0 0 0 3px rgba(6, 193, 103, .12);
+}
+
+.mode-label input[value="night"]:checked + .mode-card {
+    border-color: var(--primary-blue);
+    background: rgba(29, 155, 240, .08);
+    box-shadow: 0 0 0 3px rgba(29, 155, 240, .12);
+}
+
+/* Premium message */
+.card div[style*="background"] {
+    line-height: 1.5;
+}
+
+/* Bottom actions */
+.bottom-action-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    margin: 0 -8px;
+    padding: 13px 8px;
+    background: color-mix(in srgb, var(--bg-body) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-save-master,
+.btn-cancel {
+    min-height: 42px;
+}
+
+/* Footer */
+footer {
+    width: min(100% - 32px, 1040px);
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Tablet */
+@media (max-width: 720px) {
+    .top {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .top > div {
+        font-size: 11px;
+    }
+
+    .nav {
+        margin-bottom: 20px;
+    }
+
+    .card-header-group {
+        align-items: flex-start;
+    }
+
+    .btn-logout {
+        white-space: nowrap;
+    }
+}
+
+/* Phones */
+@media (max-width: 560px) {
+    .container {
+        width: min(100% - 20px, 1040px);
+        gap: 14px;
+    }
+
+    .nav-actions-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .nav-actions-row .top-btn {
+        width: 100%;
+    }
+
+    .card {
+        padding: 17px 15px;
+        border-radius: 8px;
+    }
+
+    .card-header-group {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .card-header-group .btn-logout {
+        width: 100%;
+    }
+
+    .form-grid,
+    .appearance-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .form-group {
+        width: 100%;
+    }
+
+    .bottom-action-bar {
+        margin: 0 -3px;
+        padding: 10px 3px;
+    }
+
+    .bottom-action-bar .btn-cancel,
+    .bottom-action-bar .btn-save-master {
+        flex: 1;
+        text-align: center;
+    }
+
+    .btn-whatsapp-reset {
+        width: 100%;
+        justify-content: center;
+    }
+
+    footer {
+        width: min(100% - 20px, 1040px);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+}
+
+/* Very small phones */
+@media (max-width: 360px) {
+    .brand {
+        font-size: 20px;
+    }
+
+    .card h2 {
+        font-size: 21px;
+    }
+
+    .card h3 {
+        font-size: 16px;
+    }
+
+    .bottom-action-bar {
+        gap: 6px;
+    }
+
+    .btn-cancel,
+    .btn-save-master {
+        padding-left: 10px;
+        padding-right: 10px;
+        font-size: 12px;
+    }
+}
+/* Sticky settings header */
+.settings-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    background: #131921;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, .18);
+}
+
+/* Remove the old spacing because the wrapper controls the header */
+.settings-header .top {
+    position: static;
+    margin: 0;
+    width: 100%;
+    padding: 12px clamp(16px, 4vw, 48px);
+}
+
+.settings-header .nav {
+    position: static;
+    margin: 0;
+    width: 100%;
+}
+
+/* Prevent sticky header from hiding the first card when using anchors */
+.container {
+    scroll-margin-top: 120px;
+}
+</style>
 </head>
 <body>
 
-<header class="top">
-    <a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a>
-    <div style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</div>
-</header>
-<nav class="nav">
-    <a href="{{ url_for('home') }}">☰ Marketplace</a>
-    <a href="{{ url_for('all_stores') }}">All Stores</a>
-    <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
-    <a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">Favorites</a>
-    <a href="{{ url_for('features') if session.get('username') else url_for('login') }}">Features</a>
-    {% if session.get('role') in ['Vendor','Fast Food'] %}
+<div class="settings-header">
+    <header class="top">
+        <a class="brand" href="{{ url_for('home') }}">
+            Biz<span>Hub</span>
+        </a>
 
-    {% endif %}
-</nav>
+        <div class="header-tagline">
+            Your Local Market, Unified Online
+        </div>
+    </header>
+
+    <nav class="nav">
+        <a href="{{ url_for('home') }}">☰ Marketplace</a>
+        <a href="{{ url_for('all_stores') }}">All Stores</a>
+        <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
+        <a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">
+            Favorites
+        </a>
+        <a href="{{ url_for('features') if session.get('username') else url_for('login') }}">
+            Features
+        </a>
+    </nav>
+</div>
+
 
 <div class="container">
     
@@ -218,9 +613,14 @@
                 </div>
             </div>
             
-            <a href="https://wa.me" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-reset">
-                💬 Reset Password via WhatsApp
-            </a>
+<a
+    href="https://wa.me/{{ config.PAYMENT_WHATSAPP or '' }}?text={{ 'Hello BizHub, I need help resetting my password.'|urlencode }}"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="btn-whatsapp-reset"
+>
+     Reset Password via WhatsApp
+</a>
         </div>
 
         <!-- BOTTOM SAVE MATRIX ACTIONS -->
@@ -235,6 +635,7 @@
 <script>
 function switchThemeLive(themeMode) {
     const rootElement = document.documentElement;
+
     if (themeMode === "night") {
         rootElement.classList.add("night-theme");
     } else {

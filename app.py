@@ -2043,36 +2043,23 @@ def product_detail(product_id):
 
 @app.route("/vendor/<username>")
 def vendor_profile(username):
-    vendor = query_db(
-        "SELECT * FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food')",
-        (username,), one=True
-    )
+    """Renders customized store pages grouped by restaurant menus or catalog grids."""
+    vendor = query_db("SELECT * FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food')", (username,), one=True)
     if not vendor:
         return redirect(url_for("home"))
+        
     welcome_message = bool(session.pop("welcome_message", False)) if session.get("username") == vendor.get("username") else False
     favorite_added_message = session.pop("favorite_added_message", None)
     vendor_status = subscription_status(vendor)
     vendor["is_verified"] = vendor_status["is_premium"]
     vendor["is_premium"] = vendor_status["is_premium"]
-    # 👑 FIXED ACCOUNT OWNERSHIP CHECKPOINT: Compares username handles directly to avoid false flags
-    is_owner = bool(
-        session.get("username") 
-        and session.get("username") == vendor["username"]
-    )
+    is_owner = bool(session.get("username") and session.get("username") == vendor["username"])
 
     now_iso = promotion_now_iso()
-    
-    # 🍟 UBER EATS ENGINE ACCELERATION: Sorts your products by Section Sequence if seller is a Fast Food kitchen
     if vendor.get("role") == "Fast Food":
-        products = query_db(
-            "SELECT * FROM products WHERE seller = ? ORDER BY CASE menu_type WHEN 'Main Dishes' THEN 1 WHEN 'Sides' THEN 2 WHEN 'Drinks' THEN 3 WHEN 'Desserts' THEN 4 ELSE 5 END, id DESC",
-            (username,)
-        )
+        products = query_db("SELECT * FROM products WHERE seller = ? ORDER BY CASE menu_type WHEN 'Main Dishes' THEN 1 WHEN 'Sides' THEN 2 WHEN 'Drinks' THEN 3 WHEN 'Desserts' THEN 4 ELSE 5 END, id DESC", (username,)) or []
     else:
-        products = query_db(
-            "SELECT * FROM products WHERE seller = ? ORDER BY id DESC",
-            (username,)
-        )
+        products = query_db("SELECT * FROM products WHERE seller = ? ORDER BY id DESC", (username,)) or []
         
     for product in products:
         product_promo = active_promo_for_product(product["id"], now_iso)
@@ -2085,6 +2072,7 @@ def vendor_profile(username):
     review_summary = query_db("SELECT AVG(rating) AS average_rating, COUNT(*) AS review_count FROM reviews WHERE vendor_id = ?", (vendor["id"],), one=True) or {"average_rating": None, "review_count": 0}
     categories = get_vendor_categories(vendor["id"])
     active_promos = query_db("SELECT * FROM promotions WHERE vendor_id = ? AND active = 1 AND replace(starts_at, 'T', ' ') <= ? AND replace(ends_at, 'T', ' ') >= ? ORDER BY id DESC", (vendor["id"], now_iso, now_iso)) or []
+    
     for promo_item in active_promos:
         linked_product = query_db("SELECT * FROM products WHERE id = ?", (promo_item.get("product_id"),), one=True) if promo_item.get("product_id") else None
         promo_item["promo_product_title"] = linked_product.get("title") if linked_product else None
@@ -2092,35 +2080,25 @@ def vendor_profile(username):
         promo_item["promo_product_video"] = linked_product.get("video_file") if linked_product else None
         promo_item["promo_original_price"] = float(promo_item.get("main_price") if promo_item.get("main_price") is not None else (linked_product.get("price") if linked_product else 0))
         promo_item["promo_effective_price"] = promo_effective_price(linked_product or {"price": promo_item["promo_original_price"]}, promo_item)
+        
     promo = active_promos[0] if active_promos else None
     favorite = False
     if session.get("username"):
         current_user = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
         if current_user and current_user["id"] != vendor["id"]:
             favorite = bool(query_db("SELECT id FROM favorites WHERE customer_id = ? AND vendor_id = ?", (current_user["id"], vendor["id"]), one=True))
+            
     vendor_whatsapp = normalize_whatsapp_number(vendor.get("whatsapp_number"))
     vendor_whatsapp_text = quote(f"Hey {vendor.get('company_name') or vendor.get('username')}, I visited your store on BizHub and I'd love to know more about your brand.")
+    
     for product in products:
         product["meal_whatsapp_number"] = vendor_whatsapp
         product["meal_whatsapp_text"] = quote(f"Hello {vendor.get('company_name') or vendor.get('username')}, I want to buy {product.get('title')} on BizHub, lets arrange for payment and delivery.")
-        # 👑 SYNCHRONIZED ARCHITECTURE MAPS: Deliver matching category parameters to template forms
-    return render_template("vendor_profile.html", 
-                           vendor=vendor, 
-                           products=products, 
-                           categories=categories, 
-                           product_categories=PRODUCT_CATEGORIES, # 🚀 HARD-LINKS CASE SENSITIVITY FOR YOUR FORM DROPDOWN
-                           promo=promo, 
-                           active_promos=active_promos, 
-                           favorite=favorite, 
-                           product_count=len(products), 
-                           subscription=vendor_status, 
-                           vendor_whatsapp=vendor_whatsapp, 
-                           vendor_whatsapp_text=vendor_whatsapp_text, 
-                           reviews=reviews, 
-                           review_summary=review_summary, 
-                           is_owner=is_owner, 
-                           welcome_message=welcome_message, 
-                           favorite_added_message=favorite_added_message)
+        
+    return render_template("vendor_profile.html", vendor=vendor, products=products, categories=categories, product_categories=PRODUCT_CATEGORIES, promo=promo, active_promos=active_promos, favorite=favorite, product_count=len(products), subscription=vendor_status, vendor_whatsapp=vendor_whatsapp, vendor_whatsapp_text=vendor_whatsapp_text, reviews=reviews, review_summary=review_summary, is_owner=is_owner, welcome_message=welcome_message, favorite_added_message=favorite_added_message)
+
+  
+
 
 
 @app.route("/report/<int:user_id>", methods=["GET", "POST"])
@@ -3331,9 +3309,29 @@ def settings():
             if existing:
                 return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="That username is already in use.")
         if not email:
-            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Email is required.")
+            if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+               return render_template(
+        "settings.html",
+        user=user,
+        subscription=subscription_status(user),
+        vendor_categories=vendor_categories,
+        vendor_category_options=VENDOR_CATEGORIES,
+        product_categories=PRODUCT_CATEGORIES,
+        settings_error="Enter a valid email address."
+    )
+            return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Email is required.")
         if is_vendor_any and not whatsapp_number:
-            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Vendor accounts need a WhatsApp number for payments.")
+            return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Vendor accounts need a WhatsApp number for payments.")
+        if new_password and len(new_password) < 6:
+            return render_template(
+        "settings.html",
+        user=user,
+        subscription=subscription_status(user),
+        vendor_categories=vendor_categories,
+        vendor_category_options=VENDOR_CATEGORIES,
+        product_categories=PRODUCT_CATEGORIES,
+        settings_error="Your new password must be at least 6 characters."
+    )
         if new_password and new_password != confirm_password:
             return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="The new passwords do not match.")
         if theme not in ("day", "night"):
@@ -3396,12 +3394,15 @@ def settings():
     )
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    """Handles cross-device multi-role logins safely."""
     if request.method == "POST":
         is_delivery_login = bool(request.form.get("delivery_login_user") is not None)
         username = request.form.get("login_user") if not is_delivery_login else request.form.get("delivery_login_user")
         password = request.form.get("login_pass") if not is_delivery_login else request.form.get("delivery_login_pass")
         user = query_db("SELECT * FROM users WHERE username = ?", (username,), one=True)
+        
         if user and check_password_hash(user["password_hash"], password):
+            session.clear()
             session["username"] = user["username"]
             session["email"] = user["email"]
             session["role"] = user["role"]
@@ -3410,19 +3411,19 @@ def login():
             session["business_location"] = user.get("business_location")
             session["whatsapp_number"] = user["whatsapp_number"]
             session["theme"] = user["theme"] or "day"
-        # ... right after setting your session variables (session["theme"] = user["theme"]):
-        
-        # 🚀 SMART ADAPTIVE ONBOARDING REDIRECTION MATRIX
-        if user["role"] == "Delivery Service":
-            return redirect(url_for("delivery_dashboard"))
-        elif user["role"] in ["Vendor", "Fast Food"]:
-            # Merchants and Kitchen Owners go straight to their store page dashboard instead of the homepage!
-            return redirect(url_for("vendor_profile", username=user["username"]))
+            
+            if user["role"] == "Delivery Service":
+                return redirect(url_for("delivery_dashboard"))
+            elif user["role"] in ["Vendor", "Fast Food"]:
+                return redirect(url_for("vendor_profile", username=user["username"]))
+            else:
+                return redirect(url_for("home"))
         else:
-            # Customers/Shoppers fall back gracefully to the standard marketplace home feed
-            return redirect(url_for("home"))
-
+            return render_template("login.html", login_error="Invalid username or password.")
+            
     return render_template("login.html")
+
+      
 
 @app.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
@@ -3510,17 +3511,14 @@ def register():
             selected_categories = ["Fast Food"]
         elif role == "Vendor" and seller_type == "Individual":
             company_name = None
-            
-            if role == "Customer":
-                seller_type = "Individual"
+        elif role == "Customer":
+            seller_type = "Individual"
             company_name = None
-            # 👑 SAFELY CAPTURE CUSTOMER AREA STRINGS FROM THE FRONTEND INTAKE
             business_location = request.form.get("customer_location", "").strip() or "Accra"
             whatsapp_number = None
             catalog_mode = None
             selected_categories = []
             company_logo_filename = None
-
             
         if role in ["Vendor", "Fast Food"] and not whatsapp_number:
             return render_template("login.html", reg_error="Merchant and Fast Food vendor accounts need a compulsory WhatsApp number to receive order tallies.")
@@ -3530,10 +3528,9 @@ def register():
         try:
             hashed_pwd = generate_password_hash(password)
             trial_started_at = datetime.now(timezone.utc)
-            trial_expires_at = trial_started_at + timedelta(days=60) # 2-Month Promotional Package Active
+            trial_expires_at = trial_started_at + timedelta(days=60)
             user_plan = "premium" if role in ["Vendor", "Fast Food"] else "basic"
             
-            # 👑 EXPLICIT SAFE WRITE CONNECTOR - RE-ORDERED FOR FOREIGN KEY INTEGRITY
             conn = sqlite3.connect(os.path.join(app.root_path, "marketplace.db"), timeout=60)
             cursor = conn.cursor()
             cursor.execute(
@@ -3541,16 +3538,12 @@ def register():
                 (username, email, hashed_pwd, role, seller_type, company_name, whatsapp_number, user_plan, trial_started_at.isoformat() if role in ["Vendor", "Fast Food"] else None, trial_expires_at.isoformat() if role in ["Vendor", "Fast Food"] else None, catalog_mode, company_logo_filename, business_location, datetime.now(timezone.utc).isoformat())
             )
             inserted_id = cursor.lastrowid
-            
-            # 🚀 CRITICAL STEP: Commit parent user record immediately so foreign keys can find it!
             conn.commit()
             
             if inserted_id and selected_categories:
                 for category in selected_categories:
                     cursor.execute("INSERT INTO vendor_categories (user_id, category) VALUES (?, ?)", (inserted_id, category))
-                # Commit secondary relational items safely
                 conn.commit()
-                    
             conn.close()
                     
             session.clear()
@@ -3571,6 +3564,7 @@ def register():
             return render_template("login.html", reg_error="Username is already taken.")
             
     return redirect(url_for("login"))
+
 
 @app.route("/logout")
 def logout():

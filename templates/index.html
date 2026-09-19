@@ -601,68 +601,159 @@ body {
 .bh-search{display:flex;flex:1;min-width:150px;height:42px;border-radius:5px;overflow:hidden;background:#fff;box-shadow:0 0 0 2px transparent}.bh-search:focus-within{box-shadow:0 0 0 2px var(--bh-orange)}.bh-search input{border:0;outline:0;flex:1;padding:0 14px;font-size:15px;color:#111;min-width:0}.bh-search button{width:52px;border:0;background:var(--bh-yellow);color:#111;font-size:18px;cursor:pointer}.bh-search button:hover{background:#f3a847}
 .bh-action{display:flex;align-items:center;gap:5px;text-decoration:none;color:#fff;border:1px solid transparent;border-radius:3px;padding:7px 8px;min-height:42px;box-sizing:border-box}.bh-action:hover{border-color:#fff;color:#fff}.bh-action .small{display:block;font-size:10px;color:#e6e6e6;line-height:12px}.bh-action strong{display:block;font-size:13px;white-space:nowrap}.bh-action .icon{font-size:21px}.bh-badge{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;border-radius:10px;background:var(--bh-orange);color:#111;font-size:10px;font-weight:900;margin-left:-3px;margin-top:-14px}
 .bh-subbar{min-height:42px;background:var(--bh-navy2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap}.bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px}.bh-subbar a:hover{border-color:#fff;color:#fff}.bh-subbar .bh-grow{flex:1}.bh-role-pill{font-size:10px;color:#febd69;margin-left:3px;text-transform:uppercase}
-@media(max-width:900px){.bh-location{display:none}.bh-action.hide-md{display:none}.bh-topbar{flex-wrap:wrap}.bh-search{order:5;flex-basis:100%}.bh-topbar{padding-bottom:10px}}
+/* ==========================================================================
+   👑 BIZHUB SMARTPHONE CORE: UNBRKABLE FULL-FEATURE LAYOUT EXCLUSIVITY
+   ========================================================================== */
+.bh-global-header {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    background: #131921;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+
+.bh-topbar {
+    min-height: 64px;
+    background: #131921;
+    display: flex !important; /* Forces strict row alignment on mobile phone wraps */
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 14px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* 📍 PERMANENTLY UNLOCKS GEOLOCATION ROUTING DECK ON PHONE APP SCREENS */
+.bh-location {
+    display: flex !important; /* Overrides and wipes out any old phone-hiding rules */
+    align-items: center;
+    gap: 7px;
+    padding: 7px 8px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    text-decoration: none;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.bh-location small {
+    display: block;
+    color: #c7d0d9;
+    font-size: 10px;
+}
+
+.bh-location strong {
+    display: block;
+    font-size: 13px;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 🔍 SECURES UNIFORM MULTI-ROLE LINKS MATRIX VISIBILITY */
+.bh-action {
+    display: flex !important; /* Keeps every account button node live on screens */
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    color: #fff;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    min-height: 42px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+/* 👑 APP VIEWPORT ADJUSTMENT: Provides stable margin space to anchor the sticky frame */
+body {
+    padding-top: 110px !important;
+}
+
+/* Scroll layout safety guards */
+html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 @media(max-width:560px){.bh-topbar{gap:5px;padding:7px}.bh-brand{font-size:19px}.bh-brand-sub{display:none}.bh-action{padding:6px 5px}.bh-action .small{display:none}.bh-action strong{font-size:11px}.bh-action .icon{font-size:19px}.bh-subbar a{font-size:12px;padding:10px 9px}.bh-search{height:40px}}
 .promo-owner{border:2px solid #10B981}.promo-favorite{border:2px solid #F59E0B}.promo-active{border:2px solid #E5E7EB} .promo-marketplace-card{background:#b91c1c!important;color:#fff!important;border-color:#991b1b!important}.promo-marketplace-card .card-title,.promo-marketplace-card .card-text,.promo-marketplace-card .card-brand,.promo-marketplace-card .card-metadata{color:#fff!important}.promo-marketplace-card .card-brand-wrapper a{color:#fff!important}.promo-marketplace-card .card-text{opacity:.9}.promo-marketplace-card .card-price{color:#fff!important}.promo-marketplace-card .promo-old-price{text-decoration:line-through;color:rgba(255,255,255,.7)}
 </style>
 <!-- ==========================================================================
-   👑 BIZHUB PREMIUM HIGH-DENSITY SECURE STICKY HEADER NAVIGATION MATRIX
+   👑 BIZHUB FULL-VELOCITY SECURE STICKY FLOATING NAVBAR LAYER
    ========================================================================== -->
 <div class="bh-global-header" style="position: fixed; top: 0; left: 0; right: 0; z-index: 10000; background: #131921; box-shadow: 0 2px 12px rgba(0,0,0,0.18); width: 100%; max-width: 100%; box-sizing: border-box;">
     
-    <!-- PRIMARY UPPER BAR: BRAND LOGO & SYSTEM SEARCH INPUT -->
-    <div class="bh-topbar" style="min-height: 64px; display: flex; align-items: center; gap: 12px; padding: 8px 14px; box-sizing: border-box; width: 100%; max-width: 100%;">
+    <!-- PRIMARY NAVIGATION DECK: KEEPING SEARCH INLINE ON ALL DEVICES -->
+    <div class="bh-topbar" style="min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 14px; box-sizing: border-box; width: 100%; max-width: 100%;">
         
         
-        <a class="bh-brand" href="{{ url_for('home') }}" style="display: flex; align-items: center; gap: 7px; text-decoration: none; color: #fff; font-weight: 900; font-size: 22px; white-space: nowrap; flex-shrink: 0;">
-            <span class="bh-brand-mark">B</span>
-            <div>
-                Biz<span>Hub</span>
-                <span class="bh-brand-sub" style="display: block; font-size: 10px; color: #febd69; font-weight: 700; letter-spacing: 0.5px;">MARKETPLACE</span>
+        <a class="bh-brand" href="{{ url_for('home') }}" style="display: flex; align-items: center; gap: 6px; text-decoration: none; color: #fff; font-weight: 900; font-size: 20px; white-space: nowrap; flex-shrink: 0;">
+            <span class="bh-brand-mark" style="color: #ff9900;">B</span>
+            <div style="line-height: 1;">
+                Biz<span style="color: #febd69;">Hub</span>
+                <span class="bh-brand-sub" style="display: block; font-size: 9px; color: #febd69; font-weight: 700; letter-spacing: 0.5px; margin-top: 2px;">MARKET</span>
             </div>
         </a>
 
         <!-- Center Predictive Autocomplete Inputs Form Box -->
-        <form method="GET" action="/" class="bh-search" style="display: flex; flex: 1; height: 42px; border-radius: 5px; overflow: hidden; background: #fff; margin: 0; position: relative;">
-            <input type="text" name="company_search" value="{{ company_search or '' }}" autocomplete="off" placeholder="Search item, vendor or location..." style="border: 0; outline: 0; flex: 1; padding: 0 14px; font-size: 15px; color: #111;" oninput="if(typeof fetchBizHubSuggestions === 'function') fetchBizHubSuggestions(this.value)">
-            <button type="submit" style="width: 52px; border: 0; background: #febd69; color: #111; font-size: 18px; cursor: pointer;">🔍</button>
+        <form method="GET" action="/" class="bh-search" style="display: flex; flex: 1; max-width: 600px; height: 40px; border-radius: 5px; overflow: hidden; background: #fff; margin: 0; position: relative;">
+            <input type="text" name="company_search" value="{{ company_search or '' }}" autocomplete="off" placeholder="Search item, store or brand..." style="border: 0; outline: 0; flex: 1; padding: 0 12px; font-size: 14px; color: #111;" oninput="if(typeof fetchBizHubSuggestions === 'function') fetchBizHubSuggestions(this.value)">
+            <button type="submit" style="width: 48px; border: 0; background: #febd69; color: #111; font-size: 16px; cursor: pointer;">🔍</button>
         </form>
 
         <!-- Right Side Direct Actions/Pills Map -->
-        <div style="display: flex; align-items: center; gap: 10px; color: white; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 8px; color: white; flex-shrink: 0;">
             {% if session.get('username') %}
-                <span style="font-size: 12px; font-weight: 700; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #febd69;">👤 {{ session['username'] }}</span>
+                <span style="font-size: 11px; font-weight: 700; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #febd69;">👤 {{ session['username'] }}</span>
             {% else %}
                 <a href="{{ url_for('login') }}" style="color: white; text-decoration: none; font-size: 12px; font-weight: 700;">Sign In</a>
             {% endif %}
         </div>
     </div>
 
-    <!-- LOWER SUBBAR: HORIZONTAL OVERFLOW SCROLL LINK STRIPE LAYER -->
-    <nav class="bh-subbar" style="min-height: 42px; background: #232f3e; display: flex; align-items: center; gap: 4px; padding: 0 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; box-sizing: border-box; border-top: 1px solid rgba(255,255,255,0.05);">
-        <a href="{{ url_for('home') }}" style="color: #febd69 !important; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">☰ All</a>
-        <a href="{{ url_for('promo_marketplace') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">Today's Deals</a>
-        <a href="{{ url_for('favorites') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">Favorites</a>
-        <a href="{{ url_for('features') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">🎯 Features</a>
-        <a href="{{ url_for('all_stores') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">All Stores</a>
-        <a href="{{ url_for('fast_food_stores') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">Fast Food</a>
+    <!-- LOWER SUBBAR STRIPE: SWIPEABLE LINK MATRIX INCLUDING CART NODE -->
+    <nav class="bh-subbar" style="min-height: 42px; background: #232f3e; display: flex; align-items: center; gap: 2px; padding: 0 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; box-sizing: border-box; border-top: 1px solid rgba(255,255,255,0.05);">
+        <a href="{{ url_for('home') }}" style="color: #febd69 !important; text-decoration: none; font-size: 13px; font-weight: 700;">☰ All</a>
+        <a href="{{ url_for('promo_marketplace') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Today's Deals</a>
         
+        <!-- 🛒 RESTORED CART ROUTE WITH DYNAMIC NOTIFICATION ROUND COUNT PILLS -->
+        <a href="{{ url_for('cart_page') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+            🛒 Your Cart 
+            {% if cart_count and cart_count|int > 0 %}
+                <span style="background: #EF4444; color: white; font-size: 10px; font-weight: 900; padding: 1px 6px; border-radius: 10px; line-height: 1.2;">{{ cart_count }}</span>
+            {% endif %}
+        </a>
+
+        <a href="{{ url_for('favorites') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Favorites</a>
+        <a href="{{ url_for('features') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">🎯 Features</a>
+        <a href="{{ url_for('all_stores') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">All Stores</a>
+        <a href="{{ url_for('fast_food_stores') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Fast Food</a>
+        
+        <!-- DYNAMIC ACCOUNT VISIBILITY FOR VENDORS AND LOGGED IN SESSIONS -->
         {% if session.get('username') %}
-            <a href="{{ url_for('order_history') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">Orders</a>
-            <a href="{{ url_for('settings') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 12px;">Your Account</a>
+            <a href="{{ url_for('order_history') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Orders</a>
+            <a href="{{ url_for('settings') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Your Account</a>
+            {% if session.get('role') in ['Vendor', 'Fast Food'] %}
+                <a href="{{ url_for('vendor_profile', username=session['username']) }}" style="color: #febd69; text-decoration: none; font-size: 13px; font-weight: 700;">🏪 My Store Dashboard</a>
+            {% endif %}
         {% endif %}
     </nav>
 </div>
 
-<!-- 👑 COMPULSORY RESPONSIVE SCROLL HEIGHT FIX (STOPS HEADER FLOATING UNDERNEATH FEED LISTINGS) -->
+<!-- 👑 STABLE SPACING OVERLAYS: Prevents feed text items from breaking behind the sticky panel -->
 <style>
     body { padding-top: 106px !important; }
-    @media (max-width: 900px) {
-        body { padding-top: 148px !important; }
-        .bh-topbar { flex-wrap: wrap; gap: 8px; padding-bottom: 10px; }
-        .bh-search { order: 5; flex-basis: 100%; width: 100%; max-width: 100%; }
-    }
+    .bh-subbar::-webkit-scrollbar { display: none !important; }
 </style>
+
 
 
 
@@ -796,6 +887,10 @@ body {
         {% for kitchen in fast_food_vendors %}
             <article style="background:#fff;border:1px solid #fed7aa;border-radius:12px;padding:14px;">
                 {% if kitchen.company_logo %}<img src="{{ url_for('static', filename='uploads/' + kitchen.company_logo) }}" alt="{{ kitchen.business_label }}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;margin-bottom:8px;">{% endif %}
+                <div style="font-size: 14.5px; font-weight: 800; color: var(--text-main);">
+    {% if kitchen.is_owner %}
+        <span style="background: #06C167; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-right: 4px; font-weight: 900;">Your Kitchen</span>
+    {% endif %}
                 <div style="font-weight:900;color:#7c2d12;">{{ kitchen.business_label }}</div>
                 <div style="font-size:11px;color:#9a3412;margin-top:3px;">@{{ kitchen.username }}{% if kitchen.business_location %} · 📍 {{ kitchen.business_location }}{% endif %}</div>
                 <div style="font-size:11px;color:#9a3412;margin-top:4px;">{{ kitchen.menu_count }} menu item{% if kitchen.menu_count != 1 %}s{% endif %}</div>
