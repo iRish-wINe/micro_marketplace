@@ -41,30 +41,29 @@
 </head>
 <body>
 
-     <!-- 👑 FIXED DYNAMIC RESPONSIVE BRAND CONTAINER ENVELOPE -->
-    <a class="brand-text-logo" href="{{ url_for('home') }}" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: white; width: auto; min-width: max-content; overflow: visible;">
-        <img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub" style="width: 34px; height: 34px; border-radius: 6px;">
-        <div style="font-size: 19px; font-weight: 800; color: white; line-height: 1; display: inline-flex; align-items: center; white-space: nowrap;">
-            Biz<span style="color: #F59E0B;">Hub</span>
-            {% if vendor.role == 'Fast Food' %}
-                <span style="font-size: 16px; font-weight: 800; color: #06C167; margin-left: 6px; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(6,193,103,0.1); padding: 2px 6px; border-radius: 4px;">Kitchen</span>
-            <span style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</span>    
-            {% endif %}
-            
-        </div>
-    </a>
+    <header class="bizhub-clean-header">
+        <!-- 👑 FIXED DYNAMIC RESPONSIVE BRAND CONTAINER ENVELOPE -->
+        <a class="brand-text-logo" href="{{ url_for('home') }}" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: white; width: auto; min-width: max-content; overflow: visible;">
+            <img src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub" style="width: 34px; height: 34px; border-radius: 6px;">
+            <div style="font-size: 19px; font-weight: 800; color: white; line-height: 1; display: inline-flex; align-items: center; white-space: nowrap;">
+                Biz<span style="color: #F59E0B;">Hub</span>
+                {% if vendor.role == 'Fast Food' %}
+                    <span style="font-size: 16px; font-weight: 800; color: #06C167; margin-left: 6px; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(6,193,103,0.1); padding: 2px 6px; border-radius: 4px;">Kitchen</span>
+                    <span style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</span>    
+                {% endif %}
+            </div>
+        </a>
 
-
-    <nav class="clean-nav-stripe">
-        <a href="{{ url_for('home') }}">☰ Marketplace</a>
-        <a href="{{ url_for('all_stores') }}">All Stores</a>
-        <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
-        <a href="{{ url_for('favorites') }}">Favorites</a>
-        <a href="{{ url_for('features') }}">🎯 Features</a>
-        <a href="{{ url_for('order_history') }}">Orders</a>
-        <a href="{{ url_for('settings') }}">Your Account</a>
-    </nav>
-</header>
+        <nav class="clean-nav-stripe">
+            <a href="{{ url_for('home') }}">☰ Marketplace</a>
+            <a href="{{ url_for('all_stores') }}">All Stores</a>
+            <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
+            <a href="{{ url_for('favorites') }}">Favorites</a>
+            <a href="{{ url_for('features') }}">🎯 Features</a>
+            <a href="{{ url_for('order_history') }}">Orders</a>
+            <a href="{{ url_for('settings') }}">Your Account</a>
+        </nav>
+    </header>
 
 <div class="container">
 
@@ -146,146 +145,154 @@
                     <option value="Drinks">🥤 Beverages & Drinks</option>
                     <option value="Desserts">🍰 Desserts & Sweets</option>
                 </select>
-<!-- Form Controls & Media Selection Section -->
-{% if is_owner and vendor.role == 'Fast Food' %}
-  <div class="menu-form-group">
-    <label for="accompaniments">Accompaniments (Served With):</label>
-    <!-- Accompaniments Input Field Here -->
-  </div>
-{% else %}
-  <div class="menu-form-group">
-    <label for="category">Product Department Category:</label>
-    <select name="category" id="category">
-      {% for category in product_categories if category != 'Fast Food' %}
-        <option value="{{ category }}">{{ category }}</option>
-      {% endfor %}
-    </select>
-  </div>
-  <div class="menu-form-group">
-    <label for="stock">Available Units Inventory Stock:</label>
-    <!-- Stock Input Field Here -->
-  </div>
-{% endif %}
+            </div>
+            {% endif %}
 
-<!-- Media Asset Upload Controls -->
-<fieldset class="media-upload-section">
-  <legend>Fulfillment Dispatch Location & Media Assets</legend>
-  <p>Choose File Asset (Image OR 20s Video):</p>
+            <!-- Form Controls & Media Selection Section -->
+            {% if is_owner and vendor.role == 'Fast Food' %}
+              <div class="menu-form-group">
+                <label for="accompaniments">Accompaniments (Served With):</label>
+                <!-- Accompaniments Input Field Here -->
+              </div>
+            {% else %}
+              <div class="menu-form-group">
+                <label for="category">Product Department Category:</label>
+                <select name="category" id="category">
+                  {% for category in product_categories if category != 'Fast Food' %}
+                    <option value="{{ category }}">{{ category }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="menu-form-group">
+                <label for="stock">Available Units Inventory Stock:</label>
+                <!-- Stock Input Field Here -->
+              </div>
+            {% endif %}
 
-  <div class="file-input-group">
-    <label for="bizhubProductImageInput">📸 Cover Image File:</label>
-    <input 
-      type="file" 
-      id="bizhubProductImageInput" 
-      accept="image/*" 
-      onchange="handleMediaSelectionToggle('image')"
-    >
-    <button 
-      type="button" 
-      id="clearImageBtn" 
-      class="btn-cancel" 
-      style="display: none;" 
-      onclick="resetSelectedMediaField('image')"
-    >✕ Cancel</button>
-  </div>
+            <!-- Media Asset Upload Controls -->
+            <fieldset class="media-upload-section">
+              <legend>Fulfillment Dispatch Location & Media Assets</legend>
+              <p>Choose File Asset (Image OR 20s Video):</p>
 
-  <div class="file-input-group">
-    <label for="bizhubProductVideoInput">🎬 OR Premium Ad Video (Max 20s):</label>
-    <input 
-      type="file" 
-      id="bizhubProductVideoInput" 
-      accept="video/*" 
-      onchange="handleMediaSelectionToggle('video')"
-    >
-    <button 
-      type="button" 
-      id="clearVideoBtn" 
-      class="btn-cancel" 
-      style="display: none;" 
-      onclick="resetSelectedMediaField('video')"
-    >✕ Cancel</button>
-  </div>
+              <div class="file-input-group">
+                <label for="bizhubProductImageInput">📸 Cover Image File:</label>
+                <input 
+                  type="file" 
+                  id="bizhubProductImageInput" 
+                  accept="image/*" 
+                  onchange="handleMediaSelectionToggle('image')"
+                >
+                <button 
+                  type="button" 
+                  id="clearImageBtn" 
+                  class="btn-cancel" 
+                  style="display: none;" 
+                  onclick="resetSelectedMediaField('image')"
+                >✕ Cancel</button>
+              </div>
 
-  <button type="submit" class="btn-primary">🚀 Publish to Live Market</button>
-</fieldset>
+              <div class="file-input-group">
+                <label for="bizhubProductVideoInput">🎬 OR Premium Ad Video (Max 20s):</label>
+                <input 
+                  type="file" 
+                  id="bizhubProductVideoInput" 
+                  accept="video/*" 
+                  onchange="handleMediaSelectionToggle('video')"
+                >
+                <button 
+                  type="button" 
+                  id="clearVideoBtn" 
+                  class="btn-cancel" 
+                  style="display: none;" 
+                  onclick="resetSelectedMediaField('video')"
+                >✕ Cancel</button>
+              </div>
 
-<!-- Customer Menu Filter Navigation -->
-{% if vendor.role == 'Fast Food' and not is_owner %}
-  <nav class="menu-navigation">
-    <h3>🍔 Browse Our Menu Sections:</h3>
-    <ul class="filter-list">
-      <li><button type="button" onclick="executeKitchenMenuFilter('All-Meals')">✨ Show Full Digital Menu (All Dishes)</button></li>
-      <li><button type="button" onclick="executeKitchenMenuFilter('Main Dishes')">🍛 Main Dishes & Special Packages</button></li>
-      <li><button type="button" onclick="executeKitchenMenuFilter('Sides')">🍟 Sides, Snacks & Appetizers</button></li>
-      <li><button type="button" onclick="executeKitchenMenuFilter('Drinks')">🥤 Chilled Beverages & Soft Drinks</button></li>
-      <li><button type="button" onclick="executeKitchenMenuFilter('Desserts')">🍰 Pastries, Sweets & Desserts</button></li>
-    </ul>
-  </nav>
-{% endif %}
+              <button type="submit" class="btn-primary">🚀 Publish to Live Market</button>
+            </fieldset>
+        </form>
+    </div>
+    {% endif %}
 
-<!-- Product Catalog -->
-<section class="catalog-section">
-  <h2>
-    📦 {% if is_owner and vendor.role == 'Fast Food' %}📋 Your Organized Menu Categories & History{% else %}Available Catalog Products{% endif %} 
-    ({{ product_count }} items)
-  </h2>
+    <!-- Customer Menu Filter Navigation -->
+    {% if vendor.role == 'Fast Food' and not is_owner %}
+      <nav class="menu-navigation">
+        <h3>🍔 Browse Our Menu Sections:</h3>
+        <ul class="filter-list">
+          <li><button type="button" onclick="executeKitchenMenuFilter('All-Meals')">✨ Show Full Digital Menu (All Dishes)</button></li>
+          <li><button type="button" onclick="executeKitchenMenuFilter('Main Dishes')">🍛 Main Dishes & Special Packages</button></li>
+          <li><button type="button" onclick="executeKitchenMenuFilter('Sides')">🍟 Sides, Snacks & Appetizers</button></li>
+          <li><button type="button" onclick="executeKitchenMenuFilter('Drinks')">🥤 Chilled Beverages & Soft Drinks</button></li>
+          <li><button type="button" onclick="executeKitchenMenuFilter('Desserts')">🍰 Pastries, Sweets & Desserts</button></li>
+        </ul>
+      </nav>
+    {% endif %}
 
-  <!-- Main Product Display Grid -->
-  <div class="product-grid">
-    {% for product in products if product.menu_type == 'Main Dishes' or not is_owner or vendor.role != 'Fast Food' %}
-      <article class="bizhub-menu-item-row" data-menu-section="{{ product.menu_type }}">
-        <div class="product-media">
-          {% if product.image_file and product.image_file != 'fast-food-placeholder.svg' %}
-            <img src="{{ product.image_file }}" alt="{{ product.title }}">
-          {% else %}
-            <span class="media-placeholder">Media Asset View</span>
-          {% endif %}
-        </div>
+    <!-- Product Catalog -->
+    <section class="catalog-section">
+      <h2>
+        📦 {% if is_owner and vendor.role == 'Fast Food' %}📋 Your Organized Menu Categories & History{% else %}Available Catalog Products{% endif %} 
+        ({{ product_count }} items)
+      </h2>
 
-        <div class="product-details">
-          <h3>{{ product.title }}</h3>
-          {% if product.served_with %}
-            <p class="served-with">🍱 Served with: {{ product.served_with }}</p>
-          {% endif %}
-          <p class="price">GH₵ {{ "%.2f"|format(product.price) }}</p>
-          <p class="description">{{ product.description }}</p>
-        </div>
+      <!-- Main Product Display Grid -->
+      <div class="product-grid">
+        {% for product in products if product.menu_type == 'Main Dishes' or not is_owner or vendor.role != 'Fast Food' %}
+          <article class="bizhub-menu-item-row" data-menu-section="{{ product.menu_type }}">
+            <div class="product-media">
+              {% if product.image_file and product.image_file != 'fast-food-placeholder.svg' %}
+                <img src="{{ product.image_file }}" alt="{{ product.title }}">
+              {% else %}
+                <span class="media-placeholder">Media Asset View</span>
+              {% endif %}
+            </div>
 
-        <div class="product-actions">
-          {% if not is_owner %}
-            <button type="button" class="btn-cart">🛒 Add to Basket</button>
-          {% else %}
-            <span class="badge">🏪 Menu Listing</span>
-            <button type="button" class="btn-danger">🗑️ Delete</button>
-          {% endif %}
-        </div>
-      </article>
-    {% endfor %}
-  </div>
+            <div class="product-details">
+              <h3>{{ product.title }}</h3>
+              {% if product.served_with %}
+                <p class="served-with">🍱 Served with: {{ product.served_with }}</p>
+              {% endif %}
+              <p class="price">GH₵ {{ "%.2f"|format(product.price) }}</p>
+              <p class="description">{{ product.description }}</p>
+            </div>
 
-  <!-- Owner Listing History Categories -->
-  {% if is_owner and vendor.role == 'Fast Food' %}
-    {% set sections = [
-      ('Main Dishes', 'Main Dishes'),
-      ('Sides', 'Sides & Appetizers'),
-      ('Drinks', 'Beverages & Drinks'),
-      ('Desserts', 'Pastries & Desserts')
-    ] %}
-
-    {% for section_key, section_label in sections %}
-      <div class="listing-history-group">
-        <h3>Your Listing History for {{ section_label }}</h3>
-        {% for product in products if product.menu_type == section_key %}
-          <div class="history-item">
-            <h4>{{ product.title }}</h4>
-            <p>GH₵ {{ "%.2f"|format(product.price) }}</p>
-            <button type="button" class="btn-danger">🗑️ Delete Listing</button>
-          </div>
+            <div class="product-actions">
+              {% if not is_owner %}
+                <button type="button" class="btn-cart">🛒 Add to Basket</button>
+              {% else %}
+                <span class="badge">🏪 Menu Listing</span>
+                <button type="button" class="btn-danger">🗑️ Delete</button>
+              {% endif %}
+            </div>
+          </article>
         {% endfor %}
       </div>
-    {% endfor %}
-  {% endif %}
-</section>
+
+      <!-- Owner Listing History Categories -->
+      {% if is_owner and vendor.role == 'Fast Food' %}
+        {% set sections = [
+          ('Main Dishes', 'Main Dishes'),
+          ('Sides', 'Sides & Appetizers'),
+          ('Drinks', 'Beverages & Drinks'),
+          ('Desserts', 'Pastries & Desserts')
+        ] %}
+
+        {% for section_key, section_label in sections %}
+          <div class="listing-history-group">
+            <h3>Your Listing History for {{ section_label }}</h3>
+            {% for product in products if product.menu_type == section_key %}
+              <div class="history-item">
+                <h4>{{ product.title }}</h4>
+                <p>GH₵ {{ "%.2f"|format(product.price) }}</p>
+                <button type="button" class="btn-danger">🗑️ Delete Listing</button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      {% endif %}
+    </section>
+
+</div>
 
 <footer class="footer">
   <p>© 2026 BizHub Marketplace · Your Local Market, Unified Online · A Subsidiary Of The TOZOTS 🇬🇭 Company</p>
@@ -293,47 +300,47 @@
 
 <!-- Modern JS Scripts -->
 <script>
-        function handleMediaSelectionToggle(selectedMediaTypeCode) {
-            const imgInput = document.getElementById('bizhubProductImageInput');
-            const videoInput = document.getElementById('bizhubProductVideoInput');
-            const clearImg = document.getElementById('clearImageBtn');
-            const clearVideo = document.getElementById('clearVideoBtn');
+    function handleMediaSelectionToggle(selectedMediaTypeCode) {
+        const imgInput = document.getElementById('bizhubProductImageInput');
+        const videoInput = document.getElementById('bizhubProductVideoInput');
+        const clearImg = document.getElementById('clearImageBtn');
+        const clearVideo = document.getElementById('clearVideoBtn');
 
-            const isKitchenStore = '{{ vendor.role }}' === 'Fast Food';
+        const isKitchenStore = '{{ vendor.role }}' === 'Fast Food';
 
-            if (selectedMediaTypeCode === 'image' && imgInput.files.length > 0) {
-                clearImg.style.display = 'inline-block';
-                if (!isKitchenStore) {
-                    videoInput.value = '';
-                    videoInput.disabled = true;
-                    clearVideo.style.display = 'none';
-                }
-            } else if (selectedMediaTypeCode === 'video' && videoInput.files.length > 0) {
-                clearVideo.style.display = 'inline-block';
-                if (!isKitchenStore) {
-                    imgInput.value = '';
-                    imgInput.disabled = true;
-                    clearImg.style.display = 'none';
-                }
-            }
-        }
-
-        function resetSelectedMediaField(mediaTypeToClear) {
-            const imgInput = document.getElementById('bizhubProductImageInput');
-            const videoInput = document.getElementById('bizhubProductVideoInput');
-            const clearImg = document.getElementById('clearImageBtn');
-            const clearVideo = document.getElementById('clearVideoBtn');
-
-            if (mediaTypeToClear === 'image') {
-                imgInput.value = '';
-                clearImg.style.display = 'none';
-                videoInput.disabled = false;
-            } else if (mediaTypeToClear === 'video') {
+        if (selectedMediaTypeCode === 'image' && imgInput.files.length > 0) {
+            clearImg.style.display = 'inline-block';
+            if (!isKitchenStore) {
                 videoInput.value = '';
+                videoInput.disabled = true;
                 clearVideo.style.display = 'none';
-                imgInput.disabled = false;
+            }
+        } else if (selectedMediaTypeCode === 'video' && videoInput.files.length > 0) {
+            clearVideo.style.display = 'inline-block';
+            if (!isKitchenStore) {
+                imgInput.value = '';
+                imgInput.disabled = true;
+                clearImg.style.display = 'none';
             }
         }
+    }
+
+    function resetSelectedMediaField(mediaTypeToClear) {
+        const imgInput = document.getElementById('bizhubProductImageInput');
+        const videoInput = document.getElementById('bizhubProductVideoInput');
+        const clearImg = document.getElementById('clearImageBtn');
+        const clearVideo = document.getElementById('clearVideoBtn');
+
+        if (mediaTypeToClear === 'image') {
+            imgInput.value = '';
+            clearImg.style.display = 'none';
+            videoInput.disabled = false;
+        } else if (mediaTypeToClear === 'video') {
+            videoInput.value = '';
+            clearVideo.style.display = 'none';
+            imgInput.disabled = false;
+        }
+    }
 
     function executeKitchenMenuFilter(selectedSectionName) {
         const menuCards = document.getElementsByClassName('bizhub-menu-item-row');

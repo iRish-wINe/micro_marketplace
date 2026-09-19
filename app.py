@@ -19,7 +19,16 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import RequestEntityTooLarge
 app = Flask(__name__)
+
+# Configure standard logging to output to console (stdout)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+@app.errorhandler(500)
+def internal_error(error):
+    # Log the full exception stack trace whenever a 500 happens
+    app.logger.error(f"Server Error: {error}", exc_info=True)
+    return "Internal Server Error", 500
 _configured_secret = os.environ.get("BIZ_HUB_SECRET_KEY", "").strip()
 if _configured_secret:
     app.secret_key = _configured_secret
