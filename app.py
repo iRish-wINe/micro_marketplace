@@ -1300,7 +1300,7 @@ def home():
                 p["display_badge"] = "🔥 Your Promo Listing"
             elif p["is_own"]:
                 p["tier_score"] = 9
-                p["display_badge"] = "🏪 Your Listing"
+                p["display_badge"] = " Your Listing"
             elif p["is_favorite"] and p["is_promo"]:
                 p["tier_score"] = 8
                 p["display_badge"] = "⭐ Favorite Vendor Promo"
@@ -1405,6 +1405,7 @@ def home():
                            processed_items=processed_items,
                            marketplace_promos=marketplace_promos,
                            fast_food_vendors=fast_food_vendors,
+                           kitchens=fast_food_vendors,
                            categories=PRODUCT_CATEGORIES,
                            vendor_logos=vendor_logos,
                            cart_items=cart_items,
