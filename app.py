@@ -1416,8 +1416,9 @@ def home():
                            customer_notification_count=customer_notification_count,
                            company_search=company_search,
                            listing_error=listing_error,
-                           welcome_message=welcome_message
-                           kitchen=kitchen if 'kitchen' in locals() else None,)
+                           welcome_message=welcome_message,
+                           kitchen=kitchen if 'kitchen' in locals() else None,
+                         )
 
 
 
