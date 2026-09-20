@@ -1285,7 +1285,7 @@ def home():
                (SELECT promo_price FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS promo_effective_price
         FROM products p
         JOIN users u ON p.seller = u.username
-        WHERE p.status = 'Available' AND p.stock_quantity > 0 AND p.category != 'Fast Food'
+        WHERE p.status = 'Available' AND p.stock_quantity > 0 AND p.category != 'Fast Food' AND u.role NOT IN ('Fast Food')
     """) or []
 
     # Get user's favorites map context safely
@@ -1361,13 +1361,12 @@ def home():
         SELECT pr.*, p.id AS product_id, p.title AS product_title, p.price AS product_price,
                p.description AS product_description, p.image_file AS product_image, p.video_file AS product_video,
                p.stock_quantity, p.status AS product_status, p.location AS product_location,
-               u.id AS vendor_user_id, u.username AS vendor_username, u.company_name, u.business_location, u.whatsapp_number
+               u.id AS vendor_user_id, u.username AS vendor_username, u.company_name, u.business_location, u.whatsapp_number, u.role AS vendor_role
         FROM promotions pr
         JOIN products p ON p.id = pr.product_id
         JOIN users u ON u.id = pr.vendor_id
         WHERE pr.active = 1 AND replace(pr.starts_at, 'T', ' ') <= ? AND replace(pr.ends_at, 'T', ' ') >= ?
-          AND p.status = 'Available' AND COALESCE(p.stock_quantity, 0) > 0
-        ORDER BY pr.id DESC
+          AND p.status = 'Available' AND COALESCE(p.stock_quantity, 0) > 0 AND u.role NOT IN ('Fast Food')
     """, (now_clean, now_clean)) or []
     for promo in marketplace_promos:
         promo["is_owner"] = bool(current_username and promo["vendor_username"] == current_username)
@@ -1452,7 +1451,7 @@ def home():
                            customer_notification_count=customer_notification_count,
                            unread_notifications_count=unread_notifications_count,
                            your_marketplace_products=your_marketplace_products,
-                           products=your_marketplace_products,
+                           products=processed_items,
                            company_search=company_search,
                            listing_error=listing_error,
                            welcome_message=welcome_message,

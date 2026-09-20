@@ -319,10 +319,17 @@
             {% for product in products %}
                 <article class="product-card bizhub-menu-item-row" data-menu-section="{{ product.menu_type or 'Main Dishes' }}">
                     <div>
-                        {% if product.image_file and product.image_file != 'fast-food-placeholder.svg' %}
+                        <!-- 📸 MEDIA RENDERING: video first, then image, then placeholder -->
+                        {% if product.video_file %}
+                            <video class="product-img" controls autoplay muted playsinline loop preload="metadata" style="object-fit:cover;">
+                                <source src="{{ url_for('stream_video', filename=product.video_file) }}">
+                            </video>
+                        {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' %}
                             <img class="product-img" src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}">
                         {% else %}
-                            <div class="product-img" style="display:grid; place-items:center; font-size:36px;">🍔</div>
+                            <div class="product-img" style="display:grid; place-items:center; font-size:36px; background:#f3f4f6;">
+                                {% if vendor.role == 'Fast Food' %}🍔{% else %}🛍️{% endif %}
+                            </div>
                         {% endif %}
 
                         <h3 style="font-size:16px; margin: 10px 0 4px;">{{ product.title }}</h3>
@@ -337,7 +344,13 @@
 
                     <div style="margin-top: 12px;">
                         {% if not is_owner %}
-                            <button type="button" class="btn-action" style="width:100%; background: var(--uber-green, #1d4ed8); color: white;">🛒 Add to Order</button>
+                            <!-- 🛒 ADD TO CART: triggers popup confirmation then leads to /cart -->
+                            <button type="button" class="btn-action bizhub-add-to-cart-btn"
+                                    data-product-id="{{ product.id }}"
+                                    data-product-title="{{ product.title }}"
+                                    style="width:100%; background: var(--uber-green, #06C167); color: white;">
+                                🛒 Add to Cart
+                            </button>
                         {% else %}
                             <button type="button" class="btn-action" style="width:100%; background: #fee2e2; color: #dc2626;">🗑️ Delete Item</button>
                         {% endif %}
@@ -348,6 +361,82 @@
             {% endfor %}
         </div>
     </section>
+
+    <!-- 🛒 ADD TO CART CONFIRMATION POPUP (vendor_profile page) -->
+    <div id="vpCartPopupOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:99990; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,0.25); padding:28px 24px; max-width:360px; width:calc(100% - 32px); text-align:center; position:relative;">
+            <div style="font-size:44px; margin-bottom:10px;">🛒</div>
+            <h3 style="margin:0 0 6px; font-size:18px; font-weight:900; color:#111;">Added to Cart!</h3>
+            <p id="vpCartPopupItemName" style="margin:0 0 20px; color:#64748b; font-size:14px; font-weight:600;">Item added successfully.</p>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <a href="/cart" style="display:block; background:#0B192C; color:#fff; text-decoration:none; padding:12px; border-radius:8px; font-weight:800; font-size:14px; text-transform:uppercase; letter-spacing:0.3px;">🛍️ Go to Your Cart</a>
+                <button onclick="document.getElementById('vpCartPopupOverlay').style.display='none';" style="background:#F1F5F9; color:#334155; border:none; padding:12px; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer;">Continue Shopping</button>
+            </div>
+            <button onclick="document.getElementById('vpCartPopupOverlay').style.display='none';" style="position:absolute; top:12px; right:14px; background:none; border:none; font-size:20px; color:#94a3b8; cursor:pointer; line-height:1;">×</button>
+        </div>
+    </div>
+
+<!-- ══════════════════════════════════════════════════════════
+     🍔 FAST FOOD ACTIVE PROMOS — Uber Eats style deal cards
+     Shown on the kitchen page for ALL visitors (owner + customers)
+     ══════════════════════════════════════════════════════════ -->
+{% if vendor.role == 'Fast Food' and active_promos %}
+<section style="margin:0 0 28px; padding:0 4px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+        <div>
+            <h3 style="margin:0; font-size:20px; font-weight:900; color:#111; letter-spacing:-.3px;">🔥 Today's Kitchen Deals</h3>
+            <p style="margin:4px 0 0; font-size:12px; color:#6b7280;">Limited-time promo prices from this kitchen.</p>
+        </div>
+        <a href="{{ url_for('promo_marketplace') }}" style="font-size:12px; font-weight:800; background:#06C167; color:#fff; text-decoration:none; padding:7px 12px; border-radius:8px;">🛵 All Today's Deals</a>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:14px;">
+    {% for deal in active_promos %}
+    <article style="background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.10); border:1.5px solid #f3f4f6; display:flex; flex-direction:column;">
+        <!-- Media -->
+        <div style="width:100%; height:160px; background:#111; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;">
+            {% if deal.promo_product_video %}
+                <video style="width:100%;height:100%;object-fit:cover;" autoplay muted playsinline loop preload="metadata">
+                    <source src="{{ url_for('stream_video', filename=deal.promo_product_video) }}">
+                </video>
+            {% elif deal.promo_product_image and deal.promo_product_image != 'fast-food-placeholder.svg' %}
+                <img src="{{ url_for('static', filename='uploads/' + deal.promo_product_image) }}" alt="{{ deal.promo_product_title or deal.title }}" style="width:100%;height:100%;object-fit:cover;">
+            {% else %}
+                <span style="font-size:52px;">🍔</span>
+            {% endif %}
+            <!-- Discount badge -->
+            {% if deal.discount %}
+            <span style="position:absolute;top:10px;left:10px;background:#06C167;color:#fff;font-size:10px;font-weight:900;padding:3px 8px;border-radius:999px;">{{ "%.0f"|format(deal.discount|float) }}% OFF</span>
+            {% endif %}
+        </div>
+        <!-- Body -->
+        <div style="padding:12px 14px 14px; display:flex; flex-direction:column; flex:1;">
+            <div style="font-size:10px; font-weight:900; color:#06C167; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px;">⚡ Limited Offer</div>
+            <h4 style="margin:0 0 4px; font-size:15px; font-weight:900; color:#111; line-height:1.2;">{{ deal.title }}</h4>
+            {% if deal.promo_product_title %}
+                <div style="font-size:11px; color:#6b7280; margin-bottom:6px;">Item: {{ deal.promo_product_title }}</div>
+            {% endif %}
+            {% if deal.description %}
+                <p style="margin:0 0 10px; font-size:12px; color:#374151; line-height:1.45; flex:1;">{{ deal.description }}</p>
+            {% endif %}
+            <!-- Price row -->
+            <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin-top:auto; margin-bottom:10px;">
+                <span style="font-size:20px; font-weight:900; color:#111;">GH₵ {{ "%.2f"|format(deal.promo_effective_price) }}</span>
+                <span style="font-size:12px; text-decoration:line-through; color:#9ca3af;">GH₵ {{ "%.2f"|format(deal.promo_original_price) }}</span>
+            </div>
+            <!-- Ends at -->
+            <div style="font-size:10px; color:#9ca3af; margin-bottom:10px;">⏰ Ends {{ deal.ends_at }}</div>
+            <!-- CTA -->
+            {% if vendor_whatsapp %}
+            <a href="https://wa.me/{{ vendor_whatsapp }}?text=Hello%20{{ vendor.company_name|urlencode }}%2C%20I%20saw%20your%20promo%20on%20BizHub%20and%20want%20to%20order!" target="_blank" rel="noopener" style="display:block; text-align:center; background:#06C167; color:#fff; font-weight:800; font-size:13px; text-decoration:none; padding:10px; border-radius:10px;">🛒 Order Now</a>
+            {% else %}
+            <a href="{{ url_for('vendor_profile', username=vendor.username) }}" style="display:block; text-align:center; background:#06C167; color:#fff; font-weight:800; font-size:13px; text-decoration:none; padding:10px; border-radius:10px;">🍔 View Kitchen</a>
+            {% endif %}
+        </div>
+    </article>
+    {% endfor %}
+    </div>
+</section>
+{% endif %}
 
 <!-- 🍟 FIX 3: ADD EMOJIS TO THE KEYS SO JINJA MATCHES THE DATABASE VALUE PERFECTLY -->
 <!-- 🍟 HISTORY MATRIX LAYER: Removed emoji prefixes from keys to match the database values -->
@@ -466,6 +555,42 @@
             event.target.classList.add('active');
         }
     }
+
+    // 🛒 Add to Cart buttons on vendor profile — show popup then POST
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.bizhub-add-to-cart-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var productId = btn.dataset.productId;
+                var productTitle = btn.dataset.productTitle || 'Item';
+                // Show popup
+                var overlay = document.getElementById('vpCartPopupOverlay');
+                var nameEl  = document.getElementById('vpCartPopupItemName');
+                if (nameEl)    nameEl.textContent = '"' + productTitle + '" has been added to your cart.';
+                if (overlay)   overlay.style.display = 'flex';
+                // POST to add-to-cart route in background
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/add-to-cart/' + productId;
+                form.style.display = 'none';
+                var csrfInput = document.createElement('input');
+                csrfInput.type  = 'hidden';
+                csrfInput.name  = 'csrf_token';
+                var csrfMeta   = document.querySelector('meta[name="csrf-token"]');
+                var csrfHidden = document.querySelector('input[name="csrf_token"]');
+                csrfInput.value = csrfMeta ? csrfMeta.content : (csrfHidden ? csrfHidden.value : '');
+                form.appendChild(csrfInput);
+                document.body.appendChild(form);
+                form.submit();
+            });
+        });
+        // Close popup on backdrop click
+        var overlay = document.getElementById('vpCartPopupOverlay');
+        if (overlay) {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) overlay.style.display = 'none';
+            });
+        }
+    });
 </script>
 </body>
 </html>

@@ -568,6 +568,20 @@ body {
     </div>
 {% endif %}
 
+<!-- 🛒 ADD TO CART CONFIRMATION POPUP (index page) -->
+<div id="indexCartPopupOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:99990; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,0.25); padding:28px 24px; max-width:360px; width:calc(100% - 32px); text-align:center; position:relative;">
+        <div style="font-size:44px; margin-bottom:10px;">🛒</div>
+        <h3 style="margin:0 0 6px; font-size:18px; font-weight:900; color:#111;">Added to Cart!</h3>
+        <p id="indexCartPopupItemName" style="margin:0 0 20px; color:#64748b; font-size:14px; font-weight:600;">Item added successfully.</p>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <a href="/cart" style="display:block; background:#0B192C; color:#fff; text-decoration:none; padding:12px; border-radius:8px; font-weight:800; font-size:14px; text-transform:uppercase; letter-spacing:0.3px;">🛍️ Go to Your Cart</a>
+            <button onclick="document.getElementById('indexCartPopupOverlay').style.display='none';" style="background:#F1F5F9; color:#334155; border:none; padding:12px; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer;">Continue Shopping</button>
+        </div>
+        <button onclick="document.getElementById('indexCartPopupOverlay').style.display='none';" style="position:absolute; top:12px; right:14px; background:none; border:none; font-size:20px; color:#94a3b8; cursor:pointer; line-height:1;">×</button>
+    </div>
+</div>
+
 
  {% if welcome_message %}
     <div id="new-registrant-welcome" style="position:fixed; inset:0; z-index:99999; display:flex; align-items:center; justify-content:center; background:rgba(11,25,44,0.75); padding:16px;">
@@ -684,7 +698,34 @@ html, body {
 }
 
 @media(max-width:560px){.bh-topbar{gap:5px;padding:7px}.bh-brand{font-size:19px}.bh-brand-sub{display:none}.bh-action{padding:6px 5px}.bh-action .small{display:none}.bh-action strong{font-size:11px}.bh-action .icon{font-size:19px}.bh-subbar a{font-size:12px;padding:10px 9px}.bh-search{height:40px}}
-.promo-owner{border:2px solid #10B981}.promo-favorite{border:2px solid #F59E0B}.promo-active{border:2px solid #E5E7EB} .promo-marketplace-card{background:#b91c1c!important;color:#fff!important;border-color:#991b1b!important}.promo-marketplace-card .card-title,.promo-marketplace-card .card-text,.promo-marketplace-card .card-brand,.promo-marketplace-card .card-metadata{color:#fff!important}.promo-marketplace-card .card-brand-wrapper a{color:#fff!important}.promo-marketplace-card .card-text{opacity:.9}.promo-marketplace-card .card-price{color:#fff!important}.promo-marketplace-card .promo-old-price{text-decoration:line-through;color:rgba(255,255,255,.7)}
+/* ── Promo card tiers ─────────────────────────────── */
+.promo-owner    { border:2px solid #10B981; }
+.promo-favorite { border:2px solid #F59E0B; }
+.promo-active   { border:2px solid #FECACA; }
+
+/* General Vendor promo cards — light red / white theme */
+.promo-marketplace-card {
+    background: #fff !important;
+    color: #1e1e1e !important;
+    border: 1.5px solid #FECACA !important;
+    box-shadow: 0 2px 10px rgba(185,28,28,0.08) !important;
+}
+.promo-marketplace-card .card-title,
+.promo-marketplace-card .card-text,
+.promo-marketplace-card .card-brand,
+.promo-marketplace-card .card-metadata { color: #1e1e1e !important; }
+.promo-marketplace-card .card-brand-wrapper a { color: #b91c1c !important; }
+.promo-marketplace-card .card-text { opacity: .85; }
+.promo-marketplace-card .card-price { color: #b91c1c !important; font-weight: 900; }
+.promo-marketplace-card .promo-old-price { text-decoration: line-through; color: #9CA3AF; }
+.promo-marketplace-card .promo-accent-badge {
+    background: #FEE2E2; color: #991B1B;
+    font-size: 10px; font-weight: 900;
+    padding: 3px 8px; border-radius: 999px;
+    display: inline-block;
+}
+/* card-media dark strip → white for general vendor promos */
+.promo-marketplace-card .card-media-wrapper { background: #f9fafb !important; }
 </style>
 <!-- ==========================================================================
    👑 BIZHUB FULL-VELOCITY SECURE STICKY FLOATING NAVBAR LAYER
@@ -835,7 +876,7 @@ html, body {
     <div class="container">
             <!-- 👑 BIZHUB PREMIUM LIVE PREDICTIVE AUTOCOMPLETE HINTS SEARCH SYSTEM -->
             <form method="POST" action="/" enctype="multipart/form-data">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                
                 <!-- 🔮 LIVE DYNAMIC FLOATING POPUP HINTS OVERLAY DRAWER -->
                 <div id="searchSuggestionsDropdown" style="position: absolute; top: 100%; left: 0; right: 0; background: #FFFFFF; border: 1px solid #D5D9D9; border-radius: 8px; margin-top: 5px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); display: none; z-index: 99999; max-height: 320px; overflow-y: auto; box-sizing: border-box;"></div>
@@ -901,7 +942,18 @@ html, body {
             <p>Discover products, food and trusted local stores across Ghana — all in one simple marketplace.</p>
         </div>
     </div>
-    {% if fast_food_vendors %}
+    {% if session.get('role') == 'Fast Food' %}
+    <!-- 🍳 Fast Food vendor: show "Open Your Kitchen" CTA instead of kitchens list -->
+    <section id="fastFoodOwnerCTA" style="margin:18px auto 20px; max-width:1180px; padding:24px; background:linear-gradient(135deg,#fff7ed,#fffbeb); border:1px solid #fed7aa; border-radius:12px; text-align:center;">
+        <div style="font-size:48px; margin-bottom:10px;">🍳</div>
+        <h2 style="margin:0 0 8px; color:#9a3412; font-size:22px; font-weight:900;">Open Your Kitchen</h2>
+        <p style="margin:0 0 18px; color:#9a3412; font-size:14px;">Manage your menu, publish new dishes, and see live orders from your kitchen dashboard.</p>
+        {% if session.get('username') %}
+        <a href="/vendor/{{ session['username'] }}" class="btn-action" style="display:inline-block; background:#ea580c; color:#fff; text-decoration:none; padding:12px 32px; font-size:15px; font-weight:800; border-radius:8px;">🍳 Open Your Kitchen</a>
+        {% endif %}
+    </section>
+    {% elif fast_food_vendors %}
+    <!-- Customers / other roles: show full kitchens listing -->
     <section id="fastFoodKitchens" style="margin:18px auto 20px; max-width:1180px; padding:18px; background:linear-gradient(135deg,#fff7ed,#fffbeb); border:1px solid #fed7aa; border-radius:12px;">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
             <div><h2 style="margin:0;color:#9a3412;font-size:20px;font-weight:900;">🍔 Fast Food Kitchens</h2><p style="margin:4px 0 0;color:#9a3412;font-size:12px;">Restaurant-style kitchens — open a kitchen to browse its menu.</p></div>
@@ -910,10 +962,6 @@ html, body {
         {% for kitchen in fast_food_vendors %}
             <article style="background:#fff;border:1px solid #fed7aa;border-radius:12px;padding:14px;">
                 {% if kitchen.company_logo %}<img src="{{ url_for('static', filename='uploads/' + kitchen.company_logo) }}" alt="{{ kitchen.business_label }}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;margin-bottom:8px;">{% endif %}
-                <div style="font-size: 14.5px; font-weight: 800; color: var(--text-main);">
-    {% if kitchen.is_owner %}
-        <span style="background: #06C167; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-right: 4px; font-weight: 900;">Your Kitchen</span>
-    {% endif %}
                 <div style="font-weight:900;color:#7c2d12;">{{ kitchen.business_label }}</div>
                 <div style="font-size:11px;color:#9a3412;margin-top:3px;">@{{ kitchen.username }}{% if kitchen.business_location %} · 📍 {{ kitchen.business_location }}{% endif %}</div>
                 <div style="font-size:11px;color:#9a3412;margin-top:4px;">{{ kitchen.menu_count }} menu item{% if kitchen.menu_count != 1 %}s{% endif %}</div>
@@ -968,50 +1016,46 @@ html, body {
                 {% if marketplace_promos %}
                 <section style="margin-bottom:28px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
-                        <div><h3 style="margin:0;font-size:20px;color:var(--bg-abyssal);font-weight:900;">🔥 Live Promotions</h3><p style="margin:5px 0 0;color:#64748B;font-size:12px;">Active promotional offers from BizHub vendors.</p></div>
+                        <div><h3 style="margin:0;font-size:20px;color:var(--bg-abyssal);font-weight:900;">{% if session.get('role') == 'Vendor' %}🔥 Your Promo on Marketplace{% else %}🔥 Live Promotions{% endif %}</h3><p style="margin:5px 0 0;color:#64748B;font-size:12px;">Active promotional offers from BizHub vendors.</p></div>
                         <a href="{{ url_for('promo_marketplace') }}" style="font-size:12px;font-weight:900;color:#B45309;text-decoration:none;background:#FEF3C7;border:1px solid #FCD34D;padding:7px 10px;border-radius:8px;">View Today's Deals</a>
                     </div>
                     <div class="grid" id="marketplacePromosGrid">
                     {% for promo in marketplace_promos %}
                     <article class="card promo-marketplace-card{% if promo.is_owner %} promo-owner{% elif promo.is_favorite %} promo-favorite{% else %} promo-active{% endif %}">
-                        <div class="card-media-wrapper" style="background:#0B192C;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:170px;">
+                        <div class="card-media-wrapper" style="display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:170px;">
                             {% if promo.product_video %}<video class="card-img" controls autoplay muted playsinline loop preload="auto"><source src="{{ url_for('stream_video', filename=promo.product_video) }}"></video>
                             {% elif promo.product_image and promo.product_image != 'fast-food-placeholder.svg' %}<img class="card-img" src="{{ url_for('static', filename=(promo.product_image if promo.product_image.startswith('uploads/') else 'uploads/' + promo.product_image)) }}" alt="{{ promo.product_title }}">
                             {% elif promo.image_file %}<img class="card-img" src="{{ url_for('static', filename=(promo.image_file if promo.image_file.startswith('uploads/') else 'uploads/' + promo.image_file)) }}" alt="{{ promo.title }}">
-                            {% else %}<div style="color:#fff;font-size:42px;">🔥</div>{% endif %}
+                            {% else %}<div style="font-size:42px;color:#b91c1c;">🔥</div>{% endif %}
                         </div>
                         <div class="card-body">
                             {% if promo.is_owner %}
-                              <span style="display:inline-block;margin-bottom:6px;padding:4px 8px;border-radius:999px;background:#DCFCE7;color:#166534;font-size:10px;font-weight:900;">YOUR PROMO</span>
+                              <span class="promo-accent-badge" style="background:#DCFCE7;color:#166534;">YOUR PROMO</span>
                             {% elif promo.is_favorite %}
-                              <span style="display:inline-block;margin-bottom:6px;padding:4px 8px;border-radius:999px;background:#FEF3C7;color:#92400E;font-size:10px;font-weight:900;">⭐ FAVORITED VENDOR PROMO</span>
+                              <span class="promo-accent-badge" style="background:#FEF3C7;color:#92400E;">⭐ FAVORITED VENDOR</span>
                             {% else %}
-                              <span style="display:inline-block;margin-bottom:6px;padding:4px 8px;border-radius:999px;background:#FEE2E2;color:#991B1B;font-size:10px;font-weight:900;">🔥 ACTIVE PROMO</span>
+                              <span class="promo-accent-badge">🔥 ACTIVE PROMO</span>
                             {% endif %}
-                            <div class="card-brand-wrapper"><a href="{{ url_for('vendor_profile', username=promo.vendor_username) }}" class="card-brand" style="text-decoration:none;">🏬 {{ promo.company_name or promo.vendor_username }}</a></div>
-                            <h4 class="card-title">{{ promo.title }}</h4>
+                            <div class="card-brand-wrapper" style="margin-top:6px;"><a href="{{ url_for('vendor_profile', username=promo.vendor_username) }}" class="card-brand" style="text-decoration:none;color:#b91c1c;">🏬 {{ promo.company_name or promo.vendor_username }}</a></div>
+                            <h4 class="card-title" style="color:#111;margin:6px 0 4px;">{{ promo.title }}</h4>
                             {% if promo.product_title %}
                               <div style="font-size:12px;font-weight:800;color:#475569;margin-bottom:5px;">Item: {{ promo.product_title }}</div>
                             {% endif %}
                             {% if promo.description %}
-                              <p class="card-text">{{ promo.description }}</p>
+                              <p class="card-text" style="color:#374151;">{{ promo.description }}</p>
                             {% elif promo.product_description %}
-                              <p class="card-text">{{ promo.product_description }}</p>
+                              <p class="card-text" style="color:#374151;">{{ promo.product_description }}</p>
                             {% endif %}
                             <div class="promo-price-stack" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex-wrap:wrap;margin-top:8px;">
-                                <span class="promo-old-price" style="text-decoration:line-through;color:rgba(255,255,255,.7);font-size:12px;">GH₵ {{ "%.2f"|format(promo.original_price) }}</span>
-                                <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:900;color:#fff;text-transform:uppercase;"><span style="font-size:22px;line-height:1;">🔥</span> Promo price</span>
-                                <span class="card-price" style="margin:0;color:#fff;">GH₵ {{ "%.2f"|format(promo.effective_price) }}</span>
-                                {% if promo.discount_percent %}<span style="font-size:10px;font-weight:900;color:#B91C1C;background:#FFF1F2;padding:4px 7px;border-radius:999px;">{{ "%.0f"|format(promo.discount_percent) }}% OFF</span>{% endif %}
+                                <span class="promo-old-price">GH₵ {{ "%.2f"|format(promo.original_price) }}</span>
+                                <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:900;color:#b91c1c;text-transform:uppercase;"><span style="font-size:20px;line-height:1;">🔥</span> Promo price</span>
+                                <span class="card-price">GH₵ {{ "%.2f"|format(promo.effective_price) }}</span>
+                                {% if promo.discount_percent %}<span style="font-size:10px;font-weight:900;color:#991B1B;background:#FEE2E2;padding:4px 7px;border-radius:999px;">{{ "%.0f"|format(promo.discount_percent) }}% OFF</span>{% endif %}
                             </div>
                             <div style="font-size:11px;color:#64748B;margin-top:8px;">📍 {{ promo.business_location or promo.product_location or 'Location not provided' }} · ⏰ Ends {{ promo.ends_at }}</div>
-                            {% if promo.image_file %}
-                              <div style="margin-top:10px;font-size:10px;font-weight:800;color:#B45309;">📣 Promo Ad</div>
-                              <img src="{{ url_for('static', filename=(promo.image_file if promo.image_file.startswith('uploads/') else 'uploads/' + promo.image_file)) }}" alt="Promo ad" style="width:100%;height:100px;object-fit:cover;border-radius:10px;margin-top:5px;">
-                            {% endif %}
                             {% if promo.video_file %}
-                              <div style="margin-top:10px;font-size:10px;font-weight:800;color:#B45309;">🎬 Promo Ad Video</div>
-                              <video controls autoplay muted playsinline loop preload="auto" style="width:100%;max-height:160px;border-radius:10px;margin-top:5px;background:#000;">
+                              <div style="margin-top:10px;font-size:10px;font-weight:800;color:#b91c1c;">🎬 Promo Ad Video</div>
+                              <video controls autoplay muted playsinline loop preload="auto" style="width:100%;max-height:160px;border-radius:10px;margin-top:5px;background:#f3f4f6;">
                                 <source src="{{ url_for('stream_video', filename=promo.video_file) }}">
                               </video>
                             {% endif %}
@@ -1025,7 +1069,7 @@ html, body {
                 {% if your_marketplace_products %}
                 <div style="margin-bottom:26px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
-                        <h3 style="margin:0; font-size:18px; color:var(--bg-abyssal); font-weight:800;">🛍️ Your Listings</h3>
+                        <h3 style="margin:0; font-size:18px; color:var(--bg-abyssal); font-weight:800;">{% if session.get('role') == 'Vendor' %}🛍️ Your Listings on Marketplace{% else %}🛍️ Your Listings{% endif %}</h3>
                         <span style="font-size:12px;font-weight:800;color:#475569;background:#F1F5F9;border:1px solid #CBD5E1;padding:7px 10px;border-radius:8px;">{{ your_marketplace_products|length }} published</span>
                     </div>
                                 
@@ -1178,7 +1222,13 @@ html, body {
                                             {% if product.status == 'Sold' or product.stock_quantity|int <= 0 %}
                                                 <span class="btn-action" style="flex: 1; background: #E5E7EB; color: #6B7280; cursor: not-allowed; text-align: center; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1;">🔴 Sold Out</span>
                                             {% else %}
-                                                <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="btn-action" style="flex: 1; text-align: center; text-decoration: none; background: #FFD814; color: #111; border: 1px solid #FCD200; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; appearance:none; -webkit-appearance:none;">🛒 Add to Basket</a>
+                                                <button type="button"
+                                                    class="btn-action bizhub-add-to-cart-btn"
+                                                    data-product-id="{{ product.id }}"
+                                                    data-product-title="{{ product.title }}"
+                                                    style="flex: 1; background: #FFD814; color: #111; border: 1px solid #FCD200; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; cursor:pointer;">
+                                                    🛒 Add to Cart
+                                                </button>
                                             {% endif %}
                                         </div>
                                     {% endif %}
@@ -1490,15 +1540,44 @@ function changeBasketQty(button, delta){
             if (urlSearchParameters.get('cart_added') === '1') {
                 const cartToastElement = document.getElementById('bizhubCartToast');
                 if (cartToastElement) {
-                    // Slide the interactive theme bubble smoothly onto the screen viewport panel
-                    setTimeout(() => {
-                        cartToastElement.style.bottom = '24px';
-                    }, 200);
-
-                         setTimeout(() => {
-                        cartToastElement.style.bottom = '-100px';
-                    }, 4700); // 200ms delay + 4500ms display lifecycle execution window
+                    setTimeout(() => { cartToastElement.style.bottom = '24px'; }, 200);
+                    setTimeout(() => { cartToastElement.style.bottom = '-100px'; }, 4700);
                 }
+            }
+
+            // 🛒 Add to Cart buttons — show popup then POST to add_to_cart
+            document.querySelectorAll('.bizhub-add-to-cart-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var productId = btn.dataset.productId;
+                    var productTitle = btn.dataset.productTitle || 'Item';
+                    // Show popup immediately
+                    var overlay = document.getElementById('indexCartPopupOverlay');
+                    var nameEl = document.getElementById('indexCartPopupItemName');
+                    if (nameEl) nameEl.textContent = '"' + productTitle + '" has been added to your cart.';
+                    if (overlay) overlay.style.display = 'flex';
+                    // POST add-to-cart in background
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/add-to-cart/' + productId;
+                    form.style.display = 'none';
+                    var csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = 'csrf_token';
+                    csrfInput.value = document.querySelector('meta[name="csrf-token"]') ?
+                        document.querySelector('meta[name="csrf-token"]').content :
+                        (document.querySelector('input[name="csrf_token"]') ? document.querySelector('input[name="csrf_token"]').value : '');
+                    form.appendChild(csrfInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+            });
+
+            // Close popup on overlay background click
+            var overlay = document.getElementById('indexCartPopupOverlay');
+            if (overlay) {
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) overlay.style.display = 'none';
+                });
             }
         });
 </script>
