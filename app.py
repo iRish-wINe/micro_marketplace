@@ -1099,6 +1099,7 @@ def run_restaurant_schema_migration():
 run_restaurant_schema_migration()
 
 
+
 @app.route("/publish-product", methods=["POST"])
 def publish_product():
     """👑 BIZHUB DEDICATED ISOLATED PRODUCT CREATION SYSTEM: Fully supports Fast Food smart categories."""
@@ -1122,7 +1123,7 @@ def publish_product():
     title = request.form.get("meal_name" if is_fast_food else "title")
     description = request.form.get("meal_description" if is_fast_food else "description")
     
-    # 🍟 NEW DATA INTAKES FOR UBER EATS STYLE STRUCTURES
+    # 🍟 NEW FIXED DATA INTAKES TO MATCH FRONTEND LOG HISTORY BOUNDRIES EXACTLY
     menu_type = request.form.get("menu_type", "Main Dishes").strip() if is_fast_food else "General"
     served_with = request.form.get("served_with", "").strip() if is_fast_food else None
     
@@ -1136,8 +1137,9 @@ def publish_product():
     has_image = bool(file and file.filename)
     has_video = bool(video and video.filename)
     
+    # 🎬 RESTORED RIGID MEDIA VALIDATION GATEWAY RULE (Image OR Video ONLY)
     if not is_fast_food and has_image == has_video:
-        return redirect(url_for("vendor_profile", username=session["username"], listing_error="Choose exactly one media option: Image OR Showcase Video."))
+        return redirect(url_for("vendor_profile", username=session["username"], listing_error="Choose exactly one media option: Image Cover OR Showcase Video."))
 
     filename = ""
     if has_image:
@@ -1159,7 +1161,7 @@ def publish_product():
         video_filename = f"video-{uuid.uuid4().hex}{ext}"
         video.save(os.path.join(app.config["UPLOAD_FOLDER"], video_filename))
 
-    # Fast food menu items act as permanent listings (No depletion blocks)
+    # Permanent inventory limit configuration for kitchens
     stock_quantity = 999999 if is_fast_food else int(stock_quantity or 1)
 
     if title and price and description:
@@ -1175,14 +1177,9 @@ def publish_product():
 
     
    
-    
-    
-
-
-
 @app.route("/", methods=["GET", "POST"])
 def home():
-    """👑 BIZHUB SMART MARKETPLACE CONTROLLER: Handles product creation and tiered chronological feed ranking."""
+    """👑 BIZHUB SMART MARKETPLACE CONTROLLER: Unified publishing router and feed presentation ranker."""
     welcome_message = bool(session.pop("welcome_message", False))
     listing_error = request.args.get("listing_error")
     company_search = (request.args.get("company_search") or request.args.get("search") or "").strip()
@@ -1195,6 +1192,9 @@ def home():
             return redirect(url_for("home"))
             
         vendor = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+        if not vendor:
+            return redirect(url_for("home"))
+            
         subscription = subscription_status(vendor)
         listing_count_row = query_db("SELECT COUNT(*) AS count FROM products WHERE seller = ?", (session["username"],), one=True)
         listing_count = listing_count_row["count"] if listing_count_row else 0
@@ -1203,10 +1203,15 @@ def home():
             return redirect(url_for("home", listing_error="Basic accounts can list up to 3 products. Upgrade to Premium for unlimited listings."))
 
         price = request.form.get("price")
-        is_fast_food = bool(vendor and vendor.get("role") == "Fast Food")
+        is_fast_food = bool(vendor.get("role") == "Fast Food")
         
         title = request.form.get("meal_name" if is_fast_food else "title")
         description = request.form.get("meal_description" if is_fast_food else "description")
+        
+        # Extracted parameters to keep database metrics aligned with frontend forms
+        menu_type = request.form.get("menu_type", "Main Dishes").strip() if is_fast_food else "General"
+        served_with = request.form.get("served_with", "").strip() if is_fast_food else None
+        
         category = "Fast Food" if is_fast_food else (request.form.get("category", "Other").strip() or "Other")
         stock_quantity = request.form.get("stock_quantity", "1")
         location = request.form.get("location", "").strip() or vendor.get("business_location") or "Accra"
@@ -1217,6 +1222,7 @@ def home():
         has_image = bool(file and file.filename)
         has_video = bool(video and video.filename)
         
+        # 🎬 RESTORED RIGID MEDIA VALIDATION GATEWAY RULE (Image OR Video ONLY)
         if not is_fast_food and has_image == has_video:
             return redirect(url_for("home", listing_error="Choose exactly one item media option: Image OR Showcase Video."))
         if is_fast_food and not has_image and not has_video:
@@ -1243,14 +1249,17 @@ def home():
             video_filename = f"video-{uuid.uuid4().hex}{ext}"
             video.save(os.path.join(app.config["UPLOAD_FOLDER"], video_filename))
 
-        stock_quantity = 1 if is_fast_food else int(stock_quantity or 1)
+        # Permanent infinite configurations for hot menus
+        stock_quantity = 999999 if is_fast_food else int(stock_quantity or 1)
 
         if title and price and description:
             b_label = vendor.get("company_name") or vendor.get("username") or "Individual Vendor"
             query_db(
-                "INSERT INTO products (title, price, description, image_file, video_file, stock_quantity, initial_stock_quantity, sold_quantity, status, seller, seller_email, seller_whatsapp, location, business_label, category) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?)",
-                (title, float(price), description, filename, video_filename, stock_quantity, stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"), location, b_label, category)
+                "INSERT INTO products (title, price, description, image_file, video_file, stock_quantity, initial_stock_quantity, sold_quantity, status, seller, seller_email, seller_whatsapp, location, business_label, category, menu_type, served_with) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ?)",
+                (title, float(price), description, filename, video_filename, stock_quantity, stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"), location, b_label, category, menu_type, served_with)
             )
+            
+            notify_favorite_customers(vendor["id"], "product", f"{b_label} added a new item", title, url_for("vendor_profile", username=vendor["username"]))
             return redirect(url_for("vendor_profile", username=vendor["username"], published="fastfood" if is_fast_food else "item"))
 
     # ==========================================================================
@@ -1258,7 +1267,6 @@ def home():
     # ==========================================================================
     current_username = session.get("username")
     user_role = session.get("role", "Customer")
-    selected_filter = request.args.get("filter_location", "All")
     
     # Smart Predictive Search Bar Interceptor
     if company_search:
@@ -1276,7 +1284,6 @@ def home():
         if location_match_check:
             return redirect(url_for("all_stores", company_search=location_match_check["business_location"]))
 
-    
     # Core Query Execution: Tag promotions and join business labels cleanly (EXCLUDES FAST FOOD FROM HOME FEED)
     raw_products = query_db("""
         SELECT p.*, 
@@ -1288,7 +1295,6 @@ def home():
         JOIN users u ON p.seller = u.username
         WHERE p.status = 'Available' AND p.stock_quantity > 0 AND p.category != 'Fast Food'
     """) or []
-
 
     # Get user's favorites map context safely
     favorited_sellers = set()
@@ -1305,9 +1311,9 @@ def home():
         p["is_promo"] = bool(p.get("active_promo_id"))
         p["is_own"] = bool(current_username and p["seller"] == current_username)
         p["is_favorite"] = bool(p["seller"] in favorited_sellers)
-        p["is_kitchen"] = bool(p.get("seller_role") == "Fast Food")
+        p["is_kitchen"] = False
         
-        # 👑 ASSIGN TIER SCORES ACCORDING TO YOUR EXACT MULTI-ROLE LOGIC RULES
+        # ASSIGN TIER SCORES ACCORDING TO MULTI-ROLE LOGIC RULES
         if user_role in ["Vendor", "Fast Food"]:
             if p["is_own"] and p["is_promo"]:
                 p["tier_score"] = 10
@@ -1347,6 +1353,9 @@ def home():
     # Sort: Priority Rank First, Then Fall Back to Latest Posts (id DESC)
     processed_items.sort(key=lambda x: (-x["tier_score"], -x["id"]))
 
+    # ==========================================================================
+    # 🍟 3. FETCH LIVE FAST FOOD RESTAURANTS & MARKETPLACE DEALS
+    # ==========================================================================
     # Restores Live Fast Food Vendors Row
     fast_food_vendors = query_db("""
         SELECT u.id, u.username, u.company_name, u.business_location, u.company_logo, u.whatsapp_number,
@@ -1379,11 +1388,24 @@ def home():
         if promo.get("discount"):
             promo["discount_percent"] = float(promo["discount"])
 
+    # ==========================================================================
+    # 🔔 4. COUNTER UNREAD ALERTS FOR THE BELL SHAKE SYSTEM
+    # ==========================================================================
     customer_notification_count = 0
+    unread_notifications_count = 0
     if current_username:
-        notif_row = query_db("SELECT COUNT(*) AS count FROM notifications WHERE recipient_id = (SELECT id FROM users WHERE username = ?) AND is_read = 0", (current_username,), one=True)
-        customer_notification_count = notif_row["count"] if notif_row else 0
+        notif_row = query_db("""
+            SELECT COUNT(*) AS count FROM notifications 
+            WHERE recipient_id = (SELECT id FROM users WHERE username = ?) 
+              AND is_read = 0
+        """, (current_username,), one=True)
+        if notif_row:
+            customer_notification_count = notif_row["count"]
+            unread_notifications_count = notif_row["count"]
 
+    # ==========================================================================
+    # 🖼️ 5. ASSET MAPS AND BASKET EXTRACTION
+    # ==========================================================================
     vendor_logos = {}
     logo_rows = query_db("SELECT username, company_logo FROM users WHERE company_logo IS NOT NULL") or []
     for row in logo_rows:
@@ -1411,10 +1433,14 @@ def home():
                     "cart_line_total": line_total
                 })
 
-    # Prepare vendor dashboard parameters
-    vendor_subscription = subscription_status(query_db("SELECT * FROM users WHERE username = ?", (current_username,), one=True) if current_username else None)
-    seller_orders = [] # Fallback template container mapping requirement
+    # Prepare vendor dashboard parameters safely
+    vendor_user_record = query_db("SELECT * FROM users WHERE username = ?", (current_username,), one=True) if current_username else None
+    vendor_subscription = subscription_status(vendor_user_record)
+    seller_orders = []
 
+    # ==========================================================================
+    # 🎨 6. RENDERING CONTEXT VARIABLES
+    # ==========================================================================
     return render_template("index.html", 
                            processed_items=processed_items,
                            marketplace_promos=marketplace_promos,
@@ -1428,11 +1454,12 @@ def home():
                            seller_orders=seller_orders,
                            vendor_subscription=vendor_subscription,
                            customer_notification_count=customer_notification_count,
+                           unread_notifications_count=unread_notifications_count,
                            company_search=company_search,
                            listing_error=listing_error,
                            welcome_message=welcome_message,
-                           kitchen=kitchen if 'kitchen' in locals() else None,
-                         )
+                           kitchen=None)
+
 
 
 

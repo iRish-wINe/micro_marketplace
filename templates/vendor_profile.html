@@ -260,6 +260,10 @@
             <!-- MEDIA SELECTION WITH CANCEL BUTTONS -->
             <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                 <div style="margin-bottom: 10px;">
+!-- 🎬 RESTORED RIGID BIZHUB MEDIA VALIDATION RULES HEADER -->
+<p style="font-size: 13px; color: #bbb; margin-bottom: 10px;">
+    <strong>⚠️ Media Presentation Rule:</strong> For normal product listings provide <em>exactly one</em> media asset option. You can upload either a high-resolution Image Cover or a 20-second Showcase Video commercial loop and not both at a time.
+</p>
                     <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📸 Cover Image File:</label>
                     <div style="display:flex; align-items:center; gap:8px;">
                         <input type="file" id="bizhubProductImageInput" accept="image/*" onchange="handleMediaSelectionToggle('image')">
@@ -332,37 +336,31 @@
         </div>
     </section>
 
-    <!-- 📜 RESTORED: STYLED LISTING HISTORY BY CATEGORIES FOR STORE OWNER -->
-    {% if is_owner and vendor.role == 'Fast Food' %}
-    <section style="margin-top: 20px;">
-        <h3 style="font-size: 18px;">📋 Store Listing History Log</h3>
-        {% set sections = [
-            ('Main Dishes', 'Main Dishes'),
-            ('Sides', 'Sides & Appetizers'),
-            ('Drinks', 'Beverages & Drinks'),
-            ('Desserts', 'Pastries & Desserts')
-        ] %}
-
-        {% for section_key, section_label in sections %}
-            <div class="history-section">
-                <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--text-muted);">History Log: {{ section_label }}</h4>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    {% for product in products if product.menu_type == section_key %}
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
-                            <div>
-                                <strong style="font-size: 13px;">{{ product.title }}</strong>
-                                <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">GH₵ {{ "%.2f"|format(product.price) }}</span>
-                            </div>
-                            <button type="button" class="btn-cancel">Delete Log Entry</button>
-                        </div>
-                    {% else %}
-                        <span style="font-size: 12px; color: var(--text-muted);">No listing records for this section.</span>
-                    {% endfor %}
-                </div>
+  <!-- 🍟 FULLY SYNCHRONIZED SECTIONS MAPPING SYSTEM FOR HISTORY LOGS -->
+{% if is_owner and vendor.role == 'Fast Food' %}
+    <h3>📋 Store Listing History Log</h3>
+    
+    {% set sections = [
+        ('Main Dishes', 'Main Dishes'),
+        ('Sides & Appetizers', 'Sides & Appetizers'),
+        ('Beverages & Drinks', 'Beverages & Drinks'),
+        ('Desserts & Sweets', 'Desserts & Sweets')
+    ] %}
+    
+    {% for section_key, section_label in sections %}
+        #### History Log: {{ section_label }}
+        
+        {% for product in products if product.menu_type == section_key %}
+            <div style="border-bottom: 1px solid #333; padding: 8px 0;">
+                **{{ product.title }}** — GH₵ {{ "%.2f"|format(product.price) }} 
+                {% if product.served_with %}(With: {{ product.served_with }}){% endif %}
+                <a href="/delete-item/{{ product.id }}" style="color: #ff4a4a; margin-left: 15px; font-size: 13px;">Delete Log Entry</a>
             </div>
+        {% else %}
+            <p style="color: #777; font-size: 13px;">No listing records for this section.</p>
         {% endfor %}
-    </section>
-    {% endif %}
+    {% endfor %}
+{% endif %}
 
 </main>
 

@@ -35,16 +35,13 @@
 <body>
 <header class="bh-global-header" role="banner">
   <div class="bh-topbar">
-    <a class="bh-brand" href="{{ url_for('home') }}" aria-label="BizHub home"><span class="bh-brand-mark">B</span><span>BizHub<span class="bh-brand-sub">SHOP • SELL • CONNECT</span></span></a>
-    <a class="bh-location" href="{{ url_for('home') }}"><span>📍</span><span><small>Delivering to</small><strong>{{ session.get('business_location') or 'Ghana' }}</strong></span></a>
-    <form class="bh-search" method="get" action="{{ url_for('home') }}" role="search"><input name="company_search" placeholder="Search item or company" aria-label="Search BizHub"><button type="submit" aria-label="Search">🔍</button></form>
+    <a class="bh-brand" href="{{ url_for('home') }}" aria-label="BizHub home"><span class="bh-brand-mark">B</span><span>BizHub<span class="bh-brand-sub">Your Local Market, Unified Online</span></span></a>
+    <a class="bh-location" href="{{ url_for('home') }}"><span>📍</span><span><small>Delivering from</small><strong>{{ session.get('business_location') or 'Ghana' }}</strong></span><span>📍</span><span><small>Ordering from</small><strong>{{ session.get('customer_location') or 'Ghana' }}</strong></span><span>📍</span><span><small>Dispatching from</small><strong>{{ session.get('delivery_service_location') or 'Ghana' }}</strong></span></a>
+    
     <a class="bh-action" href="{{ url_for('settings') }}"><span class="icon">👤</span><span><span class="small">Hello,</span><strong>{{ session.get('username') }}{% if session.get('role') %} <span style="font-size:9px;color:#febd69;text-transform:uppercase">{{ session.get('role') }}</span>{% endif %}</strong></span></a>
-    <a class="bh-action" href="{{ url_for('order_history') }}"><span><span class="small">Track &amp;</span><strong>Orders</strong></span></a>
-    <a class="bh-action" href="{{ url_for('notifications') }}"><span class="icon">🔔</span><span><span class="small">BizHub</span><strong>Alerts{% if vendor_notification_count or customer_notification_count %} <span class="bh-badge">{{ vendor_notification_count if session.get('role') in ['Vendor','Fast Food'] else customer_notification_count }}</span>{% endif %}</strong></span></a>
-    <a class="bh-action" href="{{ url_for('cart_page') }}" aria-current="page"><span class="icon">🛒</span><span><span class="small">Your</span><strong>Cart{% if cart_count %} <span class="bh-badge">{{ cart_count }}</span>{% endif %}</strong></span></a>
   </div>
   <nav class="bh-subbar" aria-label="BizHub marketplace navigation">
-    <a href="{{ url_for('home') }}">☰ &nbsp;All</a><a href="{{ url_for('promo_marketplace') }}">Today's Deals</a><a href="{{ url_for('favorites') }}">Favorites</a><a href="{{ url_for('order_history') }}">Orders</a>{% if session.get('role') in ['Vendor','Fast Food'] %}{% endif %}<a href="{{ url_for('home') }}#fast-food">Fast Food</a><a href="{{ url_for('home') }}#categories">Categories</a>{% if session.get('role') in ['Vendor','Fast Food'] %}{% endif %}<a href="{{ url_for('features') }}">Features</a><a href="{{ url_for('settings') }}">Your Account</a><span class="bh-grow"></span>{% if session.get('is_admin') %}<a href="{{ url_for('admin_dashboard') }}">Admin Center</a>{% endif %}
+    <a href="{{ url_for('home') }}">Marketplace</a><a href="{{ url_for('promo_marketplace') }}">Today's Deals</a><a href="{{ url_for('favorites') }}">Favorites</a><a href="{{ url_for('order_history') }}">Orders</a><a href="{{ url_for('fast_food_stores') }}">Fast Food</a><a href="{{ url_for('features') }}">Features</a><a href="{{ url_for('settings') }}">Your Account</a>
   </nav>
 </header>
 
