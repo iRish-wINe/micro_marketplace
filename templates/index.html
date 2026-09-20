@@ -722,7 +722,7 @@ html, body {
 <!-- LOWER SUBBAR STRIPE: SWIPEABLE LINK MATRIX INCLUDING CART NODE -->
     <nav class="bh-subbar" style="min-height: 42px; background: #232f3e; display: flex; align-items: center; gap: 2px; padding: 0 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; box-sizing: border-box; border-top: 1px solid rgba(255,255,255,0.05);">
         <a href="javascript:void(0)" onclick="toggleAmazonSidebarMenu(true); return false;" style="color: #febd69 !important; text-decoration: none; font-size: 13px; font-weight: 700; cursor: pointer;">☰ All</a>
-        <a href="{{ url_for('todays_deals') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Today's Deals</a>
+        <a href="{{ url_for('promo_marketplace') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Today's Deals</a>
         
         <!-- 🛒 CART ROUTE WITH DYNAMIC NOTIFICATION ROUND COUNT PILLS -->
         <a href="{{ url_for('cart_page') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
