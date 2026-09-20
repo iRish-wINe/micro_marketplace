@@ -567,10 +567,15 @@ body {
             <section class="delivery-login-section" aria-labelledby="deliveryLoginHeading">
                 <h3 id="deliveryLoginHeading">🚚 Sign In as Delivery Service</h3>
                 <p>Access your delivery dashboard and manage your service availability.</p>
-                {% if delivery_login_error %}<div class="error-banner">❌ {{ delivery_login_error }}</div>{% endif %}
+                 <!-- 🚨 FIXED: Error message alerts isolate cleanly inside the runner dashboard panel -->
+        {% if delivery_login_error %}
+            <div class="alert-box alert-danger">❌ {{ delivery_login_error }}</div>
+        {% endif %}
                 <form method="POST" action="/login">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    <div class="form-group">
+         <!-- Flag indicating a delivery login submission target inside app.py -->
+            <input type="hidden" name="delivery_login_user" value="1">                   
+                     <div class="form-group">
                         <label for="deliveryLoginUser">Delivery Service Username:</label>
                         <input id="deliveryLoginUser" type="text" name="delivery_login_user" class="form-control" placeholder="Enter your service username" required autocomplete="username">
                     </div>
@@ -999,6 +1004,48 @@ body {
     <div class="auth-footer">
      © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS 🇬🇭 Company
     </div>
+
+         <!-- ==========================================================================
+       🔮 ASYNCHRONOUS JAVASCRIPT REAL-TIME USERNAME VALIDATION CONTROLLER
+       ========================================================================== -->
+       <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const field = document.getElementById("usernameCheckTarget");
+            const alertText = document.getElementById("usernameAvailabilityFeedback");
+            let typingDebounceTimer;
+
+            if (field && alertText) {
+                field.addEventListener("input", function() {
+                    clearTimeout(typingDebounceTimer);
+                    const queryVal = field.value.trim();
+
+                    if (queryVal === "") {
+                        alertText.textContent = "";
+                        return;
+                    }
+
+                    // Request availability status 250ms after user pauses typing
+                    typingDebounceTimer = setTimeout(() => {
+                        fetch(`/api/check-username?username=${encodeURIComponent(queryVal)}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                alertText.textContent = data.message;
+                                if (data.status === "available") {
+                                    alertText.style.color = "#166534"; // Crisp dark green text
+                                } else {
+                                    alertText.style.color = "#b91c1c"; // Red warning text
+                                }
+                            })
+                            .catch(() => { 
+                                alertText.textContent = ""; 
+                            });
+                    }, 250);
+                });
+            }
+        });
+    </script>
+
+
 
 
     <!-- ============================================================= -->

@@ -3442,13 +3442,40 @@ def settings():
         product_categories=PRODUCT_CATEGORIES,
         updated=request.args.get("updated") == "1"
     )
+
+# ==========================================================================
+# 👑 LIVE USERNAME AVAILABILITY VERIFICATION ENDPOINT
+# ==========================================================================
+@app.route("/api/check-username")
+def api_check_username():
+    """Streams asynchronous validation statuses back to the login view."""
+    username = request.args.get("username", "").strip()
+    if not username:
+        return {"status": "empty", "message": ""}
+    if len(username) < 3:
+        return {"status": "short", "message": "⚠️ Handle must be at least 3 characters"}
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+", username):
+        return {"status": "invalid", "message": "⚠️ Use only alphanumeric characters, dots, or underscores"}
+
+    # Database reference check
+    user_exists = query_db("SELECT id FROM users WHERE username = ?", (username,), one=True)
+    if user_exists:
+        return {"status": "taken", "message": f"❌ @{username} is already taken"}
+    else:
+        return {"status": "available", "message": f"✨ @{username} is available!"}
+
+
+# ==========================================================================
+# 👑 UPDATED LOGIN ROUTE METHOD (ISOLATES DELIVERY CRASH LABELS)
+# ==========================================================================
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    """Handles cross-device multi-role logins safely."""
+    """Handles cross-device multi-role logins safely with isolated error tracking tags."""
     if request.method == "POST":
         is_delivery_login = bool(request.form.get("delivery_login_user") is not None)
         username = request.form.get("login_user") if not is_delivery_login else request.form.get("delivery_login_user")
         password = request.form.get("login_pass") if not is_delivery_login else request.form.get("delivery_login_pass")
+        
         user = query_db("SELECT * FROM users WHERE username = ?", (username,), one=True)
         
         if user and check_password_hash(user["password_hash"], password):
@@ -3469,9 +3496,14 @@ def login():
             else:
                 return redirect(url_for("home"))
         else:
-            return render_template("login.html", login_error="Invalid username or password.")
+            # 🚨 FIX: Diverts credential log mistakes into the specific screen dashboard nodes
+            if is_delivery_login:
+                return render_template("login.html", delivery_login_error="Wrong username or password.")
+            else:
+                return render_template("login.html", login_error="Wrong username or password.")
             
     return render_template("login.html")
+
 
       
 
