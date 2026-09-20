@@ -1388,9 +1388,17 @@ def home():
         if promo.get("discount"):
             promo["discount_percent"] = float(promo["discount"])
 
-    # ==========================================================================
-    # 🔔 4. COUNTER UNREAD ALERTS FOR THE BELL SHAKE SYSTEM
-    # ==========================================================================
+    # 👑 FIX 1: EXTRACT THE SELLER'S SPECIFIC CURRENT LIVE STOCK LISTINGS
+    your_marketplace_products = []
+    if current_username:
+        your_marketplace_products = query_db("""
+            SELECT p.*, (SELECT id FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS active_promo_id
+            FROM products p WHERE p.seller = ? ORDER BY p.id DESC
+        """, (current_username,)) or []
+        for product in your_marketplace_products:
+            product["promo_original_price"] = float(product["price"])
+
+    # 🔔 COUNTER UNREAD ALERTS FOR THE BELL SHAKE SYSTEM
     customer_notification_count = 0
     unread_notifications_count = 0
     if current_username:
@@ -1403,9 +1411,6 @@ def home():
             customer_notification_count = notif_row["count"]
             unread_notifications_count = notif_row["count"]
 
-    # ==========================================================================
-    # 🖼️ 5. ASSET MAPS AND BASKET EXTRACTION
-    # ==========================================================================
     vendor_logos = {}
     logo_rows = query_db("SELECT username, company_logo FROM users WHERE company_logo IS NOT NULL") or []
     for row in logo_rows:
@@ -1433,14 +1438,10 @@ def home():
                     "cart_line_total": line_total
                 })
 
-    # Prepare vendor dashboard parameters safely
-    vendor_user_record = query_db("SELECT * FROM users WHERE username = ?", (current_username,), one=True) if current_username else None
-    vendor_subscription = subscription_status(vendor_user_record)
+    # Prepare vendor dashboard parameters
+    vendor_subscription = subscription_status(query_db("SELECT * FROM users WHERE username = ?", (current_username,), one=True) if current_username else None)
     seller_orders = []
 
-    # ==========================================================================
-    # 🎨 6. RENDERING CONTEXT VARIABLES
-    # ==========================================================================
     return render_template("index.html", 
                            processed_items=processed_items,
                            marketplace_promos=marketplace_promos,
@@ -1455,6 +1456,8 @@ def home():
                            vendor_subscription=vendor_subscription,
                            customer_notification_count=customer_notification_count,
                            unread_notifications_count=unread_notifications_count,
+                           your_marketplace_products=your_marketplace_products, # 🌟 PASSED SAFELY
+                           products=your_marketplace_products,                 # 🌟 PASSED SAFELY
                            company_search=company_search,
                            listing_error=listing_error,
                            welcome_message=welcome_message,
