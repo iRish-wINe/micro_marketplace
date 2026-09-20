@@ -1099,7 +1099,6 @@ def run_restaurant_schema_migration():
 run_restaurant_schema_migration()
 
 
-
 @app.route("/publish-product", methods=["POST"])
 def publish_product():
     """👑 BIZHUB DEDICATED ISOLATED PRODUCT CREATION SYSTEM: Fully supports Fast Food smart categories."""
@@ -1123,12 +1122,12 @@ def publish_product():
     title = request.form.get("meal_name" if is_fast_food else "title")
     description = request.form.get("meal_description" if is_fast_food else "description")
     
-    # 🍟 NEW FIXED DATA INTAKES TO MATCH FRONTEND LOG HISTORY BOUNDRIES EXACTLY
+    # 🍟 FIXED INTAKES: Matches the form inputs 'menu_type' and 'accompaniments' perfectly
     menu_type = request.form.get("menu_type", "Main Dishes").strip() if is_fast_food else "General"
-    served_with = request.form.get("served_with", "").strip() if is_fast_food else None
+    accompaniments = request.form.get("accompaniments", "").strip() if is_fast_food else None
     
     category = "Fast Food" if is_fast_food else (request.form.get("category", "Other").strip() or "Other")
-    stock_quantity = request.form.get("stock_quantity", "1")
+    stock_quantity = 999999 if is_fast_food else int(request.form.get("stock_quantity", "1") or 1)
     location = request.form.get("location", "").strip() or vendor.get("business_location") or "Accra"
     
     file = request.files.get("product_image")
@@ -1137,9 +1136,8 @@ def publish_product():
     has_image = bool(file and file.filename)
     has_video = bool(video and video.filename)
     
-    # 🎬 RESTORED RIGID MEDIA VALIDATION GATEWAY RULE (Image OR Video ONLY)
     if not is_fast_food and has_image == has_video:
-        return redirect(url_for("vendor_profile", username=session["username"], listing_error="Choose exactly one media option: Image Cover OR Showcase Video."))
+        return redirect(url_for("vendor_profile", username=session["username"], listing_error="Choose exactly one media option: Image OR Showcase Video."))
 
     filename = ""
     if has_image:
@@ -1161,19 +1159,25 @@ def publish_product():
         video_filename = f"video-{uuid.uuid4().hex}{ext}"
         video.save(os.path.join(app.config["UPLOAD_FOLDER"], video_filename))
 
-    # Permanent inventory limit configuration for kitchens
-    stock_quantity = 999999 if is_fast_food else int(stock_quantity or 1)
-
     if title and price and description:
         b_label = vendor.get("company_name") or vendor.get("username") or "Individual Vendor"
+        
+        # 👑 UNBREAKABLE DATABANK SCHEMA MAPPING: Includes menu_type and accompaniments securely
         query_db(
-            "INSERT INTO products (title, price, description, image_file, video_file, stock_quantity, initial_stock_quantity, sold_quantity, status, seller, seller_email, seller_whatsapp, location, business_label, category, menu_type, served_with) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ?)",
-            (title, float(price), description, filename, video_filename, stock_quantity, stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"), location, b_label, category, menu_type, served_with)
+            """INSERT INTO products (
+                title, price, description, image_file, video_file, stock_quantity, 
+                initial_stock_quantity, sold_quantity, status, seller, seller_email, 
+                seller_whatsapp, location, business_label, category, menu_type, served_with
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (title, float(price), description, filename, video_filename, stock_quantity, 
+             stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"), 
+             location, b_label, category, menu_type, accompaniments)
         )
         
         notify_favorite_customers(vendor["id"], "product", f"{b_label} added a new item", title, url_for("vendor_profile", username=vendor["username"]))
         
     return redirect(url_for("vendor_profile", username=vendor["username"]))
+
 
     
    
@@ -1389,58 +1393,15 @@ def home():
             promo["discount_percent"] = float(promo["discount"])
 
     # 👑 FIX 1: EXTRACT THE SELLER'S SPECIFIC CURRENT LIVE STOCK LISTINGS
+     # Find active products specifically uploaded by the current vendor account
     your_marketplace_products = []
     if current_username:
-        your_marketplace_products = query_db("""
-            SELECT p.*, (SELECT id FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS active_promo_id
-            FROM products p WHERE p.seller = ? ORDER BY p.id DESC
-        """, (current_username,)) or []
+        your_marketplace_products = query_db(
+            "SELECT * FROM products WHERE seller = ? ORDER BY id DESC", 
+            (current_username,)
+        ) or []
         for product in your_marketplace_products:
             product["promo_original_price"] = float(product["price"])
-
-    # 🔔 COUNTER UNREAD ALERTS FOR THE BELL SHAKE SYSTEM
-    customer_notification_count = 0
-    unread_notifications_count = 0
-    if current_username:
-        notif_row = query_db("""
-            SELECT COUNT(*) AS count FROM notifications 
-            WHERE recipient_id = (SELECT id FROM users WHERE username = ?) 
-              AND is_read = 0
-        """, (current_username,), one=True)
-        if notif_row:
-            customer_notification_count = notif_row["count"]
-            unread_notifications_count = notif_row["count"]
-
-    vendor_logos = {}
-    logo_rows = query_db("SELECT username, company_logo FROM users WHERE company_logo IS NOT NULL") or []
-    for row in logo_rows:
-        vendor_logos[row["username"]] = row["company_logo"]
-
-    cart_session = session.get("cart", {})
-    cart_items = []
-    cart_total = 0.0
-    if isinstance(cart_session, dict):
-        for p_id, qty in cart_session.items():
-            item_data = query_db("SELECT * FROM products WHERE id = ?", (p_id,), one=True)
-            if item_data:
-                price_val = float(item_data["price"])
-                promo_check = query_db("SELECT promo_price FROM promotions WHERE product_id = ? AND active = 1", (p_id,), one=True)
-                if promo_check: price_val = float(promo_check["promo_price"])
-                
-                line_total = price_val * int(qty)
-                cart_total += line_total
-                cart_items.append({
-                    "id": item_data["id"],
-                    "title": item_data["title"],
-                    "cart_quantity": qty,
-                    "stock_quantity": item_data["stock_quantity"],
-                    "cart_unit_price": price_val,
-                    "cart_line_total": line_total
-                })
-
-    # Prepare vendor dashboard parameters
-    vendor_subscription = subscription_status(query_db("SELECT * FROM users WHERE username = ?", (current_username,), one=True) if current_username else None)
-    seller_orders = []
 
     return render_template("index.html", 
                            processed_items=processed_items,
@@ -1455,13 +1416,13 @@ def home():
                            seller_orders=seller_orders,
                            vendor_subscription=vendor_subscription,
                            customer_notification_count=customer_notification_count,
-                           unread_notifications_count=unread_notifications_count,
-                           your_marketplace_products=your_marketplace_products, # 🌟 PASSED SAFELY
-                           products=your_marketplace_products,                 # 🌟 PASSED SAFELY
                            company_search=company_search,
                            listing_error=listing_error,
                            welcome_message=welcome_message,
-                           kitchen=None)
+                           kitchen=kitchen if 'kitchen' in locals() else None,
+                           your_marketplace_products=your_marketplace_products, # 🌟 ADDED FOR WINDOW INDEX PANELS
+                           products=your_marketplace_products)                 # 🌟 ADDED FOR WINDOW INDEX PANELS
+
 
 
 

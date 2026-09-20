@@ -241,15 +241,22 @@
                 <input type="text" id="accompanimentsInput" name="accompaniments" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color);" placeholder="Selected accompaniments appear here...">
             </div>
 
-            <div>
-                <label style="font-size:12px; font-weight:700;">Menu Category:</label>
-                <select name="menu_type" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); background:white;">
-                    <option value="Main Dishes">🍛 Main Dishes</option>
-                    <option value="Sides">🍟 Sides & Appetizers</option>
-                    <option value="Drinks">🥤 Beverages & Drinks</option>
-                    <option value="Desserts">🍰 Desserts & Sweets</option>
-                </select>
-            </div>
+           <div>
+    <label style="font-size:12px; font-weight:700;">Menu Category:</label>
+    <select name="menu_type" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); background:white;">
+        <option value="Main Dishes">🍛 Main Dishes</option>
+        <option value="Sides">🍟 Sides & Appetizers</option>
+        <option value="Drinks">🥤 Beverages & Drinks</option>
+        <option value="Desserts">🍰 Desserts & Sweets</option>
+    </select>
+</div>
+
+<!-- 🚨 FIELD NAME ALIGNMENT FIX: Changed name="description" to name="meal_description" or name="description" to fit backend blocks -->
+<div>
+    <label style="font-size:12px; font-weight:700;">Description:</label>
+    <textarea name="{% if vendor.role == 'Fast Food' %}meal_description{% else %}description{% endif %}" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); font-family:inherit;" placeholder="Provide dish ingredients or product details..." required></textarea>
+</div>
+
             {% endif %}
 
             <div>
@@ -265,18 +272,23 @@
 </div>
 
 <!-- 📸 IMAGE COVER UNIT WITH RESTORED CANCEL TRIGGER -->
-<div style="margin-bottom: 15px;">
-    <label style="display: block; font-weight: bold; margin-bottom: 5px;">📸 Cover Image File:</label>
-    <input type="file" id="product_image_input" name="product_image" accept="image/*">
-    <button type="button" onclick="document.getElementById('product_image_input').value = ''" style="background: none; border: none; color: #ff4a4a; cursor: pointer; font-size: 12px; margin-left: 5px;">✕ Cancel</button>
-</div>
+ <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📸 Cover Image File:</label>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="file" id="bizhubProductImageInput" accept="image/*" onchange="handleMediaSelectionToggle('image')">
+                        <button type="button" id="clearImageBtn" class="btn-cancel" style="display: none;" onclick="resetSelectedMediaField('image')">✕ Cancel</button>
+                    </div>
+                </div>
+
+
 
 <!-- 🎬 VIDEO UNIT WITH RESTORED CANCEL TRIGGER -->
-<div style="margin-bottom: 15px;">
-    <label style="display: block; font-weight: bold; margin-bottom: 5px;">🎬 Video Ad (Max 20s):</label>
-    <input type="file" id="product_video_input" name="product_video" accept="video/*">
-    <button type="button" onclick="document.getElementById('product_video_input').value = ''" style="background: none; border: none; color: #ff4a4a; cursor: pointer; font-size: 12px; margin-left: 5px;">✕ Cancel</button>
-</div>
+ <div>
+                    <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">🎬 Video Ad (Max 20s):</label>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="file" id="bizhubProductVideoInput" accept="video/*" onchange="handleMediaSelectionToggle('video')">
+                        <button type="button" id="clearVideoBtn" class="btn-cancel" style="display: none;" onclick="resetSelectedMediaField('video')">✕ Cancel</button>
+                    </div>
+
 
                 </div>
             </div>
@@ -338,14 +350,15 @@
     </section>
 
 <!-- 🍟 FIX 3: ADD EMOJIS TO THE KEYS SO JINJA MATCHES THE DATABASE VALUE PERFECTLY -->
+<!-- 🍟 HISTORY MATRIX LAYER: Removed emoji prefixes from keys to match the database values -->
 {% if is_owner and vendor.role == 'Fast Food' %}
     <h3>📋 Store Listing History Log</h3>
     
     {% set sections = [
-        ('🍛 Main Dishes', 'Main Dishes'),
-        ('🍟 Sides & Appetizers', 'Sides & Appetizers'),
-        ('🥤 Beverages & Drinks', 'Beverages & Drinks'),
-        ('🍰 Desserts & Sweets', 'Desserts & Sweets')
+        ('Main Dishes', 'Main Dishes'),
+        ('Sides', 'Sides & Appetizers'),
+        ('Drinks', 'Beverages & Drinks'),
+        ('Desserts', 'Desserts & Sweets')
     ] %}
     
     {% for section_key, section_label in sections %}
@@ -359,15 +372,16 @@
                     <strong>{{ product.title }}</strong> — <span style="color: #4ad66d;">GH₵ {{ "%.2f"|format(product.price) }}</span>
                     {% if product.served_with %}<br><span style="font-size: 13px; color: #aaa;">🥗 Side: {{ product.served_with }}</span>{% endif %}
                 </div>
-                <form action="{{ url_for('delete_item', product_id=product.id) }}" methods="GET" style="margin: 0;">
-                    <button type="submit" style="background: none; border: none; color: #ff4a4a; cursor: pointer; font-size: 13px;">🗑 Delete Log Entry</button>
-                </form>
+                <a href="{{ url_for('delete_item', product_id=product.id) }}" style="color: #ff4a4a; text-decoration: none; font-size: 13px;">🗑 Delete Log Entry</a>
             </div>
         {% else %}
             <p style="color: #777; font-size: 13px; font-style: italic;">No listing records found for {{ section_label }}.</p>
         {% endfor %}
     {% endfor %}
 {% endif %}
+
+
+ 
 
 
 </main>

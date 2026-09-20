@@ -834,7 +834,8 @@ html, body {
     
     <div class="container">
             <!-- 👑 BIZHUB PREMIUM LIVE PREDICTIVE AUTOCOMPLETE HINTS SEARCH SYSTEM -->
-            <form method="GET" action="/" style="margin: 0; padding: 0; width: 100%; display: flex; align-items: center; position: relative;">
+            <form method="POST" action="/" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                
                 <!-- 🔮 LIVE DYNAMIC FLOATING POPUP HINTS OVERLAY DRAWER -->
                 <div id="searchSuggestionsDropdown" style="position: absolute; top: 100%; left: 0; right: 0; background: #FFFFFF; border: 1px solid #D5D9D9; border-radius: 8px; margin-top: 5px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); display: none; z-index: 99999; max-height: 320px; overflow-y: auto; box-sizing: border-box;"></div>
