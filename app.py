@@ -1205,10 +1205,11 @@ def home():
 
         price = request.form.get("price")
         is_fast_food = bool(vendor and vendor.get("role") == "Fast Food")
-        
         title = request.form.get("meal_name" if is_fast_food else "title")
         description = request.form.get("meal_description" if is_fast_food else "description")
-        category = "Fast Food" if is_fast_food else (request.form.get("category", "Other").strip() or "Other")
+        menu_type = request.form.get("menu_type", "Main Dishes").strip() if is_fast_food else "General"
+        accompaniments = request.form.get("accompaniments", "").strip() if is_fast_food else None
+        category = "Fast Food" if is_fast_food else (request.form.get("category", "Other").strip() or "Other")  
         stock_quantity = request.form.get("stock_quantity", "1")
         location = request.form.get("location", "").strip() or vendor.get("business_location") or "Accra"
         
@@ -1248,11 +1249,15 @@ def home():
 
         if title and price and description:
             b_label = vendor.get("company_name") or vendor.get("username") or "Individual Vendor"
-            query_db(
-                "INSERT INTO products (title, price, description, image_file, video_file, stock_quantity, initial_stock_quantity, sold_quantity, status, seller, seller_email, seller_whatsapp, location, business_label, category) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?)",
-                (title, float(price), description, filename, video_filename, stock_quantity, stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"), location, b_label, category)
+        query_db(
+                """INSERT INTO products (
+                    title, price, description, image_file, video_file, stock_quantity, 
+                    initial_stock_quantity, sold_quantity, status, seller, seller_email, 
+                    seller_whatsapp, location, business_label, category, menu_type, served_with
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (title, float(price), description, filename, video_filename, stock_quantity, stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"), location, b_label, category, menu_type, accompaniments)
             )
-            return redirect(url_for("vendor_profile", username=vendor["username"], published="fastfood" if is_fast_food else "item"))
+        return redirect(url_for("vendor_profile", username=vendor["username"], published="fastfood" if is_fast_food else "item"))
 
     # ==========================================================================
     # 👑 2. CHRONOLOGICAL TIERED SORTING ENGINE (GET CHANNELS)

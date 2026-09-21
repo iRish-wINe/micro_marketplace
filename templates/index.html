@@ -1089,7 +1089,7 @@ html, body {
 
                                 {% if product.video_file %}
                                     <video class="card-img" controls autoplay muted playsinline loop preload="metadata"><source src="{{ url_for('stream_video', filename=product.video_file) }}">Your browser does not support video playback.</video>
-                                {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' %}
+                                                                {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' and product.image_file %}
                                     <a href="{{ url_for('static', filename='uploads/' + product.image_file) }}" target="_blank" rel="noopener noreferrer" style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;text-decoration:none;"><img class="card-img" src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}"></a>
                                 {% else %}
                                     <div style="color:#9CA3AF;font-size:12px;padding:20px;text-align:center;">Media unavailable</div>

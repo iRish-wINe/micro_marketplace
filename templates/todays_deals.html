@@ -145,29 +145,62 @@ body{margin:0;background:#f3f4f6;color:#111827;font-family:Arial,Helvetica,sans-
     </button>
   </div>
 
-  <!-- Modal Script & Container if not present -->
-  <div id="promoVideoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center;">
-    <div style="position:relative; width:90%; max-width:500px; background:#111; padding:15px; border-radius:12px;">
-      <button onclick="closePromoVideoModal()" style="position:absolute; top:-12px; right:-12px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:30px; height:30px; font-weight:bold; cursor:pointer;">✕</button>
-      <video id="promoModalVideoPlayer" controls style="width:100%; border-radius:8px;" autoplay>
-        <source id="promoModalVideoSource" src="" type="video/mp4">
-      </video>
-    </div>
-  </div>
+<!-- Full Screen Video Modal -->
+<div id="promoVideoModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; height:100dvh; background:rgba(0,0,0,0.95); z-index:99999; flex-direction:column; justify-content:center; align-items:center;">
+  
+  <!-- Exit / Cancel Play Button -->
+  <button type="button" onclick="closePromoVideoModal()" aria-label="Close Video" 
+          style="position:absolute; top:20px; right:20px; z-index:100000; background:rgba(239, 68, 68, 0.9); color:#ffffff; border:none; border-radius:50%; width:44px; height:44px; font-size:20px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.5); -webkit-tap-highlight-color:transparent;">
+    ✕
+  </button>
 
-  <script>
-    function openPromoVideoModal(videoUrl) {
-      document.getElementById('promoModalVideoSource').src = videoUrl;
-      const player = document.getElementById('promoModalVideoPlayer');
-      player.load();
-      document.getElementById('promoVideoModal').style.display = 'flex';
+  <!-- Video Wrapper (Adapts to Screen & Video Dimensions) -->
+  <div style="width:100%; height:100%; display:flex; justify-content:center; align-items:center; padding:10px; box-sizing:border-box;">
+    <video id="promoModalVideoPlayer" controls playsinline autoplay preload="auto" 
+           style="max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; border-radius:8px; outline:none;">
+      <source id="promoModalVideoSource" src="" type="video/mp4">
+      Your browser does not support playing video.
+    </video>
+  </div>
+</div>
+<script>
+  function openPromoVideoModal(videoUrl) {
+    const player = document.getElementById('promoModalVideoPlayer');
+    const source = document.getElementById('promoModalVideoSource');
+    const modal = document.getElementById('promoVideoModal');
+
+    source.src = videoUrl;
+    player.load();
+    modal.style.display = 'flex';
+
+    // Prevent background scrolling while watching
+    document.body.style.overflow = 'hidden';
+
+    // Attempt autoplay with audio fallback handling
+    const playPromise = player.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(error => {
+        // Fallback if browser blocks un-muted autoplay
+        player.muted = true;
+        player.play();
+      });
     }
-    function closePromoVideoModal() {
-      const player = document.getElementById('promoModalVideoPlayer');
-      player.pause();
-      document.getElementById('promoVideoModal').style.display = 'none';
-    }
-  </script>
+  }
+
+  function closePromoVideoModal() {
+    const player = document.getElementById('promoModalVideoPlayer');
+    const modal = document.getElementById('promoVideoModal');
+
+    player.pause();
+    player.currentTime = 0;
+    document.getElementById('promoModalVideoSource').src = '';
+    modal.style.display = 'none';
+
+    // Restore page scrolling
+    document.body.style.overflow = '';
+  }
+</script>
+
 {% endif %}
 
                      <div class="deal-actions-wrapper" style="margin-top: 15px;">
