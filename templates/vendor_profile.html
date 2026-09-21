@@ -260,7 +260,7 @@
   {% endif %}
 {% endif %}
 
-    <!-- 🚀 PUBLISH PRODUCT CONSOLE -->
+        <!-- 🚀 PUBLISH PRODUCT CONSOLE - FIXED -->
     {% if is_owner %}
     <section class="card" style="max-width: 680px;">
         <h3 style="margin-top:0; font-size:18px;">🚀 {% if vendor.role == 'Fast Food' %}Add New Menu Item{% else %}Publish Product Listing{% endif %}</h3>
@@ -278,7 +278,7 @@
             </div>
 
             {% if vendor.role == 'Fast Food' %}
-            <!-- RESTORED: CLICKABLE ACCOMPANIMENT WITH PLACEHOLDER -->
+            <!-- Fast Food Only Fields -->
             <div>
                 <label style="font-size:12px; font-weight:700;">Accompaniments / Sides (Click to quick-add):</label>
                 <div style="margin-bottom: 6px;">
@@ -291,59 +291,71 @@
                 <input type="text" id="accompanimentsInput" name="accompaniments" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color);" placeholder="Selected accompaniments appear here...">
             </div>
 
-           <div>
-    <label style="font-size:12px; font-weight:700;">Menu Category:</label>
-    <select name="menu_type" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); background:white;">
-        <option value="Main Dishes">🍛 Main Dishes</option>
-        <option value="Sides">🍟 Sides & Appetizers</option>
-        <option value="Drinks">🥤 Beverages & Drinks</option>
-        <option value="Desserts">🍰 Desserts & Sweets</option>
-    </select>
-</div>
-
-<!-- 🚨 FIELD NAME ALIGNMENT FIX: Changed name="description" to name="meal_description" or name="description" to fit backend blocks -->
-<div>
-    <label style="font-size:12px; font-weight:700;">Description:</label>
-    <textarea name="{% if vendor.role == 'Fast Food' %}meal_description{% else %}description{% endif %}" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); font-family:inherit;" placeholder="Provide dish ingredients or product details..." required></textarea>
-</div>
-
-            {% endif %}
+            <div>
+                <label style="font-size:12px; font-weight:700;">Menu Category:</label>
+                <select name="menu_type" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); background:white;">
+                    <option value="Main Dishes">🍛 Main Dishes</option>
+                    <option value="Sides">🍟 Sides & Appetizers</option>
+                    <option value="Drinks">🥤 Beverages & Drinks</option>
+                    <option value="Desserts">🍰 Desserts & Sweets</option>
+                </select>
+            </div>
 
             <div>
                 <label style="font-size:12px; font-weight:700;">Description:</label>
-                <textarea name="description" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); font-family:inherit;" placeholder="Provide dish ingredients or product details..." required></textarea>
+                <textarea name="meal_description" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); font-family:inherit;" placeholder="Provide dish ingredients or product details..." required></textarea>
             </div>
-
-<!-- 🎬 PROPER PRESENTATION ORDER: EXPLICIT MEDIA RULES PLACED BEFORE THE COVER PICKERS -->
-<div style="background-color: #222; border-left: 4px solid #ffb703; padding: 12px; margin-bottom: 15px; border-radius: 4px;">
-    <p style="font-size: 13px; color: #ddd; margin: 0; line-height: 1.5;">
-        <strong>⚠️ Media Presentation Rule:</strong> Standard physical product listings must provide <em>exactly one</em> media asset option. You can upload either a high-resolution Image Cover or a 20-second Showcase Video commercial loop. Selecting both at the same time is not permitted.
-    </p>
-</div>
-
-<!-- 📸 IMAGE COVER UNIT WITH RESTORED CANCEL TRIGGER -->
- <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📸 Cover Image File:</label>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <input type="file" id="bizhubProductImageInput" accept="image/*" onchange="handleMediaSelectionToggle('image')">
-                        <button type="button" id="clearImageBtn" class="btn-cancel" style="display: none;" onclick="resetSelectedMediaField('image')">✕ Cancel</button>
-                    </div>
+            {% else %}
+            <!-- General Vendor Only Fields -->
+            <div>
+                <label style="font-size:12px; font-weight:700;">Category:</label>
+                <select name="category" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); background:white;">
+                    {% for cat in product_categories %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div>
+                    <label style="font-size:12px; font-weight:700;">Stock Quantity:</label>
+                    <input type="number" name="stock_quantity" min="1" value="1" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color);">
                 </div>
-
-
-
-<!-- 🎬 VIDEO UNIT WITH RESTORED CANCEL TRIGGER -->
- <div>
-                    <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">🎬 Video Ad (Max 20s):</label>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <input type="file" id="bizhubProductVideoInput" accept="video/*" onchange="handleMediaSelectionToggle('video')">
-                        <button type="button" id="clearVideoBtn" class="btn-cancel" style="display: none;" onclick="resetSelectedMediaField('video')">✕ Cancel</button>
-                    </div>
-
-
+                <div>
+                    <label style="font-size:12px; font-weight:700;">Location:</label>
+                    <input type="text" name="location" value="{{ vendor.business_location or '' }}" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color);" placeholder="Accra">
                 </div>
             </div>
+            <div>
+                <label style="font-size:12px; font-weight:700;">Description:</label>
+                <textarea name="description" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); font-family:inherit;" placeholder="Product details..." required></textarea>
+            </div>
+            {% endif %}
 
-            <button type="submit" class="btn-action" style="background: var(--uber-green, #1d4ed8); color: white; padding: 12px; font-size: 14px;">🚀 Publish Listing</button>
+            <!-- Media Rules -->
+            <div style="background-color: #222; border-left: 4px solid #ffb703; padding: 12px; margin-bottom: 5px; border-radius: 4px;">
+                <p style="font-size: 13px; color: #ddd; margin: 0; line-height: 1.5;">
+                    <strong>⚠️ Media Rule:</strong> {% if vendor.role == 'Fast Food' %}Upload a meal image or video (at least one required).{% else %}Standard listings must provide <em>exactly one</em> media asset: Image OR Video, not both.{% endif %}
+                </p>
+            </div>
+
+            <!-- FIXED: Added name attributes so Flask receives files -->
+            <div>
+                <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📸 Cover Image File:</label>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <input type="file" id="bizhubProductImageInput" name="product_image" accept="image/*" onchange="handleMediaSelectionToggle('image')" style="flex:1;">
+                    <button type="button" id="clearImageBtn" class="btn-cancel" style="display: none;" onclick="resetSelectedMediaField('image')">✕ Cancel</button>
+                </div>
+            </div>
+
+            <div>
+                <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">🎬 Video Ad (Max 20s):</label>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <input type="file" id="bizhubProductVideoInput" name="product_video" accept="video/*" onchange="handleMediaSelectionToggle('video')" style="flex:1;">
+                    <button type="button" id="clearVideoBtn" class="btn-cancel" style="display: none;" onclick="resetSelectedMediaField('video')">✕ Cancel</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-action" style="background: var(--uber-green, #1d4ed8); color: white; padding: 12px; font-size: 14px; width:100%;">🚀 Publish Listing</button>
         </form>
     </section>
     {% endif %}
@@ -362,31 +374,29 @@
     <!-- PRODUCT CATALOG -->
     <section>
         <h2 style="font-size:20px; margin-bottom: 12px;">
-            📦 Available Menu Items ({{ product_count }} items)
+            {% if vendor.role == 'Fast Food' %}🍔 Available Menu Items{% else %}📦 Available Product Listings{% endif %} ({{ product_count }} items)
         </h2>
 
         <div class="grid">
             {% for product in products %}
                 <article class="product-card bizhub-menu-item-row" data-menu-section="{{ product.menu_type or 'Main Dishes' }}">
                     <div>
-                        <!-- 📸 MEDIA RENDERING: video first, then image, then placeholder -->
-                        <!-- STEP 1 FIX: DYNAMIC MEDIA DISPLAY FOR BOTH FAST FOOD & GENERAL VENDORS -->
-                        <!-- 📸 MEDIA RENDERING: video first, then image, then placeholder - FIXED -->
-<div class="card-media-container" style="position: relative; width: 100%; height: 220px; overflow: hidden; background: #000; border-radius: 8px;">
-  {% if product.video_file %}
-    <video controls preload="metadata" playsinline style="width: 100%; height: 100%; object-fit: cover;">
-      <source src="{{ url_for('stream_video', filename=product.video_file) }}" type="video/mp4">
-    </video>
-  {% elif product.image_file and product.image_file!= 'fast-food-placeholder.svg' and product.image_file %}
-    <img src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}" style="width: 100%; height: 100%; object-fit: cover;">
-  {% else %}
-    <div style="display:flex; align-items:center; justify-content:center; height:100%; background:#222; color:#fff; flex-direction:column;">
-      <span style="font-size:32px;">{% if vendor.role == 'Fast Food' %}🍔{% else %}🛍️{% endif %}</span>
-      <span style="font-size:12px;">{{ product.title }}</span>
-    </div>
-  {% endif %}
-</div>
-                        
+                        <!-- 📸 MEDIA RENDERING - FIXED -->
+                        <div class="card-media-container" style="position: relative; width: 100%; height: 220px; overflow: hidden; background: #000; border-radius: 8px;">
+                          {% if product.video_file %}
+                            <video controls preload="metadata" playsinline style="width: 100%; height: 100%; object-fit: cover;">
+                              <source src="{{ url_for('stream_video', filename=product.video_file) }}" type="video/mp4">
+                              Your browser does not support video playback.
+                            </video>
+                          {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' and product.image_file %}
+                            <img src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none';">
+                          {% else %}
+                            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #222; color: #fff; flex-direction:column; gap:8px;">
+                              <span style="font-size:32px;">{% if vendor.role == 'Fast Food' %}🍔{% else %}🛍️{% endif %}</span>
+                              <span style="font-size:12px; opacity:0.8;">{{ product.title }}</span>
+                            </div>
+                          {% endif %}
+                        </div>
 
                         <h3 style="font-size:16px; margin: 10px 0 4px;">{{ product.title }}</h3>
                         <div style="font-size: 15px; font-weight: 800; color: var(--uber-green, #1d4ed8);">GH₵ {{ "%.2f"|format(product.price) }}</div>
@@ -425,7 +435,7 @@
             <h3 style="margin:0 0 6px; font-size:18px; font-weight:900; color:#111;">Added to Cart!</h3>
             <p id="vpCartPopupItemName" style="margin:0 0 20px; color:#64748b; font-size:14px; font-weight:600;">Item added successfully.</p>
             <div style="display:flex; flex-direction:column; gap:10px;">
-                <a href="/cart" style="display:block; background:#0B192C; color:#fff; text-decoration:none; padding:12px; border-radius:8px; font-weight:800; font-size:14px; text-transform:uppercase; letter-spacing:0.3px;"> Go to Your Cart</a>
+                <a href="/cart" style="display:block; background:#0B192C; color:#fff; text-decoration:none; padding:12px; border-radius:8px; font-weight:800; font-size:14px; text-transform:uppercase; letter-spacing:0.3px;">🛍️ Go to Your Cart</a>
                 <button onclick="document.getElementById('vpCartPopupOverlay').style.display='none';" style="background:#F1F5F9; color:#334155; border:none; padding:12px; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer;">Continue Shopping</button>
             </div>
             <button onclick="document.getElementById('vpCartPopupOverlay').style.display='none';" style="position:absolute; top:12px; right:14px; background:none; border:none; font-size:20px; color:#94a3b8; cursor:pointer; line-height:1;">×</button>
@@ -496,33 +506,46 @@
 
 <!-- 🍟 FIX 3: ADD EMOJIS TO THE KEYS SO JINJA MATCHES THE DATABASE VALUE PERFECTLY -->
 <!-- 🍟 HISTORY MATRIX LAYER: Removed emoji prefixes from keys to match the database values -->
-{% if is_owner and vendor.role == 'Fast Food' %}
-    <h3>📋 Store Listing History Log</h3>
-    
+{% if is_owner %}
+  {% if vendor.role == 'Fast Food' %}
+    <h3>📋 Kitchen Menu History Log</h3>
     {% set sections = [
         ('Main Dishes', 'Main Dishes'),
         ('Sides', 'Sides & Appetizers'),
         ('Drinks', 'Beverages & Drinks'),
         ('Desserts', 'Desserts & Sweets')
     ] %}
-    
     {% for section_key, section_label in sections %}
         <h4 style="margin-top: 15px; color: #ffb703;">History Log: {{ section_label }}</h4>
-        
         {% set filtered_products = products | selectattr('menu_type', 'equalto', section_key) | list %}
-        
         {% for product in filtered_products %}
             <div style="border-bottom: 1px solid #333; padding: 10px 0; display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <strong>{{ product.title }}</strong> — <span style="color: #4ad66d;">GH₵ {{ "%.2f"|format(product.price) }}</span>
                     {% if product.served_with %}<br><span style="font-size: 13px; color: #aaa;">🥗 Side: {{ product.served_with }}</span>{% endif %}
                 </div>
-                <a href="{{ url_for('delete_item', product_id=product.id) }}" style="color: #ff4a4a; text-decoration: none; font-size: 13px;">🗑 Delete Log Entry</a>
+                <a href="{{ url_for('delete_item', product_id=product.id) }}" style="color: #ff4a4a; text-decoration: none; font-size: 13px;">🗑 Delete</a>
             </div>
         {% else %}
-            <p style="color: #777; font-size: 13px; font-style: italic;">No listing records found for {{ section_label }}.</p>
+            <p style="color: #777; font-size: 13px; font-style: italic;">No records for {{ section_label }}.</p>
         {% endfor %}
     {% endfor %}
+  {% else %}
+    <h3>📋 Store Listing History Log</h3>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+    {% for product in products %}
+        <div style="border: 1px solid #e5e7eb; background: #fff; padding: 10px 12px; border-radius:8px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>{{ product.title }}</strong> — <span style="color: #059669; font-weight:700;">GH₵ {{ "%.2f"|format(product.price) }}</span>
+                <span style="font-size:11px; color:#6b7280; margin-left:6px;">{{ product.category }} • Stock: {{ product.stock_quantity }}</span>
+            </div>
+            <a href="{{ url_for('delete_item', product_id=product.id) }}" style="color: #ef4444; text-decoration: none; font-size: 13px; font-weight:700;">🗑 Delete</a>
+        </div>
+    {% else %}
+        <p style="color: #777; font-size: 13px; font-style: italic;">No listings yet.</p>
+    {% endfor %}
+    </div>
+  {% endif %}
 {% endif %}
 
 
