@@ -12,6 +12,7 @@ import logging
 import hashlib
 import base64
 import smtplib
+import requests
 from email.message import EmailMessage
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
@@ -762,8 +763,7 @@ def dispatch_external_notifications(user, title, message, link=None):
     whatsapp_to = normalize_whatsapp_number(user.get("whatsapp_number"))
     if twilio_sid and twilio_token and twilio_from and whatsapp_to:
         try:
-            import re
-import htmlquests
+            import requests
             response = requests.post(f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Messages.json", data={"From": twilio_from, "To": f"whatsapp:+{whatsapp_to}", "Body": text}, auth=(twilio_sid, twilio_token), timeout=15)
             response.raise_for_status()
         except Exception:
@@ -942,7 +942,7 @@ def is_admin():
 def _bizhub_vapid_material():
     """Return stable VAPID keys derived from the existing BizHub app secret."""
     secret = app.secret_key
-    curve_order = int("FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551", 16)
+    curve_order = int("FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551""", 16)
     scalar = int.from_bytes(hashlib.sha256(("BizHub-VAPID:" + secret).encode("utf-8")).digest(), "big") % (curve_order - 1) + 1
     try:
         from cryptography.hazmat.primitives.asymmetric import ec
@@ -1168,14 +1168,13 @@ def publish_product():
         b_label = vendor.get("company_name") or vendor.get("username") or "Individual Vendor"
         
         # 👑 UNBREAKABLE DATABANK SCHEMA MAPPING: Includes menu_type and accompaniments securely
-        query_db(
-            """INSERT INTO products (
+        query_db("""INSERT INTO products (
                 title, price, description, image_file, video_file, stock_quantity, 
                 initial_stock_quantity, sold_quantity, status, seller, seller_email, 
                 seller_whatsapp, location, business_label, category, menu_type, served_with
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ?)""",
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ? )""",
             (title, float(price), description, filename, video_filename, stock_quantity, 
-             stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"), 
+             stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"""), 
              location, b_label, category, menu_type, accompaniments)
         )
         
@@ -1255,13 +1254,12 @@ def home():
 
         if title and price and description:
             b_label = vendor.get("company_name") or vendor.get("username") or "Individual Vendor"
-            query_db(
-                "INSERT INTO products (
+            query_db("""INSERT INTO products (
                     title, price, description, image_file, video_file, stock_quantity, 
                     initial_stock_quantity, sold_quantity, status, seller, seller_email, 
                     seller_whatsapp, location, business_label, category, menu_type, served_with
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ?)",
-                (title, float(price), description, filename, video_filename, stock_quantity, stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"), location, b_label, category, menu_type, accompaniments)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (title, float(price), description, filename, video_filename, stock_quantity, stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"""), location, b_label, category, menu_type, accompaniments)
             )
             return redirect(url_for("vendor_profile", username=vendor["username"], published="fastfood" if is_fast_food else "item"))
 
@@ -1315,7 +1313,7 @@ def home():
     # Build product query with optional item search filter
     if 'search_filter' in locals() and search_filter:
         sf = f"%{search_filter}%"
-        raw_products = query_db("""
+        raw_products = query_db("""""
             SELECT p.*, 
                    u.company_name AS business_label, u.business_location, u.role AS seller_role, u.subscription_expires_at, u.trial_started_at, u.plan,
                    (SELECT id FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS active_promo_id,
@@ -1326,9 +1324,9 @@ def home():
             WHERE p.status = 'Available' AND (p.category = 'Fast Food' OR p.stock_quantity > 0)
               AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
               AND (lower(p.title) LIKE ? OR lower(p.description) LIKE ? OR lower(p.category) LIKE ? OR lower(u.company_name) LIKE ? OR lower(u.username) LIKE ?)
-        """, (sf, sf, sf, sf, sf)) or []
+        """"", (sf, sf, sf, sf, sf)) or []
     else:
-        raw_products = query_db("""
+        raw_products = query_db("""""
             SELECT p.*, 
                    u.company_name AS business_label, u.business_location, u.role AS seller_role, u.subscription_expires_at, u.trial_started_at, u.plan,
                    (SELECT id FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS active_promo_id,
@@ -1338,7 +1336,7 @@ def home():
             JOIN users u ON p.seller = u.username
             WHERE p.status = 'Available' AND (p.category = 'Fast Food' OR p.stock_quantity > 0)
               AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
-        """) or []
+        """"") or []
     
     # Expiry auto-cleanup + Basic limit: Vendors get 2 months free premium from registration, after expiry only 3 listings visible
     from collections import defaultdict
@@ -1377,12 +1375,12 @@ def home():
             SELECT u.username FROM favorites f 
             JOIN users u ON f.vendor_id = u.id 
             WHERE f.customer_id = (SELECT id FROM users WHERE username = ?)
-        """, (current_username,)) or []
+        """"", (current_username,)) or []
         favorited_sellers = {row["username"] for row in fav_rows}
 
     processed_items = []
     for p in raw_products:
-        p["is_promo"] = bool(p.get("active_promo_id"))
+        p["is_promo"] = bool(p.get("active_promo_id"""))
         p["is_own"] = bool(current_username and p["seller"] == current_username)
         p["is_favorite"] = bool(p["seller"] in favorited_sellers)
         p["is_kitchen"] = bool(p.get("seller_role") == "Fast Food")
@@ -1438,7 +1436,7 @@ def home():
     quarter_start = datetime(now_dt.year, quarter_start_month, 1, tzinfo=timezone.utc).isoformat()
     
     # Top 20 brands by avg rating this quarter, fallback to all-time if not enough
-    top_20_brands = query_db("""
+    top_20_brands = query_db("""""
         SELECT u.id, u.username, u.company_name, u.company_logo, u.business_location, u.role, u.is_verified_brand, u.verified_brand_type,
                ROUND(AVG(r.rating), 1) AS avg_rating,
                COUNT(r.id) AS rating_count,
@@ -1452,11 +1450,11 @@ def home():
         HAVING COUNT(r.id) >= 1
         ORDER BY avg_rating DESC, rating_count DESC, u.id DESC
         LIMIT 20
-    """, (quarter_start,)) or []
+    """"", (quarter_start,)) or []
     
     # Fallback to all-time top 20 if quarterly has less than 5 brands
     if len(top_20_brands) < 5:
-        top_20_brands = query_db("""
+        top_20_brands = query_db("""""
             SELECT u.id, u.username, u.company_name, u.company_logo, u.business_location, u.role, u.is_verified_brand, u.verified_brand_type,
                    ROUND(AVG(r.rating), 1) AS avg_rating,
                    COUNT(r.id) AS rating_count,
@@ -1469,7 +1467,7 @@ def home():
             HAVING COUNT(r.id) >= 1
             ORDER BY avg_rating DESC, rating_count DESC, u.id DESC
             LIMIT 20
-        """) or []
+        """"") or []
     
     # If still empty (no reviews yet), fallback to most active vendors by product count
     if not top_20_brands:
@@ -1483,7 +1481,7 @@ def home():
               AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
             ORDER BY product_count DESC, u.id DESC
             LIMIT 20
-        """) or []
+        """"") or []
     
     for brand in top_20_brands:
         brand["business_label"] = brand.get("company_name") or brand.get("username") or "BizHub Brand"
@@ -1497,7 +1495,7 @@ def home():
                (SELECT COUNT(*) FROM products p WHERE p.seller = u.username AND p.category = 'Fast Food') AS menu_count
         FROM users u WHERE u.role = 'Fast Food' AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
         ORDER BY u.id DESC
-    """) or []
+    """"") or []
     for kitchen in fast_food_vendors:
         kitchen["business_label"] = kitchen.get("company_name") or kitchen.get("username")
 
@@ -1513,11 +1511,11 @@ def home():
         JOIN users u ON u.id = pr.vendor_id
         WHERE pr.active = 1 AND replace(pr.starts_at, 'T', ' ') <= ? AND replace(pr.ends_at, 'T', ' ') >= ?
           AND p.status = 'Available' AND COALESCE(p.stock_quantity, 0) > 0 AND u.role NOT IN ('Fast Food')
-    """, (now_clean, now_clean)) or []
+    """"", (now_clean, now_clean)) or []
     for promo in marketplace_promos:
         promo["is_owner"] = bool(current_username and promo["vendor_username"] == current_username)
         promo["is_favorite"] = bool(promo["vendor_username"] in favorited_sellers)
-        promo["original_price"] = float(promo.get("main_price") or promo.get("product_price") or 0)
+        promo["original_price"] = float(promo.get("main_price""") or promo.get("product_price") or 0)
         promo["effective_price"] = float(promo.get("promo_price") or promo["original_price"])
         if promo.get("discount"):
             promo["discount_percent"] = float(promo["discount"])
@@ -1528,10 +1526,10 @@ def home():
     customer_notification_count = 0
     unread_notifications_count = 0
     if current_username:
-        notif_row = query_db("""
+        notif_row = query_db("""""
             SELECT COUNT(*) AS count FROM notifications 
             WHERE recipient_id = (SELECT id FROM users WHERE username = ?) AND is_read = 0
-        """, (current_username,), one=True)
+        """"", (current_username,), one=True)
         if notif_row:
             customer_notification_count = notif_row["count"]
             unread_notifications_count = notif_row["count"]
@@ -1540,11 +1538,11 @@ def home():
     # 🖼️ 4. BUILD LOGO MAPS & PREPARE SHOPPING BASKET VARIABLES
     # ==========================================================================
     vendor_logos = {}
-    logo_rows = query_db("SELECT username, company_logo FROM users WHERE company_logo IS NOT NULL") or []
+    logo_rows = query_db("""SELECT username, company_logo FROM users WHERE company_logo IS NOT NULL""""") or []
     for row in logo_rows:
         vendor_logos[row["username"]] = row["company_logo"]
 
-    cart_session = session.get("cart", {})
+    cart_session = session.get("cart""", {})
     cart_items = []
     cart_total = 0.0
     if isinstance(cart_session, dict):
@@ -1658,7 +1656,7 @@ def promo_marketplace():
             favorite_rows = query_db("SELECT vendor_id FROM favorites WHERE customer_id = ?", (current_user["id"],)) or []
             favorite_vendor_ids = {int(row["vendor_id"]) for row in favorite_rows}
 
-    rows = query_db("""
+    rows = query_db("""""
         SELECT pr.*, p.id AS product_id, p.title AS product_title, p.price AS product_price,
                p.description AS product_description, p.image_file AS product_image, p.video_file AS product_video,
                p.stock_quantity, p.status AS product_status, p.location AS product_location,
@@ -1673,12 +1671,12 @@ def promo_marketplace():
           AND u.role IN ('Vendor', 'Fast Food')
           AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
         ORDER BY pr.id DESC
-    """, (now_iso, now_iso)) or []
+    """"", (now_iso, now_iso)) or []
 
     deals = []
     for row in rows:
         deal = dict(row)
-        deal["is_owner"] = bool(current_user and current_user["role"] in ("Vendor", "Fast Food") and current_user["id"] == row["vendor_user_id"])
+        deal["is_owner"] = bool(current_user and current_user["role"] in ("Vendor", "Fast Food""") and current_user["id"] == row["vendor_user_id"])
         deal["is_favorite"] = int(row["vendor_user_id"]) in favorite_vendor_ids
         deal["effective_price"] = promo_effective_price(deal, deal)
         deal["original_price"] = float(row["main_price"]) if row.get("main_price") is not None else float(row["product_price"])
@@ -2086,22 +2084,22 @@ def order_history():
     orders = []
     for order in raw_orders:
         if is_vendor:
-            items = query_db("""SELECT oi.*, p.image_file AS image, p.location, p.seller AS seller_username, u.company_name AS vendor_company
+            items = query_db("""""SELECT oi.*, p.image_file AS image, p.location, p.seller AS seller_username, u.company_name AS vendor_company
                                FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id
                                LEFT JOIN users u ON u.username = oi.seller
-                               WHERE oi.order_id = ? AND oi.seller = ?""", (order["id"], user["username"])) or []
+                               WHERE oi.order_id = ? AND oi.seller = ?""""", (order["id"], user["username"])) or []
             customer = query_db("SELECT username, whatsapp_number FROM users WHERE username = ?", (order["customer_username"],), one=True)
             total = sum(float(item["price"]) * int(item["quantity"]) for item in items)
-            location = next((item.get("location") for item in items if item.get("location")), None)
+            location = next((item.get("location""") for item in items if item.get("location")), None)
             order_view = dict(order)
             order_view.update({"items": [{"name": i["title"], "price": i["price"], "quantity": i["quantity"], "image": i.get("image"), "vendor_name": i.get("vendor_company") or i["seller"], "vendor_id": i["seller"]} for i in items], "total": total, "location": location, "customer_whatsapp": customer.get("whatsapp_number") if customer else None})
         else:
-            items = query_db("""SELECT oi.*, p.image_file AS image, p.location, u.id AS vendor_id, COALESCE(u.company_name, u.username) AS vendor_name
+            items = query_db("""""SELECT oi.*, p.image_file AS image, p.location, u.id AS vendor_id, COALESCE(u.company_name, u.username) AS vendor_name
                                FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id
                                LEFT JOIN users u ON u.username = oi.seller
-                               WHERE oi.order_id = ?""", (order["id"],)) or []
+                               WHERE oi.order_id = ?""""", (order["id"],)) or []
             order_view = dict(order)
-            order_view.update({"items": [{"name": i["title"], "price": i["price"], "quantity": i["quantity"], "image": i.get("image"), "vendor_name": i.get("vendor_name") or i["seller"], "vendor_id": i.get("vendor_id") or i["seller"]} for i in items], "location": next((i.get("location") for i in items if i.get("location")), None)})
+            order_view.update({"items": [{"name": i["title"], "price": i["price"], "quantity": i["quantity"], "image": i.get("image"""), "vendor_name": i.get("vendor_name") or i["seller"], "vendor_id": i.get("vendor_id") or i["seller"]} for i in items], "location": next((i.get("location") for i in items if i.get("location")), None)})
         orders.append(order_view)
 
     vendor_notification_count = 0
@@ -2342,17 +2340,17 @@ def fast_food_stores():
         current_user = query_db("SELECT id, username, role FROM users WHERE username = ?", (session["username"],), one=True)
     else:
         current_user = None
-    kitchens = query_db("""
+    kitchens = query_db("""""
         SELECT u.id, u.username, u.company_name, u.business_location, u.company_logo, u.whatsapp_number,
                (SELECT COUNT(*) FROM products p WHERE p.seller = u.username AND p.category = 'Fast Food') AS menu_count
         FROM users u
         WHERE u.role = 'Fast Food' AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
         ORDER BY u.id DESC
-    """) or []
+    """"") or []
     owner_username = current_user["username"] if current_user and current_user["role"] == "Fast Food" else None
     favorite_vendor_ids = set()
     if current_user and current_user.get("role") in FAVORITE_ACTOR_ROLES:
-        favorite_rows = query_db("SELECT vendor_id FROM favorites WHERE customer_id = ?", (current_user["id"],)) or []
+        favorite_rows = query_db("SELECT vendor_id FROM favorites WHERE customer_id = ?""", (current_user["id"],)) or []
         favorite_vendor_ids = {row["vendor_id"] for row in favorite_rows}
     favorite_added_message = session.pop("favorite_added_message", None)
     kitchens.sort(key=lambda k: (k.get("username") != owner_username, -int(k.get("id") or 0)))
@@ -2427,7 +2425,7 @@ def favorites():
     user = query_db("SELECT id, username, role FROM users WHERE username = ?", (session["username"],), one=True)
     vendors = []
     if user:
-        vendors = query_db("""
+        vendors = query_db("""""
             SELECT u.*,
                    (SELECT COUNT(*) FROM products p WHERE p.seller = u.username) AS product_count
             FROM favorites f
@@ -2435,12 +2433,12 @@ def favorites():
             WHERE f.customer_id = ? AND u.role IN ('Vendor', 'Fast Food')
               AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
             ORDER BY f.id DESC
-        """, (user["id"],)) or []
+        """"", (user["id"],)) or []
         now_iso = promotion_now_iso()
         for vendor in vendors:
             vendor["categories"] = get_vendor_categories(vendor["id"])
             vendor["promo"] = query_db("SELECT * FROM promotions WHERE vendor_id = ? AND active = 1 AND replace(starts_at, 'T', ' ') <= ? AND replace(ends_at, 'T', ' ') >= ? ORDER BY id DESC LIMIT 1", (vendor["id"], now_iso, now_iso), one=True)
-            vendor["business_label"] = vendor.get("company_name") or vendor.get("username")
+            vendor["business_label"] = vendor.get("company_name""") or vendor.get("username")
     return render_template("favorites.html", vendors=vendors, current_user=user)
 
 
@@ -2644,15 +2642,15 @@ def submit_review(vendor_id):
         # 🗓️ QUARTERLY AUTOMATED BRAND TRACKING SYSTEM FOR MERCHANT STORES
         current_month = datetime.now(timezone.utc).month
         if current_month in [3, 6, 9, 12] and rating == 5:
-            top_stores = query_db("""
+            top_stores = query_db("""""
                 SELECT u.id, COALESCE(u.company_name, u.username) as name, AVG(r.rating) as score FROM users u 
                 JOIN reviews r ON u.id = r.vendor_id GROUP BY u.id ORDER BY score DESC LIMIT 20
-            """) or []
+            """"") or []
             if any(s["id"] == vendor["id"] for s in top_stores):
                 award_title = "🏆 Elite Storefront Award: Quarterly Top 20 Stores Published!"
                 award_msg = f"🎉 Congratulations to *{vendor['company_name'] or vendor['username']}* for securing an elite position in BizHub's Top 20 Highly Rated Marketplace Stores this quarter!"
                 for u in query_db("SELECT id FROM users"):
-                    query_db("INSERT INTO notifications (recipient_id, notification_type, title, message, link, created_at) VALUES (?, 'announcement', ?, ?, ?, ?)", (u["id"], award_title, award_msg, url_for("all_stores"), datetime.now(timezone.utc).isoformat()))
+                    query_db("INSERT INTO notifications (recipient_id, notification_type, title, message, link, created_at) VALUES (?, 'announcement', ?, ?, ?, ?)""", (u["id"], award_title, award_msg, url_for("all_stores"), datetime.now(timezone.utc).isoformat()))
                     
     return redirect(url_for("vendor_profile", username=vendor["username"]))
 
@@ -2766,15 +2764,15 @@ def rate_delivery(request_id):
     # 🗓️ QUARTERLY AUTOMATED INSIGHTS GENERATION SYSTEM FOR COURIERS
     current_month = datetime.now(timezone.utc).month
     if current_month in [3, 6, 9, 12] and rating == 5: # Fired during quarter-ending milestone months
-        top_fleet = query_db("""
+        top_fleet = query_db("""""
             SELECT ds.user_id, ds.service_name, AVG(dr.rating) as score, COUNT(dr.id) as total_ratings FROM delivery_services ds 
             JOIN delivery_ratings dr ON ds.id = dr.service_id GROUP BY ds.id ORDER BY score DESC, total_ratings DESC LIMIT 20
-        """) or []
+        """"") or []
         if any(f["user_id"] == delivery_req["service_user_id"] for f in top_fleet):
             award_title = "🏆 Elite Fleet Award: Quarterly Top 20 Driver Leaderboard Updated!"
             award_msg = f"🎉 Let's congratulate '{delivery_req['service_name']}' for achieving Top 20 status in our Quarterly Performance Audit Review! Keep trading with high-density couriers."
             for u in query_db("SELECT id FROM users WHERE role IN ('Vendor', 'Fast Food', 'Delivery Service')"):
-                query_db("INSERT INTO notifications (recipient_id, notification_type, title, message, link, created_at) VALUES (?, 'announcement', ?, ?, ?, ?)", (u["id"], award_title, award_msg, url_for("delivery_services"), datetime.now(timezone.utc).isoformat()))
+                query_db("INSERT INTO notifications (recipient_id, notification_type, title, message, link, created_at) VALUES (?, 'announcement', ?, ?, ?, ?)""", (u["id"], award_title, award_msg, url_for("delivery_services"), datetime.now(timezone.utc).isoformat()))
                 
     return redirect(url_for("features", rating_logged="1"))
 
@@ -2892,12 +2890,12 @@ def promotions():
                         new_video.save(p_v_path)
                 
                 if not promo_error:
-                    query_db("INSERT INTO products (
+                    query_db("""INSERT INTO products (
                     title, price, description, image_file, video_file, stock_quantity, 
                     initial_stock_quantity, sold_quantity, status, seller, seller_email, 
                     seller_whatsapp, location, business_label, category, menu_type, served_with
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ?)",
-                              (new_title, new_price, new_description, product_image_filename, product_video_filename, new_stock, new_stock, vendor["username"], vendor.get("email"), vendor.get("whatsapp_number"), new_location, vendor.get("company_name") or vendor.get("username"), new_category))
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ?)""",
+                              (new_title, new_price, new_description, product_image_filename, product_video_filename, new_stock, new_stock, vendor["username"], vendor.get("email"""), vendor.get("whatsapp_number"), new_location, vendor.get("company_name") or vendor.get("username"), new_category))
                     linked_product = query_db("SELECT * FROM products WHERE seller = ? ORDER BY id DESC LIMIT 1", (vendor["username"],), one=True)
                     product_id = linked_product["id"] if linked_product else None
         else:
@@ -3026,14 +3024,14 @@ def delivery_dashboard():
     # Extract live incoming shipment dispatch tickets safely - includes vendor WhatsApp for direct chat
     requests_rows = []
     if service:
-        requests_rows = query_db("""
+        requests_rows = query_db("""""
             SELECT dr.*, u.username AS vendor_username, u.company_name AS vendor_company_name, u.whatsapp_number AS vendor_whatsapp, u.business_location AS vendor_location
             FROM delivery_requests dr 
             JOIN users u ON u.id = dr.vendor_id 
             WHERE dr.service_id = ? 
             ORDER BY CASE WHEN dr.status IN ('Requested', 'Accepted', 'Picked Up') THEN 0 ELSE 1 END, dr.id DESC 
             LIMIT 50
-        """, (service["id"],)) or []
+        """"", (service["id"],)) or []
         # Normalize whatsapp numbers for wa.me links
         for r in requests_rows:
             try:
@@ -3045,7 +3043,7 @@ def delivery_dashboard():
     return render_template("delivery_dashboard.html", user=user, service=service, requests=requests_rows, delivery_types=DELIVERY_TYPES, welcome_message=welcome_message)
 
 
-@app.route("/delivery/manage-accounts")
+@app.route("/delivery/manage-accounts""")
 def delivery_manage_accounts():
     if "username" not in session or session.get("role") != "Delivery Service":
         return redirect(url_for("login"))
@@ -3100,7 +3098,7 @@ def delivery_services():
     location_pattern = f"%{location}%"
     rows = query_db("SELECT ds.*, u.id AS user_id, u.username FROM delivery_services ds JOIN users u ON u.id = ds.user_id WHERE (? = '' OR ds.operating_location LIKE ? OR ds.service_area LIKE ?) AND (? = '' OR ds.service_name LIKE ? OR u.username LIKE ?) ORDER BY CASE WHEN ds.availability = 'Available' THEN 0 ELSE 1 END, ds.operating_location, ds.service_name", (location, location_pattern, location_pattern, company, search_pattern, search_pattern)) or []
     # Attach average rating and count to each service
-    rating_rows = query_db("SELECT service_id, ROUND(AVG(rating), 1) AS avg_rating, COUNT(*) AS rating_count FROM delivery_ratings GROUP BY service_id") or []
+    rating_rows = query_db("""SELECT service_id, ROUND(AVG(rating), 1) AS avg_rating, COUNT(*) AS rating_count FROM delivery_ratings GROUP BY service_id""""") or []
     ratings_map = {r["service_id"]: r for r in rating_rows}
     services = []
     for row in rows:
@@ -3277,7 +3275,7 @@ def admin_signup():
 def admin_dashboard():
     if not is_admin():
         return redirect(url_for("admin_login"))
-    users = query_db("SELECT * FROM users ORDER BY COALESCE(registered_at, '') DESC, username")
+    users = query_db("""SELECT * FROM users ORDER BY COALESCE(registered_at, '') DESC, username""""")
     listing_counts = {row["seller"]: row["count"] for row in query_db("SELECT seller, COUNT(*) AS count FROM products GROUP BY seller")}
     ledger_entries = query_db("SELECT * FROM financial_ledger ORDER BY id DESC") or []
     subscription_receipts = query_db("SELECT * FROM subscription_receipts ORDER BY id DESC") or []
@@ -3286,7 +3284,7 @@ def admin_dashboard():
     disputes = query_db("SELECT d.*, u.username AS reporter_username FROM disputes d JOIN users u ON u.id = d.reporter_id ORDER BY CASE WHEN d.status = 'Pending' THEN 0 ELSE 1 END, d.id DESC") or []
     admin_audit_logs = query_db("SELECT * FROM admin_audit_log ORDER BY id DESC LIMIT 100") or []
     
-    total_rev_row = query_db("SELECT SUM(amount) AS total FROM financial_ledger WHERE status = 'Verified'", one=True)
+    total_rev_row = query_db("SELECT SUM(amount) AS total FROM financial_ledger WHERE status = 'Verified'""", one=True)
     total_revenue = total_rev_row["total"] if total_rev_row and total_rev_row["total"] is not None else 0.0
     
     pending_momo_row = query_db("SELECT SUM(amount) AS total FROM financial_ledger WHERE status = 'Pending'", one=True)
@@ -3476,9 +3474,9 @@ def admin_dispatch_message():
             
     # CASE 3: Universal Marketplace Global Announcement Fallback
     else:
-        all_users = query_db("SELECT id FROM users") or []
+        all_users = query_db("""SELECT id FROM users""""") or []
         for u in all_users:
-            create_notification(u["id"], "announcement", title, message, url_for("notifications"))
+            create_notification(u["id"], "announcement""", title, message, url_for("notifications"))
             
     # Record to security audit trail
     query_db(
@@ -4012,7 +4010,7 @@ def api_search_suggestions():
         
     pattern = f"%{query}%"
     # Find matching company names, usernames, or neighborhood locations instantly
-    results = query_db("""
+    results = query_db("""""
         SELECT DISTINCT 
             COALESCE(company_name, username) AS label,
             username,
@@ -4023,7 +4021,7 @@ def api_search_suggestions():
           AND role IN ('Vendor', 'Fast Food')
           AND (lower(company_name) LIKE ? OR lower(username) = ? OR lower(business_location) LIKE ?)
         LIMIT 6
-    """, (pattern, query, pattern)) or []
+    """"", (pattern, query, pattern)) or []
     
     suggestions_list = []
     for r in results:
@@ -4037,4 +4035,4 @@ def api_search_suggestions():
     return {"suggestions": suggestions_list}
 
 if __name__ == "__main__":
-    app.run(debug=os.environ.get("FLASK_DEBUG", "0") == "1", host="0.0.0.0")
+    app.run(debug=os.environ.get("FLASK_DEBUG", "0""") == "1", host="0.0.0.0")
