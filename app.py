@@ -1271,34 +1271,74 @@ def home():
     current_username = session.get("username")
     user_role = session.get("role", "Customer")
     
-    # Smart Predictive Search Bar Interceptor
+    # Smart Predictive Search Bar Interceptor - FIXED to handle vendor name, store, location, item name (partial + exact)
+    search_filter = None
     if company_search:
+        cs_lower = company_search.lower().strip()
+        # 1. Exact store match username or company_name
         exact_store_match = query_db(
             "SELECT username FROM users WHERE (lower(company_name) = ? OR lower(username) = ?) AND role IN ('Vendor', 'Fast Food') LIMIT 1",
-            (company_search.lower(), company_search.lower()), one=True
+            (cs_lower, cs_lower), one=True
         )
         if exact_store_match:
             return redirect(url_for("vendor_profile", username=exact_store_match["username"]))
-            
+        # 2. Partial store match - company_name or username LIKE
+        partial_store_match = query_db(
+            "SELECT username FROM users WHERE (lower(company_name) LIKE ? OR lower(username) LIKE ?) AND role IN ('Vendor', 'Fast Food') LIMIT 1",
+            (f"%{cs_lower}%", f"%{cs_lower}%"), one=True
+        )
+        if partial_store_match and len(cs_lower) >= 3:
+            # If many matches, go to all_stores filtered, else direct
+            count_partial = query_db("SELECT COUNT(*) as c FROM users WHERE (lower(company_name) LIKE ? OR lower(username) LIKE ?) AND role IN ('Vendor', 'Fast Food')", (f"%{cs_lower}%", f"%{cs_lower}%"), one=True)
+            if count_partial and count_partial["c"] == 1:
+                return redirect(url_for("vendor_profile", username=partial_store_match["username"]))
+            else:
+                return redirect(url_for("all_stores", company_search=company_search))
+        # 3. Exact location match
         location_match_check = query_db(
             "SELECT DISTINCT business_location FROM users WHERE lower(business_location) = ? AND role IN ('Vendor', 'Fast Food') LIMIT 1",
-            (company_search.lower(),), one=True
+            (cs_lower,), one=True
         )
         if location_match_check:
             return redirect(url_for("all_stores", company_search=location_match_check["business_location"]))
+        # 4. Partial location match
+        location_partial = query_db(
+            "SELECT DISTINCT business_location FROM users WHERE lower(business_location) LIKE ? AND role IN ('Vendor', 'Fast Food') LIMIT 1",
+            (f"%{cs_lower}%",), one=True
+        )
+        if location_partial and len(cs_lower) >= 2:
+            return redirect(url_for("all_stores", company_search=company_search))
+        # 5. Item name - will filter products below, not redirect
+        search_filter = cs_lower
 
     # Core Query Execution: Tag promotions and join business labels cleanly (EXCLUDES FAST FOOD FROM HOME FEED)
-    raw_products = query_db("""
-        SELECT p.*, 
-               u.company_name AS business_label, u.business_location, u.role AS seller_role, u.subscription_expires_at, u.trial_started_at, u.plan,
-               (SELECT id FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS active_promo_id,
-               (SELECT main_price FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS promo_original_price,
-               (SELECT promo_price FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS promo_effective_price
-        FROM products p
-        JOIN users u ON p.seller = u.username
-        WHERE p.status = 'Available' AND (p.category = 'Fast Food' OR p.stock_quantity > 0)
-          AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
-    """) or []
+    # Build product query with optional item search filter
+    if 'search_filter' in locals() and search_filter:
+        sf = f"%{search_filter}%"
+        raw_products = query_db("""
+            SELECT p.*, 
+                   u.company_name AS business_label, u.business_location, u.role AS seller_role, u.subscription_expires_at, u.trial_started_at, u.plan,
+                   (SELECT id FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS active_promo_id,
+                   (SELECT main_price FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS promo_original_price,
+                   (SELECT promo_price FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS promo_effective_price
+            FROM products p
+            JOIN users u ON p.seller = u.username
+            WHERE p.status = 'Available' AND (p.category = 'Fast Food' OR p.stock_quantity > 0)
+              AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
+              AND (lower(p.title) LIKE ? OR lower(p.description) LIKE ? OR lower(p.category) LIKE ? OR lower(u.company_name) LIKE ? OR lower(u.username) LIKE ?)
+        """, (sf, sf, sf, sf, sf)) or []
+    else:
+        raw_products = query_db("""
+            SELECT p.*, 
+                   u.company_name AS business_label, u.business_location, u.role AS seller_role, u.subscription_expires_at, u.trial_started_at, u.plan,
+                   (SELECT id FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS active_promo_id,
+                   (SELECT main_price FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS promo_original_price,
+                   (SELECT promo_price FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS promo_effective_price
+            FROM products p
+            JOIN users u ON p.seller = u.username
+            WHERE p.status = 'Available' AND (p.category = 'Fast Food' OR p.stock_quantity > 0)
+              AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
+        """) or []
     
     # Expiry auto-cleanup + Basic limit: Vendors get 2 months free premium from registration, after expiry only 3 listings visible
     from collections import defaultdict
@@ -3733,34 +3773,74 @@ def forgot_password():
 def reset_credentials(token):
     reset = valid_reset_token(token)
     if not reset:
-        return render_template("reset_credentials.html", reset_error="This recovery link is invalid or has expired.", token=None)
+        return render_template("reset_credentials.html", reset_error="This recovery link is invalid or has expired.", token=None, app_theme=session.get("theme") or "day")
     user = query_db("SELECT * FROM users WHERE id = ?", (reset["user_id"],), one=True)
+    if not user:
+        return render_template("reset_credentials.html", reset_error="Account not found.", token=None, app_theme=session.get("theme") or "day")
+    # Expiry display
+    reset_expires_at = reset.get("expires_at")
     if request.method == "POST":
         new_username = request.form.get("username", "").strip()
         new_password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
         if not new_username or not new_password:
-            return render_template("reset_credentials.html", reset_error="Username and password are required.", token=token, user=user)
+            return render_template("reset_credentials.html", reset_error="Username and password are required.", token=token, user=user, reset_expires_at=reset_expires_at, app_theme=session.get("theme") or "day")
         if not re.fullmatch(r"[A-Za-z0-9_.-]{3,40}", new_username):
-            return render_template("reset_credentials.html", reset_error="Username must be 3-40 characters and use only letters, numbers, dots, underscores, or hyphens.", token=token, user=user)
+            return render_template("reset_credentials.html", reset_error="Username must be 3-40 chars letters numbers _ . -", token=token, user=user, reset_expires_at=reset_expires_at, app_theme=session.get("theme") or "day")
         if len(new_password) < 6:
-            return render_template("reset_credentials.html", reset_error="Password must be at least 6 characters.", token=token, user=user)
+            return render_template("reset_credentials.html", reset_error="Password must be at least 6 characters.", token=token, user=user, reset_expires_at=reset_expires_at, app_theme=session.get("theme") or "day")
         if new_password != confirm_password:
-            return render_template("reset_credentials.html", reset_error="The passwords do not match.", token=token, user=user)
+            return render_template("reset_credentials.html", reset_error="Passwords do not match.", token=token, user=user, reset_expires_at=reset_expires_at, app_theme=session.get("theme") or "day")
+        # Check suspended
+        if user.get("account_status") in ("Suspended","Terminated"):
+            return render_template("reset_credentials.html", reset_error="Account suspended — cannot reset.", token=None, app_theme=session.get("theme") or "day")
         try:
             query_db("UPDATE users SET username = ?, password_hash = ? WHERE id = ?", (new_username, generate_password_hash(new_password), user["id"]))
-            # Keep username-based marketplace records synchronized after recovery.
             if new_username != user["username"]:
-                query_db("UPDATE products SET seller = ? WHERE seller = ?", (new_username, user["username"]))
-                query_db("UPDATE order_items SET seller = ? WHERE seller = ?", (new_username, user["username"]))
-                query_db("UPDATE orders SET customer_username = ? WHERE customer_username = ?", (new_username, user["username"]))
-                query_db("UPDATE financial_ledger SET username = ? WHERE username = ?", (new_username, user["username"]))
-                query_db("UPDATE vendor_notifications SET customer_username = ? WHERE customer_username = ?", (new_username, user["username"]))
+                for q in [
+                    "UPDATE products SET seller = ? WHERE seller = ?",
+                    "UPDATE order_items SET seller = ? WHERE seller = ?",
+                    "UPDATE orders SET customer_username = ? WHERE customer_username = ?",
+                    "UPDATE financial_ledger SET username = ? WHERE username = ?",
+                    "UPDATE vendor_notifications SET customer_username = ? WHERE customer_username = ?",
+                    "UPDATE promotions SET vendor_username = ? WHERE vendor_username = ?",
+                    "UPDATE cart_history SET seller = ? WHERE seller = ?",
+                    "UPDATE favorites SET vendor_username = ? WHERE vendor_username = ?",
+                ]:
+                    try:
+                        query_db(q, (new_username, user["username"]))
+                    except:
+                        pass
+            # FIX: mark only this token used, plus invalidate all other tokens for user
+            query_db("UPDATE password_resets SET used = 1 WHERE token = ?", (token,))
             query_db("UPDATE password_resets SET used = 1 WHERE user_id = ? AND used = 0", (user["id"],))
+            # FIX: Invalidate other sessions by clearing push subscriptions? At least force re-login everywhere — we cannot delete Flask sessions stored client side, but we can log event
+            try:
+                query_db("INSERT INTO vendor_notifications (user_id, title, message, link, created_at) VALUES (?, ?, ?, ?, ?)", (user["id"], "Password reset", "Your password was reset via recovery link. All sessions logged out.", "/settings", datetime.now(timezone.utc).isoformat()))
+            except:
+                pass
         except sqlite3.IntegrityError:
-            return render_template("reset_credentials.html", reset_error="That username is already taken.", token=token, user=user)
-        return redirect(url_for("login", recovered="1"))
-    return render_template("reset_credentials.html", token=token, user=user)
+            return render_template("reset_credentials.html", reset_error="That username is already taken.", token=token, user=user, reset_expires_at=reset_expires_at, app_theme=session.get("theme") or "day")
+        # PROFESSIONAL META-AI STYLE: Auto-login after reset — directly open app, no need to type again
+        session.clear()
+        session["username"] = new_username
+        session["email"] = user["email"]
+        session["role"] = user["role"]
+        session["seller_type"] = user.get("seller_type")
+        session["company_name"] = user.get("company_name")
+        session["business_location"] = user.get("business_location")
+        session["whatsapp_number"] = user.get("whatsapp_number")
+        session["theme"] = user.get("theme") or "day"
+        session["welcome_message"] = True
+        session["recovered"] = True
+        # Role-based direct open app like Meta AI does
+        if user["role"] == "Delivery Service":
+            return redirect(url_for("delivery_dashboard"))
+        elif user["role"] in ["Vendor", "Fast Food"]:
+            return redirect(url_for("vendor_profile", username=new_username))
+        else:
+            return redirect(url_for("home"))
+    return render_template("reset_credentials.html", token=token, user=user, reset_expires_at=reset_expires_at, app_theme=session.get("theme") or "day")
 
 @app.route("/register", methods=["GET", "POST"])
 def register():

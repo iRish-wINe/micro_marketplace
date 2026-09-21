@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en" {% if app_theme == 'night' or user.theme == 'night' %}class="night-theme"{% endif %}>
 <head>
 <meta charset="UTF-8">
@@ -56,7 +55,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-body);color
 <div class="bh-topbar">
 <a class="bh-brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a>
 <div class="bh-location"><small>Settings</small><strong>Account</strong></div>
-<form class="bh-search" method="GET" action="{{ url_for('home') }}"></form>
+<form class="bh-search" method="GET" action="{{ url_for('home') }}"><input name="company_search" placeholder="Search..."><button>🔍</button></form>
 <div style="color:#febd69;font-size:11px;font-weight:700">👤 {{ user.username }}</div>
 </div>
 <nav class="bh-subbar">
@@ -72,6 +71,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-body);color
 <div class="container">
 
 <div class="nav-actions-row">
+<a href="{{ url_for('home') }}" class="top-btn btn-back">← Back to Marketplace</a>
+{% if user.role in ['Vendor','Fast Food'] %}<a href="{{ url_for('vendor_profile', username=user.username) }}" class="top-btn btn-mystore">🏪 My Store</a>{% endif %}
 <a href="{{ url_for('logout') }}" class="top-btn btn-logout" style="margin-left:auto">🚪 Logout</a>
 </div>
 
@@ -191,6 +192,6 @@ try{
 }catch(e){}
 </script>
 
-<footer class="footer">© 2026 BizHub Marketplace · Settings ·Product Of The TOZOTS Company </footer>
+<footer class="footer">© 2026 BizHub Marketplace · Your Local Market, Unified Online · Settings</footer>
 </body>
 </html>
