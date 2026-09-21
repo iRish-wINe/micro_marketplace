@@ -371,23 +371,21 @@
                     <div>
                         <!-- 📸 MEDIA RENDERING: video first, then image, then placeholder -->
                         <!-- STEP 1 FIX: DYNAMIC MEDIA DISPLAY FOR BOTH FAST FOOD & GENERAL VENDORS -->
+                        <!-- 📸 MEDIA RENDERING: video first, then image, then placeholder - FIXED -->
 <div class="card-media-container" style="position: relative; width: 100%; height: 220px; overflow: hidden; background: #000; border-radius: 8px;">
   {% if product.video_file %}
-    <video controls preload="metadata" style="width: 100%; height: 100%; object-fit: cover;">
-      <source src="{{ url_for('static', filename='uploads/' + product.video_file) }}" type="video/mp4">
-      Your browser does not support video playback.
+    <video controls preload="metadata" playsinline style="width: 100%; height: 100%; object-fit: cover;">
+      <source src="{{ url_for('stream_video', filename=product.video_file) }}" type="video/mp4">
     </video>
-  {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' %}
+  {% elif product.image_file and product.image_file!= 'fast-food-placeholder.svg' and product.image_file %}
     <img src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}" style="width: 100%; height: 100%; object-fit: cover;">
   {% else %}
-    <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #222; color: #fff;">
-      <span>🍔 Tasty Meal Showcase</span>
+    <div style="display:flex; align-items:center; justify-content:center; height:100%; background:#222; color:#fff; flex-direction:column;">
+      <span style="font-size:32px;">{% if vendor.role == 'Fast Food' %}🍔{% else %}🛍️{% endif %}</span>
+      <span style="font-size:12px;">{{ product.title }}</span>
     </div>
   {% endif %}
 </div>
-                            <div class="product-img" style="display:grid; place-items:center; font-size:36px; background:#f3f4f6;">
-                                {% if vendor.role == 'Fast Food' %}🍔{% else %}🛍️{% endif %}
-                            </div>
                         
 
                         <h3 style="font-size:16px; margin: 10px 0 4px;">{{ product.title }}</h3>
@@ -427,7 +425,7 @@
             <h3 style="margin:0 0 6px; font-size:18px; font-weight:900; color:#111;">Added to Cart!</h3>
             <p id="vpCartPopupItemName" style="margin:0 0 20px; color:#64748b; font-size:14px; font-weight:600;">Item added successfully.</p>
             <div style="display:flex; flex-direction:column; gap:10px;">
-                <a href="/cart" style="display:block; background:#0B192C; color:#fff; text-decoration:none; padding:12px; border-radius:8px; font-weight:800; font-size:14px; text-transform:uppercase; letter-spacing:0.3px;">🛍️ Go to Your Cart</a>
+                <a href="/cart" style="display:block; background:#0B192C; color:#fff; text-decoration:none; padding:12px; border-radius:8px; font-weight:800; font-size:14px; text-transform:uppercase; letter-spacing:0.3px;"> Go to Your Cart</a>
                 <button onclick="document.getElementById('vpCartPopupOverlay').style.display='none';" style="background:#F1F5F9; color:#334155; border:none; padding:12px; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer;">Continue Shopping</button>
             </div>
             <button onclick="document.getElementById('vpCartPopupOverlay').style.display='none';" style="position:absolute; top:12px; right:14px; background:none; border:none; font-size:20px; color:#94a3b8; cursor:pointer; line-height:1;">×</button>

@@ -1559,7 +1559,7 @@ def promo_marketplace():
     deals.sort(key=lambda d: (0 if d["is_owner"] else 1 if d["is_favorite"] else 2, -int(d["id"])))
     return render_template("todays_deals.html", deals=deals, current_user=current_user)
 
-@app.route("/add-to-cart/<int:product_id>")
+@app.route("/add-to-cart/<int:product_id>", methods=["GET", "POST"])
 def add_to_cart(product_id):
     product = query_db("SELECT id, stock_quantity, status, category, title, seller, price FROM products WHERE id = ?", (product_id,), one=True)
     if not product:
