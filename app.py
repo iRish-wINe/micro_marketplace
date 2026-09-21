@@ -2306,9 +2306,16 @@ def vendor_profile(username):
     for product in products:
         product["meal_whatsapp_number"] = vendor_whatsapp
         product["meal_whatsapp_text"] = quote(f"Hello {vendor.get('company_name') or vendor.get('username')}, I want to buy {product.get('title')} on BizHub, lets arrange for payment and delivery.")
-        
-    return render_template("vendor_profile.html", vendor=vendor, products=products, categories=categories, product_categories=PRODUCT_CATEGORIES, promo=promo, active_promos=active_promos, favorite=favorite, product_count=len(products), subscription=vendor_status, vendor_whatsapp=vendor_whatsapp, vendor_whatsapp_text=vendor_whatsapp_text, reviews=reviews, review_summary=review_summary, is_owner=is_owner, welcome_message=welcome_message, favorite_added_message=favorite_added_message)
 
+            # 👑 FIX: Always pass user for template (prevents 'user' is undefined for guests)
+    current_template_user = None
+    try:
+        if session.get('username'):
+            current_template_user = query_db("SELECT * FROM users WHERE username = ?", (session['username'],), one=True)
+    except Exception:
+        current_template_user = None
+
+        return render_template("vendor_profile.html", user=current_template_user, vendor=vendor, products=products, categories=categories, product_categories=PRODUCT_CATEGORIES, promo=promo, active_promos=active_promos, favorite=favorite, product_count=len(products), subscription=vendor_status, vendor_whatsapp=vendor_whatsapp, vendor_whatsapp_text=vendor_whatsapp_text, reviews=reviews, review_summary=review_summary, is_owner=is_owner, welcome_message=welcome_message, favorite_added_message=favorite_added_message)
   
 
 
