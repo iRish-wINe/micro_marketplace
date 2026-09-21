@@ -1,177 +1,255 @@
 <!doctype html>
-<!-- 🚀 REPLICA INJECTOR BOUNDARY PATHWAY AT THE VERY TOP OF ALL FILE TEMPLATES -->
-<html lang="en" {% if app_theme == 'night' %}class="night-theme"{% endif %}>
-
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#131921">
-    <title>Your Cart | BizHub</title>
-    <style>
-        :root{--navy:#131921;--navy2:#232f3e;--orange:#ff9900;--yellow:#febd69;--bg:#eaeded;--card:#fff;--text:#172033;--muted:#667085;--border:#d5d9d9;--success:#067647;--success-bg:#ecfdf3;--danger:#b42318;--soft:#f7f8fa}
-        *{box-sizing:border-box}
-        body{margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
-        a{color:inherit}
-        .bh-global-header{position:sticky;top:0;z-index:1000;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18)}
-        .bh-topbar{min-height:64px;background:var(--navy);display:flex;align-items:center;gap:10px;padding:8px 14px}
-        .bh-brand{display:flex;align-items:center;gap:7px;text-decoration:none;color:#fff;font-weight:900;letter-spacing:-.5px;font-size:22px;line-height:1;white-space:nowrap;padding:8px 7px;border:1px solid transparent;border-radius:3px}.bh-brand:hover{border-color:#fff}
-        .bh-brand-mark{font-size:23px}.bh-brand-sub{display:block;font-size:10px;letter-spacing:1.1px;color:var(--yellow);margin-top:3px;font-weight:700}
-        .bh-location{min-width:108px;display:flex;align-items:center;gap:7px;padding:7px 8px;border:1px solid transparent;border-radius:3px;text-decoration:none;color:#fff}.bh-location:hover{border-color:#fff}.bh-location small{display:block;color:#c7d0d9;font-size:10px}.bh-location strong{display:block;font-size:13px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .bh-search{display:flex;flex:1;min-width:150px;height:42px;border-radius:5px;overflow:hidden;background:#fff}.bh-search input{border:0;outline:0;flex:1;padding:0 14px;font-size:15px;color:#111;min-width:0}.bh-search button{width:52px;border:0;background:var(--yellow);color:#111;font-size:18px;cursor:pointer}.bh-search button:hover{background:#f3a847}
-        .bh-action{display:flex;align-items:center;gap:5px;text-decoration:none;color:#fff;border:1px solid transparent;border-radius:3px;padding:7px 8px;min-height:42px}.bh-action:hover{border-color:#fff}.bh-action .small{display:block;font-size:10px;color:#e6e6e6;line-height:12px}.bh-action strong{display:block;font-size:13px;white-space:nowrap}.bh-action .icon{font-size:21px}.bh-badge{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;border-radius:10px;background:var(--orange);color:#111;font-size:10px;font-weight:900;margin-left:-3px;margin-top:-14px}
-        .bh-subbar{min-height:42px;background:var(--navy2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap}.bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px}.bh-subbar a:hover{border-color:#fff}.bh-subbar .bh-grow{flex:1}
-        .page{max-width:1120px;margin:0 auto;padding:28px 18px 50px}
-        .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}.page-head h1{margin:0;font-size:30px;letter-spacing:-.5px}.page-head p{margin:6px 0 0;color:var(--muted);font-size:14px}.continue{display:inline-flex;align-items:center;gap:7px;text-decoration:none;background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-weight:800;font-size:13px;white-space:nowrap}.continue:hover{border-color:#9aa4b2;background:#fafafa}
-        .layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
-        .card{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 2px 9px rgba(15,23,42,.06);overflow:hidden}.card-head{padding:18px 20px;border-bottom:1px solid #eaecf0;display:flex;justify-content:space-between;align-items:center;gap:12px}.card-head h2{margin:0;font-size:19px}.count{font-size:12px;color:var(--muted);font-weight:800}
-        .empty{padding:50px 24px;text-align:center}.empty-icon{font-size:44px;margin-bottom:10px}.empty h3{margin:0 0 7px;font-size:20px}.empty p{margin:0 auto 18px;max-width:460px;color:var(--muted);font-size:14px;line-height:1.6}
-        .cart-row{padding:18px 20px;border-bottom:1px solid #eef0f2;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px}.cart-row:last-child{border-bottom:0}.item-title{font-weight:850;font-size:16px;margin-bottom:5px}.item-meta{color:var(--muted);font-size:12px;line-height:1.5}.item-price{font-weight:900;font-size:17px;white-space:nowrap}.qty{display:flex;align-items:center;gap:5px;margin-top:12px}.qty button,.qty input{height:34px;border:1px solid var(--border);background:#fff}.qty button{width:34px;border-radius:6px;font-size:18px;cursor:pointer}.qty input{width:54px;border-radius:6px;text-align:center}.stock{font-size:11px;color:var(--muted);margin-left:7px}
-        .summary{position:sticky;top:122px}.summary-body{padding:20px}.summary-line{display:flex;justify-content:space-between;gap:12px;font-size:14px;margin-bottom:11px}.summary-line.total{border-top:1px solid var(--border);padding-top:14px;margin-top:14px;font-size:19px;font-weight:900}.discount{color:var(--success);font-weight:800}.seller{margin-top:18px;padding-top:15px;border-top:1px dashed var(--border)}.seller-name{font-size:12px;font-weight:900;text-transform:uppercase;color:var(--muted);letter-spacing:.5px;margin-bottom:8px}.pay{display:block;text-align:center;text-decoration:none;background:var(--orange);color:#111;padding:12px;border-radius:8px;font-weight:900;font-size:13px;margin-top:9px}.pay:hover{background:#f3a847}.clear{display:block;text-align:center;margin-top:14px;color:var(--muted);font-size:12px;font-weight:700;text-decoration:none}.clear:hover{color:var(--danger)}
-        .history{margin-top:18px}.history-wrap{overflow:auto}.history-table{width:100%;border-collapse:collapse;min-width:680px}.history-table th{background:var(--soft);text-align:left;font-size:11px;color:#475467;text-transform:uppercase;letter-spacing:.45px;padding:12px 16px;border-bottom:1px solid var(--border)}.history-table td{padding:14px 16px;border-bottom:1px solid #eef0f2;font-size:13px;vertical-align:top}.history-table tr:last-child td{border-bottom:0}.history-title{font-weight:850}.history-seller{font-size:11px;color:var(--muted);margin-top:3px}.history-qty{font-weight:850}.history-time{white-space:nowrap;color:#475467;font-variant-numeric:tabular-nums}.history-note{padding:13px 16px;background:#f8fafc;color:var(--muted);font-size:12px;line-height:1.5;border-top:1px solid #eef0f2}
-        @media(max-width:850px){.layout{grid-template-columns:1fr}.summary{position:static}.page-head{align-items:flex-start;flex-direction:column}.continue{width:100%;justify-content:center}.bh-location{display:none}.bh-topbar{flex-wrap:wrap}.bh-search{order:5;flex-basis:100%}}
-        @media(max-width:560px){.page{padding:18px 10px 35px}.page-head h1{font-size:25px}.bh-topbar{padding:7px}.bh-brand{font-size:19px}.bh-brand-sub{display:none}.bh-action{padding:6px 5px}.bh-action .small{display:none}.bh-action strong{font-size:11px}.bh-action .icon{font-size:19px}.bh-subbar a{font-size:12px;padding:10px 9px}.cart-row{padding:15px;grid-template-columns:minmax(0,1fr) auto}.item-title{font-size:14px}.item-price{font-size:15px}.card-head{padding:15px}.summary-body{padding:16px}}
-    </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1, viewport-fit=cover">
+<title>Your Cart | BizHub - Full History Restored</title>
+<style>
+:root{--navy:#131921;--navy2:#232f3e;--yellow:#febd69;--bg:#eaeded;--card:#fff;--text:#172033;--muted:#667085;--border:#d5d9d9;--success:#067647;--danger:#b42318;--soft:#f7f8fa}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important}
+.bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:var(--navy);box-shadow:0 2px 12px rgba(0,0,0,0.18)}
+.bh-topbar{min-height:64px;background:var(--navy);display:flex;align-items:center;gap:10px;padding:8px 14px}
+.bh-brand{display:flex;align-items:center;gap:7px;text-decoration:none;color:#fff;font-weight:900;font-size:22px;white-space:nowrap}
+.bh-location{min-width:110px;display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;flex-shrink:0}
+.bh-location small{display:block;color:#febd69;font-size:9px;font-weight:800;text-transform:uppercase}
+.bh-location strong{display:block;font-size:11px;font-weight:800;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bh-search{display:flex;flex:1;min-width:150px;height:42px;border-radius:5px;overflow:hidden;background:#fff}
+.bh-search input{border:0;outline:0;flex:1;padding:0 14px;font-size:15px;min-width:0}
+.bh-search button{width:52px;border:0;background:var(--yellow);font-size:18px;cursor:pointer}
+.bh-subbar{min-height:42px;background:var(--navy2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+.bh-subbar::-webkit-scrollbar{display:none}
+.bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px;flex-shrink:0}
+.bh-subbar a:hover{border-color:#fff}
+.page{max-width:1120px;margin:0 auto;padding:28px 18px 50px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 2px 9px rgba(15,23,42,.06);overflow:hidden}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.bh-topbar{flex-wrap:wrap}.bh-search{order:5;flex-basis:100%}}
+.bh-location{display:flex !important}
+@media(max-width:768px){.bh-location{display:flex !important;min-width:90px !important;padding:5px 8px !important}.bh-location small{font-size:8px !important}.bh-location strong{font-size:10px !important;max-width:85px !important}}
+/* History */
+.history-row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:12px 16px;border-bottom:1px solid #eef0f2;align-items:center}
+.history-badge{font-size:9px;font-weight:900;padding:3px 7px;border-radius:20px;text-transform:uppercase}
+.badge-add{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0}
+.badge-inc{background:#EFF6FF;color:#1E40AF;border:1px solid #BFDBFE}
+.badge-dec{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A}
+.badge-remove{background:#FEF2F2;color:#991B1B;border:1px solid #FECACA}
+.bizhub-contact-footer{background:#131A22;color:#fff;padding:24px 16px 0 16px;margin-top:40px;border-top:1px solid #2a2a2a}
+.contact-footer-inner{max-width:1120px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:20px;padding-bottom:20px}
+.contact-brand .contact-logo{font-size:22px;font-weight:900;color:#fff}.contact-brand .contact-logo span{color:#febd69}
+.contact-footer-bottom{background:#0F1111;color:#999;text-align:center;padding:14px 16px;font-size:11px;border-top:1px solid #222;margin:0 -16px}
+</style>
 </head>
 <body>
-<header class="bh-global-header" role="banner">
-  <div class="bh-topbar">
-    <a class="bh-brand" href="{{ url_for('home') }}" aria-label="BizHub home"><span class="bh-brand-mark">B</span><span>BizHub<span class="bh-brand-sub">Your Local Market, Unified Online</span></span></a>
-    <a class="bh-location" href="{{ url_for('home') }}"><span>📍</span><span><small>Delivering from</small><strong>{{ session.get('business_location') or 'Ghana' }}</strong></span>
-    
-    
-    <a class="bh-action" href="{{ url_for('settings') }}"><span class="icon">👤</span><span><span class="small">Hello,</span><strong>{{ session.get('username') }}{% if session.get('role') %} <span style="font-size:9px;color:#febd69;text-transform:uppercase">{{ session.get('role') }}</span>{% endif %}</strong></span></a>
-  </div>
-  <nav class="bh-subbar" aria-label="BizHub marketplace navigation">
-    <a href="{{ url_for('home') }}">Marketplace</a><a href="{{ url_for('promo_marketplace') }}">Today's Deals</a><a href="{{ url_for('favorites') }}">Favorites</a><a href="{{ url_for('order_history') }}">Orders</a><a href="{{ url_for('fast_food_stores') }}">Fast Food</a><a href="{{ url_for('features') }}">Features</a><a href="{{ url_for('settings') }}">Your Account</a>
-  </nav>
-</header>
+<div class="bh-global-header">
+<div class="bh-topbar">
+<a class="bh-brand" href="{{ url_for('home') }}">Biz<span style="color:var(--yellow)">Hub</span></a>
+<div class="bh-location">
+<span style="font-size:16px">📍</span>
+<div style="line-height:1.1">
+{% if session.get('role') == 'Delivery Service' %}
+<small style="color:#FEBD69">Dispatching from</small>
+<strong>{{ (service.operating_location if service is defined and service else '') or (user.business_location if user is defined and user else '') or 'Ghana' }}</strong>
+{% elif session.get('role') in ['Vendor', 'Fast Food'] %}
+<small style="color:#10B981">Delivering from</small>
+<strong>{{ (user.business_location if user is defined and user and user.business_location else 'Ghana') }}</strong>
+{% else %}
+<small style="color:#C7D0D9">Ordering from</small>
+<strong>{{ (user.business_location if user is defined and user and user.business_location else 'Ghana') }}</strong>
+{% endif %}
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+{% if session.get('username') %}<span style="font-size:11px;font-weight:700;color:var(--yellow)">👤 {{ session['username'] }}</span>{% else %}<a href="{{ url_for('login') }}" style="color:#fff;font-size:12px;font-weight:700;text-decoration:none">Sign In</a>{% endif %}
+</div>
+</div>
+
+<nav class="bh-subbar">
+<a href="{{ url_for('home') }}">Marketplace</a>
+<a href="/top-brands" style="color:#FFD814 !important;font-weight:900;border:1px solid #FFD814;border-radius:4px;padding:6px 10px">🏆 Top 20 Brands</a>
+<a href="{{ url_for('all_stores') }}">All Stores</a>
+<a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
+<a href="{{ url_for('cart_page') }}" style="background:#fff;color:#0F1111 !important;border-radius:6px">🛒 Your Cart {% if cart_count %}<span style="background:#EF4444;color:#fff;font-size:10px;font-weight:900;padding:1px 6px;border-radius:10px">{{ cart_count }}</span>{% endif %}</a>
+<a href="{{ url_for('favorites') }}">Favorites</a>
+<a href="{{ url_for('features') }}">🎯 Features</a>
+<a href="{{ url_for('order_history') }}">Orders</a>
+<a href="{{ url_for('settings') }}">Your Account</a>
+<a href="/notifications">🔔 Biz Alerts {% if unread_notifications_count %}<span style="background:#F59E0B;color:#000;font-size:9px;font-weight:900;padding:1px 5px;border-radius:8px">{{ unread_notifications_count }}</span>{% endif %}</a>
+{% if session.get('role') in ['Vendor','Fast Food'] %}
+<a href="{{ url_for('subscription') }}" style="color:#febd69">💳 Manage Accounts</a>
+<a href="{{ url_for('delivery_services') }}">🚚 Find Delivery</a>
+<a href="{{ url_for('vendor_profile', username=session.get('username')) }}" style="color:#febd69;font-weight:800">{% if session.get('role')=='Fast Food' %}🍳 My Kitchen{% else %}🏪 My Store{% endif %}</a>
+{% endif %}
+{% if session.get('role') == 'Delivery Service' %}
+<a href="{{ url_for('delivery_dashboard') }}" style="color:#febd69">🔙 Back to Dashboard</a>
+{% endif %}
+</nav>
+</div>
 
 <main class="page">
-    <div class="page-head">
-        <div><h1>Your Cart</h1><p>Your live basket and a permanent record of items you have added.</p></div>
-        <a class="continue" href="{{ url_for('home') }}">← Continue Shopping</a>
-    </div>
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+<div>
+<h1 style="margin:0;font-size:26px;font-weight:900">Your Cart</h1>
+{% if session.get('role') == 'Delivery Service' %}
+<p style="margin:4px 0 0 0;color:#667085;font-size:13px">🚚 Dispatching from <b>{{ (service.operating_location if service is defined and service else '') or (user.business_location if user is defined and user else 'Ghana') }}</b> • Ready for delivery</p>
+{% elif session.get('role') in ['Vendor', 'Fast Food'] %}
+<p style="margin:4px 0 0 0;color:#667085;font-size:13px">📦 Delivering from <b>{{ user.business_location or 'Ghana' }}</b> • Your store location</p>
+{% else %}
+<p style="margin:4px 0 0 0;color:#667085;font-size:13px">📍 Ordering from <b>{{ (user.business_location if user is defined and user and user.business_location else 'Ghana') }}</b> • Your local market</p>
+{% endif %}
+</div>
+<a href="{{ url_for('home') }}" style="text-decoration:none;background:#fff;border:1px solid #d5d9d9;border-radius:8px;padding:10px 14px;font-weight:800;font-size:13px;color:#111">← Continue Shopping</a>
+</div>
 
-    <div class="layout">
-        <section class="card">
-            <div class="card-head"><h2>Current Basket</h2><span class="count">{{ cart_count }} item{% if cart_count != 1 %}s{% endif %}</span></div>
-            {% if cart_items %}
-                {% for item in cart_items %}
-                <div class="cart-row">
-                    <div>
-                        <div class="item-title">{{ item.title }}</div>
-                        <div class="item-meta">From {{ item.business_label or item.seller }} · GH₵{{ "%.2f"|format(item.get("cart_unit_price", item.price)) }} each{% if item.get("cart_unit_price", item.price) < item.price %} · Promo price{% endif %}</div>
-                                           <!-- 👑 FIXED DEDICATED CART PAGE INCREMENT CONTROLLER -->
-                    <div style="display: flex; align-items: center; gap: 8px; justify-content: center;">
-                        <form method="POST" action="/update-cart/{{ item.id }}" style="margin:0; display:inline;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                            <input type="hidden" name="action_direction" value="decrease">
-                            <button type="submit" style="padding: 4px 10px; font-weight: 900; background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 4px; cursor: pointer;">-</button>
-                        </form>
-                        
-                        <b style="font-size: 15px; min-width: 24px; text-align: center; display: inline-block;">{{ item.cart_quantity }}</b>
-                        
-                        <form method="POST" action="/update-cart/{{ item.id }}" style="margin:0; display:inline;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                            <input type="hidden" name="action_direction" value="increase">
-                            <button type="submit" style="padding: 4px 10px; font-weight: 900; background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 4px; cursor: pointer;">+</button>
-                        </form>
-                    </div>
+<div class="layout">
+<section class="card">
+<div style="padding:18px 20px;border-bottom:1px solid #eaecf0;display:flex;justify-content:space-between;align-items:center">
+<h2 style="margin:0;font-size:18px;font-weight:900">Basket Items</h2><span style="font-size:12px;color:#667085;font-weight:800">{{ cart_count or 0 }} items</span>
+</div>
 
-                    <div class="item-price">GH₵{{ "%.2f"|format(item.discounted_line_total) }}</div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty"><div class="empty-icon">🛒</div><h3>Your basket is empty</h3><p>Add products from the marketplace and they will appear here. Your future cart activity will also be recorded below.</p><a class="continue" style="display:inline-flex" href="{{ url_for('home') }}">Start Shopping</a></div>
-            {% endif %}
-        </section>
+{% for item in cart_items %}
+<div style="padding:16px 20px;border-bottom:1px solid #eef0f2;display:grid;grid-template-columns:1fr auto;gap:12px">
+<div>
+<div style="font-weight:800;font-size:15px">{{ item.title or item.product_title }}</div>
+<div style="color:#667085;font-size:12px;margin-top:3px">Seller: @{{ item.seller }} • 📍 {{ item.location or item.business_location or 'Ghana' }} • {% if item.category=='Fast Food' %}🍳 Meal{% else %}📦 {{ item.stock_quantity }} left{% endif %}</div>
+<div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+<!-- ✅ NO OMISSIONS - All cart actions restored -->
+<form method="POST" action="{{ url_for('update_cart', product_id=item.id) }}" style="display:flex;gap:4px;align-items:center;margin:0">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<button type="submit" name="action_direction" value="decrease" style="width:32px;height:32px;border:1px solid #d5d9d9;border-radius:6px;background:#fff;cursor:pointer;font-weight:900">−</button>
+<span style="min-width:36px;text-align:center;font-weight:800;background:#F8FAFC;border:1px solid #E2E8F0;padding:4px 8px;border-radius:6px">{{ item.cart_quantity }}</span>
+<button type="submit" name="action_direction" value="increase" style="width:32px;height:32px;border:1px solid #d5d9d9;border-radius:6px;background:#fff;cursor:pointer;font-weight:900">+</button>
+</form>
+<a href="{{ url_for('remove_from_cart', product_id=item.id) }}" style="margin-left:4px;color:#b42318;font-size:11px;font-weight:700;text-decoration:none;border:1px solid #FECACA;background:#FEF2F2;padding:4px 8px;border-radius:6px">🗑️ Remove</a>
+<a href="{{ url_for('vendor_profile', username=item.seller) }}" style="color:#111;font-size:11px;font-weight:700;text-decoration:none;border:1px solid #E5E7EB;background:#fff;padding:4px 8px;border-radius:6px">🏪 View Store</a>
+</div>
+</div>
+<div style="font-weight:900;font-size:16px;text-align:right">
+<div>GH₵{{ "%.2f"|format(item.cart_line_total) }}</div>
+{% if item.discount_amount and item.discount_amount>0 %}<div style="font-size:10px;color:#067647">-GH₵{{ "%.2f"|format(item.discount_amount) }} coupon</div>{% endif %}
+<div style="font-size:10px;color:#667085;font-weight:600">GH₵{{ "%.2f"|format(item.cart_unit_price) }} each</div>
+</div>
+</div>
+{% else %}
+<div style="padding:40px;text-align:center;color:#667085"><div style="font-size:40px">🛒</div><h3 style="margin:10px 0 6px">Your basket is empty</h3><p style="font-size:13px">Add products from marketplace - listing videos autoplay, tap to view</p><a href="{{ url_for('home') }}" style="display:inline-flex;background:#131921;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:800;margin-top:10px">Start Shopping</a></div>
+{% endfor %}
 
-        <!-- 👑 THE COUPON ENTRY ENGINE SITS OUTSIDE AND ABOVE THE SUMMARY CARD -->
-        <div style="background: var(--bg-card, #FFF); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color, #E2E8F0); margin-bottom: 16px; box-sizing: border-box; text-align: left;">
-            {% if not active_coupon %}
-                <form method="POST" action="/apply-coupon" style="margin: 0; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    <div style="flex-grow: 1; min-width: 200px;">
-                        <label style="display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; color: #64748B;">🎟️ Have a Promo Code / Coupon?</label>
-                        <input type="text" name="code" class="form-control" placeholder="e.g. DISCOUNT30" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color, #CBD5E1); font-size: 14px; text-transform: uppercase;" required>
-                    </div>
-                    <button type="submit" style="background: var(--nav, #0B192C); color: white; border: none; padding: 11px 20px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; margin-top: 22px;">Apply Code</button>
-                </form>
-            {% else %}
-                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(6, 193, 103, 0.05); border: 1px dashed var(--success, #06C167); padding: 12px; border-radius: 8px;">
-                    <div>
-                        <span style="color: var(--success, #06C167); font-weight: 800; font-size: 13px;">✓ Active Coupon Applied: <code style="background: #FFF; padding: 2px 6px; border-radius: 4px;">{{ active_coupon.code }}</code></span>
-                        <small style="display: block; color: #64748B; font-size: 11px; margin-top: 2px;">Enjoy {{ active_coupon.discount }}% OFF items from this merchant.</small>
-                    </div>
-                    <form method="POST" action="/remove-coupon" style="margin: 0;">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                        <button type="submit" style="background: none; border: none; color: var(--danger, #EF4444); font-weight: 800; font-size: 12px; cursor: pointer; text-decoration: underline;">Remove Code</button>
-                    </form>
-                </div>
-            {% endif %}
-        </div>
+<!-- Coupon Section - No Omission -->
+{% if cart_items %}
+<div style="padding:16px 20px;background:#F8FAFC;border-top:1px solid #eaecf0;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+{% if active_coupon %}
+<form method="POST" action="{{ url_for('remove_coupon') }}" style="margin:0;display:flex;gap:8px;align-items:center;width:100%">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<span style="background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46;padding:6px 10px;border-radius:20px;font-size:11px;font-weight:800">🎟️ {{ active_coupon.code }} -{{ active_coupon.discount }}% OFF by @{{ active_coupon.username }}</span>
+<button type="submit" style="background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">Remove</button>
+</form>
+{% else %}
+<form method="POST" action="{{ url_for('apply_coupon') }}" style="margin:0;display:flex;gap:8px;flex:1">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<input type="text" name="code" placeholder="Enter coupon code" style="flex:1;border:1px solid #d5d9d9;border-radius:6px;padding:8px 10px;font-size:13px">
+<button type="submit" style="background:#131921;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-weight:800;font-size:12px;cursor:pointer">Apply</button>
+</form>
+{% endif %}
+</div>
+{% endif %}
+</section>
 
-        <!-- 👑 THE MAIN CART SUMMARY CARD ENVELOPE REMAINS CRISTINE AND UNTOUCHED -->
-        <aside class="card summary">           
-            <div class="card-head">
-                <h2>Cart Summary</h2>
-            </div>
-            <!-- Rest of your summary card details like subtotal rows continue below safely -->
-    
-            <div class="summary-body">
-                {% if cart_items %}
-                    <div class="summary-line"><span>Items</span><strong>{{ cart_count }}</strong></div>
-                    {% if discount_total %}<div class="summary-line discount"><span>Discount</span><span>− GH₵{{ "%.2f"|format(discount_total) }}</span></div>{% endif %}
-                    <div class="summary-line total"><span>Total</span><span>GH₵{{ "%.2f"|format(cart_total) }}</span></div>
-                    {% for order in seller_orders %}
-                        <div class="seller"><div class="seller-name">Pay {{ order.seller }}</div><a class="pay" href="whatsapp://send?phone={{ order.number }}&text={{ order.whatsapp_text }}">💬 Pay Vendor via WhatsApp</a></div>
-                    {% endfor %}
-                    <a class="clear" href="{{ url_for('clear_cart') }}">Empty Basket</a>
-                {% else %}
-                    <div style="color:var(--muted);font-size:13px;line-height:1.6">There are no active items in your basket right now.</div>
-                {% endif %}
-            </div>
-        </aside>
-    </div>
+<aside class="card" style="position:sticky;top:120px">
+<div style="padding:18px 20px;border-bottom:1px solid #eaecf0"><h2 style="margin:0;font-size:18px;font-weight:900">Cart Summary</h2>
+{% if session.get('role') == 'Delivery Service' %}
+<div style="margin-top:8px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:6px;padding:8px 10px;font-size:11px;color:#065F46"><b>🚚 Dispatching from:</b> {{ (service.operating_location if service is defined and service else '') or (user.business_location if user is defined and user else 'Ghana') }}<br><span style="color:#6B7280">Service: {{ service.service_name if service is defined and service else 'Your Fleet' }}</span></div>
+{% elif session.get('role') in ['Vendor', 'Fast Food'] %}
+<div style="margin-top:8px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:6px;padding:8px 10px;font-size:11px;color:#065F46"><b>📦 Delivering from:</b> {{ user.business_location or 'Ghana' }}<br><span style="color:#6B7280">Your store ships from here</span></div>
+{% else %}
+<div style="margin-top:8px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:8px 10px;font-size:11px;color:#92400E"><b>📍 Ordering from:</b> {{ (user.business_location if user is defined and user and user.business_location else 'Ghana') }}<br><span style="color:#6B7280">Deliver to your location</span></div>
+{% endif %}
+</div>
+<div style="padding:20px">
+{% if cart_items %}
+<div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px"><span>Items ({{ cart_count }})</span><strong>{{ cart_count }}</strong></div>
+{% if discount_total and discount_total>0 %}<div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:13px;color:#067647"><span>Coupon savings</span><strong>-GH₵{{ "%.2f"|format(discount_total) }}</strong></div>{% endif %}
+<div style="display:flex;justify-content:space-between;border-top:1px solid #d5d9d9;padding-top:12px;margin-top:12px;font-size:18px;font-weight:900"><span>Total</span><span>GH₵{{ "%.2f"|format(cart_total) }}</span></div>
 
-    <section class="card history">
-        <div class="card-head"><h2>Cart Activity History</h2><span class="count">Latest 200 additions</span></div>
-        {% if history %}
-        <div class="history-wrap">
-            <table class="history-table">
-                <thead><tr><th>Item</th><th>Price</th><th>Added</th><th>Cart quantity after add</th></tr></thead>
-                <tbody>
-                {% for entry in history %}
-                    <tr>
-                        <td><div class="history-title">{{ entry.title }}</div><div class="history-seller">{{ entry.seller }}</div></td>
-                        <td>GH₵{{ "%.2f"|format(entry.price) }}</td>
-                        <td><time class="history-time cart-time" datetime="{{ entry.added_at }}">{{ entry.added_at }}</time></td>
-                        <td><span class="history-qty">+{{ entry.quantity_added }}</span> · {{ entry.cart_quantity_after }} in cart</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="history-note">Cart history is kept separately from your live basket, so emptying your basket or completing an order does not erase your activity record.</div>
-        {% else %}
-        <div class="empty" style="padding:38px 24px"><div class="empty-icon" style="font-size:34px">🧾</div><h3>No cart activity yet</h3><p>Every successful “Add to Basket” action from this account will appear here with the item, seller, quantity and exact date and time.</p></div>
-        {% endif %}
-    </section>
+<!-- ✅ All Pay Actions - No Omissions -->
+{% for order in seller_orders %}
+<div style="margin-top:16px;padding-top:12px;border-top:1px dashed #d5d9d9">
+<div style="font-size:11px;font-weight:900;text-transform:uppercase;color:#667085;margin-bottom:6px">Pay @{{ order.seller }} • GH₵{{ "%.2f"|format(order.total) }}</div>
+<a href="https://wa.me/{{ order.number }}?text={{ order.whatsapp_text }}" target="_blank" style="display:block;text-align:center;background:#25D366;color:#fff;padding:10px;border-radius:8px;font-weight:900;font-size:12px;text-decoration:none;margin-bottom:6px">💬 Pay Vendor via WhatsApp</a>
+<form method="POST" action="{{ url_for('place_order') }}" style="margin:0">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<input type="hidden" name="seller" value="{{ order.seller }}">
+<button type="submit" style="width:100%;background:#131921;color:#fff;border:none;padding:10px;border-radius:8px;font-weight:900;font-size:12px;cursor:pointer">🧾 Place Order for @{{ order.seller }}</button>
+</form>
+</div>
+{% endfor %}
+
+<div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+<a href="{{ url_for('clear_cart') }}" style="display:block;text-align:center;background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;padding:10px;border-radius:8px;font-weight:800;font-size:12px;text-decoration:none">🗑️ Empty Basket (Clear All)</a>
+<a href="{{ url_for('home') }}" style="display:block;text-align:center;background:#fff;border:1px solid #d5d9d9;color:#111;padding:10px;border-radius:8px;font-weight:800;font-size:12px;text-decoration:none">← Continue Shopping</a>
+</div>
+
+{% else %}
+<div style="color:#667085;font-size:13px">No active items • Your history below</div>
+{% endif %}
+</div>
+</aside>
+</div>
+
+<!-- ✅ CART HISTORY SYSTEM - RESTORED WITHOUT OMISSIONS -->
+<section class="card" style="margin-top:22px">
+<div style="padding:18px 20px;border-bottom:1px solid #eaecf0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+<div>
+<h2 style="margin:0;font-size:18px;font-weight:900">📜 Cart History • All Actions</h2>
+<p style="margin:4px 0 0 0;font-size:11px;color:#667085">Every add, increase, decrease, remove tracked - 200 latest • Safe restore</p>
+</div>
+{% if history %}
+<form method="POST" action="{{ url_for('clear_cart_history') }}" style="margin:0" onsubmit="return confirm('Clear cart history permanently?')">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<button type="submit" style="background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;padding:8px 12px;border-radius:8px;font-weight:800;font-size:11px;cursor:pointer">🗑️ Clear History</button>
+</form>
+{% endif %}
+</div>
+
+{% if history %}
+<div style="max-height:420px;overflow-y:auto">
+{% for h in history %}
+<div class="history-row">
+<div>
+<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+<span style="font-weight:800;font-size:13px">{{ h.title }}</span>
+{% if h.quantity_added>0 %}
+<span class="history-badge badge-add">+{{ h.quantity_added }} Added</span>
+{% else %}
+<span class="history-badge badge-remove">{{ h.quantity_added }} Removed</span>
+{% endif %}
+<span style="font-size:10px;color:#667085">Seller: @{{ h.seller }} • GH₵{{ "%.2f"|format(h.price) }}</span>
+</div>
+<div style="font-size:11px;color:#667085;margin-top:2px">Cart after: {{ h.cart_quantity_after }} • {{ h.added_at[:19] }} • Product ID: {{ h.product_id or 'N/A' }}</div>
+</div>
+<div style="display:flex;gap:6px">
+{% if h.product_id %}
+<a href="{{ url_for('add_to_cart', product_id=h.product_id) }}" style="background:#FFD814;border:1px solid #FCD200;color:#111;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:800;text-decoration:none">🔄 Re-Add</a>
+{% endif %}
+</div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div style="padding:30px;text-align:center;color:#667085">
+<div style="font-size:28px">📜</div>
+<p style="font-size:13px;font-weight:600;margin:8px 0 0 0">No cart history yet</p>
+<p style="font-size:11px;margin:4px 0 0 0">Add items to basket - every action will be logged here without omission</p>
+</div>
+{% endif %}
+
+<div style="padding:12px 16px;background:#F8FAFC;border-top:1px solid #eaecf0;font-size:10px;color:#667085;line-height:1.4">
+<b>History Actions Tracked:</b> Add to Cart (POST /add-to-cart/&lt;id&gt;), Increase (POST /update-cart/&lt;id&gt; action=increase), Decrease (action=decrease), Remove (GET /cart/remove/&lt;id&gt;), Clear All (GET /clear-cart), Clear History (POST /clear_cart_history). Backend inserts into cart_history (user_id, product_id, title, seller, price, quantity_added, cart_quantity_after, added_at) - LIMIT 200 newest.
+</div>
+</section>
+
 </main>
-<script>
-(function(){
-  document.querySelectorAll('.cart-time').forEach(function(el){
-    var raw = el.getAttribute('datetime');
-    if(!raw) return;
-    var d = new Date(raw);
-    if(isNaN(d.getTime())) return;
-    el.textContent = d.toLocaleString([], {year:'numeric', month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'});
-  });
-})();
-</script>
-        <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
-        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
-                © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS 🇬🇭 Company
-        </footer>
+
+<footer class="bizhub-contact-footer">
+<div class="contact-footer-bottom">© 2026 BizHub Marketplace · Cart· A Product Of The TOZOTS  Company· <a href="/rules" style="color:#E2E8F0;text-decoration:none;">Rules &amp; Regulations</a></div>
+</footer>
+
 </body>
 </html>

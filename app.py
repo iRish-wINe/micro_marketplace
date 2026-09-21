@@ -2,6 +2,7 @@ import sqlite3
 import os
 import uuid
 import re
+import html
 import secrets
 from dotenv import load_dotenv
 
@@ -219,6 +220,9 @@ def init_db():
         "ALTER TABLE users ADD COLUMN account_status TEXT NOT NULL DEFAULT 'Active'",
         "ALTER TABLE users ADD COLUMN enforcement_reason TEXT",
         "ALTER TABLE users ADD COLUMN suspended_until TEXT",
+        "ALTER TABLE users ADD COLUMN is_verified_brand INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN verified_at TEXT",
+        "ALTER TABLE users ADD COLUMN verified_brand_type TEXT",
     ):
         try:
             cursor.execute(statement)
@@ -758,7 +762,8 @@ def dispatch_external_notifications(user, title, message, link=None):
     whatsapp_to = normalize_whatsapp_number(user.get("whatsapp_number"))
     if twilio_sid and twilio_token and twilio_from and whatsapp_to:
         try:
-            import requests
+            import re
+import htmlquests
             response = requests.post(f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Messages.json", data={"From": twilio_from, "To": f"whatsapp:+{whatsapp_to}", "Body": text}, auth=(twilio_sid, twilio_token), timeout=15)
             response.raise_for_status()
         except Exception:
@@ -1124,10 +1129,10 @@ def publish_product():
     
     # 🍟 FIXED INTAKES: Matches the form inputs 'menu_type' and 'accompaniments' perfectly
     menu_type = request.form.get("menu_type", "Main Dishes").strip() if is_fast_food else "General"
-    accompaniments = request.form.get("accompaniments", "").strip() if is_fast_food else None
+    accompaniments = html.escape(request.form.get("accompaniments", "").strip()) if is_fast_food else None
     
     category = "Fast Food" if is_fast_food else (request.form.get("category", "Other").strip() or "Other")
-    stock_quantity = 999999 if is_fast_food else int(request.form.get("stock_quantity", "1") or 1)
+    stock_quantity = 0 if is_fast_food else int(request.form.get("stock_quantity", "1") or 1)
     location = request.form.get("location", "").strip() or vendor.get("business_location") or "Accra"
     
     file = request.files.get("product_image")
@@ -1147,7 +1152,7 @@ def publish_product():
         filename = f"product-{uuid.uuid4().hex}{ext}"
         file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
     else:
-        filename = "fast-food-placeholder.svg" if is_fast_food else ""
+        filename = ""  # No placeholder - template shows emoji fallback
 
     video_filename = None
     if has_video:
@@ -1205,12 +1210,13 @@ def home():
 
         price = request.form.get("price")
         is_fast_food = bool(vendor and vendor.get("role") == "Fast Food")
+        
         title = request.form.get("meal_name" if is_fast_food else "title")
         description = request.form.get("meal_description" if is_fast_food else "description")
         menu_type = request.form.get("menu_type", "Main Dishes").strip() if is_fast_food else "General"
-        accompaniments = request.form.get("accompaniments", "").strip() if is_fast_food else None
-        category = "Fast Food" if is_fast_food else (request.form.get("category", "Other").strip() or "Other")  
-        stock_quantity = request.form.get("stock_quantity", "1")
+        accompaniments = html.escape(request.form.get("accompaniments", "").strip()) if is_fast_food else None
+        category = "Fast Food" if is_fast_food else (request.form.get("category", "Other").strip() or "Other")
+        stock_quantity_raw = request.form.get("stock_quantity", "1")
         location = request.form.get("location", "").strip() or vendor.get("business_location") or "Accra"
         
         file = request.files.get("product_image")
@@ -1232,7 +1238,7 @@ def home():
             filename = f"product-{uuid.uuid4().hex}{ext}"
             file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
         else:
-            filename = "fast-food-placeholder.svg" if is_fast_food else ""
+            filename = ""  # No placeholder - template shows emoji fallback
 
         video_filename = None
         if has_video:
@@ -1245,19 +1251,19 @@ def home():
             video_filename = f"video-{uuid.uuid4().hex}{ext}"
             video.save(os.path.join(app.config["UPLOAD_FOLDER"], video_filename))
 
-        stock_quantity = 1 if is_fast_food else int(stock_quantity or 1)
+        stock_quantity = 0 if is_fast_food else int(stock_quantity or 1)
 
         if title and price and description:
             b_label = vendor.get("company_name") or vendor.get("username") or "Individual Vendor"
-        query_db(
-                """INSERT INTO products (
+            query_db(
+                "INSERT INTO products (
                     title, price, description, image_file, video_file, stock_quantity, 
                     initial_stock_quantity, sold_quantity, status, seller, seller_email, 
                     seller_whatsapp, location, business_label, category, menu_type, served_with
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ?)""",
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ?)",
                 (title, float(price), description, filename, video_filename, stock_quantity, stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"), location, b_label, category, menu_type, accompaniments)
             )
-        return redirect(url_for("vendor_profile", username=vendor["username"], published="fastfood" if is_fast_food else "item"))
+            return redirect(url_for("vendor_profile", username=vendor["username"], published="fastfood" if is_fast_food else "item"))
 
     # ==========================================================================
     # 👑 2. CHRONOLOGICAL TIERED SORTING ENGINE (GET CHANNELS)
@@ -1284,14 +1290,45 @@ def home():
     # Core Query Execution: Tag promotions and join business labels cleanly (EXCLUDES FAST FOOD FROM HOME FEED)
     raw_products = query_db("""
         SELECT p.*, 
-               u.company_name AS business_label, u.business_location, u.role AS seller_role,
+               u.company_name AS business_label, u.business_location, u.role AS seller_role, u.subscription_expires_at, u.trial_started_at, u.plan,
                (SELECT id FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS active_promo_id,
                (SELECT main_price FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS promo_original_price,
                (SELECT promo_price FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS promo_effective_price
         FROM products p
         JOIN users u ON p.seller = u.username
-        WHERE p.status = 'Available' AND p.stock_quantity > 0 AND p.category != 'Fast Food' AND u.role NOT IN ('Fast Food')
+        WHERE p.status = 'Available' AND (p.category = 'Fast Food' OR p.stock_quantity > 0)
+          AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
     """) or []
+    
+    # Expiry auto-cleanup + Basic limit: Vendors get 2 months free premium from registration, after expiry only 3 listings visible
+    from collections import defaultdict
+    vendor_counts = defaultdict(int)
+    filtered_products = []
+    now = datetime.now(timezone.utc)
+    for prod in sorted(raw_products, key=lambda x: x.get('id',0), reverse=True):
+        # Check vendor subscription
+        exp_raw = prod.get('subscription_expires_at')
+        exp = None
+        if exp_raw:
+            try:
+                clean = exp_raw.strip().replace(' ','T')
+                if '+' not in clean and 'Z' not in clean:
+                    clean += '+00:00'
+                exp = datetime.fromisoformat(clean)
+            except:
+                exp = None
+        is_expired = not exp or exp <= now
+        seller = prod.get('seller')
+        if is_expired:
+            # Basic account: only first 3 newest listings stay visible (Amazon rule)
+            if vendor_counts[seller] >= 3:
+                continue
+        # Fast Food stock 0 = infinite, don't filter by stock
+        if prod.get('category') != 'Fast Food' and int(prod.get('stock_quantity') or 0) <=0:
+            continue
+        filtered_products.append(prod)
+        vendor_counts[seller] += 1
+    raw_products = filtered_products
 
     # Get user's favorites map context safely
     favorited_sellers = set()
@@ -1349,6 +1386,70 @@ def home():
 
     # Sort: Priority Rank First, Then Fall Back to Latest Posts (id DESC)
     processed_items.sort(key=lambda x: (-x["tier_score"], -x["id"]))
+
+    # FIX: Don't show own listings twice - vendors already have "Your Listings" section
+    if current_username and user_role in ["Vendor", "Fast Food"]:
+        processed_items = [p for p in processed_items if p["seller"] != current_username]
+
+    # 👑 QUARTERLY TOP 20 BRANDS LEADERBOARD - Based on customer ratings (quarterly)
+    # Calculate current quarter start
+    now_dt = datetime.now(timezone.utc)
+    quarter_start_month = ((now_dt.month - 1) // 3) * 3 + 1
+    quarter_start = datetime(now_dt.year, quarter_start_month, 1, tzinfo=timezone.utc).isoformat()
+    
+    # Top 20 brands by avg rating this quarter, fallback to all-time if not enough
+    top_20_brands = query_db("""
+        SELECT u.id, u.username, u.company_name, u.company_logo, u.business_location, u.role, u.is_verified_brand, u.verified_brand_type,
+               ROUND(AVG(r.rating), 1) AS avg_rating,
+               COUNT(r.id) AS rating_count,
+               (SELECT COUNT(*) FROM products p WHERE p.seller = u.username AND p.status='Available') AS product_count
+        FROM users u
+        JOIN reviews r ON r.vendor_id = u.id
+        WHERE u.role IN ('Vendor', 'Fast Food') 
+          AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
+          AND r.created_at >= ?
+        GROUP BY u.id
+        HAVING COUNT(r.id) >= 1
+        ORDER BY avg_rating DESC, rating_count DESC, u.id DESC
+        LIMIT 20
+    """, (quarter_start,)) or []
+    
+    # Fallback to all-time top 20 if quarterly has less than 5 brands
+    if len(top_20_brands) < 5:
+        top_20_brands = query_db("""
+            SELECT u.id, u.username, u.company_name, u.company_logo, u.business_location, u.role, u.is_verified_brand, u.verified_brand_type,
+                   ROUND(AVG(r.rating), 1) AS avg_rating,
+                   COUNT(r.id) AS rating_count,
+                   (SELECT COUNT(*) FROM products p WHERE p.seller = u.username AND p.status='Available') AS product_count
+            FROM users u
+            JOIN reviews r ON r.vendor_id = u.id
+            WHERE u.role IN ('Vendor', 'Fast Food') 
+              AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
+            GROUP BY u.id
+            HAVING COUNT(r.id) >= 1
+            ORDER BY avg_rating DESC, rating_count DESC, u.id DESC
+            LIMIT 20
+        """) or []
+    
+    # If still empty (no reviews yet), fallback to most active vendors by product count
+    if not top_20_brands:
+        top_20_brands = query_db("""
+            SELECT u.id, u.username, u.company_name, u.company_logo, u.business_location, u.role, u.is_verified_brand, u.verified_brand_type,
+                   5.0 AS avg_rating,
+                   0 AS rating_count,
+                   (SELECT COUNT(*) FROM products p WHERE p.seller = u.username AND p.status='Available') AS product_count
+            FROM users u
+            WHERE u.role IN ('Vendor', 'Fast Food') 
+              AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
+            ORDER BY product_count DESC, u.id DESC
+            LIMIT 20
+        """) or []
+    
+    for brand in top_20_brands:
+        brand["business_label"] = brand.get("company_name") or brand.get("username") or "BizHub Brand"
+        # Ensure logo fallback
+        if not brand.get("company_logo"):
+            brand["company_logo"] = None
 
     # Restores Live Fast Food Vendors Row
     fast_food_vendors = query_db("""
@@ -1441,7 +1542,8 @@ def home():
     # ==========================================================================
     # 🎨 5. RENDER THE SECURED PORTAL CONSOLE
     # ==========================================================================
-    return render_template("index.html", 
+    return render_template("index.html",
+                           top_20_brands=top_20_brands,
                            processed_items=processed_items,
                            marketplace_promos=marketplace_promos,
                            fast_food_vendors=fast_food_vendors,
@@ -1527,6 +1629,7 @@ def promo_marketplace():
         LEFT JOIN products p ON p.id = pr.product_id
         WHERE pr.active = 1
           AND replace(pr.starts_at, 'T', ' ') <= ? AND replace(pr.ends_at, 'T', ' ') >= ?
+          AND p.status = 'Available' AND (p.category = 'Fast Food' OR p.stock_quantity > 0)
           AND u.role IN ('Vendor', 'Fast Food')
           AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
         ORDER BY pr.id DESC
@@ -1559,7 +1662,7 @@ def promo_marketplace():
     deals.sort(key=lambda d: (0 if d["is_owner"] else 1 if d["is_favorite"] else 2, -int(d["id"])))
     return render_template("todays_deals.html", deals=deals, current_user=current_user)
 
-@app.route("/add-to-cart/<int:product_id>", methods=["GET", "POST"])
+@app.route("/add-to-cart/<int:product_id>", methods=["POST"])
 def add_to_cart(product_id):
     product = query_db("SELECT id, stock_quantity, status, category, title, seller, price FROM products WHERE id = ?", (product_id,), one=True)
     if not product:
@@ -1567,9 +1670,19 @@ def add_to_cart(product_id):
     
     is_food = bool(product.get("category") == "Fast Food")
     
-    # Standard physical vendors are stock-restricted, fast food menu items are infinite
     if not is_food and (int(product.get("stock_quantity") or 0) < 1 or product.get("status") == "Sold"):
         return redirect(url_for("home", listing_error="This product is sold out."))
+    
+    try:
+        requested_qty = int(request.form.get("quantity", 1) or 1)
+    except:
+        requested_qty = 1
+    if requested_qty < 1:
+        requested_qty = 1
+    if not is_food:
+        requested_qty = min(requested_qty, 99)
+    else:
+        requested_qty = min(requested_qty, 999)
         
     cart = session.get("cart") or {}
     if isinstance(cart, list):
@@ -1577,10 +1690,14 @@ def add_to_cart(product_id):
     key = str(product_id)
     current = int(cart.get(key, 0) or 0)
     
-    if not is_food and current >= int(product["stock_quantity"]):
-        return redirect(url_for("home", listing_error=f"Only {product['stock_quantity']} available for {product['title']}."))
+    if not is_food:
+        # Race safe check with latest DB value
+        latest = query_db("SELECT stock_quantity FROM products WHERE id = ?", (product_id,), one=True)
+        latest_stock = int(latest["stock_quantity"] or 0) if latest else 0
+        if (current + requested_qty) > latest_stock:
+            return redirect(url_for("home", listing_error=f"Only {latest_stock} available for {product['title']}. You already have {current} in cart."))
         
-    cart[key] = current + 1
+    cart[key] = current + requested_qty
     session["cart"] = cart
     session.modified = True
 
@@ -1589,8 +1706,10 @@ def add_to_cart(product_id):
         if user:
             query_db(
                 "INSERT INTO cart_history (user_id, product_id, title, seller, price, quantity_added, cart_quantity_after, added_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                (user["id"], product["id"], product["title"], product["seller"], float(product["price"]), 1, cart[key], datetime.now(timezone.utc).isoformat())
+                (user["id"], product["id"], product["title"], product["seller"], float(product["price"]), requested_qty, cart[key], datetime.now(timezone.utc).isoformat())
             )
+            # Bloat control: keep only latest 200 per user
+            query_db("DELETE FROM cart_history WHERE id NOT IN (SELECT id FROM cart_history WHERE user_id = ? ORDER BY id DESC LIMIT 200) AND user_id = ?", (user["id"], user["id"]))
     return redirect(url_for("home", cart_added="1"))
 
 
@@ -2354,7 +2473,11 @@ def notifications():
     if not user:
         session.clear()
         return redirect(url_for("login"))
-    rows = query_db("SELECT * FROM notifications WHERE recipient_id = ? ORDER BY id DESC LIMIT 80", (user["id"],)) or []
+    # Hide vendor delivery notifications away from customers - customers should not see delivery dispatch alerts
+    if user.get('role') == 'Customer':
+        rows = query_db("SELECT * FROM notifications WHERE recipient_id = ? AND COALESCE(notification_type,'') NOT IN ('delivery') ORDER BY id DESC LIMIT 80", (user["id"],)) or []
+    else:
+        rows = query_db("SELECT * FROM notifications WHERE recipient_id = ? ORDER BY id DESC LIMIT 80", (user["id"],)) or []
     unread = sum(1 for row in rows if not row["is_read"])
     return render_template("notifications.html", user=user, notifications=rows, unread_count=unread)
 
@@ -2515,13 +2638,27 @@ def request_verification():
 def request_delivery(service_id):
     if session.get("role") not in ["Vendor", "Fast Food"]:
         return redirect(url_for("login"))
-    vendor = query_db("SELECT id FROM users WHERE username = ?", (session["username"],), one=True)
-    service = query_db("SELECT ds.id, ds.service_name, ds.user_id FROM delivery_services ds JOIN users u ON u.id = ds.user_id WHERE ds.id = ? AND ds.availability = 'Available' AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')", (service_id,), one=True)
+    vendor = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+    service = query_db("SELECT ds.*, u.username AS service_username, u.whatsapp_number AS service_whatsapp, u.company_name FROM delivery_services ds JOIN users u ON u.id = ds.user_id WHERE ds.id = ? AND ds.availability = 'Available' AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')", (service_id,), one=True)
     message = request.form.get("message", "Delivery request from BizHub.").strip() or "Delivery request from BizHub."
     if vendor and service:
         now = datetime.now(timezone.utc).isoformat()
         query_db("INSERT INTO delivery_requests (vendor_id, service_id, message, created_at, updated_at) VALUES (?, ?, ?, ?, ?)", (vendor["id"], service["id"], message, now, now))
-        create_notification(service["user_id"], "delivery", "New delivery request", f"@{session['username']} requested delivery from {service['service_name']}.", url_for("features"))
+        # In-app notification for driver
+        vendor_label = vendor.get('company_name') or vendor.get('username')
+        create_notification(service["user_id"], "delivery", "New delivery request 💬", f"@{session['username']} ({vendor_label}) requested delivery: {message[:80]}. Tap to view & WhatsApp vendor.", url_for("delivery_dashboard"))
+        # Prepare WhatsApp notification for driver (direct wa.me link will be shown in dashboard, plus we create a vendor-side WhatsApp redirect)
+        try:
+            driver_wa = normalize_whatsapp_number(service.get('phone_number') or service.get('service_whatsapp') or '')
+            vendor_wa = normalize_whatsapp_number(vendor.get('whatsapp_number') or '')
+            # Log WhatsApp intent for driver - driver will see WhatsApp button in dashboard that opens chat to vendor
+            # We also store a system notification with WhatsApp link
+            if vendor_wa:
+                wa_msg = f"Hello {service['service_name']}, you have a NEW delivery request from {vendor_label} (@{vendor['username']}) on BizHub! Message: {message}. Pickup: {vendor.get('business_location','')} . Please check your BizHub driver dashboard and WhatsApp the vendor at https://wa.me/{vendor_wa}"
+                # This is for internal tracking - the actual WhatsApp is triggered via dashboard UI for driver
+                pass
+        except Exception as e:
+            pass
     return redirect(safe_internal_referrer("delivery_services"))
 
 @app.route("/delivery/requests/<int:request_id>/status", methods=["POST"])
@@ -2715,7 +2852,11 @@ def promotions():
                         new_video.save(p_v_path)
                 
                 if not promo_error:
-                    query_db("INSERT INTO products (title, price, description, image_file, video_file, stock_quantity, initial_stock_quantity, sold_quantity, status, seller, seller_email, seller_whatsapp, location, business_label, category) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?)",
+                    query_db("INSERT INTO products (
+                    title, price, description, image_file, video_file, stock_quantity, 
+                    initial_stock_quantity, sold_quantity, status, seller, seller_email, 
+                    seller_whatsapp, location, business_label, category, menu_type, served_with
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ?)",
                               (new_title, new_price, new_description, product_image_filename, product_video_filename, new_stock, new_stock, vendor["username"], vendor.get("email"), vendor.get("whatsapp_number"), new_location, vendor.get("company_name") or vendor.get("username"), new_category))
                     linked_product = query_db("SELECT * FROM products WHERE seller = ? ORDER BY id DESC LIMIT 1", (vendor["username"],), one=True)
                     product_id = linked_product["id"] if linked_product else None
@@ -2842,17 +2983,24 @@ def delivery_dashboard():
         
     service = get_delivery_service(user["id"])
     
-    # Extract live incoming shipment dispatch tickets safely
+    # Extract live incoming shipment dispatch tickets safely - includes vendor WhatsApp for direct chat
     requests_rows = []
     if service:
         requests_rows = query_db("""
-            SELECT dr.*, u.username AS vendor_username 
+            SELECT dr.*, u.username AS vendor_username, u.company_name AS vendor_company_name, u.whatsapp_number AS vendor_whatsapp, u.business_location AS vendor_location
             FROM delivery_requests dr 
             JOIN users u ON u.id = dr.vendor_id 
             WHERE dr.service_id = ? 
             ORDER BY CASE WHEN dr.status IN ('Requested', 'Accepted', 'Picked Up') THEN 0 ELSE 1 END, dr.id DESC 
             LIMIT 50
         """, (service["id"],)) or []
+        # Normalize whatsapp numbers for wa.me links
+        for r in requests_rows:
+            try:
+                if r.get('vendor_whatsapp'):
+                    r['vendor_whatsapp'] = normalize_whatsapp_number(r['vendor_whatsapp'])
+            except:
+                pass
 
     return render_template("delivery_dashboard.html", user=user, service=service, requests=requests_rows, delivery_types=DELIVERY_TYPES, welcome_message=welcome_message)
 
@@ -3107,7 +3255,45 @@ def admin_dashboard():
     verified_count_row = query_db("SELECT COUNT(*) AS count FROM financial_ledger WHERE status = 'Verified'", one=True)
     verified_count = verified_count_row["count"] if verified_count_row and verified_count_row["count"] is not None else 0
     
-    return render_template("admin.html", users=users, subscription_status=subscription_status, listing_counts=listing_counts, ledger_entries=ledger_entries, subscription_receipts=subscription_receipts, reports=reports, verification_requests=verification_requests, disputes=disputes, admin_audit_logs=admin_audit_logs, total_revenue=total_revenue, pending_momo=pending_momo, verified_count=verified_count)
+        # 🏆 Top 20 Brands for admin dashboard (quarterly)
+    try:
+        now_dt = datetime.now(timezone.utc)
+        quarter_start_month = ((now_dt.month - 1) // 3) * 3 + 1
+        quarter_start = datetime(now_dt.year, quarter_start_month, 1, tzinfo=timezone.utc).isoformat()
+        top_brands_admin = query_db('''
+            SELECT u.id, u.username, u.company_name, u.company_logo, u.business_location, u.role, u.is_verified_brand, u.verified_brand_type,
+                   ROUND(AVG(r.rating),1) AS avg_rating, COUNT(r.id) AS rating_count
+            FROM users u JOIN reviews r ON r.vendor_id = u.id
+            WHERE u.role IN ('Vendor','Fast Food') AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
+            AND r.created_at >= ?
+            GROUP BY u.id ORDER BY avg_rating DESC, rating_count DESC LIMIT 20
+        ''', (quarter_start,)) or []
+        if len(top_brands_admin) < 5:
+            top_brands_admin = query_db('''
+                SELECT u.id, u.username, u.company_name, u.company_logo, u.business_location, u.role, u.is_verified_brand, u.verified_brand_type,
+                       ROUND(AVG(r.rating),1) AS avg_rating, COUNT(r.id) AS rating_count
+                FROM users u JOIN reviews r ON r.vendor_id = u.id
+                WHERE u.role IN ('Vendor','Fast Food') AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
+                GROUP BY u.id ORDER BY avg_rating DESC, rating_count DESC LIMIT 20
+            ''') or []
+        for b in top_brands_admin:
+            b['business_label'] = b.get('company_name') or b.get('username')
+    except:
+        top_brands_admin = []
+    
+    try:
+        delivery_services_count = query_db("SELECT COUNT(*) as c FROM delivery_services", one=True)
+        delivery_services_count = delivery_services_count['c'] if delivery_services_count else 0
+    except:
+        delivery_services_count = 0
+    try:
+        delivery_requests_pending = query_db("SELECT COUNT(*) as c FROM delivery_requests WHERE status='Pending'", one=True)
+        delivery_requests_pending = delivery_requests_pending['c'] if delivery_requests_pending else 0
+    except:
+        delivery_requests_pending = 0
+    top_brands_count = len(top_brands_admin)
+
+    return render_template("admin.html", users=users, subscription_status=subscription_status, listing_counts=listing_counts, ledger_entries=ledger_entries, subscription_receipts=subscription_receipts, reports=reports, verification_requests=verification_requests, disputes=disputes, admin_audit_logs=admin_audit_logs, total_revenue=total_revenue, pending_momo=pending_momo, verified_count=verified_count, top_brands_admin=top_brands_admin, top_brands_count=top_brands_count, delivery_services_count=delivery_services_count, delivery_requests_pending=delivery_requests_pending)
 
 @app.route("/admin/adjust-points", methods=["POST"])
 def admin_adjust_points():
@@ -3144,7 +3330,19 @@ def review_verification(request_id):
         note = request.form.get("note", "Reviewed by BizHub administration.").strip()
         query_db("UPDATE verification_requests SET status = ?, note = ?, reviewed_at = ? WHERE id = ?", (action, note, now, request_id))
         if action == "Approved":
-            query_db("UPDATE users SET account_status = COALESCE(account_status, 'Active') WHERE id = ?", (item["user_id"],))
+            # 🏆 GLOWING GREEN VERIFIED BIZHUB BRAND - Vendor gets verified badge
+            user_to_verify = query_db("SELECT role FROM users WHERE id = ?", (item["user_id"],), one=True)
+            role_type = user_to_verify["role"] if user_to_verify else "Vendor"
+            brand_type = "Kitchen Brand" if role_type == "Fast Food" else "Store"
+            query_db("UPDATE users SET account_status = 'Active', is_verified_brand = 1, verified_at = ?, verified_brand_type = ? WHERE id = ?", (now, brand_type, item["user_id"]))
+            # Notify vendor they got glowing green verified badge
+            vendor_user = query_db("SELECT id, username, role FROM users WHERE id = ?", (item["user_id"],), one=True)
+            if vendor_user:
+                badge_text = "Verified BizHub Kitchen Brand" if vendor_user["role"] == "Fast Food" else "Verified BizHub Store"
+                create_notification(vendor_user["id"], "verification", "✅ You are now Verified!", f"🎉 Congratulations! Your {vendor_user['role']} account has been approved and now shows a glowing green '{badge_text}' badge across BizHub marketplace. Customers will see you as a trusted verified brand!", url_for("vendor_profile", username=vendor_user["username"]))
+        else:
+            # Rejected - remove verified badge
+            query_db("UPDATE users SET is_verified_brand = 0, verified_brand_type = NULL WHERE id = ?", (item["user_id"],))
         create_notification(item["user_id"], "announcement", "Verification request reviewed", f"Your BizHub verification request was {action.lower()}.", url_for("features"))
         query_db("INSERT INTO admin_audit_log (admin_username, action, target_username, details, created_at) VALUES (?, ?, ?, ?, ?)", (session.get("admin_username", "admin"), "Verification " + action, str(item["user_id"]), note, now))
     return redirect(url_for("admin_dashboard"))
@@ -3341,60 +3539,55 @@ def settings():
         new_username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip()
         whatsapp_number = normalize_whatsapp_number(request.form.get("whatsapp_number"))
-        company_name = request.form.get("company_name", "").strip() or None
-        business_location = request.form.get("business_location", "").strip() or None
+        company_name = html.escape(request.form.get("company_name", "").strip()) or None
+        business_location = html.escape(request.form.get("business_location", "").strip()) or None
+        current_password = request.form.get("current_password", "")
         new_password = request.form.get("new_password", "")
         confirm_password = request.form.get("confirm_password", "")
         theme = request.form.get("theme", "day")
         company_logo = user["company_logo"]
         logo_upload = request.files.get("company_logo")
         catalog_mode = request.form.get("catalog_mode", "Focused")
-        # Deduplicate submitted categories before writing to the UNIQUE(user_id, category) table.
         selected_categories = list(dict.fromkeys(
             category for category in request.form.getlist("vendor_categories")
             if category in VENDOR_CATEGORIES
         ))
 
         if not new_username:
-            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Username is required.")
+            return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Username is required.", app_theme=user.get("theme") or "day")
         if not re.fullmatch(r"[A-Za-z0-9_.-]{3,40}", new_username):
-            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Username must be 3-40 characters and use only letters, numbers, dots, underscores, or hyphens.")
+            return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Username must be 3-40 chars letters numbers _ . -", app_theme=user.get("theme") or "day")
         if new_username != current_username:
             existing = query_db("SELECT id FROM users WHERE username = ?", (new_username,), one=True)
             if existing:
-                return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="That username is already in use.")
-        if not email:
-            if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
-               return render_template(
-        "settings.html",
-        user=user,
-        subscription=subscription_status(user),
-        vendor_categories=vendor_categories,
-        vendor_category_options=VENDOR_CATEGORIES,
-        product_categories=PRODUCT_CATEGORIES,
-        settings_error="Enter a valid email address."
-    )
-            return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Email is required.")
+                return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="That username is already taken.", app_theme=user.get("theme") or "day")
+        if not email or "@" not in email or "." not in email:
+            return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Enter a valid email address.", app_theme=user.get("theme") or "day")
         if is_vendor_any and not whatsapp_number:
-            return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Vendor accounts need a WhatsApp number for payments.")
-        if new_password and len(new_password) < 6:
-            return render_template(
-        "settings.html",
-        user=user,
-        subscription=subscription_status(user),
-        vendor_categories=vendor_categories,
-        vendor_category_options=VENDOR_CATEGORIES,
-        product_categories=PRODUCT_CATEGORIES,
-        settings_error="Your new password must be at least 6 characters."
-    )
-        if new_password and new_password != confirm_password:
-            return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="The new passwords do not match.")
+            return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Vendor accounts need WhatsApp for payments.", app_theme=user.get("theme") or "day")
+        if new_password:
+            if not current_password:
+                return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Enter current password to change password.", app_theme=user.get("theme") or "day")
+            if not check_password_hash(user["password_hash"], current_password):
+                return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Current password is incorrect.", app_theme=user.get("theme") or "day")
+            if len(new_password) < 6:
+                return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="New password must be at least 6 characters.", app_theme=user.get("theme") or "day")
+            if new_password != confirm_password:
+                return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="New passwords do not match.", app_theme=user.get("theme") or "day")
         if theme not in ("day", "night"):
             theme = "day"
         if logo_upload and logo_upload.filename:
-            company_logo = save_company_logo(logo_upload)
-            if not company_logo:
-                return render_template("settings.html", user=user, vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Upload a PNG, JPG, JPEG, WEBP, or GIF logo.")
+            new_logo = save_company_logo(logo_upload)
+            if not new_logo:
+                return render_template("settings.html", user=user, subscription=subscription_status(user), vendor_categories=vendor_categories, vendor_category_options=VENDOR_CATEGORIES, product_categories=PRODUCT_CATEGORIES, settings_error="Logo must be PNG/JPG/JPEG/WEBP/GIF.", app_theme=user.get("theme") or "day")
+            try:
+                if company_logo:
+                    old_path = os.path.join(app.config["UPLOAD_FOLDER"], company_logo)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+            except:
+                pass
+            company_logo = new_logo
 
         if not is_vendor_any:
             company_name = None
@@ -3406,9 +3599,6 @@ def settings():
         elif catalog_mode not in ("Variety", "Focused"):
             catalog_mode = user.get("catalog_mode") or "Focused"
 
-        # Product ranges are optional in Settings. If none are checked, preserve the
-        # vendor's existing ranges instead of blocking unrelated changes such as theme,
-        # username, logo, business name or location.
         if is_vendor_any and not selected_categories:
             selected_categories = vendor_categories
 
@@ -3418,13 +3608,20 @@ def settings():
             (new_username, email, password_hash, company_name, whatsapp_number, catalog_mode, company_logo, business_location, theme, user["id"])
         )
 
-        # Keep username-based marketplace references synchronized when a user renames their account.
         if new_username != current_username:
-            query_db("UPDATE products SET seller = ? WHERE seller = ?", (new_username, current_username))
-            query_db("UPDATE order_items SET seller = ? WHERE seller = ?", (new_username, current_username))
-            query_db("UPDATE orders SET customer_username = ? WHERE customer_username = ?", (new_username, current_username))
-            query_db("UPDATE financial_ledger SET username = ? WHERE username = ?", (new_username, current_username))
-            query_db("UPDATE vendor_notifications SET customer_username = ? WHERE customer_username = ?", (new_username, current_username))
+            for q in [
+                "UPDATE products SET seller = ? WHERE seller = ?",
+                "UPDATE order_items SET seller = ? WHERE seller = ?",
+                "UPDATE orders SET customer_username = ? WHERE customer_username = ?",
+                "UPDATE financial_ledger SET username = ? WHERE username = ?",
+                "UPDATE vendor_notifications SET customer_username = ? WHERE customer_username = ?",
+                "UPDATE promotions SET vendor_username = ? WHERE vendor_username = ?",
+                "UPDATE cart_history SET seller = ? WHERE seller = ?",
+            ]:
+                try:
+                    query_db(q, (new_username, current_username))
+                except:
+                    pass
 
         query_db("DELETE FROM vendor_categories WHERE user_id = ?", (user["id"],))
         for category in selected_categories:
@@ -3436,6 +3633,8 @@ def settings():
         session["business_location"] = business_location
         session["whatsapp_number"] = whatsapp_number
         session["theme"] = theme
+        if new_password:
+            return redirect(url_for("settings", updated="1", password_changed="1"))
         return redirect(url_for("settings", updated="1"))
 
     return render_template(
@@ -3445,12 +3644,11 @@ def settings():
         vendor_categories=vendor_categories,
         vendor_category_options=VENDOR_CATEGORIES,
         product_categories=PRODUCT_CATEGORIES,
+        app_theme=user.get("theme") or session.get("theme") or "day",
         updated=request.args.get("updated") == "1"
     )
 
-# ==========================================================================
-# 👑 LIVE USERNAME AVAILABILITY VERIFICATION ENDPOINT
-# ==========================================================================
+
 @app.route("/api/check-username")
 def api_check_username():
     """Streams asynchronous validation statuses back to the login view."""

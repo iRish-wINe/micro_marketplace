@@ -1,310 +1,146 @@
-<!DOCTYPE html><!-- 🚀 REPLICA INJECTOR BOUNDARY PATHWAY AT THE VERY TOP OF ALL FILE TEMPLATES -->
-<html lang="en" {% if app_theme == 'night' %}class="night-theme"{% endif %}>
+<!DOCTYPE html>
+<html lang="en" {% if app_theme == 'night' or user.theme == 'night' %}class="night-theme"{% endif %}>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Features & Account Tools | BizHub</title>
-    <style>
-        body{margin:0;background:#f3f4f6;color:#111827;font-family:Arial,Helvetica,sans-serif}
-        a{text-decoration:none}
-        .top{background:#131921;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-        .brand{font-size:22px;font-weight:900;color:#fff}
-        .brand span{color:#ff9900}
-        .nav{background:#232f3e;display:flex;gap:4px;overflow:auto;white-space:nowrap;padding:0 10px}
-        .nav a{color:#fff;padding:11px 12px;font-weight:700;font-size:13px}
-        .wrap{max-width:1180px;margin:24px auto;padding:0 16px}
-        
-        :root {
-            --nav: #0B192C;
-            --accent: #F59E0B;
-            --bg: #F4F7FB;
-            --text-main: #0F172A;
-            --text-muted: #64748B;
-            --border-color: #DBE3ED;
-            --success: #06C167;
-            --bg-card: #FFFFFF;
-            --danger: #EF4444;
-        }
-        :root.night-theme {
-            --bg: #15202B !important;
-            --bg-card: #1E2732 !important;
-            --text-main: #F7F9F9 !important;
-            --text-muted: #8899A6 !important;
-            --border-color: #38444D !important;
-            --nav: #1E2732 !important;
-        }
-        * { box-sizing: border-box; }
-        
-        .container { max-width: 900px; margin: 20px auto; display: flex; flex-direction: column; gap: 24px; width: 100%; }
-        .card { background: var(--bg-card); padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
-        h1 { font-size: 26px; margin: 0 0 8px 0; font-weight: 800; }
-        h2 { font-size: 18px; margin: 0 0 12px 0; font-weight: 700; border-bottom: 2px solid var(--border-color); padding-bottom: 6px; }
-        h3 { font-size: 16px; margin: 15px 0 10px 0; font-weight: 700; }
-        p { line-height: 1.5; font-size: 14.5px; margin: 0 0 16px 0; }
-        
-        .form-control { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 14px; background: #fff; color: inherit; }
-        .submit-btn { background: #0B192C; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; }
-        .submit-btn:hover { opacity: 0.9; }
-        .log-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
-        .log-row:last-child { border-bottom: none; }
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-        .badge-pending { background: #FEF3C7; color: #D97706; }
-        .badge-verified { background: #D1FAE5; color: #06C167; }
-        .badge-danger { background: #FEE2E2; color: #EF4444; }
-    </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Features & Account Tools | BizHub - Amazon Style</title>
+<style>
+:root{--navy:#131921;--navy2:#232f3e;--orange:#ff9900;--yellow:#febd69;--bg:#eaeded;--card:#fff;--text:#0F1111;--muted:#565959;--border:#EAEDED;--success:#067647;--accent:#F59E0B;--danger:#EF4444}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important}
+.bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:#131921;box-shadow:0 2px 12px rgba(0,0,0,0.18);width:100%}
+.bh-topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;width:100%;box-sizing:border-box}
+.bh-brand{display:flex;align-items:center;gap:6px;text-decoration:none;color:#fff;font-weight:900;font-size:20px;white-space:nowrap;flex-shrink:0}
+.bh-brand span{color:var(--yellow)}
+.bh-location{min-width:110px;display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;flex-shrink:0}
+.bh-location small{display:block;font-size:9px;font-weight:800;text-transform:uppercase}
+.bh-location strong{display:block;font-size:11px;font-weight:800;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bh-search{display:flex;flex:1;max-width:600px;height:40px;border-radius:5px;overflow:hidden;background:#fff;margin:0}
+.bh-search input{border:0;outline:0;flex:1;padding:0 12px;font-size:14px;color:#111}
+.bh-search button{width:48px;border:0;background:var(--yellow);color:#111;font-size:16px;cursor:pointer}
+.bh-subbar{min-height:42px;background:var(--navy2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch;width:100%;box-sizing:border-box;border-top:1px solid rgba(255,255,255,0.05)}
+.bh-subbar::-webkit-scrollbar{display:none}
+.bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px;flex-shrink:0}
+.bh-subbar a:hover{border-color:#fff}
+.bh-subbar a.top20{color:#FFD814 !important;font-weight:900;border:1px solid #FFD814;border-radius:4px;padding:6px 10px}
+.bh-location{display:flex !important}
+@media(max-width:768px){.bh-location{display:flex !important;min-width:90px !important;padding:5px 8px !important}.bh-location small{font-size:8px !important}.bh-location strong{font-size:10px !important;max-width:85px !important}.bh-topbar{gap:6px !important}.bh-brand{font-size:18px}}
+.container{max-width:900px;margin:20px auto;display:flex;flex-direction:column;gap:16px;width:100%;padding:0 16px}
+.card{background:var(--card);padding:20px;border-radius:12px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.card h1{font-size:22px;margin:0 0 8px 0;font-weight:900;letter-spacing:-0.3px}
+.card h2{font-size:16px;margin:0 0 12px 0;font-weight:800;border-bottom:2px solid var(--border);padding-bottom:8px}
+.form-control{width:100%;padding:10px;border-radius:6px;border:1px solid var(--border);font-size:14px;background:#fff}
+.submit-btn{background:#131921;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer}
+.badge{display:inline-block;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:800;text-transform:uppercase}
+.badge-pending{background:#FEF3C7;color:#D97706}.badge-verified{background:#D1FAE5;color:#06C167}.badge-danger{background:#FEE2E2;color:#EF4444}
+</style>
 </head>
 <body>
 
-<header class="top">
-    <a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a>
-    <div style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</div>
-</header>
-   <!-- 📌 STICKY NAVIGATION BAR -->
-    <nav class="nav">
-        <a href="{{ url_for('home') }}">☰ Marketplace</a>
-        <a href="{{ url_for('all_stores') }}">All Stores</a>
-        <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
-        <a href="{{ url_for('favorites') }}">Favorites</a>
-        <a href="{{ url_for('order_history') }}">Orders</a>
-        <a href="{{ url_for('settings') }}">Your Account</a>
-        <a href="{{ url_for('notifications') }}">🔔Biz Alerts</a>
-    </nav>
+<div class="bh-global-header">
+<div class="bh-topbar">
+<a class="bh-brand" href="/">Biz<span>Hub</span></a>
+<div class="bh-location"><span style="font-size:16px">📍</span><div style="line-height:1.1">
+{% if session.get('role') == 'Delivery Service' %}
+<small style="color:#FEBD69">Dispatching from</small><strong>{{ (service.operating_location if service is defined and service else '') or (user.business_location if user is defined and user else '') or 'Ghana' }}</strong>
+{% elif session.get('role') in ['Vendor','Fast Food'] %}
+<small style="color:#10B981">Delivering from</small><strong>{{ user.business_location or 'Ghana' }}</strong>
+{% else %}
+<small style="color:#C7D0D9">Ordering from</small><strong>{{ (user.business_location if user is defined and user and user.business_location else 'Ghana') }}</strong>
+{% endif %}
+</div></div>
+<form method="GET" action="/" class="bh-search"><input type="text" name="company_search" placeholder="Search BizHub..."><button type="submit">🔍</button></form>
+<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">{% if session.get('username') %}<span style="font-size:11px;font-weight:700;color:var(--yellow)">👤 {{ session['username'] }}</span>{% else %}<a href="/login" style="color:#fff;font-size:12px;font-weight:700;text-decoration:none">Sign In</a>{% endif %}</div>
+</div>
+<nav class="bh-subbar">
+<a href="javascript:void(0)" onclick="document.getElementById('amazonOverlay').style.display='block'; setTimeout(()=>document.getElementById('amazonDrawer').style.left='0',10); return false;" style="color:#febd69 !important">☰ All</a>
+<a href="/">Today's Deals</a>
+<a href="/top-brands" class="top20">🏆 Top 20 Brands</a>
+<a href="/all-stores">All Stores</a>
+<a href="/fast-food">Fast Food</a>
+<a href="/cart">🛒 Cart</a>
+<a href="/favorites">Favorites</a>
+<a href="/notifications">🔔 Biz Alerts</a>
+<a href="/orders">Orders</a>
+<a href="/features" style="background:#fff;color:#0F1111 !important;border-radius:6px">🎯 Features</a>
+<a href="/settings">Your Account</a>
+</nav>
+</div>
+
+<div id="amazonOverlay" style="position:fixed;inset:0;background:rgba(5,12,22,0.65);z-index:99999;display:none" onclick="this.style.display='none'; document.getElementById('amazonDrawer').style.left='-340px'">
+<div id="amazonDrawer" style="width:340px;height:100%;background:#fff;position:absolute;top:0;left:-340px;transition:left 0.25s ease" onclick="event.stopPropagation()">
+<div style="background:#131921;padding:18px 24px;color:#fff;border-bottom:3px solid #F59E0B"><b>Hello, {% if session.get('username') %}@{{ session['username'] }}{% else %}sign in{% endif %}</b></div>
+<div style="padding:20px 0"><div style="padding:0 24px 6px 24px;font-size:12px;font-weight:800;color:#64748B;text-transform:uppercase">Top Brands</div><a href="/top-brands" style="display:flex;justify-content:space-between;padding:11px 24px;color:#1E293B;text-decoration:none;font-weight:600">🏆 Top 20 Brands <span style="color:#F59E0B">➔</span></a></div>
+</div>
+</div>
 
 <div class="container">
+<div class="card">
+<h1>Features & Account Tools</h1>
+<p style="margin:0;color:var(--muted);font-weight:500;font-size:13px">Manage loyalty, verification, coupons, and order dispute ledgers in one secure hub — Amazon style.</p>
+{% if verification_sent %}<div style="margin-top:12px;padding:12px;background:#D1FAE5;color:#06C167;border-radius:6px;font-weight:700;font-size:13px">✓ Verification request filed!</div>{% endif %}
+</div>
 
-    <div class="card">
-        <h1>Features & Account Tools</h1>
-        <p style="margin: 0; color: var(--text-muted); font-weight: 500;">Manage corporate loyalty metrics, verification validations, promotional coupon structures, and order dispute ledgers in one secure hub.</p>
-        {% if verification_sent %}
-            <div style="margin-top: 15px; padding: 12px; background: #D1FAE5; color: #06C167; border-radius: 6px; font-weight: 700; font-size: 13.5px;">
-                ✓ Success: Your marketplace verification review request has been securely filed inside the audit workspace!
-            </div>
-        {% endif %}
-    </div>
+<div class="card">
+<h2>🪙 Corporate Loyalty Rewards Status</h2>
+<div style="background:#FFFBEB;border:1px dashed #FDE68A;padding:16px;border-radius:8px;display:inline-flex;flex-direction:column;gap:4px;min-width:220px;margin-bottom:12px">
+<span style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase">BizHub Member Wallet</span>
+<b style="font-size:26px;color:var(--accent)">{{ loyalty.points }} Points</b>
+</div>
+<p style="margin:0;font-size:12px;color:var(--muted)">💡 1 point per whole currency unit of completed order. Duplicate rewards locked out.</p>
+</div>
 
-    <!-- SECTION: CORPORATE LOYALTY -->
-    <div class="card">
-        <h2>🪙 Corporate Loyalty Rewards Status</h2>
-        <div style="background: rgba(0,0,0,0.01); border: 1px dashed var(--border-color); padding: 16px; border-radius: 8px; display: inline-flex; flex-direction: column; gap: 4px; min-width: 220px; text-align: left; margin-bottom: 12px;">
-            <span style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">BizHub Member Wallet</span>
-            <b style="font-size: 26px; color: var(--accent);">{{ loyalty.points }} Points</b>
-        </div>
-        <p style="margin: 0; font-size: 13px; color: var(--text-muted); line-height: 1.4;">
-            💡 <b>Rule Matrix:</b> Eligible completed marketplace orders automatically generate 1 point per whole currency unit of the final checkout cost statement. Duplicate rewards for identical transaction tokens are locked out.
-        </p>
-    </div>
+{% if analytics %}
+<div class="card" style="border-top:4px solid #10B981">
+<h2>📈 Store Performance Analytics</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">
+<div style="background:#F7F8F8;border:1px solid var(--border);padding:12px;border-radius:8px;text-align:center"><b style="font-size:20px">{{ analytics.listings }}</b><span style="display:block;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-top:2px">Active Items</span></div>
+<div style="background:#FFFBEB;border:1px solid #FDE68A;padding:12px;border-radius:8px;text-align:center"><b style="font-size:20px;color:var(--accent)">{{ analytics.views }}</b><span style="display:block;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Views</span></div>
+<div style="background:#ECFDF5;border:1px solid #A7F3D0;padding:12px;border-radius:8px;text-align:center"><b style="font-size:20px;color:#065F46">{{ analytics.sold_units }}</b><span style="display:block;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Sold Units</span></div>
+</div>
+<h3>🎟️ Your Coupons</h3>
+{% for coupon in coupons %}<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px"><span><b>{{ coupon.code }}</b> - {{ coupon.discount }}% OFF</span><span style="font-size:11px;color:var(--muted)">{{ coupon.usage_count }} used</span></div>{% else %}<p style="color:var(--muted);font-size:13px;font-style:italic">No coupons yet.</p>{% endfor %}
+</div>
+{% endif %}
 
-    <!-- SECTION: VENDOR PERFORMANCE ANALYTICS & COUPONS -->
-    {% if analytics %}
-        <div class="card" style="border-top: 4px solid var(--success);">
-            <h2>📈 Store Performance Analytics</h2>
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:20px;">
-                <div style="background:rgba(0,0,0,0.01); border:1px solid var(--border-color); padding:12px; border-radius:6px; text-align:center;">
-                    <b style="font-size:22px; color:var(--text-main);">{{ analytics.listings }}</b>
-                    <span style="display:block; font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase; margin-top:2px;">Active Items</span>
-                </div>
-                <div style="background:rgba(0,0,0,0.01); border:1px solid var(--border-color); padding:12px; border-radius:6px; text-align:center;">
-                    <b style="font-size:22px; color:var(--accent);">{{ analytics.views }}</b>
-                    <span style="display:block; font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase; margin-top:2px;">Total Product Views</span>
-                </div>
-                <div style="background:rgba(0,0,0,0.01); border:1px solid var(--border-color); padding:12px; border-radius:6px; text-align:center;">
-                    <b style="font-size:22px; color:var(--success);">{{ analytics.sold_units }}</b>
-                    <span style="display:block; font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase; margin-top:2px;">Units Fulfilled</span>
-                </div>
-            </div>
+{% if session.get('role') in ['Vendor','Fast Food'] %}
+<div class="card">
+<h2>🚚 Logistics Carrier Request Trackers</h2>
+{% for dr in delivery_requests %}
+<div style="background:#fff;border:1px solid var(--border);padding:14px;border-radius:8px;margin-bottom:10px">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><b>Carrier: {{ dr.service_name }}</b><span class="badge" style="background:#0F172A;color:#FFF">{{ dr.status }}</span></div>
+<p style="margin:6px 0 10px 0;font-size:12px;color:var(--muted)">"{{ dr.message }}"</p>
+{% if dr.status == 'Delivered' and dr.id not in rated_request_ids %}
+<form method="POST" action="/delivery/requests/{{ dr.id }}/rate" style="display:flex;flex-direction:column;gap:8px;background:#F9FAFB;padding:10px;border-radius:6px;border:1px solid var(--border);max-width:480px">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<select name="rating" style="padding:6px;border-radius:4px;border:1px solid var(--border);background:#fff;font-weight:700"><option value="5">★★★★★ Excellent</option><option value="4">★★★★ Good</option><option value="3">★★★ Average</option><option value="2">★★ Poor</option><option value="1">★ Unacceptable</option></select>
+<input type="text" name="comment" style="padding:6px;border-radius:4px;border:1px solid var(--border);font-size:12px" placeholder="Short note (optional)...">
+<button type="submit" class="submit-btn" style="align-self:flex-end">Submit Rating</button>
+</form>
+{% elif dr.id in rated_request_ids %}<div style="font-size:12px;color:var(--success);font-weight:700">✓ Rating logged.</div>{% endif %}
+</div>
+{% else %}
+<div style="padding:20px;text-align:center;border:1px dashed var(--border);border-radius:8px;color:var(--muted);font-style:italic;font-size:13px">📭 No delivery requests found.</div>
+{% endfor %}
+</div>
+{% endif %}
 
-            <h3>🎟️ Issue Promotional Coupon Codes</h3>
-            <form method="POST" action="/create-coupon" style="background:rgba(0,0,0,0.01); border:1px solid var(--border-color); padding:16px; border-radius:8px; display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px; align-items:flex-end;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <div style="margin:0;">
-                    <label style="font-size: 12px; font-weight:700; display:block; margin-bottom:4px;">Coupon Reference Code:</label>
-                    <input type="text" name="code" class="form-control" placeholder="e.g. FESTIVE20" required style="text-transform:uppercase;">
-                </div>
-                <div style="margin:0;">
-                    <label style="font-size: 12px; font-weight:700; display:block; margin-bottom:4px;">Discount Percentage (%):</label>
-                    <input type="number" name="discount" class="form-control" placeholder="e.g. 15" min="1" max="100" required>
-                </div>
-                <div style="margin:0;">
-                    <label style="font-size: 12px; font-weight:700; display:block; margin-bottom:4px;">Total Redemption Limit:</label>
-                    <input type="number" name="max_redemptions" class="form-control" placeholder="0 for unlimited" value="0">
-                </div>
-                <div style="margin:0; grid-column: 1/-1; margin-top:6px;">
-                    <label style="font-size: 12px; font-weight:700; display:block; margin-bottom:4px;">Brief Description Caption:</label>
-                    <input type="text" name="description" class="form-control" placeholder="e.g. Take 15% off shoes on orders today..." required>
-                </div>
-                <button type="submit" class="submit-btn" style="grid-column: 1/-1; margin-top:6px; background:var(--success); color: white;">Generate Active Store Coupon</button>
-            </form>
-
-            <h4 style="margin-bottom:8px; margin-top:20px; font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:800; letter-spacing:0.5px;">📋 Active Issued Merchant Coupons</h4>
-            <div style="border:1px solid var(--border-color); border-radius:8px; background:var(--bg-card); overflow:hidden;">
-                {% for coupon in coupons %}
-                    <div class="log-row">
-                        <div>
-                            <code style="font-size:13px; background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:4px; font-weight:700; color:var(--danger);">{{ coupon.code }}</code>
-                            <span style="font-size:13.5px; margin-left:8px;">{{ coupon.description }}</span>
-                        </div>
-                        <div style="text-align:right;">
-                            <b style="color:var(--success); font-size:14px;">-{{ coupon.discount }}% OFF</b>
-                            {% if coupon.max_redemptions|default(0)|int > 0 %}<div style="font-size:10px; color:var(--text-muted);">Max Limit: {{ coupon.max_redemptions }}</div>{% endif %}
-                        </div>
-                    </div>
-                {% else %}
-                    <p style="padding:16px; text-align:center; color:var(--text-muted); margin:0; font-style:italic; font-size:13.5px;">📭 No custom promotional coupon codes created yet.</p>
-                {% endfor %}
-            </div>
-        </div>
-    {% endif %}
-
-    <!-- SECTION: TRUST PROFILE -->
-    <div class="card">
-        <h2>🆔 Trust Profile & Verification Reviews</h2>
-        <p>File or review your active authentication request status to display verified vendor or delivery fleet verification badges across the public marketplace channels.</p>
-        
-        {% if verification_request %}
-            <div style="background:rgba(0,0,0,0.01); border:1px solid var(--border-color); padding:16px; border-radius:8px; margin-bottom:15px; text-align:left;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <b>Request Pipeline Audit State:</b>
-                    <span class="badge {% if verification_request.status == 'Pending' %}badge-pending{% elif verification_request.status == 'Approved' %}badge-verified{% else %}badge-danger{% endif %}">
-                        {{ verification_request.status }}
-                    </span>
-                </div>
-                {% if verification_request.user_message %}
-                    <div style="margin-top:10px; font-size:13px; color:var(--text-main); background:var(--bg-card); padding:10px; border-radius:6px; border:1px solid var(--border-color);">
-                        <b>Your Sent Statement:</b> "{{ verification_request.user_message }}"
-                    </div>
-                {% endif %}
-                {% if verification_request.note and verification_request.status != 'Pending' %}
-                    <div style="margin-top:8px; font-size:13px; background:#fffbeb; padding:10px; border-radius:6px; border:1px solid #fef3c7;">
-                        <b>Reviewer Audit Note:</b> {{ verification_request.note }}
-                    </div>
-                {% endif %}
-            </div>
-        {% endif %}
-
-        {% if not verification_request or verification_request.status != 'Pending' %}
-            <form method="POST" action="/request-verification" style="background:rgba(0,0,0,0.01); border:1px solid var(--border-color); padding:16px; border-radius:8px; margin-top:12px; text-align:left;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:10px;">
-                    <label style="font-size:12px; font-weight:700;">Message to Audit Team / Credentials Statement:</label>
-                    <textarea name="user_message" class="form-control" rows="3" placeholder="Provide information regarding your shop origin, registration number, or MoMo setup parameters to secure top branding badges..." required></textarea>
-                </div>
-                <button type="submit" class="submit-btn">File Formal Verification Request</button>
-            </form>
-        {% else %}
-            <div style="background:#eff6ff; color:#1e40af; padding:12px 16px; border-radius:6px; font-size:13px; font-weight:600; border:1px solid #bfdbfe; text-align:left;">
-                ⏳ You already have an open verification ticket pending platform appraisal. Please wait for outcomes.
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- SECTION: DISPUTES & HISTORY FOR CUSTOMERS -->
-    {% if session.get('role') == 'Customer' %}
-        <div class="card" style="text-align:left;">
-            <h2>⚠ File Order or Payment Settlement Dispute</h2>
-            <p>Encountered transactional discrepancies, broken merchandise delivery boxes, or unauthorized charges? File formal escalations below to alert system monitoring logs.</p>
-            <form method="POST" action="/disputes" style="display:flex; flex-direction:column; gap:12px;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <div style="display:flex; flex-direction:column; gap:4px;">
-                    <label style="font-size:12px; font-weight:700;">Associated Order ID Token Reference:</label>
-                    <input type="number" name="order_id" class="form-control" placeholder="e.g. 1042">
-                </div>
-                <div style="display:flex; flex-direction:column; gap:4px;">
-                    <label style="font-size:12px; font-weight:700;">Dispute Subject Parameter:</label>
-                    <input type="text" name="subject" class="form-control" placeholder="e.g. Non-delivery of item" required>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:4px;">
-                    <label style="font-size:12px; font-weight:700;">Detailed Incident Narrative / Specification Log:</label>
-                    <textarea name="details" class="form-control" rows="3" placeholder="Explain everything clearly..." required></textarea>
-                </div>
-                <button type="submit" class="submit-btn" style="width:fit-content; background:var(--danger); color:white;">File Formal Dispute Statement</button>
-            </form>
-
-            <h2 style="margin-top:24px;">🔎 Saved Searches Log</h2>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-                {% for search in saved_searches %}
-                    <div class="log-row">
-                        <span>🔎 <b>Query Pattern:</b> "{{ search.query }}"</span>
-                        <a href="/?company_search={{ search.query|urlencode }}" style="color:var(--primary-blue, #1D9BF0); text-decoration:none; font-weight:700; font-size:13px;">Search Again ➔</a>
-                    </div>
-                {% else %}
-                    <p style="color:var(--text-muted); font-style:italic; font-size:13.5px; margin:0;">📭 No saved searches configured in your profile history sheet yet.</p>
-                {% endfor %}
-            </div>
-        </div>
-    {% endif %}
-
-    <!-- SECTION: LOGISTICS REQUEST TRACKERS -->
-    {% if session.get('role') in ['Vendor', 'Fast Food'] %}
-        <div class="card" style="text-align:left;">
-            <h2>🚚 Logistics Carrier Request Trackers</h2>
-            <p>Review real-time status progressions assigned to logistics carrier requests (Requested ➔ Accepted ➔ Picked Up ➔ Delivered).</p>
-            
-            {% for dr in delivery_requests %}
-                <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:16px; border-radius:8px; margin-bottom:12px; box-shadow:0 1px 3px rgba(0,0,0,0.01);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                        <b>Carrier Name: {{ dr.service_name }}</b>
-                        <span class="badge" style="background:#0F172A; color:#FFF;">{{ dr.status }}</span>
-                    </div>
-                    <p style="margin:6px 0 10px 0; font-size:13px; color:var(--text-muted);">Memo Context: "{{ dr.message }}"</p>
-
-                    {% if dr.status == 'Delivered' and dr.id not in rated_request_ids %}
-                        <form method="POST" action="/delivery/requests/{{ dr.id }}/rate" style="display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); max-width: 480px;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <span style="font-size: 12px; font-weight: 700;">Rate Carrier Performance:</span>
-                                <select name="rating" style="padding: 4px; border-radius: 4px; border: 1px solid var(--border-color); background:white; font-weight:bold; cursor:pointer;">
-                                    <option value="5">★★★★★ Excellent Performance</option>
-                                    <option value="4">★★★★☆ Good Logistics Service</option>
-                                    <option value="3">★★★☆☆ Average Response</option>
-                                    <option value="2">★★☆☆☆ Poor Route Fulfillment</option>
-                                    <option value="1">★☆☆☆☆ Unacceptable Infractions</option>
-                                </select>
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 4px;">
-                                <input type="text" name="comment" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); font-size: 12.5px;" placeholder="Write a short evaluation note (optional)...">
-                            </div>
-                            <button type="submit" class="submit-btn" style="width: fit-content; padding: 6px 12px; font-size: 12px; align-self: flex-end; background:#0B192C; color:white; border:none; border-radius:4px; font-weight:700; cursor:pointer;">Submit Rating</button>
-                        </form>
-                    {% elif dr.id in rated_request_ids %}
-                        <div style="font-size:12.5px; color:var(--success); font-weight:700; display:flex; align-items:center; gap:4px;">
-                            <span>✓</span> Carrier performance metric rating logged.
-                        </div>
-                    {% endif %}
-                </div>
-            {% else %}
-                <div style="padding:20px; text-align:center; border:1px dashed var(--border-color); border-radius:8px; color:var(--text-muted); font-style:italic;">
-                    📭 No localized delivery service request sheets found.
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <!-- SECTION: WRITTEN PROFILE REVIEW HISTORY LOGS -->
-    <div class="card" style="text-align:left;">
-        <h2>📋 Written Storefront Profile Reviews History</h2>
-        <div style="display:flex; flex-direction:column; gap:10px;">
-            {% for review in reviews %}
-                <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:14px; border-radius:8px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                        <b style="font-size:14.5px;">Merchant: {{ review.company_name or review.vendor_username }}</b>
-                        <span style="color:var(--accent); font-size:13px; letter-spacing:1px;">
-                            {{ '★ ' * review.rating }}{{ '☆' * (5 - review.rating) }}
-                        </span>
-                    </div>
-                    <p style="margin:0; font-size:13.5px; font-style:italic; color:#334155;">"{{ review.comment }}"</p>
-                </div>
-            {% else %}
-                <p style="color:var(--text-muted); font-style:italic; font-size:13.5px; margin:0;">📝 Reviews and star ratings you publish across merchant profiles will generate listings here.</p>
-            {% endfor %}
-        </div>
-    </div>
+<div class="card">
+<h2>📋 Written Storefront Profile Reviews History</h2>
+<div style="display:flex;flex-direction:column;gap:8px">
+{% for review in reviews %}
+<div style="background:#fff;border:1px solid var(--border);padding:12px;border-radius:8px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><b style="font-size:13px">Merchant: {{ review.company_name or review.vendor_username }}</b><span style="color:var(--accent);font-size:12px">{{ '★'*review.rating }}{{ '☆'*(5-review.rating) }}</span></div>
+<p style="margin:0;font-size:12px;font-style:italic;color:#334155">"{{ review.comment }}"</p>
+</div>
+{% else %}
+<p style="color:var(--muted);font-style:italic;font-size:13px;margin:0">📝 Reviews you publish will appear here.</p>
+{% endfor %}
+</div>
+</div>
 
 </div>
 
-<!-- 👑 BIZHUB PLATFORM EXCLUSIVE SYSTEM COPYRIGHT FOOTER -->
-<footer style="margin-top: 60px; padding: 20px 0; border-top: 1px solid var(--border-color, #E2E8F0); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
-    © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS  Company
-</footer>
-
+<footer style="margin-top:40px;padding:20px 0;border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:12px;font-weight:600">© 2026 BizHub Marketplace • Features • A Prodoct of The TOZOTS Company</footer>
 </body>
 </html>

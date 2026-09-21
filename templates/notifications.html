@@ -1,106 +1,140 @@
 <!DOCTYPE html>
-<html lang="en" {% if app_theme == 'night' %}class="night-theme"{% endif %}>
+<html lang="en" {% if app_theme == 'night' or user.theme == 'night' %}class="night-theme"{% endif %}>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Notifications Alert Desk | BizHub</title>
-    <style>
-        body{margin:0;background:#f3f4f6;color:#111827;font-family:Arial,Helvetica,sans-serif}a{text-decoration:none}.top{background:#131921;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}.brand{font-size:22px;font-weight:900;color:#fff}.brand span{color:#ff9900}.nav{background:#232f3e;display:flex;gap:4px;overflow:auto;white-space:nowrap;padding:0 10px}.nav a{color:#fff;padding:11px 12px;font-weight:700;font-size:13px}.wrap{max-width:1180px;margin:24px auto;padding:0 16px}
-        :root { --nav:#0b192c; --accent:#f59e0b; --bg:#f4f7fb; --text:#172033; --muted:#64748b; --border:#dbe3ed; --danger:#ef4444; }
-        * { box-sizing: border-box; }
-        
-        .notifications-wrap { max-width: 700px; margin: 24px auto; padding: 0 16px; }
-        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .clear-all-btn { background: none; border: none; color: var(--muted); font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: underline; }
-        
-        .notification-card { background: #FFFFFF; border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); cursor: pointer; transition: all 0.2s; position: relative; }
-        .notification-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .notification-card.unread { border-left: 5px solid var(--accent); background: #FFFDF9; }
-        
-        .card-title { font-size: 15px; font-weight: 800; color: var(--nav); margin: 0 0 4px 0; }
-        .card-time { font-size: 11px; color: var(--muted); font-weight: 600; display: block; margin-bottom: 8px; }
-        .card-snippet { font-size: 13px; color: #334155; margin: 0; line-height: 1.4; }
-        
-        .opened-modal-overlay { background: rgba(15, 25, 44, 0.05); border: 2px solid var(--accent); border-radius: 12px; padding: 20px; margin-bottom: 24px; background: white; box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
-        .close-view-btn { background: var(--nav); color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-top: 15px; }
-        .close-view-btn:hover { opacity: 0.9; }
-    </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications | BizHub - Amazon Sticky</title>
+<style>
+:root{--navy:#131921;--navy2:#232f3e;--yellow:#febd69;--orange:#ff9900;--bg:#f3f4f6;--card:#fff;--border:#dbe3ed;--accent:#f59e0b;--muted:#64748b;--nav:#0b192c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#0F1111;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important}
+.bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:#131921;box-shadow:0 2px 12px rgba(0,0,0,0.18);width:100%}
+.bh-topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;width:100%;box-sizing:border-box}
+.bh-brand{display:flex;align-items:center;gap:6px;text-decoration:none;color:#fff;font-weight:900;font-size:20px;white-space:nowrap;flex-shrink:0}
+.bh-brand span{color:var(--yellow)}
+.bh-location{min-width:110px;display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;flex-shrink:0}
+.bh-location small{display:block;font-size:9px;font-weight:800;text-transform:uppercase}
+.bh-location strong{display:block;font-size:11px;font-weight:800;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bh-search{display:flex;flex:1;max-width:600px;height:40px;border-radius:5px;overflow:hidden;background:#fff;margin:0}
+.bh-search input{border:0;outline:0;flex:1;padding:0 12px;font-size:14px;color:#111}
+.bh-search button{width:48px;border:0;background:var(--yellow);color:#111;font-size:16px;cursor:pointer}
+.bh-subbar{min-height:42px;background:var(--navy2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;width:100%;box-sizing:border-box;border-top:1px solid rgba(255,255,255,0.05)}
+.bh-subbar::-webkit-scrollbar{display:none}
+.bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px;flex-shrink:0}
+.bh-subbar a:hover{border-color:#fff}
+.bh-subbar a.top20{color:#FFD814 !important;font-weight:900;border:1px solid #FFD814;border-radius:4px;padding:6px 10px}
+.bh-location{display:flex !important}
+@media(max-width:768px){.bh-location{display:flex !important;min-width:90px !important;padding:5px 8px !important}.bh-location small{font-size:8px !important}.bh-location strong{font-size:10px !important;max-width:85px !important}.bh-topbar{gap:6px !important}}
+.notifications-wrap{max-width:700px;margin:24px auto;padding:0 16px}
+.header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.clear-all-btn{background:none;border:none;color:var(--muted);font-weight:700;font-size:13px;cursor:pointer;text-decoration:underline}
+.notification-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.02);cursor:pointer;transition:all 0.2s;position:relative}
+.notification-card:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.05)}
+.notification-card.unread{border-left:5px solid var(--accent);background:#FFFDF9}
+.card-title{font-size:15px;font-weight:800;color:var(--nav);margin:0 0 4px 0}
+.card-time{font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:8px}
+.card-snippet{font-size:13px;color:#334155;margin:0;line-height:1.4}
+.opened-modal-overlay{background:#fff;border:2px solid var(--accent);border-radius:12px;padding:20px;margin-bottom:24px;box-shadow:0 6px 20px rgba(0,0,0,0.06)}
+.pulse-unread{animation:pulseOrange 2s infinite}
+@keyframes pulseOrange{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.3)}50%{box-shadow:0 0 0 8px rgba(245,158,11,0.08)}}
+@keyframes slideUp{from{transform:translateX(-50%) translateY(40px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+</style>
 </head>
 <body>
 
-<header class="top"><a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a><div style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</div></header>
-   <!-- 📌 STICKY NAVIGATION BAR -->
-    <nav class="nav">
-        <a href="{{ url_for('home') }}">☰ Marketplace</a>
-        <a href="{{ url_for('all_stores') }}">All Stores</a>
-        <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
-        <a href="{{ url_for('favorites') }}">Favorites</a>
-        <a href="{{ url_for('features') }}">🎯 Features</a>
-        <a href="{{ url_for('order_history') }}">Orders</a>
-        <a href="{{ url_for('settings') }}">Your Account</a>
-        
-    </nav>
+<div class="bh-global-header">
+<div class="bh-topbar">
+<a class="bh-brand" href="/">Biz<span>Hub</span></a>
+<div class="bh-location"><span style="font-size:16px">📍</span><div style="line-height:1.1">
+{% if session.get('role') == 'Delivery Service' %}
+<small style="color:#FEBD69">Dispatching from</small><strong>{{ (service.operating_location if service is defined and service else '') or (user.business_location if user is defined and user else '') or 'Ghana' }}</strong>
+{% elif session.get('role') in ['Vendor','Fast Food'] %}
+<small style="color:#10B981">Delivering from</small><strong>{{ user.business_location or 'Ghana' }}</strong>
+{% else %}
+<small style="color:#C7D0D9">Ordering from</small><strong>{{ (user.business_location if user is defined and user and user.business_location else 'Ghana') }}</strong>
+{% endif %}
+</div></div>
+<form method="GET" action="/" class="bh-search"><input type="text" name="company_search" placeholder="Search BizHub..."><button type="submit">🔍</button></form>
+<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">{% if session.get('username') %}<span style="font-size:11px;font-weight:700;color:var(--yellow)">👤 {{ session['username'] }}</span>{% else %}<a href="/login" style="color:#fff;font-size:12px;font-weight:700;text-decoration:none">Sign In</a>{% endif %}</div>
+</div>
+<nav class="bh-subbar">
+<a href="javascript:void(0)" onclick="document.getElementById('amazonOverlay').style.display='block'; setTimeout(()=>document.getElementById('amazonDrawer').style.left='0',10); return false;" style="color:#febd69 !important">☰ All</a>
+<a href="/">Today's Deals</a>
+<a href="/top-brands" class="top20">🏆 Top 20 Brands</a>
+<a href="/all-stores">All Stores</a>
+<a href="/fast-food">Fast Food</a>
+<a href="/cart">🛒 Cart</a>
+<a href="/favorites">Favorites</a>
+<a href="/notifications" style="background:#fff;color:#0F1111 !important;border-radius:6px">🔔 Biz Alerts</a>
+<a href="/orders">Orders</a>
+<a href="/settings">Your Account</a>
+</nav>
+</div>
+
+<div id="amazonOverlay" style="position:fixed;inset:0;background:rgba(5,12,22,0.65);z-index:99999;display:none" onclick="this.style.display='none'; document.getElementById('amazonDrawer').style.left='-340px'">
+<div id="amazonDrawer" style="width:340px;height:100%;background:#fff;position:absolute;top:0;left:-340px;transition:left 0.25s ease" onclick="event.stopPropagation()"><div style="background:#131921;padding:18px 24px;color:#fff;border-bottom:3px solid #F59E0B"><b>Hello, @{{ session.get('username') }}</b></div></div>
+</div>
+
 <main class="notifications-wrap">
-    
-    <!-- Opened message preview -->
-    {% if opened_notification_id %}
-        {% for n in notifications %}
-            {% if n.id == opened_notification_id %}
-                <div class="opened-modal-overlay">
-                    <span style="font-size: 11px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">📋 Opened Alert Details</span>
-                    <h2 style="margin: 4px 0 6px 0; font-size: 20px; font-weight: 800; color: var(--nav); letter-spacing: -0.5px;">{{ n.title }}</h2>
-                    <span class="card-time">📅 Received Statement Log: {{ n.created_at }}</span>
-                    
-                    <div style="font-size: 15px; line-height: 1.6; color: #1e293b; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-top: 12px; white-space: pre-wrap;">{{ n.message }}</div>
-                    
-                    <button class="close-view-btn" style="background-color: #334155; color: #FFFFFF; font-weight: 800;" onclick="window.location.href='/notifications';">
-                        ✕ Close Message
-                    </button>
-                </div>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
 
-    <div class="header-row">
-        <h3 style="margin: 0; font-size: 18px; font-weight: 800;">🔔 Notifications Center Feed ({% if unread_count %}{{ unread_count }}{% else %}0{% endif %} unread)</h3>
-        {% if notifications %}
-            <form method="POST" action="/notifications/read-all" style="margin:0;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <button type="submit" class="clear-all-btn">✓ Mark All as Read</button>
-            </form>
-        {% endif %}
-    </div>
+{% if opened_notification_id %}
+{% for n in notifications %}
+{% if n.id == opened_notification_id %}
+<div class="opened-modal-overlay">
+<span style="font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px">📋 Opened Alert Details</span>
+<h2 style="margin:4px 0 6px 0;font-size:20px;font-weight:800;color:var(--nav)">{{ n.title }}</h2>
+<span class="card-time">📅 Received: {{ n.created_at }}</span>
+<div style="font-size:15px;line-height:1.6;color:#1e293b;background:#f8fafc;padding:16px;border-radius:8px;border:1px solid var(--border);margin-top:12px;white-space:pre-wrap">{{ n.message }}</div>
+<button style="background:#334155;color:#fff;font-weight:800;border:none;padding:10px 16px;border-radius:6px;margin-top:15px;cursor:pointer" onclick="window.location.href='/notifications'">✕ Close Message</button>
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
 
-    <!-- Notifications feed -->
-    <div style="display: flex; flex-direction: column;">
-        {% for n in notifications %}
-            <div class="notification-card {% if n.is_read == 0 %}unread{% endif %}" onclick="document.getElementById('openForm-{{ n.id }}').submit();">
-                <form id="openForm-{{ n.id }}" method="POST" action="/notifications/{{ n.id }}/open" style="display:none;">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                </form>
-                
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
-                    <h4 class="card-title">{{ n.title }}</h4>
-                    {% if n.is_read == 0 %}
-                        <span style="width: 8px; height: 8px; background: var(--accent); border-radius: 50%; display: block; flex-shrink: 0; margin-top: 6px;"></span>
-                    {% endif %}
-                </div>
-                
-                <span class="card-time">⏱️ Logged: {{ n.created_at }}</span>
-                <p class="card-snippet">{{ n.message|truncate(120) }}</p>
-            </div>
-        {% else %}
-            <div style="padding: 48px 24px; text-align: center; color: var(--muted); background: white; border-radius: 10px; border: 2px dashed var(--border);">
-                📭 Your digital inbox sheet is completely clean. No notifications logged.
-            </div>
-        {% endfor %}
-    </div>
+<div class="header-row">
+<h3 style="margin:0;font-size:18px;font-weight:800">🔔 Notifications Center Feed ({% if unread_count %}{{ unread_count }}{% else %}0{% endif %} unread) • {% if session.get('role') in ['Vendor','Fast Food'] %}Delivering from {{ user.business_location or 'Ghana' }}{% elif session.get('role') == 'Delivery Service' %}Dispatching from {{ (service.operating_location if service is defined and service else '') or 'Ghana' }}{% else %}Ordering from {{ user.business_location or 'Ghana' }}{% endif %}</h3>
+{% if notifications %}
+<form method="POST" action="/notifications/read-all" style="margin:0"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="clear-all-btn">✓ Mark All as Read</button></form>
+{% endif %}
+</div>
 
-    <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #64748b; font-size: 13px; font-weight: 600;">
-            © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Subsidiary Of The TOZOTS Company
-    </footer>
+<!-- Guide -->
+<div style="background:#fff;border:1px solid #EAEDED;border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:center">
+<div style="width:32px;height:32px;background:#000;border-radius:8px;display:grid;place-items:center;color:#fff;font-weight:900">🔔</div>
+<div style="flex:1"><div style="font-size:13px;font-weight:800">How BizHub Alerts Work — BizHub Marketplace</div><div style="font-size:11px;color:#565959">All roles • WhatsApp + In-app • Sound + Popup • Header sticky on phone + desktop</div></div>
+</div>
+
+<div style="display:flex;flex-direction:column">
+{% for n in notifications %}
+<div class="notification-card {% if n.is_read == 0 %}unread pulse-unread{% endif %}" onclick="document.getElementById('openForm-{{ n.id }}').submit();">
+<form id="openForm-{{ n.id }}" method="POST" action="/notifications/{{ n.id }}/open" style="display:none"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"></form>
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><h4 class="card-title">{% if 'delivery' in n.notification_type|lower %}🚚 {% elif 'order' in n.title|lower %}📦 {% else %}🔔 {% endif %}{{ n.title }}</h4>{% if n.is_read == 0 %}<span style="background:#F59E0B;color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:10px">New</span>{% endif %}</div>
+<span class="card-time">⏱️ {{ n.created_at }} • {{ n.notification_type }} • {% if session.get('role') in ['Vendor','Fast Food'] %}Delivering from {{ user.business_location or 'Ghana' }}{% elif session.get('role') == 'Delivery Service' %}Dispatching from{% else %}Ordering from{% endif %}</span>
+<p class="card-snippet">{{ n.message|truncate(120) }}</p>
+{% if 'delivery' in n.notification_type|lower %}<div style="margin-top:10px;display:flex;gap:6px" onclick="event.stopPropagation()"><a href="https://wa.me/?text={{ ('BizHub: '+n.title)|urlencode }}" target="_blank" style="background:#25D366;color:#fff;text-decoration:none;padding:8px 10px;border-radius:6px;font-size:11px;font-weight:800">💬 WhatsApp</a></div>{% endif %}
+</div>
+{% else %}
+<div style="padding:48px 24px;text-align:center;color:var(--muted);background:#fff;border-radius:10px;border:2px dashed var(--border)">📭 Inbox clean. No notifications.</div>
+{% endfor %}
+</div>
+
+<footer style="margin-top:40px;padding-top:20px;border-top:1px solid #e5e7eb;text-align:center;color:#64748b;font-size:13px;font-weight:600"><footer style="margin-top:40px;padding-top:20px;border-top:1px solid #e5e7eb;text-align:center;color:#64748b;font-size:13px;font-weight:600">© 2026 BizHub Marketplace · BizHub Alerts · A Subsidiary Of The TOZOTS Company</footer>
 </main>
+
+<audio id="notifSound" preload="auto"><source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg"></audio>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+const unread=document.querySelectorAll('.notification-card.unread').length || {{ unread_count or 0 }};
+if(unread>0){
+try{const a=document.getElementById('notifSound');if(a){a.volume=0.7;a.play().catch(()=>{});setTimeout(()=>a.play().catch(()=>{}),400)}if(navigator.vibrate)navigator.vibrate([200,80,200])}catch(e){}
+if(!document.getElementById('globalNotifBanner')){
+const b=document.createElement('div');b.id='globalNotifBanner';b.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0B192C;color:#fff;padding:0;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,0.35);z-index:9999;display:flex;align-items:stretch;max-width:92%;width:400px;overflow:hidden;border:1px solid #1E293B;animation:slideUp 0.4s ease';
+b.innerHTML=`<div style="width:52px;background:#F59E0B;display:grid;place-items:center;font-size:22px">🔔</div><div style="flex:1;padding:12px"><div style="font-weight:900;font-size:12px">${unread} New Notification${unread>1?'s':''}! • ${'{{ session.get("role") }}'=='Vendor'?'Delivering from':('{{ session.get("role") }}'=='Delivery Service'?'Dispatching from':'Ordering from')}</div><div style="font-size:11px;color:#94A3B8;margin-top:2px">Tap to view • Sound on 🔊</div><div style="margin-top:8px;display:flex;gap:6px"><button onclick="window.scrollTo({top:0,behavior:'smooth'});this.closest('#globalNotifBanner').remove()" style="background:#fff;color:#000;border:none;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:800;flex:1;cursor:pointer">View</button><button onclick="this.closest('#globalNotifBanner').remove()" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.15);padding:6px 8px;border-radius:6px;font-size:11px;cursor:pointer">Dismiss</button></div></div><button onclick="this.closest('#globalNotifBanner').remove()" style="background:transparent;border:none;color:#64748B;width:30px;display:grid;place-items:center;cursor:pointer">✕</button>`;
+document.body.appendChild(b);setTimeout(()=>{if(b.parentElement){b.style.opacity='0';b.style.transform='translateX(-50%) translateY(20px)';b.style.transition='all 0.4s';setTimeout(()=>b.remove(),400)}},10000)
+}
+}
+});
+</script>
 
 </body>
 </html>

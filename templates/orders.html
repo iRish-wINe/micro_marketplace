@@ -1,226 +1,89 @@
 <!DOCTYPE html>
-<html lang="en" {% if app_theme == 'night' %}class="night-theme"{% endif %}>
+<html lang="en" {% if app_theme == 'night' or user.theme == 'night' %}class="night-theme"{% endif %}>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orders | Biz Hub</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body{margin:0;background:#f3f4f6;color:#111827;font-family:Arial,Helvetica,sans-serif}a{text-decoration:none}.top{background:#131921;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}.brand{font-size:22px;font-weight:900;color:#fff}.brand span{color:#ff9900}.nav{background:#232f3e;display:flex;gap:4px;overflow:auto;white-space:nowrap;padding:0 10px}.nav a{color:#fff;padding:11px 12px;font-weight:700;font-size:13px}
-    </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Orders | BizHub - Amazon Style</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{--navy:#131921;--navy2:#232f3e;--yellow:#febd69;--bg:#eaeded;--card:#fff;--border:#EAEDED}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important}
+.bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:#131921;box-shadow:0 2px 12px rgba(0,0,0,0.18);width:100%}
+.bh-topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;width:100%;box-sizing:border-box}
+.bh-brand{display:flex;align-items:center;gap:6px;text-decoration:none;color:#fff;font-weight:900;font-size:20px;white-space:nowrap;flex-shrink:0}
+.bh-brand span{color:var(--yellow)}
+.bh-location{min-width:110px;display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;flex-shrink:0}
+.bh-location small{display:block;font-size:9px;font-weight:800;text-transform:uppercase}
+.bh-location strong{display:block;font-size:11px;font-weight:800;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bh-search{display:flex;flex:1;max-width:600px;height:40px;border-radius:5px;overflow:hidden;background:#fff;margin:0}
+.bh-search input{border:0;outline:0;flex:1;padding:0 12px;font-size:14px;color:#111}
+.bh-search button{width:48px;border:0;background:var(--yellow);color:#111;font-size:16px;cursor:pointer}
+.bh-subbar{min-height:42px;background:var(--navy2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;width:100%;box-sizing:border-box;border-top:1px solid rgba(255,255,255,0.05)}
+.bh-subbar::-webkit-scrollbar{display:none}
+.bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px;flex-shrink:0}
+.bh-subbar a:hover{border-color:#fff}
+.bh-subbar a.top20{color:#FFD814 !important;font-weight:900;border:1px solid #FFD814;border-radius:4px;padding:6px 10px}
+.bh-location{display:flex !important}
+@media(max-width:768px){.bh-location{display:flex !important;min-width:90px !important;padding:5px 8px !important}.bh-location small{font-size:8px !important}.bh-location strong{font-size:10px !important;max-width:85px !important}.bh-topbar{gap:6px !important}}
+</style>
 </head>
 <body>
 
-<header class="top"><a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a><div style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</div></header>
-    <!-- 📌 STICKY NAVIGATION BAR -->
-    <nav class="nav">
-        <a href="{{ url_for('home') }}">☰ Marketplace</a>
-        <a href="{{ url_for('all_stores') }}">All Stores</a>
-        <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
-        <a href="{{ url_for('favorites') }}">Favorites</a>
-        <a href="{{ url_for('features') }}">🎯 Features</a>
-        <a href="{{ url_for('order_history') }}">Orders</a>
-        <a href="{{ url_for('settings') }}">Your Account</a>
-        <a href="{{ url_for('notifications') }}">🔔Biz Alerts</a>
-    </nav>
+<div class="bh-global-header">
+<div class="bh-topbar">
+<a class="bh-brand" href="/">Biz<span>Hub</span></a>
+<div class="bh-location"><span style="font-size:16px">📍</span><div style="line-height:1.1">
+{% if session.get('role') == 'Delivery Service' %}
+<small style="color:#FEBD69">Dispatching from</small><strong>{{ (service.operating_location if service is defined and service else '') or (user.business_location if user is defined and user else '') or 'Ghana' }}</strong>
+{% elif session.get('role') in ['Vendor','Fast Food'] %}
+<small style="color:#10B981">Delivering from</small><strong>{{ user.business_location or 'Ghana' }}</strong>
+{% else %}
+<small style="color:#C7D0D9">Ordering from</small><strong>{{ (user.business_location if user is defined and user and user.business_location else 'Ghana') }}</strong>
+{% endif %}
+</div></div>
+<form method="GET" action="/" class="bh-search"><input type="text" name="company_search" placeholder="Search BizHub..."><button type="submit">🔍</button></form>
+<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">{% if session.get('username') %}<span style="font-size:11px;font-weight:700;color:var(--yellow)">👤 {{ session['username'] }}</span>{% else %}<a href="/login" style="color:#fff;font-size:12px;font-weight:700;text-decoration:none">Sign In</a>{% endif %}</div>
+</div>
+<nav class="bh-subbar">
+<a href="javascript:void(0)" onclick="document.getElementById('amazonOverlay').style.display='block'; setTimeout(()=>document.getElementById('amazonDrawer').style.left='0',10); return false;" style="color:#febd69 !important">☰ All</a>
+<a href="/">Today's Deals</a>
+<a href="/top-brands" class="top20">🏆 Top 20 Brands</a>
+<a href="/all-stores">All Stores</a>
+<a href="/fast-food">Fast Food</a>
+<a href="/cart">🛒 Cart</a>
+<a href="/favorites">Favorites</a>
+<a href="/notifications">🔔 Biz Alerts</a>
+<a href="/orders" style="background:#fff;color:#0F1111 !important;border-radius:6px">Orders</a>
+<a href="/settings">Your Account</a>
+</nav>
+</div>
 
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+<div id="amazonOverlay" style="position:fixed;inset:0;background:rgba(5,12,22,0.65);z-index:99999;display:none" onclick="this.style.display='none'; document.getElementById('amazonDrawer').style.left='-340px'">
+<div id="amazonDrawer" style="width:340px;height:100%;background:#fff;position:absolute;top:0;left:-340px;transition:left 0.25s ease" onclick="event.stopPropagation()"><div style="background:#131921;padding:18px 24px;color:#fff;border-bottom:3px solid #F59E0B"><b>Hello, @{{ session.get('username') }}</b></div></div>
+</div>
 
-    {% if session.get('role') in ['Vendor','Fast Food'] %}
-    <section class="mb-10">
-        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
-            <div>
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-black mb-3">
-                    🔔 Store activity
-                </div>
-                <h1 class="text-3xl sm:text-4xl font-black tracking-tight">Vendor Orders</h1>
-                <p class="text-slate-500 mt-2">New purchases and order activity for your store.</p>
-            </div>
-            {% if unread_notifications_count %}
-            <form method="POST" action="{{ url_for('mark_all_order_notifications_read') }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 shadow-sm text-xs font-black">
-                    Mark all notifications read
-                </button>
-            </form>
-            {% endif %}
-        </div>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+{% if session.get('role') in ['Vendor','Fast Food'] %}
+<section class="mb-8">
+<div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+<div><div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-black mb-3">🔔 Store activity</div><h1 class="text-3xl font-black tracking-tight">Vendor Orders</h1><p class="text-slate-500 mt-2 text-sm">New purchases for your store — Amazon style sticky header.</p></div>
+{% if unread_notifications_count %}<form method="POST" action="{{ url_for('mark_all_order_notifications_read') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 shadow-sm text-xs font-black">Mark all read</button></form>{% endif %}
+</div>
+{% if notifications %}<div class="space-y-3 mb-7">{% for n in notifications %}<div class="bg-white rounded-2xl border {{ 'border-amber-300 ring-1 ring-amber-100' if not n['is_read'] else 'border-slate-200' }} shadow-sm p-5"><div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4"><div class="min-w-0"><div class="flex items-center gap-2"><span>{% if n['is_read'] %}🔕{% else %}🔔{% endif %}</span><h2 class="font-black">New Purchase</h2>{% if not n['is_read'] %}<span class="px-2 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-black">NEW</span>{% endif %}</div><p class="text-sm text-slate-700 mt-2">{{ n['message'] }}</p><p class="text-xs text-slate-400 mt-2">Order #{{ n['order_id'] }} · {{ n['created_at'][:19] }}</p></div><div class="flex gap-2"><a href="{{ url_for('order_history') }}#order-{{ n['order_id'] }}" class="px-3 py-2 rounded-lg bg-slate-900 text-white text-xs font-black no-underline">View Order</a>{% if not n['is_read'] %}<form method="POST" action="{{ url_for('mark_order_notification_read', notification_id=n['id']) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="px-3 py-2 rounded-lg bg-slate-100 text-xs font-black">Read</button></form>{% endif %}</div></div></div>{% endfor %}</div>{% else %}<div class="bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500 mb-7">No vendor notifications yet.</div>{% endif %}
 
-        {% if notifications %}
-        <div class="space-y-3 mb-7">
-            {% for n in notifications %}
-            <div class="bg-white rounded-2xl border {{ 'border-amber-300 ring-1 ring-amber-100' if not n['is_read'] else 'border-slate-200' }} shadow-sm p-5">
-                <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                    <div class="min-w-0">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span class="text-lg">{% if n['is_read'] %}🔕{% else %}🔔{% endif %}</span>
-                            <h2 class="font-black">New Purchase</h2>
-                            {% if not n['is_read'] %}
-                            <span class="px-2 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-black">NEW</span>
-                            {% endif %}
-                        </div>
-                        <p class="text-sm text-slate-700 mt-2">{{ n['message'] }}</p>
-                        <p class="text-xs text-slate-400 mt-2">
-                            Order #{{ n['order_id'] }} · {{ n['created_at'][:19].replace('T',' ') }}
-                        </p>
-                    </div>
-                    <div class="flex flex-wrap gap-2 shrink-0">
-                        <a href="{{ url_for('order_history') }}#order-{{ n['order_id'] }}" class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-black no-underline">
-                            View Order
-                        </a>
-                        {% if not n['is_read'] %}
-                        <form method="POST" action="{{ url_for('mark_order_notification_read', notification_id=n['id']) }}">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                            <button type="submit" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-black">
-                                Read
-                            </button>
-                        </form>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500 mb-7">
-            No vendor notifications yet. New purchases will appear here.
-        </div>
-        {% endif %}
+{% if vendor_orders %}<div class="space-y-4">{% for order in vendor_orders %}<article id="order-{{ order['id'] }}" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"><div class="p-5 sm:p-6"><div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"><div><div class="flex items-center gap-2"><h2 class="text-lg font-black">Order #{{ order['id'] }}</h2><span class="text-xs font-black px-3 py-1.5 rounded-full bg-slate-100">{{ order['status'] }}</span></div><p class="text-xs text-slate-500 mt-1">Customer: @{{ order['customer_username'] }} • {% if session.get('role') in ['Vendor','Fast Food'] %}Delivering from {{ user.business_location or 'Ghana' }}{% else %}Ordering from{% endif %}</p></div>{% if order.get('customer_whatsapp') %}<a href="https://wa.me/{{ order['customer_whatsapp'] }}" target="_blank" class="px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-black no-underline">💬 WhatsApp</a>{% endif %}</div><div class="mt-4 divide-y divide-slate-100 border-y border-slate-100">{% for item in order['items'] %}<div class="py-3 flex items-center justify-between gap-4"><div><p class="font-bold text-sm">{{ item['name'] }}</p><p class="text-xs text-slate-500">Qty {{ item['quantity'] }}</p></div><b>GH₵{{ "%.2f"|format(item['price']|float * item['quantity']|int) }}</b></div>{% endfor %}</div>{% if order.get('location') %}<p class="text-xs text-slate-500 mt-4">📍 {{ order['location'] }}</p>{% endif %}<div class="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"><div class="text-sm">Payment: <b>{{ order['payment_status'] }}</b></div>{% if order['payment_status']=='Marked paid' and order['status']=='Pending' %}<div class="flex gap-2"><form method="POST" action="{{ url_for('confirm_order', order_id=order['id']) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="px-4 py-2.5 rounded-xl bg-emerald-600 text-white font-black text-sm">Confirm</button></form><form method="POST" action="{{ url_for('cancel_order', order_id=order['id']) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="px-4 py-2.5 rounded-xl bg-red-50 text-red-700 font-black text-sm">Cancel</button></form></div>{% endif %}</div></div></article>{% endfor %}</div>{% else %}<div class="bg-white rounded-2xl border border-dashed p-10 text-center text-slate-500">No orders for your store yet.</div>{% endif %}
+</section>
+{% endif %}
 
-        {% if vendor_orders %}
-        <div class="space-y-4">
-            {% for order in vendor_orders %}
-            <article id="order-{{ order['id'] }}" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div class="p-5 sm:p-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <h2 class="text-lg font-black">Order #{{ order['id'] }}</h2>
-                                <span class="text-xs font-black px-3 py-1.5 rounded-full bg-slate-100 text-slate-700">{{ order['status'] }}</span>
-                            </div>
-                            <p class="text-xs text-slate-500 mt-1">Customer: @{{ order['customer_username'] }}</p>
-                        </div>
-                        {% if order.get('customer_whatsapp') %}
-                        <a href="https://wa.me/{{ order['customer_whatsapp'] }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-black no-underline">💬 WhatsApp Customer</a>
-                        {% endif %}
-                    </div>
+<section>
+<div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
+<div><div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-black mb-3">🧾 Order history</div><h1 class="text-3xl font-black tracking-tight">My Orders</h1><p class="text-slate-500 mt-2 text-sm">Orders you placed — sticky header works on phone + desktop.</p></div>
+</div>
+{% if customer_orders %}<div class="space-y-4">{% for order in customer_orders %}<article id="order-{{ order['id'] }}" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"><div class="p-5 sm:p-6"><div class="flex items-start justify-between gap-4"><div><div class="flex items-center gap-2"><h2 class="text-lg font-black">Order #{{ order['id'] }}</h2><span class="text-xs font-black px-3 py-1.5 rounded-full bg-slate-100">{{ order['status'] }}</span></div><p class="text-xs text-slate-500 mt-1">{{ order['created_at'][:19] }}</p></div></div><div class="mt-5 divide-y divide-slate-100 border-y border-slate-100">{% for item in order['items'] %}<div class="py-3 flex items-center justify-between gap-4"><div><p class="text-sm font-bold">{{ item['name'] }} × {{ item['quantity'] }}</p><p class="text-xs text-slate-500">{{ item['vendor_name'] }}</p></div><b>GH₵{{ "%.2f"|format(item['price']|float * item['quantity']|int) }}</b></div>{% endfor %}</div>{% if order.get('location') %}<p class="text-xs text-slate-500 mt-4">📍 Ordering from {{ order['location'] }}</p>{% endif %}<div class="mt-5 flex justify-between gap-3"><div class="text-sm text-slate-600">Vendors: <b>{{ order['items']|map(attribute='vendor_name')|join(', ') }}</b></div><div class="text-lg font-black">GH₵{{ "%.2f"|format(order['total']|float) }}</div></div>{% if order['payment_status']=='Unpaid' and order['status']=='Pending' %}<form method="POST" action="{{ url_for('mark_payment_sent', order_id=order['id']) }}" class="mt-5"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="w-full rounded-xl bg-emerald-600 text-white py-3 font-black">I Have Sent Payment</button></form>{% endif %}</div></article>{% endfor %}</div>{% else %}<div class="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500"><div class="text-4xl mb-3">🧾</div><p class="font-semibold">No orders yet.</p><a href="/" class="inline-flex mt-4 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-black no-underline">Browse Market</a></div>{% endif %}
+</section>
 
-                    <div class="mt-5 divide-y divide-slate-100 border-y border-slate-100">
-                        {% for item in order['items'] %}
-                        <div class="py-3 flex items-center justify-between gap-4">
-                            <div class="min-w-0">
-                                <p class="font-bold text-sm truncate">{{ item['name'] }}</p>
-                                <p class="text-xs text-slate-500 mt-1">Qty {{ item['quantity'] }}</p>
-                            </div>
-                            <b class="shrink-0">GH₵{{ "%.2f"|format(item['price']|float * item['quantity']|int) }}</b>
-                        </div>
-                        {% else %}
-                        <div class="py-5 text-sm text-slate-500">No order items are available.</div>
-                        {% endfor %}
-                    </div>
-
-                    {% if order.get('location') %}
-                    <p class="text-xs text-slate-500 mt-4">📍 Delivery / collection location: {{ order['location'] }}</p>
-                    {% endif %}
-
-                    <div class="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div class="text-sm">Payment: <b>{{ order['payment_status'] }}</b></div>
-                        {% if order['payment_status']=='Marked paid' and order['status']=='Pending' %}
-                        <div class="flex flex-wrap gap-2">
-                            <form method="POST" action="{{ url_for('confirm_order', order_id=order['id']) }}">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                <button type="submit" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm">Confirm Order</button>
-                            </form>
-                            <form method="POST" action="{{ url_for('cancel_order', order_id=order['id']) }}">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                <button type="submit" class="px-4 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-black text-sm">Cancel</button>
-                            </form>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </article>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
-            No orders for your store yet.
-        </div>
-        {% endif %}
-    </section>
-    {% endif %}
-
-    <section>
-        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
-            <div>
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-black mb-3">
-                    🧾 Order history
-                </div>
-                <h1 class="text-3xl sm:text-4xl font-black tracking-tight">My Orders</h1>
-                <p class="text-slate-500 mt-2">Orders you placed as a customer.</p>
-            </div>
-        </div>
-
-        {% if customer_orders %}
-        <div class="space-y-4">
-            {% for order in customer_orders %}
-            <article id="order-{{ order['id'] }}" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div class="p-5 sm:p-6">
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <h2 class="text-lg font-black">Order #{{ order['id'] }}</h2>
-                                <span class="text-xs font-black px-3 py-1.5 rounded-full bg-slate-100 text-slate-700">{{ order['status'] }}</span>
-                            </div>
-                            <p class="text-xs text-slate-500 mt-1">{{ order['created_at'][:19].replace('T',' ') }}</p>
-                        </div>
-                    </div>
-
-                    <div class="mt-5 divide-y divide-slate-100 border-y border-slate-100">
-                        {% for item in order['items'] %}
-                        <div class="py-3 flex items-center justify-between gap-4">
-                            <div class="min-w-0">
-                                <p class="text-sm font-bold">{{ item['name'] }} × {{ item['quantity'] }}</p>
-                                <p class="text-xs text-slate-500 mt-1">{{ item['vendor_name'] }}</p>
-                            </div>
-                            <b class="shrink-0">GH₵{{ "%.2f"|format(item['price']|float * item['quantity']|int) }}</b>
-                        </div>
-                        {% endfor %}
-                    </div>
-
-                    {% if order.get('location') %}
-                    <p class="text-xs text-slate-500 mt-4">📍 {{ order['location'] }}</p>
-                    {% endif %}
-
-                    <div class="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div class="text-sm text-slate-600">Vendors: <b>{{ order['items']|map(attribute='vendor_name')|join(', ') }}</b></div>
-                        <div class="text-lg font-black">GH₵{{ "%.2f"|format(order['total']|float) }}</div>
-                    </div>
-
-                    {% if order['payment_status']=='Unpaid' and order['status']=='Pending' %}
-                    <form method="POST" action="{{ url_for('mark_payment_sent', order_id=order['id']) }}" class="mt-5">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                        <button type="submit" class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-3 font-black">I Have Sent Payment</button>
-                    </form>
-                    {% endif %}
-                </div>
-            </article>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
-            <div class="text-4xl mb-3">🧾</div>
-            <p class="font-semibold">You have not placed any orders yet.</p>
-            <a href="/" class="inline-flex mt-4 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-black no-underline">Browse the Market</a>
-        </div>
-        {% endif %}
-    </section>
-
-    <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #64748b; font-size: 13px; font-weight: 600;">
-     © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS  Company
-    </footer>
+<footer style="margin-top:40px;padding-top:20px;border-top:1px solid #e5e7eb;text-align:center;color:#64748b;font-size:13px;font-weight:600"><footer style="margin-top:40px;padding-top:20px;border-top:1px solid #e5e7eb;text-align:center;color:#64748b;font-size:13px;font-weight:600">© 2026 BizHub Marketplace · Orders · A Product Of The TOZOTS Company</footer>
 </main>
-
 </body>
 </html>

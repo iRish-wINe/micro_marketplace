@@ -1,2 +1,88 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Sign In | BizHub</title><style>body{font-family:system-ui;margin:0;background:#f4f7fb;display:grid;place-items:center;min-height:100vh}.card{width:min(420px,calc(100% - 32px));background:#fff;padding:28px;border-radius:16px;box-shadow:0 8px 30px #0001}h1{margin-top:0}.err{background:#fee2e2;color:#991b1b;padding:10px;border-radius:8px;margin-bottom:14px}.ok{background:#dcfce7;color:#166534;padding:10px;border-radius:8px;margin-bottom:14px}label{display:block;font-weight:700;font-size:13px;margin:12px 0 6px}input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #cbd5e1;border-radius:8px}button{width:100%;margin-top:16px;padding:11px;border:0;border-radius:8px;background:#1d4ed8;color:white;font-weight:800}a{display:inline-block;margin-top:14px;color:#1d4ed8}</style></head><body><main class="card"><h1>BizHub Admin</h1><p>Secure administrator sign in.</p>{% if admin_error %}<div class="err">{{ admin_error }}</div>{% endif %}{% if request.args.get('registered') %}<div class="ok">Admin account created. You can now sign in.</div>{% endif %}<form method="post">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>Username</label><input name="username" required autocomplete="username"><label>Password</label><input type="password" name="password" required autocomplete="current-password"><button>Sign in</button></form>{% if signup_available %}<a href="{{ url_for('admin_signup') }}">Bootstrap the first admin account</a>{% endif %}<br><a href="{{ url_for('home') }}">Back to BizHub</a></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Sign In | BizHub - Amazon Theme</title>
+<style>
+:root{--navy:#131921;--navy2:#232f3e;--yellow:#febd69;--orange:#ff9900;--bg:#eaeded;--card:#fff;--border:#FECACA;--border2:#EAEDED;--text:#0F1111;--muted:#565959;--lightred:#FFF5F5;--lightred2:#FEE2E2;--red:#B91C1C;--red2:#991B1B}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px;min-height:100vh;display:flex;flex-direction:column}
+.bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:var(--navy);box-shadow:0 2px 12px rgba(0,0,0,0.18);width:100%}
+.bh-topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;width:100%;box-sizing:border-box}
+.bh-brand{display:flex;align-items:center;gap:6px;text-decoration:none;color:#fff;font-weight:900;font-size:22px;white-space:nowrap}
+.bh-brand span{color:var(--yellow)}
+.bh-location{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;flex-shrink:0}
+.bh-location small{display:block;font-size:9px;font-weight:800;text-transform:uppercase;color:#FECACA}
+.bh-location strong{display:block;font-size:11px;font-weight:800}
+.bh-subbar{min-height:42px;background:var(--navy2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;width:100%;box-sizing:border-box;border-top:1px solid rgba(255,255,255,0.05)}
+.bh-subbar::-webkit-scrollbar{display:none}
+.bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px;flex-shrink:0}
+.bh-subbar a:hover{border-color:#fff}
+.bh-subbar a.top20{color:#FFD814 !important;font-weight:900;border:1px solid #FFD814;border-radius:4px;padding:6px 10px}
+.bh-subbar a.active{background:#fff;color:#0F1111 !important;border-radius:6px}
+.login-wrap{flex:1;display:grid;place-items:center;padding:24px 16px}
+.card{width:min(440px,100%);background:var(--card);border:2px solid var(--border);border-radius:16px;box-shadow:0 8px 30px rgba(185,28,28,0.12);overflow:hidden}
+.card-head{background:linear-gradient(135deg,#FFF5F5 0%,#fff 100%);border-bottom:2px solid var(--border);padding:22px 26px}
+.card-head h1{margin:0;font-size:22px;font-weight:900;letter-spacing:-0.4px}
+.card-head p{margin:6px 0 0 0;font-size:13px;color:var(--muted)}
+.card-body{padding:24px 26px}
+.err{background:var(--lightred2);color:var(--red2);padding:10px 12px;border-radius:8px;margin-bottom:14px;border:1px solid var(--border);font-size:13px;font-weight:700}
+.ok{background:#D1FAE5;color:#065F46;padding:10px 12px;border-radius:8px;margin-bottom:14px;border:1px solid #A7F3D0;font-size:13px;font-weight:700}
+label{display:block;font-weight:800;font-size:12px;margin:14px 0 6px 0;text-transform:uppercase;letter-spacing:0.3px}
+input{width:100%;box-sizing:border-box;padding:12px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none;background:#fff;transition:all 0.2s}
+input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(185,28,28,0.1)}
+button{width:100%;margin-top:18px;padding:12px;border:0;border-radius:8px;background:var(--navy);color:#fff;font-weight:900;font-size:14px;cursor:pointer;transition:all 0.2s}
+button:hover{background:#1f2f46;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+.links{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.links a{color:var(--red);text-decoration:none;font-weight:700;font-size:13px}
+.links a:hover{text-decoration:underline}
+.foot{margin-top:24px;padding:16px;background:var(--lightred);border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:11px;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="bh-global-header">
+<div class="bh-topbar">
+<a class="bh-brand" href="/">Biz<span>Hub</span></a>
+<div class="bh-location"><span style="font-size:16px">🔐</span><div style="line-height:1.1"><small>Admin Console</small><strong>Secure Access</strong></div></div>
+<div style="flex:1"></div>
+<div style="font-size:11px;color:#C7D0D9;font-weight:700">Amazon Theme • Light Red & White</div>
+</div>
+<nav class="bh-subbar">
+<a href="/">☰ Marketplace</a>
+<a href="/top-brands" class="top20">🏆 Top 20 Brands</a>
+<a href="/all-stores">All Stores</a>
+<a href="/fast-food">Fast Food</a>
+<a href="/admin/login" class="active">🔐 Admin Login</a>
+<a href="/" style="margin-left:auto">← Back to BizHub</a>
+</nav>
+</div>
+
+<div class="login-wrap">
+<main class="card">
+<div class="card-head">
+<h1>🔐 BizHub Admin</h1>
+<p>Secure administrator sign in • Amazon sticky header • Light red & white theme</p>
+</div>
+<div class="card-body">
+{% if admin_error %}<div class="err">⚠️ {{ admin_error }}</div>{% endif %}
+{% if request.args.get('registered') %}<div class="ok">✓ Admin account created. You can now sign in.</div>{% endif %}
+<form method="post">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label>👤 Username</label>
+<input name="username" required autocomplete="username" placeholder="Enter admin username">
+<label>🔑 Password</label>
+<input type="password" name="password" required autocomplete="current-password" placeholder="Enter secure password">
+<button type="submit">Sign In to Admin Console →</button>
+</form>
+<div class="links">
+{% if signup_available %}<a href="{{ url_for('admin_signup') }}">🆕 Bootstrap the first admin account</a>{% endif %}
+<a href="{{ url_for('home') }}">← Back to BizHub Marketplace</a>
+</div>
+</div>
+<div class="foot">© 2026 BizHub • Admin Console • </div>
+</main>
+</div>
+
+</body>
+</html>

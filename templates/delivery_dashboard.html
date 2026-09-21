@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <!-- 🚀 REPLICA INJECTOR BOUNDARY PATHWAY AT THE VERY TOP OF ALL FILE TEMPLATES -->
-<html lang="en" {% if app_theme == 'night' %}class="night-theme"{% endif %}>
+<html lang="en" {% if app_theme == 'night' or user.theme == 'night' %}class="night-theme"{% endif %}>
+
 
 <head>
     <meta charset="UTF-8">
@@ -366,6 +367,109 @@ main.container {
                     </div>
                 </div>
 
+
+                <!-- 📘 HOW BIZHUB DELIVERY WORKS - UBER RIDE THEME -->
+                <div class="uber-card" style="padding:0; overflow:hidden;">
+                    <div style="padding:24px 24px 16px 24px; border-bottom:1px solid var(--uber-gray-border); display:flex; align-items:center; justify-content:space-between;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="width:36px; height:36px; background:var(--uber-black); border-radius:8px; display:grid; place-items:center; color:white; font-size:18px; font-weight:900;">?</div>
+                            <div>
+                                <h3 style="margin:0; font-size:16px; font-weight:900; letter-spacing:-0.3px; color:var(--uber-black);">How BizHub Delivery Works</h3>
+                                <div style="font-size:11px; color:var(--text-muted); font-weight:600; margin-top:2px;">Driver workflow • 6 steps • Uber-style</div>
+                            </div>
+                        </div>
+                        <button onclick="document.getElementById('uberGuideBody').style.display = document.getElementById('uberGuideBody').style.display === 'none' ? 'block' : 'none'; this.textContent = document.getElementById('uberGuideBody').style.display === 'none' ? 'Show' : 'Hide'" style="background:var(--uber-gray-light); border:1px solid var(--uber-gray-border); color:var(--uber-black); padding:6px 14px; border-radius:20px; font-size:11px; font-weight:800; cursor:pointer;">Hide</button>
+                    </div>
+                    <div id="uberGuideBody" style="padding:20px 24px;">
+                        <!-- Uber stepper timeline -->
+                        <div style="position:relative; padding-left:42px;">
+                            <!-- vertical line -->
+                            <div style="position:absolute; left:15px; top:12px; bottom:12px; width:2px; background:var(--uber-gray-border);"></div>
+                            
+                            <!-- Step 1 -->
+                            <div style="position:relative; margin-bottom:20px; display:flex; gap:14px;">
+                                <div style="position:absolute; left:-42px; top:0; width:32px; height:32px; background:var(--uber-black); border-radius:50%; display:grid; place-items:center; color:white; font-size:13px; font-weight:900; border:3px solid white; box-shadow:0 0 0 2px var(--uber-black);">1</div>
+                                <div style="flex:1; background:var(--uber-gray-light); border:1px solid var(--uber-gray-border); border-radius:10px; padding:14px;">
+                                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                        <span style="font-size:14px;">🟢</span>
+                                        <strong style="font-size:13px; color:var(--uber-black);">Go Online — Set Available</strong>
+                                        <span class="status-pill status-online" style="margin-left:auto; font-size:9px; padding:3px 8px;">Required</span>
+                                    </div>
+                                    <div style="font-size:12px; color:var(--text-main); line-height:1.5;">Tap <b>Go Online</b> in left panel. Status turns <span style="color:var(--success-green); font-weight:800;">● Available</span>. You must have <b>Premium active</b> — only Available premium drivers appear when vendors search by location (Accra, Kumasi, etc.). Check your <b>Operating Location & Service Area</b> is correct.</div>
+                                </div>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div style="position:relative; margin-bottom:20px; display:flex; gap:14px;">
+                                <div style="position:absolute; left:-42px; top:0; width:32px; height:32px; background:white; border-radius:50%; display:grid; place-items:center; color:var(--uber-black); font-size:13px; font-weight:900; border:2px solid var(--uber-black);">2</div>
+                                <div style="flex:1; background:white; border:1px solid var(--uber-gray-border); border-radius:10px; padding:14px;">
+                                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                        <span style="font-size:14px;"></span>
+                                        <strong style="font-size:13px; color:var(--uber-black);">Vendors Find You</strong>
+                                    </div>
+                                    <div style="font-size:12px; color:var(--text-main); line-height:1.5;">Vendors go to <b>Delivery Services → Filter by Location → Request Delivery</b>. You instantly get <b style="color:var(--uber-blue);">in-app notification + WhatsApp alert</b> with vendor name, shop address & order note. Your phone vibrates + sound plays.</div>
+                                    <div style="margin-top:8px; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:6px; padding:8px 10px; font-size:11px; color:#1D4ED8; font-weight:600;">💬 WhatsApp: You get direct wa.me link to vendor — tap to chat instantly.</div>
+                                </div>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div style="position:relative; margin-bottom:20px; display:flex; gap:14px;">
+                                <div style="position:absolute; left:-42px; top:0; width:32px; height:32px; background:var(--uber-blue); border-radius:50%; display:grid; place-items:center; color:white; font-size:13px; font-weight:900;">3</div>
+                                <div style="flex:1; background:white; border:1px solid var(--uber-gray-border); border-radius:10px; padding:14px;">
+                                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                        <span style="font-size:14px;">✅</span>
+                                        <strong style="font-size:13px; color:var(--uber-black);">Accept Request</strong>
+                                        <span class="request-badge badge-pending" style="margin-left:auto; font-size:9px;">Requested</span>
+                                    </div>
+                                    <div style="font-size:12px; color:var(--text-main); line-height:1.5;">New card appears in <b>Live Delivery Requests Feed</b>. Tap <b style="color:var(--uber-blue);">Accept</b> within minutes — vendor is notified: <i>"{{ service.service_name if service else 'Your driver' }} accepted"</i>. If busy, tap <b>Decline</b>.</div>
+                                </div>
+                            </div>
+
+                            <!-- Step 4 -->
+                            <div style="position:relative; margin-bottom:20px; display:flex; gap:14px;">
+                                <div style="position:absolute; left:-42px; top:0; width:32px; height:32px; background:var(--uber-black); border-radius:50%; display:grid; place-items:center; color:white; font-size:13px; font-weight:900;">4</div>
+                                <div style="flex:1; background:white; border:1px solid var(--uber-gray-border); border-radius:10px; padding:14px;">
+                                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                        <span style="font-size:14px;">📦</span>
+                                        <strong style="font-size:13px; color:var(--uber-black);">Pick Up & Notify Vendor</strong>
+                                    </div>
+                                    <div style="font-size:12px; color:var(--text-main); line-height:1.5;">Go to vendor shop, collect order. Immediately tap <b style="background:var(--uber-black); color:white; padding:2px 6px; border-radius:4px; font-size:11px;">Mark Picked Up</b>. Vendor gets: <i>"has picked up your order"</i> + progress bar moves to 70%. Use <span style="background:#25D366; color:white; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:800;">WhatsApp Vendor</span> to share ETA.</div>
+                                </div>
+                            </div>
+
+                            <!-- Step 5 -->
+                            <div style="position:relative; margin-bottom:20px; display:flex; gap:14px;">
+                                <div style="position:absolute; left:-42px; top:0; width:32px; height:32px; background:white; border-radius:50%; display:grid; place-items:center; color:var(--uber-black); font-size:13px; font-weight:900; border:2px solid var(--uber-gray-border);">5</div>
+                                <div style="flex:1; background:white; border:1px solid var(--uber-gray-border); border-radius:10px; padding:14px;">
+                                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                        <span style="font-size:14px;">🚚</span>
+                                        <strong style="font-size:13px; color:var(--uber-black);">On The Way — Deliver</strong>
+                                    </div>
+                                    <div style="font-size:12px; color:var(--text-main); line-height:1.5;">Ride to buyer address. Keep vendor updated — good communication = 5-star rating. Buyer contact is shared by vendor via WhatsApp.</div>
+                                </div>
+                            </div>
+
+                            <!-- Step 6 -->
+                            <div style="position:relative; display:flex; gap:14px;">
+                                <div style="position:absolute; left:-42px; top:0; width:32px; height:32px; background:var(--success-green); border-radius:50%; display:grid; place-items:center; color:white; font-size:13px; font-weight:900;">6</div>
+                                <div style="flex:1; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; padding:14px;">
+                                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                        <span style="font-size:14px;">🏁</span>
+                                        <strong style="font-size:13px; color:#047857;">Delivered & Closed</strong>
+                                        <span class="request-badge badge-delivered" style="margin-left:auto; font-size:9px;">100%</span>
+                                    </div>
+                                    <div style="font-size:12px; color:#065F46; line-height:1.5;">At destination, tap <b style="background:var(--success-green); color:white; padding:2px 6px; border-radius:4px; font-size:11px;">Mark Delivered</b>. Trip closes at 100%. Vendor is prompted to rate you. High ratings → <b>Top 20 Quarterly Leaderboard</b> → more jobs + vendor trust.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:20px; background:var(--uber-black); color:white; border-radius:8px; padding:12px 14px; display:flex; gap:10px; align-items:center;">
+                            <div style="width:28px; height:28px; background:var(--accent); border-radius:6px; display:grid; place-items:center; color:black; font-weight:900; font-size:14px;">!</div>
+                            <div style="font-size:11px; line-height:1.4;"><b style="color:var(--accent);">Uber-style Pro Tip:</b> Keep your WhatsApp active & respond in &lt;2 mins. Vendors see your response time. Fast responders get auto-prioritized in search. Keep Availability = Available during work hours.</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="uber-card">
                     <h3 class="uber-title">⚡ Live Delivery Requests Feed</h3>
                     <div id="tripQueueContainer">
@@ -389,12 +493,19 @@ main.container {
                                     <div class="route-line {% if req.status == 'Picked Up' %}trip-progress-pickedup{% elif req.status == 'Delivered' %}trip-progress-delivered{% endif %}"></div>
                                 </div>
 
+                                <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+                                    {% if req.vendor_whatsapp %}
+                                    <a href="https://wa.me/{{ req.vendor_whatsapp }}?text={{ ('Hello ' + req.vendor_username + ', I am ' + (service.service_name if service else 'your driver') + ' from BizHub. I received your delivery request #' + req.id|string + '. I am on it!')|urlencode }}" target="_blank" rel="noopener" style="flex:1; background:#25D366; color:white; text-decoration:none; padding:10px; border-radius:8px; font-weight:800; font-size:12px; text-align:center; display:flex; align-items:center; justify-content:center; gap:6px;">💬 WhatsApp Vendor</a>
+                                    {% endif %}
+                                    <a href="tel:{{ req.vendor_whatsapp }}" style="background:#F1F5F9; color:#0F172A; border:1px solid #E2E8F0; text-decoration:none; padding:10px 12px; border-radius:8px; font-weight:700; font-size:12px;">📞 Call</a>
+                                </div>
+
                                 <div class="action-row">
                                     {% if req.status == 'Requested' %}
                                         <form method="POST" action="/delivery/requests/{{ req.id }}/status" style="flex: 1; display: flex; gap: 8px;">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                             <input type="hidden" name="status" value="Accepted">
-                                            <button type="submit" class="action-btn btn-accept">Accept</button>
+                                            <button type="submit" class="action-btn btn-accept">✅ Accept & Notify</button>
                                         </form>
                                         <form method="POST" action="/delivery/requests/{{ req.id }}/status" style="flex: 1;">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -402,27 +513,33 @@ main.container {
                                             <button type="submit" class="action-btn btn-decline">Decline</button>
                                         </form>
                                     {% elif req.status == 'Accepted' %}
-                                        <form method="POST" action="/delivery/requests/{{ req.id }}/status" style="width: 100%;">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                            <input type="hidden" name="status" value="Picked Up">
-                                            <button type="submit" class="action-btn btn-accept" style="width:100%; background-color: var(--uber-black);">Mark Picked Up</button>
-                                        </form>
+                                        <div style="width:100%;">
+                                            <div style="font-size:11px; font-weight:800; color:#1D4ED8; background:#EFF6FF; border:1px solid #BFDBFE; padding:6px 10px; border-radius:6px; margin-bottom:8px; text-align:center;">📦 Go pick up from vendor — then update</div>
+                                            <form method="POST" action="/delivery/requests/{{ req.id }}/status" style="width: 100%;">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                <input type="hidden" name="status" value="Picked Up">
+                                                <button type="submit" class="action-btn btn-accept" style="width:100%; background-color: var(--uber-black);">📦 Mark Picked Up</button>
+                                            </form>
+                                        </div>
                                     {% elif req.status == 'Picked Up' %}
-                                        <form method="POST" action="/delivery/requests/{{ req.id }}/status" style="width: 100%;">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                            <input type="hidden" name="status" value="Delivered">
-                                            <button type="submit" class="action-btn btn-complete" style="width:100%;">Mark Delivered</button>
-                                        </form>
+                                        <div style="width:100%;">
+                                            <div style="font-size:11px; font-weight:800; color:#047857; background:#ECFDF5; border:1px solid #A7F3D0; padding:6px 10px; border-radius:6px; margin-bottom:8px; text-align:center;">🚚 On the way — deliver now</div>
+                                            <form method="POST" action="/delivery/requests/{{ req.id }}/status" style="width: 100%;">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                <input type="hidden" name="status" value="Delivered">
+                                                <button type="submit" class="action-btn btn-complete" style="width:100%;">🏁 Mark Delivered</button>
+                                            </form>
+                                        </div>
                                     {% else %}
                                         <div style="font-size: 13px; font-weight: 700; color: var(--success-green); padding: 4px 0;">
-                                            ✓ Trip Successfully Fulfilled & Closed
+                                            ✓ Trip Fulfilled & Closed
                                         </div>
                                     {% endif %}
                                 </div>
                             </div>
                         {% else %}
                             <div style="padding: 40px; text-align: center; color: var(--text-muted); background: white; border-radius: var(--radius); border: 2px dashed var(--uber-gray-border);">
-                                📭 No delivery requests yet.
+                                 No delivery requests yet.
                             </div>
                         {% endfor %}
                     </div>
@@ -449,9 +566,91 @@ main.container {
         </div>
                 <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
         <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
-                  © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS  Company
+                  © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS Company
         </footer>
     </main>
+
+    <!-- 🔊 WhatsApp Instant Alert + Sound for New Requests - UBER THEME -->
+    <audio id="newRequestSound" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/24/audio_2b9d3f0d3a.mp3?filename=notification-sound-7062.mp3" type="audio/mpeg">
+    </audio>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const pendingBadges = document.querySelectorAll('.badge-pending');
+        const pendingCount = pendingBadges.length;
+        
+        if (pendingCount > 0) {
+            // Play sound + vibrate
+            try {
+                const audio = document.getElementById('newRequestSound');
+                if (audio) {
+                    audio.volume = 0.8;
+                    audio.play().catch(function(e){ console.log('Audio autoplay blocked', e); });
+                    // Try again after 500ms for mobile
+                    setTimeout(function(){ audio.play().catch(()=>{}); }, 500);
+                }
+                if (navigator.vibrate) {
+                    navigator.vibrate([300, 100, 300, 100, 300]);
+                }
+            } catch(e){ console.log(e); }
+            
+            // Create Uber-style floating WhatsApp alert
+            if (!document.getElementById('bizhubWaAlert')) {
+                const banner = document.createElement('div');
+                banner.id = 'bizhubWaAlert';
+                banner.style.cssText = 'position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--uber-black, #000); color:white; padding:0; border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,0.4); z-index:9999; display:flex; align-items:stretch; max-width:92%; width:420px; overflow:hidden; border:1px solid #222; animation: slideUp 0.4s ease;';
+                banner.innerHTML = `
+                    <div style="width:56px; background:#25D366; display:grid; place-items:center; font-size:24px;">💬</div>
+                    <div style="flex:1; padding:14px 14px 12px 14px;">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                            <div style="font-weight:900; font-size:13px; letter-spacing:-0.2px;">New Delivery Request!</div>
+                            <span style="background:#25D366; color:white; font-size:9px; font-weight:900; padding:2px 6px; border-radius:10px; text-transform:uppercase;">WhatsApp</span>
+                        </div>
+                        <div style="font-size:11px; color:#9CA3AF; line-height:1.4;">You have <b style="color:white;">${pendingCount} pending request(s)</b> — Vendors are waiting. Tap to view & WhatsApp them instantly. Sound on 🔊</div>
+                        <div style="margin-top:8px; display:flex; gap:8px;">
+                            <button onclick="document.getElementById('tripQueueContainer').scrollIntoView({behavior:'smooth'}); document.getElementById('bizhubWaAlert').remove();" style="background:white; color:black; border:none; padding:6px 12px; border-radius:6px; font-size:11px; font-weight:800; cursor:pointer; flex:1;">View Requests</button>
+                            <button onclick="document.getElementById('bizhubWaAlert').remove()" style="background:rgba(255,255,255,0.12); color:white; border:1px solid rgba(255,255,255,0.2); padding:6px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;">Dismiss</button>
+                        </div>
+                    </div>
+                    <button onclick="this.closest('#bizhubWaAlert').remove()" style="background:transparent; border:none; color:#6B7280; width:32px; display:grid; place-items:center; cursor:pointer; font-size:14px;">✕</button>
+                `;
+                document.body.appendChild(banner);
+                
+                // Auto dismiss after 12 seconds
+                setTimeout(function(){ 
+                    if (banner.parentElement) {
+                        banner.style.opacity='0'; 
+                        banner.style.transform='translateX(-50%) translateY(20px)'; 
+                        banner.style.transition='all 0.4s ease'; 
+                        setTimeout(function(){ if(banner.parentElement) banner.remove(); }, 400); 
+                    }
+                }, 12000);
+                
+                // Add slideUp animation
+                const style = document.createElement('style');
+                style.textContent = '@keyframes slideUp { from { transform: translateX(-50%) translateY(40px); opacity:0; } to { transform: translateX(-50%) translateY(0); opacity:1; } }';
+                document.head.appendChild(style);
+            }
+        }
+        
+        // Also highlight Requested cards with pulse
+        pendingBadges.forEach(function(badge){
+            const card = badge.closest('.request-item');
+            if (card) {
+                card.style.borderColor = '#F59E0B';
+                card.style.borderWidth = '2px';
+                card.style.boxShadow = '0 0 0 4px rgba(245,158,11,0.15)';
+                card.style.animation = 'pulseBorder 2s infinite';
+            }
+        });
+        
+        const pulseStyle = document.createElement('style');
+        pulseStyle.textContent = '@keyframes pulseBorder { 0%,100% { box-shadow: 0 0 0 4px rgba(245,158,11,0.15); } 50% { box-shadow: 0 0 0 8px rgba(245,158,11,0.08); } }';
+        document.head.appendChild(pulseStyle);
+    });
+    </script>
+
 </body>
 </html>
 

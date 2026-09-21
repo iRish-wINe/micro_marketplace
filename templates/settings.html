@@ -1,652 +1,196 @@
-<html lang="en" {% if app_theme == 'night' %}class="night-theme"{% endif %}>
+<!DOCTYPE html>
+<html lang="en" {% if app_theme == 'night' or user.theme == 'night' %}class="night-theme"{% endif %}>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Settings | BizHub Marketplace</title>
-    <style>
-        :root {
-            --bg-body: #F4F7FB;
-            --bg-card: #FFFFFF;
-            --text-main: #0F172A;
-            --text-muted: #565959;
-            --border-color: #D5D9D9;
-            --accent-green: #06C167;
-            --danger-red: #DC2626;
-            --nav-bg: #0B192C;
-            --primary-blue: #1D9BF0;
-        }
-
-        :root.night-theme {
-            --bg-body: #15202B !important;      /* Twitter Dim Canvas Bg */
-            --bg-card: #1E2732 !important;      /* Twitter Slate Card Blocks */
-            --text-main: #F7F9F9 !important;    /* Pristine High-Contrast Text */
-            --text-muted: #8899A6 !important;   /* Ice-Blue Descriptive Labels */
-            --border-color: #38444D !important; /* Slate Section Borders */
-            --nav-bg: #1E2732 !important;
-        }
-
-        * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 0 16px 40px; }
-        
-        /* 🚀 TOP HEADER & NAVIGATION STYLES FROM ALL_STORES */
-        .top { background: #131921; color: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-        .brand { font-size: 22px; font-weight: 900; color: #fff; text-decoration: none; }
-        .brand span { color: #ff9900; }
-        .nav { background: #232f3e; display: flex; gap: 4px; overflow: auto; white-space: nowrap; padding: 0 10px; margin-bottom: 24px; }
-        .nav a { color: #fff; padding: 11px 12px; font-weight: 700; font-size: 13px; text-decoration: none; }
-        .nav a:hover { background: rgba(255, 255, 255, 0.1); }
-
-        .container { width: 100%; max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-        .nav-actions-row { display: flex; gap: 10px; margin-bottom: 5px; }
-        
-        .top-btn { text-decoration: none; font-size: 13px; font-weight: 700; padding: 8px 16px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; border: none; cursor: pointer; }
-        .btn-back { background: var(--nav-bg); color: #FFFFFF; border: 1px solid var(--border-color); }
-        .btn-mystore { background: var(--accent-green); color: #FFFFFF; }
-
-        .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        
-        .card-header-group { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; margin-bottom: 6px; }
-        .card-tag { font-size: 11px; font-weight: 800; color: var(--accent-green); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; display: block; }
-        .card h2 { margin: 0; font-size: 24px; font-weight: 800; color: var(--text-main); }
-        .card h3 { margin: 0 0 4px 0; font-size: 16px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px; }
-        .card-caption { font-size: 13px; color: var(--text-muted); margin: 0 0 20px 0; line-height: 1.4; }
-
- .form-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-@media (max-width: 560px) {
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-}
-        .form-group { display: flex; flex-direction: column; }
-        .form-group label { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; color: var(--nav-bg); letter-spacing: 0.3px; }
-        .night-theme .form-group label { color: var(--text-muted); }
-        
-        .form-control { width: 100%; padding: 11px 14px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; background: var(--bg-body); color: var(--text-main); }
-        .form-control:focus { border-color: var(--primary-blue); }
-        
-        .help-note { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
-
-        .appearance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 500px; }
-        .mode-label { cursor: pointer; position: relative; display: block; margin: 0; }
-        .mode-label input { position: absolute; top: 12px; right: 12px; z-index: 5; }
-        .mode-card { padding: 16px; border-radius: 8px; text-align: center; transition: all 0.2s ease; background: var(--bg-card); border: 2px solid var(--border-color); }
-        
-        .day-select-border { border-color: var(--accent-green); }
-        .night-select-border { border-color: var(--primary-blue); }
-
-        .mode-card-inactive { border-color: var(--border-color) !important; }
-
-        .btn-logout { background: var(--danger-red); color: white; padding: 10px 20px; font-weight: 700; font-size: 13px; border-radius: 6px; border: none; cursor: pointer; text-decoration: none; }
-        .btn-whatsapp-reset { display: inline-flex; align-items: center; gap: 8px; background: #00A884; color: #FFFFFF; text-decoration: none; padding: 10px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; border: none; margin-top: 5px; width: fit-content; }
-        
-        .bottom-action-bar { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 10px; }
-        .btn-cancel { background: none; border: none; color: var(--text-main); font-weight: 600; font-size: 13px; cursor: pointer; text-decoration: none; padding: 10px 16px; border-radius: 6px; }
-        .btn-cancel:hover { background: rgba(0,0,0,0.04); }
-        .btn-save-master { background: var(--accent-green); color: white; border: none; font-weight: 700; font-size: 13px; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-/* ===============================
-   PROFESSIONAL RESPONSIVE UPDATE
-   =============================== */
-
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    min-width: 0;
-    overflow-x: hidden;
-    background: var(--bg-body);
-    padding: 0 0 40px;
-}
-
-/* Header */
-.top {
-    width: 100%;
-    min-height: 64px;
-    padding: 12px clamp(16px, 4vw, 48px);
-    background: #131921;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-
-.brand {
-    flex: 0 0 auto;
-    font-size: clamp(20px, 3vw, 25px);
-    letter-spacing: -0.4px;
-}
-
-.top > div {
-    color: #cbd5e1;
-    font-size: 12px;
-    line-height: 1.4;
-}
-
-/* Navigation */
-.nav {
-    width: 100%;
-    min-height: 44px;
-    margin: 0 0 28px;
-    padding: 0 clamp(8px, 3vw, 40px);
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    scrollbar-width: thin;
-    -webkit-overflow-scrolling: touch;
-}
-
-.nav::-webkit-scrollbar {
-    height: 4px;
-}
-
-.nav::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,.3);
-    border-radius: 10px;
-}
-
-.nav a {
-    flex: 0 0 auto;
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
-    padding: 0 13px;
-    border-radius: 4px;
-    font-size: 13px;
-}
-
-.nav a:hover,
-.nav a:focus-visible {
-    background: rgba(255,255,255,.12);
-}
-
-/* Main content */
-.container {
-    width: min(100% - 32px, 1040px);
-    margin: 0 auto;
-    gap: 18px;
-}
-
-form {
-    width: 100%;
-}
-
-/* Back and store buttons */
-.nav-actions-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 2px;
-}
-
-.top-btn {
-    min-height: 40px;
-    padding: 9px 15px;
-    border-radius: 5px;
-    transition: transform .15s ease, opacity .15s ease;
-}
-
-.top-btn:hover,
-.btn-save-master:hover,
-.btn-logout:hover {
-    opacity: .9;
-    transform: translateY(-1px);
-}
-
-/* Cards */
-.card {
-    border-radius: 10px;
-    padding: clamp(18px, 3vw, 28px);
-    box-shadow: 0 2px 8px rgba(15, 23, 42, .06);
-}
-
-.card-header-group {
-    align-items: center;
-}
-
-.card h2 {
-    font-size: clamp(22px, 4vw, 28px);
-    letter-spacing: -.5px;
-}
-
-.card h3 {
-    font-size: 17px;
-}
-
-.card-caption {
-    max-width: 700px;
-    margin-bottom: 22px;
-}
-
-/* Forms */
-.form-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-}
-
-.form-control {
-    min-width: 0;
-    min-height: 44px;
-    appearance: none;
-    -webkit-appearance: none;
-    transition: border-color .15s ease, box-shadow .15s ease;
-}
-
-.form-control:focus {
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 0 3px rgba(29, 155, 240, .14);
-}
-
-textarea.form-control {
-    resize: vertical;
-}
-
-/* File input */
-input[type="file"].form-control {
-    cursor: pointer;
-    padding: 7px;
-}
-
-/* Appearance selector */
-.appearance-grid {
-    width: 100%;
-    max-width: 560px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.mode-card {
-    min-height: 82px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 17px 12px;
-    border: 2px solid var(--border-color);
-    transition: border-color .15s ease, background .15s ease,
-                box-shadow .15s ease, transform .15s ease;
-}
-
-.mode-label:hover .mode-card {
-    transform: translateY(-1px);
-}
-
-.mode-label input {
-    accent-color: var(--accent-green);
-}
-
-.mode-label input:checked + .mode-card {
-    border-color: var(--accent-green);
-    background: rgba(6, 193, 103, .07);
-    box-shadow: 0 0 0 3px rgba(6, 193, 103, .12);
-}
-
-.mode-label input[value="night"]:checked + .mode-card {
-    border-color: var(--primary-blue);
-    background: rgba(29, 155, 240, .08);
-    box-shadow: 0 0 0 3px rgba(29, 155, 240, .12);
-}
-
-/* Premium message */
-.card div[style*="background"] {
-    line-height: 1.5;
-}
-
-/* Bottom actions */
-.bottom-action-bar {
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-    margin: 0 -8px;
-    padding: 13px 8px;
-    background: color-mix(in srgb, var(--bg-body) 92%, transparent);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid var(--border-color);
-}
-
-.btn-save-master,
-.btn-cancel {
-    min-height: 42px;
-}
-
-/* Footer */
-footer {
-    width: min(100% - 32px, 1040px);
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-
-/* Tablet */
-@media (max-width: 720px) {
-    .top {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    .top > div {
-        font-size: 11px;
-    }
-
-    .nav {
-        margin-bottom: 20px;
-    }
-
-    .card-header-group {
-        align-items: flex-start;
-    }
-
-    .btn-logout {
-        white-space: nowrap;
-    }
-}
-
-/* Phones */
-@media (max-width: 560px) {
-    .container {
-        width: min(100% - 20px, 1040px);
-        gap: 14px;
-    }
-
-    .nav-actions-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .nav-actions-row .top-btn {
-        width: 100%;
-    }
-
-    .card {
-        padding: 17px 15px;
-        border-radius: 8px;
-    }
-
-    .card-header-group {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .card-header-group .btn-logout {
-        width: 100%;
-    }
-
-    .form-grid,
-    .appearance-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-    }
-
-    .form-group {
-        width: 100%;
-    }
-
-    .bottom-action-bar {
-        margin: 0 -3px;
-        padding: 10px 3px;
-    }
-
-    .bottom-action-bar .btn-cancel,
-    .bottom-action-bar .btn-save-master {
-        flex: 1;
-        text-align: center;
-    }
-
-    .btn-whatsapp-reset {
-        width: 100%;
-        justify-content: center;
-    }
-
-    footer {
-        width: min(100% - 20px, 1040px);
-        font-size: 12px;
-        line-height: 1.5;
-    }
-}
-
-/* Very small phones */
-@media (max-width: 360px) {
-    .brand {
-        font-size: 20px;
-    }
-
-    .card h2 {
-        font-size: 21px;
-    }
-
-    .card h3 {
-        font-size: 16px;
-    }
-
-    .bottom-action-bar {
-        gap: 6px;
-    }
-
-    .btn-cancel,
-    .btn-save-master {
-        padding-left: 10px;
-        padding-right: 10px;
-        font-size: 12px;
-    }
-}
-/* Sticky settings header */
-.settings-header {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    width: 100%;
-    background: #131921;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, .18);
-}
-
-/* Remove the old spacing because the wrapper controls the header */
-.settings-header .top {
-    position: static;
-    margin: 0;
-    width: 100%;
-    padding: 12px clamp(16px, 4vw, 48px);
-}
-
-.settings-header .nav {
-    position: static;
-    margin: 0;
-    width: 100%;
-}
-
-/* Prevent sticky header from hiding the first card when using anchors */
-.container {
-    scroll-margin-top: 120px;
-}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Account Settings | BizHub Marketplace</title>
+<meta name="csrf-token" content="{{ csrf_token }}">
+<style>
+:root{--nav:#131921;--nav2:#232f3e;--yellow:#febd69;--bg-body:#F4F7FB;--bg-card:#FFFFFF;--text-main:#0F172A;--text-muted:#565959;--border-color:#D5D9D9;--accent-green:#06C167;--danger-red:#DC2626;--primary-blue:#1D9BF0;--nav-bg:#0B192C}
+:root.night-theme{--bg-body:#15202B !important;--bg-card:#1E2732 !important;--text-main:#F7F9F9 !important;--text-muted:#8899A6 !important;--border-color:#38444D !important;--nav-bg:#1E2732 !important;--nav:#1E2732 !important;--nav2:#15202B !important}
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-body);color:var(--text-main);margin:0;padding:106px 0 40px;overflow-x:hidden}
+.bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:var(--nav);box-shadow:0 2px 12px rgba(0,0,0,.18);width:100%}
+.bh-topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px}
+.bh-brand{font-size:22px;font-weight:900;color:#fff;text-decoration:none}.bh-brand span{color:#ff9900}
+.bh-location{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid rgba(255,255,255,.2);border-radius:4px;color:#fff}
+.bh-location small{display:block;font-size:9px;font-weight:800;text-transform:uppercase;color:#FEBD69} .bh-location strong{display:block;font-size:11px;font-weight:800}
+.bh-search{display:flex;flex:1;max-width:500px;height:40px;border-radius:5px;overflow:hidden;background:#fff}.bh-search input{border:0;outline:0;flex:1;padding:0 12px;font-size:14px}.bh-search button{width:48px;border:0;background:var(--yellow);cursor:pointer}
+.bh-subbar{min-height:42px;background:var(--nav2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}.bh-subbar::-webkit-scrollbar{display:none}
+.bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px;flex-shrink:0}.bh-subbar a.active{background:#fff;color:#0F1111 !important;border-radius:6px}
+.container{width:100%;max-width:1000px;margin:0 auto;padding:0 16px;display:flex;flex-direction:column;gap:20px}
+.nav-actions-row{display:flex;gap:10px;margin-bottom:5px}
+.top-btn{text-decoration:none;font-size:13px;font-weight:700;padding:8px 16px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;border:none;cursor:pointer}
+.btn-back{background:var(--nav-bg);color:#fff;border:1px solid var(--border-color)} .btn-mystore{background:var(--accent-green);color:#fff}
+.card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.card-header-group{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:6px}
+.card-tag{font-size:11px;font-weight:800;color:var(--accent-green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;display:block}
+.card h2{margin:0;font-size:24px;font-weight:800;color:var(--text-main)} .card h3{margin:0 0 4px;font-size:16px;font-weight:800;display:flex;align-items:center;gap:6px}
+.card-caption{font-size:13px;color:var(--text-muted);margin:0 0 20px;line-height:1.4}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(max-width:560px){.form-grid{grid-template-columns:1fr}}
+.form-group{display:flex;flex-direction:column}
+.form-group label{font-size:11px;font-weight:800;text-transform:uppercase;margin-bottom:6px;color:var(--nav-bg);letter-spacing:.3px}
+.night-theme .form-group label{color:var(--text-muted)}
+.form-control{width:100%;padding:11px 14px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;background:var(--bg-body);color:var(--text-main)}
+.form-control:focus{border-color:var(--primary-blue);box-shadow:0 0 0 3px rgba(29,155,240,.15)}
+.help-note{font-size:11px;color:var(--text-muted);margin-top:5px}
+.appearance-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:500px}
+.mode-label{cursor:pointer;position:relative;display:block;margin:0}.mode-label input{position:absolute;top:12px;right:12px;z-index:5}
+.mode-card{padding:16px;border-radius:10px;text-align:center;transition:all .2s ease;background:var(--bg-card);border:2px solid var(--border-color)}
+.mode-card.active-day{border-color:var(--accent-green) !important;box-shadow:0 0 0 3px rgba(6,193,103,.15)} .mode-card.active-night{border-color:var(--primary-blue) !important;box-shadow:0 0 0 3px rgba(29,155,240,.15)}
+.btn-logout{background:var(--danger-red);color:#fff;padding:10px 20px;font-weight:700;font-size:13px;border-radius:6px;border:none;cursor:pointer;text-decoration:none}
+.btn-whatsapp-reset{display:inline-flex;align-items:center;gap:8px;background:#00A884;color:#fff;text-decoration:none;padding:10px 16px;border-radius:20px;font-weight:700;font-size:13px;border:none;margin-top:5px;width:fit-content}
+.bottom-action-bar{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:10px}
+.btn-cancel{background:none;border:none;color:var(--text-main);font-weight:600;font-size:13px;cursor:pointer;text-decoration:none;padding:10px 16px;border-radius:6px}
+.btn-cancel:hover{background:rgba(0,0,0,.04)}
+.btn-save-master{background:var(--accent-green);color:#fff;border:none;font-weight:800;font-size:14px;padding:12px 24px;border-radius:8px;cursor:pointer;box-shadow:0 2px 8px rgba(6,193,103,.3)}
+.alert{padding:12px 14px;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:12px}
+.alert-error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b} .alert-success{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+.footer{margin-top:40px;padding:20px 0;border-top:1px solid var(--border-color);text-align:center;color:var(--text-muted);font-size:13px;font-weight:600}
 </style>
 </head>
 <body>
 
-<div class="settings-header">
-    <header class="top">
-        <a class="brand" href="{{ url_for('home') }}">
-            Biz<span>Hub</span>
-        </a>
-
-        <div class="header-tagline">
-            Your Local Market, Unified Online
-        </div>
-    </header>
-
-    <nav class="nav">
-        <a href="{{ url_for('home') }}">☰ Marketplace</a>
-        <a href="{{ url_for('all_stores') }}">All Stores</a>
-        <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
-        <a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">
-            Favorites
-        </a>
-        <a href="{{ url_for('features') if session.get('username') else url_for('login') }}">
-            Features
-        </a>
-    </nav>
+<div class="bh-global-header">
+<div class="bh-topbar">
+<a class="bh-brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a>
+<div class="bh-location"><small>Settings</small><strong>Account</strong></div>
+<form class="bh-search" method="GET" action="{{ url_for('home') }}"></form>
+<div style="color:#febd69;font-size:11px;font-weight:700">👤 {{ user.username }}</div>
+</div>
+<nav class="bh-subbar">
+<a href="{{ url_for('home') }}">☰ Marketplace</a>
+<a href="{{ url_for('promo_marketplace') }}">Today's Deals</a>
+<a href="{{ url_for('all_stores') }}">All Stores</a>
+<a href="{{ url_for('cart_page') }}">🛒 Cart {% if cart_count %}<span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:10px;font-size:10px">{{ cart_count }}</span>{% endif %}</a>
+{% if session.get('role') in ['Vendor','Fast Food'] %}<a href="{{ url_for('vendor_profile', username=user.username) }}" style="color:#febd69">My Store</a><a href="{{ url_for('subscription') }}" style="color:#febd69">💳 Subscription</a>{% endif %}
+<a href="/notifications">🔔 BizHubAlerts</a>
+</nav>
 </div>
 
-
 <div class="container">
-    
-    <div class="nav-actions-row">
-        <a href="{{ url_for('home') }}" class="top-btn btn-back">← Back to Marketplace</a>
-        
-    </div>
 
-    <form method="POST" action="/settings" enctype="multipart/form-data" style="margin:0; display:flex; flex-direction:column; gap:20px;">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<div class="nav-actions-row">
+<a href="{{ url_for('logout') }}" class="top-btn btn-logout" style="margin-left:auto">🚪 Logout</a>
+</div>
 
-        <!-- CARD 1: ACCOUNT HEADER METRICS -->
-        <div class="card">
-            <div class="card-header-group">
-                <div>
-                    <span class="card-tag">Biz Hub Account</span>
-                    <h2>Account Settings</h2>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">Manage your identity, business profile, contact details, storefront preferences, security and appearance.</p>
-                </div>
-                <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
-            </div>
-        </div>
+{% if settings_error %}<div class="alert alert-error">⚠️ {{ settings_error }}</div>{% endif %}
+{% if updated %}<div class="alert alert-success">✅ Settings saved successfully!</div>{% endif %}
+{% if request.args.get('password_changed') %}<div class="alert alert-success">✅ Password changed successfully!</div>{% endif %}
 
-        <!-- CARD 2: ACCOUNT IDENTITY -->
-        <div class="card">
-            <h3>👤 Account Identity</h3>
-            <p class="card-caption">Change the public username and email attached to your account.</p>
-            
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" name="username" class="form-control" value="{{ user.username or '' }}" required>
-                </div>
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" name="email" class="form-control" value="{{ user.email or '' }}" placeholder="e.g. dani@hmail.com">
-                </div>
-            </div>
-            <div class="help-note">Changing this updates your account references, including listings and orders.</div>
-        </div>
+<form method="POST" action="{{ url_for('settings') }}" enctype="multipart/form-data">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
-        <!-- CARD 3: BUSINESS PROFILE -->
-        <div class="card">
-            <h3> Business Profile</h3>
-            <p class="card-caption">Update the business information customers see.</p>
-            
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Company / Business Name</label>
-                    <input type="text" name="company_name" class="form-control" value="{{ user.company_name or '' }}" placeholder="e.g. punches lounge">
-                </div>
-                <div class="form-group">
-                    <label>Whatsapp Number</label>
-                    <input type="tel" name="whatsapp_number" class="form-control" value="{{ user.whatsapp_number or '' }}" placeholder="e.g. 233203661731">
-                </div>
-            </div>
-            
-            <div class="form-group" style="margin-top:12px; margin-bottom:12px;">
-                <label>Company / Business Location</label>
-                <input type="text" name="business_location" class="form-control" value="{{ user.business_location or '' }}" placeholder="e.g. Accra, Ghana">
-                <div class="help-note">Product listing locations can still be specified separately.</div>
-            </div>
+<!-- CARD 1: HEADER -->
+<div class="card">
+<div class="card-header-group">
+<div><span class="card-tag">Account Settings</span><h2>Manage Your BizHub Account</h2><p class="card-caption" style="margin-top:6px">Update username, email, business profile, appearance, and security. All vendors enjoy 2 months free premium from registration.</p></div>
+<div style="text-align:right"><span style="font-size:11px;background:{% if subscription and subscription.is_premium %}#ecfdf5{% else %}#fef3c7{% endif %};color:{% if subscription and subscription.is_premium %}#065f46{% else %}#92400e{% endif %};border:1px solid {% if subscription and subscription.is_premium %}#a7f3d0{% else %}#fde68a{% endif %};padding:4px 8px;border-radius:20px;font-weight:800">{{ subscription.name if subscription else 'Basic' }} {% if subscription and subscription.expires %}• {{ subscription.expires }}{% endif %}</span><div style="font-size:10px;color:var(--text-muted);margin-top:4px">@{{ user.username }} • {{ user.role }}</div></div>
+</div>
+</div>
 
-            <div class="form-group" style="margin-top:12px;">
-                <label>Business Logo</label>
-                <input type="file" name="company_logo" class="form-control" style="padding:4px;" accept="image/*">
-                {% if user.company_logo %}
-                    <div class="help-note" style="margin-top:6px; font-weight:600; color:var(--accent-green);">Current logo: <code>{{ user.company_logo }}</code></div>
-                {% endif %}
-            </div>
-        </div>
+<!-- CARD 2: ACCOUNT IDENTITY -->
+<div class="card">
+<h3>👤 Account Identity</h3>
+<p class="card-caption">Change the public username and email attached to your account. Changing username updates listings, orders, ledger, notifications.</p>
+<div class="form-grid">
+<div class="form-group"><label>Username *</label><input type="text" name="username" class="form-control" value="{{ user.username|e }}" required pattern="[A-Za-z0-9_.\-]{3,40}" title="3-40 chars letters numbers _ . -"></div>
+<div class="form-group"><label>Email Address *</label><input type="email" name="email" class="form-control" value="{{ user.email|e }}" required placeholder="you@example.com"></div>
+</div>
+<div class="help-note">Username must be 3-40 chars, letters/numbers/_ . - . Email required for recovery.</div>
+</div>
 
-        <!-- CARD 4: PREMIUM STORE -->
-        <div class="card">
-            <h3>🔮 Premium Store</h3>
-            <p class="card-caption">Take your Biz Hub store to the next level.</p>
-            <div style="background: rgba(6,193,103,0.05); border: 1px solid rgba(6,193,103,0.2); padding: 14px; border-radius: 6px; color: #15803D; font-weight: 700; font-size: 13.5px;">
-                🥳 Congratulations, You're on the Next Level
-                <span style="font-weight:500; font-size:12.5px; display:block; color:var(--text-main); margin-top:2px;">Your Premium Store is active until 12 Nov 2026.</span>
-            </div>
-        </div>
+<!-- CARD 3: BUSINESS PROFILE -->
+<div class="card">
+<h3>🏢 Business Profile</h3>
+<p class="card-caption">Update the business information customers see. General vendors must have WhatsApp, Fast Food same.</p>
+<div class="form-grid">
+<div class="form-group"><label>Company / Business Name</label><input type="text" name="company_name" class="form-control" value="{{ user.company_name|e or '' }}" placeholder="e.g. punches lounge"></div>
+<div class="form-group"><label>Whatsapp Number {% if user.role in ['Vendor','Fast Food'] %}*{% endif %}</label><input type="tel" name="whatsapp_number" class="form-control" value="{{ user.whatsapp_number|e or '' }}" placeholder="e.g. 233203661731"></div>
+</div>
+<div class="form-group" style="margin-top:12px"><label>Company / Business Location</label><input type="text" name="business_location" class="form-control" value="{{ user.business_location|e or '' }}" placeholder="e.g. Accra, Ghana"><div class="help-note">Product listing locations can still be specified separately.</div></div>
+{% if user.role in ['Vendor','Fast Food'] %}
+<div class="form-group" style="margin-top:12px"><label>Catalog Mode</label><select name="catalog_mode" class="form-control"><option value="Focused" {% if user.catalog_mode == 'Focused' %}selected{% endif %}>Focused — Few categories</option><option value="Variety" {% if user.catalog_mode == 'Variety' %}selected{% endif %}>Variety — Many categories</option></select></div>
+<div class="form-group" style="margin-top:12px"><label>Product Ranges (keep at least 1)</label><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">{% for cat in vendor_category_options %}<label style="font-size:12px;background:{% if cat in vendor_categories %}#ecfdf5{% else %}#f8fafc{% endif %};border:1px solid {% if cat in vendor_categories %}#a7f3d0{% else %}#e2e8f0{% endif %};padding:6px 10px;border-radius:20px;cursor:pointer"><input type="checkbox" name="vendor_categories" value="{{ cat }}" {% if cat in vendor_categories %}checked{% endif %} style="margin-right:4px">{{ cat }}</label>{% endfor %}</div><div class="help-note">If none checked, we keep your existing ranges to avoid blocking theme/username changes.</div></div>
+{% endif %}
+<div class="form-group" style="margin-top:12px"><label>Business Logo (PNG/JPG/WEBP/GIF)</label><input type="file" name="company_logo" class="form-control" style="padding:6px" accept="image/png,image/jpeg,image/webp,image/gif">{% if user.company_logo %}<div class="help-note" style="margin-top:6px;font-weight:600;color:var(--accent-green)">Current: {{ user.company_logo|e }} — uploading new will replace old.</div>{% endif %}</div>
+</div>
 
-        <!-- CARD 5: APPEARANCE MODE SELECTION -->
-        <div class="card">
-            <h3>🎨 Appearance</h3>
-            <p class="card-caption">Choose the interface style for your account.</p>
-            
-            <div class="appearance-grid">
-                <label class="mode-label">
-                    <input type="radio" name="theme" value="day" {% if app_theme == "day" %}checked{% endif %} onchange="switchThemeLive('day')">
-                    <div class="mode-card day-select-border">
-                        <b style="font-size:13.5px; display:block;">Day</b>
-                        <span style="font-size:11px; color:var(--text-muted);">Light interface</span>
-                    </div>
-                </label>
+<!-- CARD 4: PREMIUM STORE DYNAMIC -->
+<div class="card">
+<h3>🔮 Premium Store</h3>
+<p class="card-caption">Take your Biz Hub store to the next level. 2 months free premium from registration.</p>
+{% if subscription and subscription.is_premium %}
+<div style="background:rgba(6,193,103,.08);border:1px solid rgba(6,193,103,.25);padding:14px;border-radius:8px;color:#065f46">
+<div style="font-weight:900;font-size:14px">🥳 Congratulations, You're on {{ subscription.name }}</div>
+<span style="font-weight:600;font-size:13px;display:block;margin-top:4px;color:var(--text-main)">{% if subscription.trial %}Free trial active — enjoy full premium features{% else %}Premium active — paid tier{% endif %} until {{ subscription.expires }}. After expiry, Basic = 3 listings visible.</span>
+{% if subscription.expires_iso %}<div style="font-size:11px;color:var(--text-muted);margin-top:6px">Expires ISO: {{ subscription.expires_iso }} • Registered: {{ user.registered_at or 'N/A' }} • Trial started: {{ user.trial_started_at or 'N/A' }}</div>{% endif %}
+</div>
+{% else %}
+<div style="background:#fef3c7;border:1px solid #fde68a;padding:14px;border-radius:8px;color:#92400e">
+<div style="font-weight:900">⚠️ Basic Account</div>
+<span style="font-size:12px;display:block;margin-top:4px;color:#78350f">Upgrade to Premium for unlimited listings, video uploads, promo ads, verification badge. Your 2 months free trial {% if subscription and subscription.expires %}expired on {{ subscription.expires }}{% else %}has ended{% endif %}.</span>
+<a href="{{ url_for('subscription') }}" style="display:inline-block;margin-top:8px;background:#111;color:#fff;padding:8px 14px;border-radius:6px;text-decoration:none;font-weight:800;font-size:12px">💳 Upgrade to Premium</a>
+</div>
+{% endif %}
+</div>
 
-                <label class="mode-label">
-                    <input type="radio" name="theme" value="night" {% if app_theme == "night" %}checked{% endif %} onchange="switchThemeLive('night')">
-                    <div class="mode-card night-select-border">
-                        <b style="font-size:13.5px; display:block;">Night</b>
-                        <span style="font-size:11px; color:var(--text-muted);">Dark interface</span>
-                    </div>
-                </label>
-            </div>
-        </div>
+<!-- CARD 5: APPEARANCE -->
+<div class="card">
+<h3>🎨 Appearance</h3>
+<p class="card-caption">Choose interface style. Live preview, saved on Save Settings.</p>
+<div class="appearance-grid">
+<label class="mode-label">
+<input type="radio" name="theme" value="day" {% if (app_theme == 'day' or user.theme == 'day' or not user.theme) %}checked{% endif %} onchange="switchThemeLive('day')">
+<div class="mode-card {% if app_theme == 'day' or user.theme == 'day' or not user.theme %}active-day{% endif %}" id="dayCard"><b style="font-size:14px;display:block">☀️ Day</b><span style="font-size:11px;color:var(--text-muted)">Light interface • Default</span><div style="margin-top:8px;height:30px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px"></div></div>
+</label>
+<label class="mode-label">
+<input type="radio" name="theme" value="night" {% if app_theme == 'night' or user.theme == 'night' %}checked{% endif %} onchange="switchThemeLive('night')">
+<div class="mode-card {% if app_theme == 'night' or user.theme == 'night' %}active-night{% endif %}" id="nightCard"><b style="font-size:14px;display:block">🌙 Night</b><span style="font-size:11px;color:var(--text-muted)">Dark • Twitter Dim #15202B</span><div style="margin-top:8px;height:30px;background:#15202B;border:1px solid #38444D;border-radius:6px"></div></div>
+</label>
+</div>
+<div class="help-note" style="margin-top:8px">Theme saved to account + session, applied on all pages via <code>app_theme</code>.</div>
+</div>
 
-        <!-- CARD 6: SECURITY MANAGEMENT -->
-        <div class="card">
-            <h3>🔒 Security</h3>
-            <p class="card-caption">Change your password or recover your account through WhatsApp.</p>
-            
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>New Password</label>
-                    <input type="password" name="new_password" class="form-control" placeholder="Leave blank to keep current password">
-                </div>
-                <div class="form-group">
-                    <label>Confirm New Password</label>
-                    <input type="password" name="confirm_password" class="form-control" placeholder="Re-enter new password">
-                </div>
-            </div>
-            
-<a
-    href="https://wa.me/{{ config.PAYMENT_WHATSAPP or '' }}?text={{ 'Hello BizHub, I need help resetting my password.'|urlencode }}"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="btn-whatsapp-reset"
->
-     Reset Password via WhatsApp
-</a>
-        </div>
+<!-- CARD 6: SECURITY FIXED -->
+<div class="card">
+<h3>🔒 Security — Change Password (Old Password Required)</h3>
+<p class="card-caption">Change password securely. Old password required. Or recover via WhatsApp.</p>
+<div class="form-grid">
+<div class="form-group" style="grid-column:1/-1"><label>Current Password * (required to change password)</label><input type="password" name="current_password" class="form-control" placeholder="Enter current password to verify it's you"></div>
+<div class="form-group"><label>New Password</label><input type="password" name="new_password" class="form-control" placeholder="Leave blank to keep current • min 6 chars"></div>
+<div class="form-group"><label>Confirm New Password</label><input type="password" name="confirm_password" class="form-control" placeholder="Re-enter new password"></div>
+</div>
+<a href="https://wa.me/{{ config.PAYMENT_WHATSAPP if config is defined and config.PAYMENT_WHATSAPP else '233558272972' }}?text={{ 'Hello BizHub, I need help resetting my password for @' + user.username|urlencode }}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-reset">💬 Reset Password via WhatsApp</a>
+<div class="help-note" style="margin-top:8px">For security, password change now requires current password. If you forgot, use WhatsApp recovery.</div>
+</div>
 
-        <!-- BOTTOM SAVE MATRIX ACTIONS -->
-        <div class="bottom-action-bar">
-            <a href="{{ url_for('home') }}" class="btn-cancel">Cancel</a>
-            <button type="submit" class="btn-save-master">Save Settings</button>
-        </div>
-        
-    </form>
+<div class="bottom-action-bar">
+<a href="{{ url_for('home') }}" class="btn-cancel">Cancel</a>
+<button type="submit" class="btn-save-master">💾 Save Settings</button>
+</div>
+
+</form>
 </div>
 
 <script>
-function switchThemeLive(themeMode) {
-    const rootElement = document.documentElement;
-
-    if (themeMode === "night") {
-        rootElement.classList.add("night-theme");
-    } else {
-        rootElement.classList.remove("night-theme");
-    }
+function switchThemeLive(mode){
+ const root=document.documentElement;
+ const dayCard=document.getElementById('dayCard');
+ const nightCard=document.getElementById('nightCard');
+ if(mode==='night'){root.classList.add('night-theme'); if(nightCard){nightCard.classList.add('active-night'); nightCard.classList.remove('active-day')} if(dayCard){dayCard.classList.remove('active-day');} }
+ else {root.classList.remove('night-theme'); if(dayCard){dayCard.classList.add('active-day');} if(nightCard){nightCard.classList.remove('active-night');} }
+ // Also store in localStorage for instant preview across navigation before save
+ try{localStorage.setItem('bizhub-theme', mode);}catch(e){}
 }
+// Restore from localStorage if user hasn't saved yet
+try{
+ const saved=localStorage.getItem('bizhub-theme');
+ if(saved==='night' || saved==='day'){ /* preview only, server is source of truth on reload */ }
+}catch(e){}
 </script>
 
-<footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
-    © 2026 BizHub Marketplace · Your Local Market, Unified Online · A AProduct Of The TOZOTS Company
-</footer>
-
+<footer class="footer">© 2026 BizHub Marketplace · Settings ·Product Of The TOZOTS Company </footer>
 </body>
 </html>

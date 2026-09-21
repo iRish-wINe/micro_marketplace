@@ -1,675 +1,360 @@
 <!DOCTYPE html>
-<html lang="en" {% if app_theme == 'night' %}class="night-theme"{% endif %}>
+<html lang="en" {% if app_theme == 'night' or user.theme == 'night' %}class="night-theme"{% endif %}>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ vendor.company_name or vendor.username }} Storefront | BizHub</title>
-    <style>
-        :root {
-            --nav: #131921;
-            --accent: #ff9900;
-            --bg: #f3f4f6;
-            --text-main: #111827;
-            --text-muted: #64748b;
-            --border-color: #e5e7eb;
-            --success: #06C167;
-            --bg-card: #ffffff;
-            --danger: #ef4444;
-            --uber-green: #06C167;
-            --uber-black: #000000;
-        }
-        :root.night-theme {
-            --bg: #0f172a !important;
-            --bg-card: #1e293b !important;
-            --text-main: #f8fafc !important;
-            --text-muted: #94a3b8 !important;
-            --border-color: #334155 !important;
-            --nav: #0f172a !important;
-        }
-
-        * { box-sizing: border-box; }
-        body { margin: 0; background-color: var(--bg); color: var(--text-main); font-family: Arial, Helvetica, sans-serif; }
-
-        /* 👑 ALL STORES UNIFIED HEADER WITH STICKY NAVIGATION */
-        .top {
-            background: #131921;
-            color: #fff;
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-            position: sticky;
-            top: 0;
-            z-index: 1001;
-        }
-        .brand { font-size: 22px; font-weight: 900; color: #fff; text-decoration: none; }
-        .brand span { color: #ff9900; }
-        
-        .nav {
-            background: #232f3e;
-            display: flex;
-            gap: 4px;
-            overflow-x: auto;
-            white-space: nowrap;
-            padding: 0 10px;
-            position: sticky;
-            top: 50px; /* Locks below main header on mobile */
-            z-index: 1000;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            scrollbar-width: none;
-        }
-        .nav::-webkit-scrollbar { display: none; }
-        .nav a { color: #fff; padding: 11px 12px; font-weight: 700; font-size: 13px; text-decoration: none; }
-        .nav a:hover { color: #ff9900; }
-
-        /* MAIN CONTAINER */
-        .wrap { max-width: 1180px; margin: 24px auto; padding: 0 16px; display: flex; flex-direction: column; gap: 20px; }
-        .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; box-shadow: 0 3px 15px rgba(0,0,0,.04); }
-
-        /* 🍔 UBER EATS STYLING FOR FAST FOOD VENDORS */
-        {% if vendor.role == 'Fast Food' %}
-        body { background-color: #f8f9fa; font-family: 'UberMoveText', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        .hero-uber {
-            background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-        }
-        .uber-badge {
-            background: #e6f7ed;
-            color: #06C167;
-            font-size: 12px;
-            font-weight: 800;
-            padding: 4px 10px;
-            border-radius: 20px;
-            display: inline-block;
-            text-transform: uppercase;
-        }
-        .uber-btn {
-            background: var(--uber-black);
-            color: #ffffff;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 50px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .uber-btn:hover { background: #333; }
-        .uber-menu-nav {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding: 10px 0;
-            border-bottom: 2px solid #edf2f7;
-            margin-bottom: 20px;
-        }
-        .uber-menu-pill {
-            background: #edf2f7;
-            color: #1a202c;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .uber-menu-pill:hover, .uber-menu-pill.active {
-            background: var(--uber-black);
-            color: #ffffff;
-        }
-        {% endif %}
-
-        /* BUTTONS & BADGES */
-        .btn-action { display: inline-block; padding: 8px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 13px; cursor: pointer; border: none; text-align: center; }
-        .btn-cancel { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
-        .accompaniment-tag { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; margin: 3px; border: 1px solid #bae6fd; }
-        .accompaniment-tag:hover { background: #bae6fd; }
-
-        /* PRODUCT GRID & HISTORY */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
-        .product-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; }
-        .product-img { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; background: #e5e7eb; }
-        .history-section { background: #fafafa; border: 1px dashed var(--border-color); border-radius: 12px; padding: 16px; margin-top: 15px; }
-        
-        .footer { margin-top: 40px; padding: 20px 0; border-top: 1px solid var(--border-color); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>{{ vendor.company_name or vendor.username }} {% if vendor.role == 'Fast Food' %}Kitchen{% else %}Store{% endif %} | BizHub</title>
+<meta name="csrf-token" content="{{ csrf_token }}">
+<style>
+:root{--nav:#131921;--nav2:#232f3e;--yellow:#febd69;--bg:#f3f4f6;--bg-card:#fff;--text-main:#111827;--text-muted:#64748b;--border:#e5e7eb;--border-red:#FECACA;--success:#06C167;--danger:#ef4444;--uber-green:#06C167;--uber-black:#000;--amazon-red:#CC0C39}
+:root.night-theme{--bg:#0f172a !important;--bg-card:#1e293b !important;--text-main:#f8fafc !important;--text-muted:#94a3b8 !important;--border:#334155 !important;--nav:#0f172a !important}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text-main);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important}
+.bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:var(--nav);box-shadow:0 2px 12px rgba(0,0,0,.18);width:100%}
+.bh-topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px}
+.bh-brand{font-size:22px;font-weight:900;color:#fff;text-decoration:none}.bh-brand span{color:#ff9900}
+.bh-location{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid rgba(255,255,255,.2);border-radius:4px;color:#fff;flex-shrink:0}
+.bh-location small{display:block;font-size:9px;font-weight:800;text-transform:uppercase;color:#FECACA} .bh-location strong{display:block;font-size:11px;font-weight:800;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bh-search{display:flex;flex:1;max-width:500px;height:40px;border-radius:5px;overflow:hidden;background:#fff}.bh-search input{border:0;outline:0;flex:1;padding:0 12px;font-size:14px}.bh-search button{width:48px;border:0;background:var(--yellow);cursor:pointer}
+.bh-subbar{min-height:42px;background:var(--nav2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}.bh-subbar::-webkit-scrollbar{display:none}
+.bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px;flex-shrink:0}.bh-subbar a:hover{border-color:#fff}.bh-subbar a.active{background:#fff;color:#0F1111 !important;border-radius:6px}
+.top{position:static;background:transparent;padding:0;display:block}
+.wrap{max-width:1180px;margin:20px auto;padding:0 16px;display:flex;flex-direction:column;gap:20px}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 3px 15px rgba(0,0,0,.04)}
+.verified-bizhub-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#10B981 0%,#059669 100%);color:#fff;font-size:8px;font-weight:900;padding:3px 7px;border-radius:20px;border:1px solid #10B981;animation:glowGreen 2s infinite;white-space:nowrap}
+.verified-bizhub-badge.kitchen{background:linear-gradient(135deg,#F59E0B 0%,#D97706 100%);border-color:#F59E0B;animation:glowOrange 2s infinite}
+@keyframes glowGreen{0%{box-shadow:0 0 0 0 rgba(16,185,129,.7)}50%{box-shadow:0 0 0 5px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+@keyframes glowOrange{0%{box-shadow:0 0 0 0 rgba(245,158,11,.7)}50%{box-shadow:0 0 0 5px rgba(245,158,11,0)}100%{box-shadow:0 0 0 0 rgba(245,158,11,0)}}
+.hero-uber{background:#fff;border-bottom:1px solid #e2e8f0;padding:24px;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.uber-badge{background:#e6f7ed;color:#06C167;font-size:12px;font-weight:800;padding:4px 10px;border-radius:20px;display:inline-block;text-transform:uppercase}
+.uber-btn{background:var(--uber-black);color:#fff;border:none;padding:10px 18px;border-radius:50px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.uber-menu-nav{display:flex;gap:10px;overflow-x:auto;padding:10px 0;border-bottom:2px solid #edf2f7;margin-bottom:20px;scrollbar-width:none}
+.uber-menu-pill{background:#edf2f7;color:#1a202c;border:none;padding:8px 16px;border-radius:20px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+.uber-menu-pill.active,.uber-menu-pill:hover{background:var(--uber-black);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+.product-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;transition:all .2s}
+.product-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.product-card.sold-out{opacity:.6;border-color:#fecaca}
+.btn-action{display:inline-block;padding:10px 16px;border-radius:8px;font-weight:800;text-decoration:none;font-size:13px;cursor:pointer;border:none;text-align:center;transition:.2s}
+.btn-cancel{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer}
+.accompaniment-tag{display:inline-block;background:#e0f2fe;color:#0369a1;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;margin:3px;border:1px solid #bae6fd}
+.accompaniment-tag:hover{background:#bae6fd}
+.toggle-bar{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap}
+.toggle-bar .btn{padding:10px 16px;border-radius:50px;font-weight:800;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--text-main);font-size:13px}
+.toggle-bar .btn.active{background:#111;color:#fff;border-color:#111}
+.sold-badge{background:#fee2e2;color:#dc2626;border:1px solid #fecaca;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:900;text-align:center;display:block}
+.stock-badge{font-size:11px;color:#059669;font-weight:800;background:#ecfdf5;padding:3px 8px;border-radius:20px;border:1px solid #a7f3d0}
+.infinite-badge{font-size:11px;color:#06C167;font-weight:800;background:#f0fdf4;padding:3px 8px;border-radius:20px;border:1px solid #bbf7d0}
+.card-media-container{position:relative;width:100%;height:220px;overflow:hidden;background:#000;border-radius:8px}
+.card-media-container video{width:100%;height:100%;object-fit:cover}
+.card-media-container img{width:100%;height:100%;object-fit:cover}
+.history-section{background:#fafafa;border:1px dashed var(--border);border-radius:12px;padding:16px;margin-top:15px}
+.footer{margin-top:40px;padding:20px 0;border-top:1px solid var(--border);text-align:center;color:var(--text-muted);font-size:13px;font-weight:600}
+@media(max-width:768px){.grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))} .card-media-container{height:160px}}
+</style>
 </head>
 <body>
 
-    <!-- 👑 UNIFIED ALL STORES HEADER -->
-    <header class="top">
-        <a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a>
-        {% if vendor.role == 'Fast Food' %}
-            <span style="background: rgba(6,193,103,0.2); color: #06C167; font-size: 12px; font-weight: 800; padding: 3px 8px; border-radius: 4px;">KITCHEN STORE</span>
-        {% endif %}
-        <div style="font-size: 12px; color: #cbd5e1; margin-left: auto;">Your Local Market, Unified Online</div>
-    </header>
+<div class="bh-global-header">
+<div class="bh-topbar">
+<a class="bh-brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a>
+<div class="bh-location"><small>{% if vendor.role == 'Fast Food' %}Kitchen{% else %}Store{% endif %} Location</small><strong>{{ vendor.business_location or 'Ghana' }}</strong></div>
+<form class="bh-search" method="GET" action="{{ url_for('home') }}"><input name="company_search" placeholder="Search store..."><button>🔍</button></form>
+<div style="color:#febd69;font-size:11px;font-weight:800">
+{% if session.username %}👤 {{ session.username }} {% if vendor.role == 'Fast Food' %}<span style="background:rgba(6,193,103,.2);color:#06C167;padding:2px 6px;border-radius:4px">KITCHEN</span>{% endif %}{% else %}Guest{% endif %}
+</div>
+</div>
+<nav class="bh-subbar">
+<a href="{{ url_for('home') }}">☰ Marketplace</a>
+<a href="{{ url_for('all_stores') }}">All Stores</a>
+<a href="{{ url_for('promo_marketplace') }}">Today's Deals</a>
+<a href="/top-brands" style="color:#FFD814 !important;border:1px solid #FFD814;border-radius:4px;padding:6px 10px">🏆 Top 20</a>
+<a href="{{ url_for('cart_page') }}">🛒 Cart {% if cart_count and cart_count|int>0 %}<span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:10px;font-size:10px">{{ cart_count }}</span>{% endif %}</a>
+<a href="{{ url_for('vendor_profile', username=vendor.username) }}" class="active">{{ vendor.company_name or vendor.username }}</a>
+</nav>
+</div>
 
-    <!-- 📌 STICKY NAVIGATION BAR -->
-    <nav class="nav">
-        <a href="{{ url_for('home') }}">☰ Marketplace</a>
-        <a href="{{ url_for('all_stores') }}">All Stores</a>
-        <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
-        <a href="{{ url_for('favorites') }}">Favorites</a>
-        <a href="{{ url_for('features') }}">🎯 Features</a>
-        <a href="{{ url_for('order_history') }}">Orders</a>
-        <a href="{{ url_for('settings') }}">Your Account</a>
-        <a href="{{ url_for('notifications') }}">🔔Biz Alerts</a>
-    </nav>
+<div class="wrap">
 
-<main class="wrap">
-
-    <!-- HERO PROFILE HEADER -->
-    <section class="{% if vendor.role == 'Fast Food' %}hero-uber{% else %}card{% endif %}">
-        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
-            {% if vendor.company_logo %}
-                <img src="{{ url_for('static', filename='uploads/' + vendor.company_logo) }}" alt="Logo" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
-            {% else %}
-                <div style="width: 80px; height: 80px; border-radius: 50%; background: #e2e8f0; display: grid; place-items: center; font-size: 32px;">🏪</div>
-            {% endif %}
-            
-            <div style="flex-grow: 1;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 900;">{{ vendor.company_name or vendor.username }}</h1>
-                <p style="margin: 4px 0 0 0; color: var(--text-muted); font-size: 14px; font-weight: 600;">
-                    @{{ vendor.username }} · 📍 {{ vendor.business_location or 'Accra' }} · 
-                    <span class="{% if vendor.role == 'Fast Food' %}uber-badge{% else %}muted{% endif %}">
-                        {% if vendor.role == 'Fast Food' %}🍔 Fast Food Kitchen{% else %}{{ vendor.role }}{% endif %}
-                    </span>
-                </p>
-            </div>
-        </div>
-
-        <div style="margin-top: 15px; display: flex; gap: 8px; flex-wrap: wrap;">
-            {% if not is_owner %}
-                <form method="POST" action="/favorites/toggle/{{ vendor.username }}" style="margin: 0;">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    <button type="submit" class="btn-action" style="background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color);">
-                        {% if favorite %}❤️ Saved{% else %}🤍 Add to Favorites{% endif %}
-                    </button>
-                </form>
-                <a href="/report/{{ vendor.id }}" class="btn-action" style="background: #fff5f5; color: var(--danger); border: 1px solid #fed7d7;">🚩 Report Store</a>
-            {% else %}
-                <a href="{{ url_for('settings') }}" class="btn-action" style="background: #131921; color: white;">⚙️ Edit Profile</a>
-                <a href="{{ url_for('promotions') }}" class="btn-action" style="background: var(--accent); color: #111;">📣 Manage Promos</a>
-            {% endif %}
-        </div>
-    </section>
-
- <!-- STEP 4 CODE ADDITION: VENDOR OPERATIONAL GUIDE BLOCK -->
-{% if is_owner %}
-  {% if vendor.role == 'Fast Food' %}
-    <!-- UBER EATS THEME STYLE FOR FAST FOOD VENDORS -->
-    <section style="background: #06C167; color: #FFFFFF; font-family: 'Uber Move Text', -apple-system, BlinkMacSystemFont, sans-serif; border-radius: 12px; padding: 24px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(6, 193, 103, 0.2);">
-      <h2 style="margin-top: 0; font-size: 22px; font-weight: 700; border-bottom: 2px solid rgba(255,255,255,0.2); padding-bottom: 10px;">
-        🍳 Fast Food Kitchen Guide & Operations
-      </h2>
-      <p style="font-size: 14px; opacity: 0.9;">Follow these steps to maximize your kitchen dispatches and sales on BizHub:</p>
-
-      <ul style="list-style: none; padding: 0; margin: 20px 0;">
-        <li style="margin-bottom: 12px; font-size: 14px; line-height: 1.5;">
-          <strong>🚀 1. Find Delivery:</strong> Access <em>Find Delivery</em> to locate nearby riders and instant dispatch drivers available to fulfill customer meal deliveries.
-        </li>
-        <li style="margin-bottom: 12px; font-size: 14px; line-height: 1.5;">
-          <strong>💳 2. Manage Accounts:</strong> Use <em>Manage Accounts</em> to upgrade to a <strong>Premium Kitchen</strong>, unlocking unlimited meal listing slots and video showcases.
-        </li>
-        <li style="margin-bottom: 12px; font-size: 14px; line-height: 1.5;">
-          <strong> 3🎯. Operational Features:</strong> Send delivery requests at find delivery to track live dispatch updates, monitor active delivery requests, and manage restaurant orders seamlessly inside <em>Features</em>.
-        </li>
-        <li style="margin-bottom: 12px; font-size: 14px; line-height: 1.5;">
-          <strong>🛡️ 4. Kitchen Verification:</strong> Submit a <em>Request Verification</em> so BizHub can audit and issue a <strong>Verified Kitchen Badge</strong> to boost customer trust.
-        </li>
-      </ul>
-    </section>
-
-  {% else %}
-
-    <!-- AMAZON THEME STYLE FOR GENERAL VENDORS -->
-    <section style="background: #131921; color: #FFFFFF; border-top: 4px solid #FF9900; border-radius: 8px; padding: 24px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-      <h2 style="margin-top: 0; color: #FF9900; font-size: 20px; font-weight: 700; border-bottom: 1px solid #37475A; padding-bottom: 10px;">
-        📦 Merchant Operational Playbook
-      </h2>
-      <p style="font-size: 13px; color: #DDD;">Get the most out of your BizHub storefront with these essential tools:</p>
-
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px;">
-        <div style="background: #232F3E; padding: 15px; border-radius: 6px;">
-          <h4 style="color: #FF9900; margin: 0 0 8px 0; font-size: 15px;">🚚 Find Delivery</h4>
-          <p style="margin: 0; font-size: 12px; color: #CCC; line-height: 1.4;">Locate nearby delivery services and couriers to dispatch orders to buyers efficiently.</p>
-        </div>
-        <div style="background: #232F3E; padding: 15px; border-radius: 6px;">
-          <h4 style="color: #FF9900; margin: 0 0 8px 0; font-size: 15px;">💳 Manage Accounts</h4>
-          <p style="margin: 0; font-size: 12px; color: #CCC; line-height: 1.4;">Upgrade to <strong>Premium Store</strong> to expand product limits, list promos, and run video ads.</p>
-        </div>
-        <div style="background: #232F3E; padding: 15px; border-radius: 6px;">
-          <h4 style="color: #FF9900; margin: 0 0 8px 0; font-size: 15px;">📈 Features & Tracking</h4>
-          <p style="margin: 0; font-size: 12px; color: #CCC; line-height: 1.4;">Track dispatch statuses, run coupon codes, and review store sales analytics.</p>
-        </div>
-        <div style="background: #232F3E; padding: 15px; border-radius: 6px;">
-          <h4 style="color: #FF9900; margin: 0 0 8px 0; font-size: 15px;">✅ Request Verification</h4>
-          <p style="margin: 0; font-size: 12px; color: #CCC; line-height: 1.4;">Ask BizHub to assess and verify your store to earn the official trust badge.</p>
-        </div>
-      </div>
-    </section>
-  {% endif %}
+<!-- HERO / STORE HEADER -->
+{% if vendor.role == 'Fast Food' %}
+<div class="hero-uber">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+<div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+<span class="uber-badge">🍔 Uber Eats Style Kitchen</span>
+{% if is_verified_brand %}<span class="verified-bizhub-badge kitchen">✅ Verified Kitchen Brand</span>{% endif %}
+{% if subscription %}<span style="font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px;background:{% if subscription.is_premium %}#ecfdf5{% else %}#fef3c7{% endif %};color:{% if subscription.is_premium %}#065f46{% else %}#92400e{% endif %};border:1px solid {% if subscription.is_premium %}#a7f3d0{% else %}#fde68a{% endif %}">{{ subscription.name }} {% if subscription.expires %}• Exp {{ subscription.expires }}{% endif %}</span>{% endif %}
+</div>
+<h1 style="margin:0;font-size:26px;font-weight:900">{{ vendor.company_name or vendor.username }}</h1>
+<p style="margin:6px 0 0;color:var(--text-muted);font-size:13px;font-weight:600">📍 {{ vendor.business_location or 'Ghana' }} • ⏱️ 20-30 min • ⭐ 4.8 ({{ product_count }} meals) • 🕒 Open now • 2 months free premium from registration</p>
+<p style="margin:8px 0 0;color:var(--text-muted);font-size:12px">WhatsApp: {{ vendor.whatsapp_number or 'N/A' }} • Email: {{ vendor.email }} • Role: {{ vendor.role }} • Seller: {{ vendor.username }}</p>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+{% if not is_owner %}
+<a href="https://wa.me/{{ vendor.whatsapp_number }}?text={{ ('Hello ' + (vendor.company_name or vendor.username) + ', I saw your kitchen on BizHub')|urlencode }}" target="_blank" class="uber-btn" style="background:#25D366">💬 Chat Kitchen</a>
+{% endif %}
+{% if is_owner %}<a href="{{ url_for('subscription') }}" class="uber-btn">👑 Subscription</a>{% endif %}
+</div>
+</div>
+</div>
+{% else %}
+<div class="card" style="border-top:4px solid {% if is_verified_brand %}#10B981{% else %}#CC0C39{% endif %}">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+<div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+<span style="background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:900">🏪 Amazon Style Store</span>
+{% if is_verified_brand %}<span class="verified-bizhub-badge">✅ Verified Store</span>{% endif %}
+{% if subscription %}<span style="font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px;background:{% if subscription.is_premium %}#ecfdf5{% else %}#fef3c7{% endif %};color:{% if subscription.is_premium %}#065f46{% else %}#92400e{% endif %};border:1px solid {% if subscription.is_premium %}#a7f3d0{% else %}#fde68a{% endif %}">{{ subscription.name }} {% if subscription.expires %}• Exp {{ subscription.expires }}{% endif %}</span>{% endif %}
+<span style="font-size:11px;background:#f3f4f6;padding:3px 8px;border-radius:20px">{{ product_count }} products</span>
+</div>
+<h1 style="margin:0;font-size:24px;font-weight:900">{{ vendor.company_name or vendor.username }} {% if is_verified_brand %}<span style="font-size:12px">• Verified BizHub Store</span>{% endif %}</h1>
+<p style="margin:6px 0 0;color:var(--text-muted);font-size:13px;font-weight:600">📍 {{ vendor.business_location or 'Ghana' }} • 📦 Delivering from {{ vendor.business_location or 'N/A' }} • 2 months free premium from registration</p>
+<p style="margin:6px 0 0;font-size:12px;color:var(--text-muted)">WhatsApp: {{ vendor.whatsapp_number or 'N/A' }} • Email: {{ vendor.email }} • @{{ vendor.username }} • Role: {{ vendor.role }}</p>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+{% if not is_owner %}
+<a href="https://wa.me/{{ vendor.whatsapp_number }}?text={{ ('Hello ' + (vendor.company_name or vendor.username) + ', I saw your store on BizHub')|urlencode }}" target="_blank" style="background:#25D366;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:800;font-size:13px">💬 WhatsApp</a>
+{% endif %}
+{% if is_owner %}<a href="{{ url_for('subscription') }}" style="background:#131921;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:800;font-size:13px">👑 Manage Subscription</a>{% endif %}
+</div>
+</div>
+{% if listing_error %}<div style="margin-top:12px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:700">{{ listing_error }}</div>{% endif %}
+{% if request.args.get('published') %}<div style="margin-top:12px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:700">✅ Product published successfully!</div>{% endif %}
+</div>
 {% endif %}
 
-        <!-- 🚀 PUBLISH PRODUCT CONSOLE - FIXED -->
-    {% if is_owner %}
-    <section class="card" style="max-width: 680px;">
-        <h3 style="margin-top:0; font-size:18px;">🚀 {% if vendor.role == 'Fast Food' %}Add New Menu Item{% else %}Publish Product Listing{% endif %}</h3>
-        <form method="POST" action="/publish-product" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 14px;">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            
-            <div>
-                <label style="font-size:12px; font-weight:700;">{% if vendor.role == 'Fast Food' %}Meal / Drink Title:{% else %}Product Title Headline:{% endif %}</label>
-                <input type="text" name="{% if vendor.role == 'Fast Food' %}meal_name{% else %}title{% endif %}" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color);" placeholder="e.g. Special Jollof, Leather Shoes" required>
-            </div>
-            
-            <div>
-                <label style="font-size:12px; font-weight:700;">Price Tag (GH₵):</label>
-                <input type="number" step="0.01" name="price" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color);" placeholder="0.00" required>
-            </div>
+<!-- OWNER TOGGLE + PUBLISH FORM -->
+{% if is_owner %}
+<div class="toggle-bar">
+<button id="toggleGridBtn" class="btn active" onclick="showVendorView('grid')">🛍️ Grid View (Customer Preview)</button>
+<button id="toggleHistoryBtn" class="btn" onclick="showVendorView('history')">📋 Store Listing History Log ({{ product_count }})</button>
+<button id="togglePublishBtn" class="btn" onclick="showVendorView('publish')">➕ Publish New {% if vendor.role == 'Fast Food' %}Meal{% else %}Product{% endif %}</button>
+</div>
 
-            {% if vendor.role == 'Fast Food' %}
-            <!-- Fast Food Only Fields -->
-            <div>
-                <label style="font-size:12px; font-weight:700;">Accompaniments / Sides (Click to quick-add):</label>
-                <div style="margin-bottom: 6px;">
-                    <span class="accompaniment-tag" onclick="addAccompaniment('Fried Plantain')">+ Fried Plantain</span>
-                    <span class="accompaniment-tag" onclick="addAccompaniment('Coleslaw')">+ Coleslaw</span>
-                    <span class="accompaniment-tag" onclick="addAccompaniment('Extra Shito')">+ Extra Shito</span>
-                    <span class="accompaniment-tag" onclick="addAccompaniment('Boiled Egg')">+ Boiled Egg</span>
-                    <span class="accompaniment-tag" onclick="addAccompaniment('Fried Fish')">+ Fried Fish</span>
-                </div>
-                <input type="text" id="accompanimentsInput" name="accompaniments" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color);" placeholder="Selected accompaniments appear here...">
-            </div>
+<div id="publishView" style="display:none" class="card">
+<h3 style="margin-top:0">➕ Publish {% if vendor.role == 'Fast Food' %}Meal — Fast Food (No Qty Needed, Static Infinite){% else %}Product — General Vendor (Qty Required){% endif %}</h3>
+<p style="font-size:12px;color:var(--text-muted);margin-top:-8px">{% if vendor.role == 'Fast Food' %}Fast Food: menu static infinite, buyer enters qty (1-999). You don't enter stock.{% else %}General Vendor: you must enter stock quantity (physical warehouse). Buyer qty clamped to stock.{% endif %}</p>
 
-            <div>
-                <label style="font-size:12px; font-weight:700;">Menu Category:</label>
-                <select name="menu_type" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); background:white;">
-                    <option value="Main Dishes">🍛 Main Dishes</option>
-                    <option value="Sides">🍟 Sides & Appetizers</option>
-                    <option value="Drinks">🥤 Beverages & Drinks</option>
-                    <option value="Desserts">🍰 Desserts & Sweets</option>
-                </select>
-            </div>
+<form method="POST" action="{{ url_for('publish_product') }}" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:12px">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+{% if vendor.role == 'Fast Food' %}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<div><label style="font-size:12px;font-weight:800">🍔 Meal Name</label><input type="text" name="meal_name" required style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></div>
+<div><label style="font-size:12px;font-weight:800"> Price GH₵</label><input type="number" step="0.01" name="price" required style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></div>
+</div>
+<div><label style="font-size:12px;font-weight:800"> Meal Description</label><textarea name="meal_description" rows="3" required style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></textarea></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<div><label style="font-size:12px;font-weight:800">🍛 Menu Type</label><select name="menu_type" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"><option>Main Dishes</option><option>Sides</option><option>Drinks</option><option>Desserts</option><option>Breakfast</option></select></div>
+<div><label style="font-size:12px;font-weight:800">📍 Location</label><input type="text" name="location" value="{{ vendor.business_location }}" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></div>
+</div>
+<div><label style="font-size:12px;font-weight:800">🍟 Served With / Accompaniments (comma separated, XSS escaped)</label><input type="text" id="accompanimentsInput" name="accompaniments" placeholder="e.g. Jollof, Fried Rice, Chicken" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"><div style="margin-top:6px"><span class="accompaniment-tag" onclick="addAccompaniment('Jollof Rice')">Jollof</span><span class="accompaniment-tag" onclick="addAccompaniment('Fried Rice')">Fried Rice</span><span class="accompaniment-tag" onclick="addAccompaniment('Chicken')">Chicken</span><span class="accompaniment-tag" onclick="addAccompaniment('Banku')">Banku</span><span class="accompaniment-tag" onclick="addAccompaniment('Coke')">Coke</span></div></div>
+{% else %}
+<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px">
+<div><label style="font-size:12px;font-weight:800">📦 Product Title</label><input type="text" name="title" required style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></div>
+<div><label style="font-size:12px;font-weight:800">💰 Price GH₵</label><input type="number" step="0.01" name="price" required style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></div>
+<div><label style="font-size:12px;font-weight:800">📦 Stock Qty (Required)</label><input type="number" name="stock_quantity" min="1" required style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px" placeholder="e.g. 20"></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<div><label style="font-size:12px;font-weight:800">📂 Category</label><select name="category" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px">{% for c in ['Phones & Accessories','Computers & Accessories','Electronics','Home Appliances','Home & Kitchen','Furniture','Groceries','Food & Beverages','Clothing & Fashion','Shoes & Bags','Beauty & Personal Care','Health & Wellness','Books & Stationery','Baby & Kids','Sports & Fitness','Automotive','Tools & Hardware','Agriculture','Jewelry & Accessories','Services','Other'] %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select></div>
+<div><label style="font-size:12px;font-weight:800">📍 Location</label><input type="text" name="location" value="{{ vendor.business_location }}" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></div>
+</div>
+<div><label style="font-size:12px;font-weight:800">📝 Description</label><textarea name="description" rows="3" required style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></textarea></div>
+{% endif %}
 
-            <div>
-                <label style="font-size:12px; font-weight:700;">Description:</label>
-                <textarea name="meal_description" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); font-family:inherit;" placeholder="Provide dish ingredients or product details..." required></textarea>
-            </div>
-            {% else %}
-            <!-- General Vendor Only Fields -->
-            <div>
-                <label style="font-size:12px; font-weight:700;">Category:</label>
-                <select name="category" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); background:white;">
-                    {% for cat in product_categories %}
-                    <option value="{{ cat }}">{{ cat }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <div>
-                    <label style="font-size:12px; font-weight:700;">Stock Quantity:</label>
-                    <input type="number" name="stock_quantity" min="1" value="1" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color);">
-                </div>
-                <div>
-                    <label style="font-size:12px; font-weight:700;">Location:</label>
-                    <input type="text" name="location" value="{{ vendor.business_location or '' }}" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color);" placeholder="Accra">
-                </div>
-            </div>
-            <div>
-                <label style="font-size:12px; font-weight:700;">Description:</label>
-                <textarea name="description" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); font-family:inherit;" placeholder="Product details..." required></textarea>
-            </div>
-            {% endif %}
+<div style="background:#222;border-left:4px solid #ffb703;padding:12px;border-radius:4px">
+<p style="font-size:13px;color:#ddd;margin:0;line-height:1.5"><strong>⚠️ Media Rule:</strong> {% if vendor.role == 'Fast Food' %}Upload meal image or video (at least one required). Infinite stock, no sold out.{% else %}Standard listings must provide <em>exactly one</em> media: Image OR Video, not both. Sold out when stock=0.{% endif %}</p>
+</div>
 
-            <!-- Media Rules -->
-            <div style="background-color: #222; border-left: 4px solid #ffb703; padding: 12px; margin-bottom: 5px; border-radius: 4px;">
-                <p style="font-size: 13px; color: #ddd; margin: 0; line-height: 1.5;">
-                    <strong>⚠️ Media Rule:</strong> {% if vendor.role == 'Fast Food' %}Upload a meal image or video (at least one required).{% else %}Standard listings must provide <em>exactly one</em> media asset: Image OR Video, not both.{% endif %}
-                </p>
-            </div>
+<div><label style="font-size:12px;font-weight:700">📸 Cover Image</label><div style="display:flex;gap:8px;align-items:center"><input type="file" id="bizhubProductImageInput" name="product_image" accept="image/*" onchange="handleMediaSelectionToggle('image')" style="flex:1"><button type="button" id="clearImageBtn" class="btn-cancel" style="display:none" onclick="resetSelectedMediaField('image')">✕ Cancel</button></div></div>
+<div><label style="font-size:12px;font-weight:700">🎬 Video Ad (Max 20s, Premium only for general)</label><div style="display:flex;gap:8px;align-items:center"><input type="file" id="bizhubProductVideoInput" name="product_video" accept="video/*" onchange="handleMediaSelectionToggle('video')" style="flex:1"><button type="button" id="clearVideoBtn" class="btn-cancel" style="display:none" onclick="resetSelectedMediaField('video')">✕ Cancel</button></div></div>
 
-            <!-- FIXED: Added name attributes so Flask receives files -->
-            <div>
-                <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">📸 Cover Image File:</label>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <input type="file" id="bizhubProductImageInput" name="product_image" accept="image/*" onchange="handleMediaSelectionToggle('image')" style="flex:1;">
-                    <button type="button" id="clearImageBtn" class="btn-cancel" style="display: none;" onclick="resetSelectedMediaField('image')">✕ Cancel</button>
-                </div>
-            </div>
+<button type="submit" class="btn-action" style="background:{% if vendor.role == 'Fast Food' %}var(--uber-green){% else %}#131921{% endif %};color:#fff;padding:12px;width:100%;font-size:14px">🚀 Publish {% if vendor.role == 'Fast Food' %}Meal{% else %}Listing{% endif %}</button>
+</form>
+</div>
+{% endif %}
 
-            <div>
-                <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">🎬 Video Ad (Max 20s):</label>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <input type="file" id="bizhubProductVideoInput" name="product_video" accept="video/*" onchange="handleMediaSelectionToggle('video')" style="flex:1;">
-                    <button type="button" id="clearVideoBtn" class="btn-cancel" style="display: none;" onclick="resetSelectedMediaField('video')">✕ Cancel</button>
-                </div>
-            </div>
+<!-- MENU FILTER FOR FAST FOOD CUSTOMERS -->
+{% if vendor.role == 'Fast Food' and not is_owner %}
+<nav class="uber-menu-nav">
+<button class="uber-menu-pill active" onclick="executeKitchenMenuFilter('All-Meals')">✨ Full Menu ({{ product_count }})</button>
+<button class="uber-menu-pill" onclick="executeKitchenMenuFilter('Main Dishes')">🍛 Mains</button>
+<button class="uber-menu-pill" onclick="executeKitchenMenuFilter('Sides')">🍟 Sides</button>
+<button class="uber-menu-pill" onclick="executeKitchenMenuFilter('Drinks')">🥤 Drinks</button>
+<button class="uber-menu-pill" onclick="executeKitchenMenuFilter('Desserts')">🍰 Desserts</button>
+</nav>
+{% endif %}
 
-            <button type="submit" class="btn-action" style="background: var(--uber-green, #1d4ed8); color: white; padding: 12px; font-size: 14px; width:100%;">🚀 Publish Listing</button>
-        </form>
-    </section>
-    {% endif %}
+<!-- PRODUCT GRID - CUSTOMER PREVIEW + OWNER GRID VIEW -->
+<div id="gridView">
+<h2 style="font-size:20px;margin-bottom:12px">{% if vendor.role == 'Fast Food' %}🍔 Available Menu Items (Uber Eats) — Buyer Enters Qty{% else %}📦 Available Listings (Amazon) — Vendor Entered Qty{% endif %} ({{ product_count }})</h2>
 
-    <!-- 🍔 MENU CATEGORY NAV (UBER EATS STYLE FOR FAST FOOD) -->
-    {% if vendor.role == 'Fast Food' and not is_owner %}
-    <nav class="uber-menu-nav">
-        <button class="uber-menu-pill active" onclick="executeKitchenMenuFilter('All-Meals')">✨ Full Menu</button>
-        <button class="uber-menu-pill" onclick="executeKitchenMenuFilter('Main Dishes')">🍛 Main Dishes</button>
-        <button class="uber-menu-pill" onclick="executeKitchenMenuFilter('Sides')">🍟 Sides</button>
-        <button class="uber-menu-pill" onclick="executeKitchenMenuFilter('Drinks')">🥤 Drinks</button>
-        <button class="uber-menu-pill" onclick="executeKitchenMenuFilter('Desserts')">🍰 Desserts</button>
-    </nav>
-    {% endif %}
+<div class="grid">
+{% for product in products %}
+<article class="product-card bizhub-menu-item-row {% if product.status == 'Sold' or (product.stock_quantity|int <=0 and product.category != 'Fast Food') %}sold-out{% endif %}" data-menu-section="{{ product.menu_type or 'Main Dishes' }}">
+<div>
+<div class="card-media-container">
+{% if product.video_file %}
+<video controls preload="metadata" playsinline style="width:100%;height:100%;object-fit:cover"><source src="{{ url_for('stream_video', filename=product.video_file) }}"></video>
+{% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' and product.image_file %}
+<img src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title|e }}" onerror="this.style.display='none'">
+{% else %}
+<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#222;color:#fff;flex-direction:column;gap:8px"><span style="font-size:32px">{% if vendor.role == 'Fast Food' %}🍔{% else %}🛍️{% endif %}</span><span style="font-size:12px;opacity:.8">{{ product.title|e }}</span></div>
+{% endif %}
+{% if product.status == 'Sold' or (product.stock_quantity|int <=0 and product.category != 'Fast Food') %}
+<div style="position:absolute;top:8px;left:8px;background:#ef4444;color:#fff;padding:4px 8px;border-radius:20px;font-size:10px;font-weight:900">⛔ SOLD OUT</div>
+{% endif %}
+{% if product.category == 'Fast Food' %}<div style="position:absolute;top:8px;right:8px;background:rgba(6,193,103,.9);color:#fff;padding:4px 8px;border-radius:20px;font-size:9px;font-weight:900">♾️ Infinite</div>{% endif %}
+</div>
 
-    <!-- PRODUCT CATALOG -->
-    <section>
-        <h2 style="font-size:20px; margin-bottom: 12px;">
-            {% if vendor.role == 'Fast Food' %}🍔 Available Menu Items{% else %}📦 Available Product Listings{% endif %} ({{ product_count }} items)
-        </h2>
+<h3 style="font-size:16px;margin:10px 0 4px">{{ product.title|e }}</h3>
+<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">
+<span style="font-size:15px;font-weight:900;color:{% if vendor.role == 'Fast Food' %}var(--uber-green){% else %}#111827{% endif %}">GH₵ {{ "%.2f"|format(product.price) }}</span>
+{% if product.category == 'Fast Food' %}<span class="infinite-badge">♾️ Static Menu • Buyer Qty</span>{% else %}<span class="stock-badge">Stock: {{ product.stock_quantity }} • Vendor Qty</span>{% endif %}
+{% if product.status == 'Sold' %}<span style="font-size:10px;background:#fee2e2;color:#dc2626;padding:2px 6px;border-radius:20px;font-weight:800">SOLD</span>{% endif %}
+</div>
 
-        <div class="grid">
-            {% for product in products %}
-                <article class="product-card bizhub-menu-item-row" data-menu-section="{{ product.menu_type or 'Main Dishes' }}">
-                    <div>
-                        <!-- 📸 MEDIA RENDERING - FIXED -->
-                        <div class="card-media-container" style="position: relative; width: 100%; height: 220px; overflow: hidden; background: #000; border-radius: 8px;">
-                          {% if product.video_file %}
-                            <video controls preload="metadata" playsinline style="width: 100%; height: 100%; object-fit: cover;">
-                              <source src="{{ url_for('stream_video', filename=product.video_file) }}" type="video/mp4">
-                              Your browser does not support video playback.
-                            </video>
-                          {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' and product.image_file %}
-                            <img src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none';">
-                          {% else %}
-                            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #222; color: #fff; flex-direction:column; gap:8px;">
-                              <span style="font-size:32px;">{% if vendor.role == 'Fast Food' %}🍔{% else %}🛍️{% endif %}</span>
-                              <span style="font-size:12px; opacity:0.8;">{{ product.title }}</span>
-                            </div>
-                          {% endif %}
-                        </div>
+{% if product.served_with %}<p style="font-size:12px;color:var(--text-muted);margin:6px 0 0"><b>Served with:</b> {{ product.served_with|e }}</p>{% endif %}
+{% if product.accompaniments %}<p style="font-size:12px;color:var(--text-muted);margin:6px 0 0"><b>Served with:</b> {{ product.accompaniments|e }}</p>{% endif %}
+<p style="font-size:12px;color:var(--text-muted);margin:6px 0 0">{{ product.description|e }}</p>
+<p style="font-size:10px;color:var(--text-muted);margin:6px 0 0">{{ product.category|e }} {% if product.menu_type %}• {{ product.menu_type|e }}{% endif %} • 📍 {{ product.location|e }}</p>
+</div>
 
-                        <h3 style="font-size:16px; margin: 10px 0 4px;">{{ product.title }}</h3>
-                        <div style="font-size: 15px; font-weight: 800; color: var(--uber-green, #1d4ed8);">GH₵ {{ "%.2f"|format(product.price) }}</div>
-                        
-                        {% if product.accompaniments %}
-                            <p style="font-size:12px; color: var(--text-muted); margin: 6px 0 0 0;"><b>Served with:</b> {{ product.accompaniments }}</p>
-                        {% endif %}
-                        
-                        <p style="font-size:12px; color: var(--text-muted); margin: 6px 0 0 0;">{{ product.description }}</p>
-                    </div>
+<div style="margin-top:12px">
+{% if product.status == 'Sold' or (product.stock_quantity|int <=0 and product.category != 'Fast Food') %}
+<span class="sold-badge">⛔ Sold Out — No longer available (stock exhausted)</span>
+{% else %}
+{% if not is_owner %}
+<!-- BUYER VIEW - QTY ENTRY POST FORM -->
+<form method="POST" action="{{ url_for('add_to_cart', product_id=product.id) }}" style="display:flex;gap:6px;align-items:center;margin:0">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+{% if product.category == 'Fast Food' %}
+<input type="number" name="quantity" value="1" min="1" max="999" style="width:70px;padding:10px;border:1.5px solid #e5e7eb;border-radius:50px;text-align:center;font-weight:900;font-size:14px" title="Buyer enters qty, menu infinite">
+<button type="submit" class="btn-action" style="flex:1;background:var(--uber-black);color:#fff;border-radius:50px;padding:10px 14px">🛒 Add • GH₵ {{ "%.0f"|format(product.price) }}</button>
+{% else %}
+<input type="number" name="quantity" value="1" min="1" max="{{ product.stock_quantity }}" style="width:70px;padding:10px;border:1.5px solid #e5e7eb;border-radius:8px;text-align:center;font-weight:900;font-size:14px" title="Max {{ product.stock_quantity }} available">
+<button type="submit" class="btn-action" style="flex:1;background:#ffd814;border:1px solid #fcd200;color:#111;border-radius:8px;padding:10px 14px">🛒 Add to Cart</button>
+{% endif %}
+</form>
+{% if product.category == 'Fast Food' %}<p style="font-size:10px;color:#06C167;font-weight:700;margin:6px 0 0;text-align:center">Buyer can enter any qty (e.g. 2,5,10) — menu static, no stock limit, + - on cart also works</p>{% endif %}
+{% else %}
+<!-- OWNER VIEW - DELETE -->
+<div style="display:flex;gap:8px">
+<a href="{{ url_for('delete_item', product_id=product.id) }}" style="flex:1;background:#fee2e2;color:#dc2626;text-decoration:none;padding:10px;border-radius:8px;font-weight:800;font-size:13px;text-align:center;border:1px solid #fecaca">🗑️ Delete</a>
+<span style="flex:1;background:#f3f4f6;color:#6b7280;padding:10px;border-radius:8px;font-weight:700;font-size:11px;text-align:center">Owner preview • Customer sees {% if product.category == 'Fast Food' %}Uber{% else %}Amazon{% endif %} Add</span>
+</div>
+{% endif %}
+{% endif %}
+</div>
+</article>
+{% else %}
+<div class="card" style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px">No active listings. {% if is_owner %}Publish your first {% if vendor.role == 'Fast Food' %}meal{% else %}product{% endif %} above.{% endif %}</div>
+{% endfor %}
+</div>
+</div>
 
-                    <div style="margin-top: 12px;">
-                        {% if not is_owner %}
-                            <!-- 🛒 ADD TO CART: triggers popup confirmation then leads to /cart -->
-                            <button type="button" class="btn-action bizhub-add-to-cart-btn"
-                                    data-product-id="{{ product.id }}"
-                                    data-product-title="{{ product.title }}"
-                                    style="width:100%; background: var(--uber-green, #06C167); color: white;">
-                                🛒 Add to Cart
-                            </button>
-                        {% else %}
-                            <button type="button" class="btn-action" style="width:100%; background: #fee2e2; color: #dc2626;">🗑️ Delete Item</button>
-                        {% endif %}
-                    </div>
-                </article>
-            {% else %}
-                <div class="card" style="grid-column: 1 / -1;">No active listings available for this vendor store.</div>
-            {% endfor %}
-        </div>
-    </section>
+<!-- HISTORY VIEW -->
+<div id="historyView" style="display:none">
+<h2 style="font-size:20px;margin-bottom:12px">📋 Store Listing History Log — Sold Out Logic + Expiry + Stock</h2>
+<p style="font-size:12px;color:var(--text-muted);margin-top:-8px">General vendors must enter qty, Fast Food static infinite 0 = ♾️. Sold out when stock ≤0 → status Sold. Trial: 2 months free premium from registration, then Basic (3 visible).</p>
 
-    <!-- 🛒 ADD TO CART CONFIRMATION POPUP (vendor_profile page) -->
-    <div id="vpCartPopupOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:99990; align-items:center; justify-content:center;">
-        <div style="background:#fff; border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,0.25); padding:28px 24px; max-width:360px; width:calc(100% - 32px); text-align:center; position:relative;">
-            <div style="font-size:44px; margin-bottom:10px;">🛒</div>
-            <h3 style="margin:0 0 6px; font-size:18px; font-weight:900; color:#111;">Added to Cart!</h3>
-            <p id="vpCartPopupItemName" style="margin:0 0 20px; color:#64748b; font-size:14px; font-weight:600;">Item added successfully.</p>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-                <a href="/cart" style="display:block; background:#0B192C; color:#fff; text-decoration:none; padding:12px; border-radius:8px; font-weight:800; font-size:14px; text-transform:uppercase; letter-spacing:0.3px;">🛍️ Go to Your Cart</a>
-                <button onclick="document.getElementById('vpCartPopupOverlay').style.display='none';" style="background:#F1F5F9; color:#334155; border:none; padding:12px; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer;">Continue Shopping</button>
-            </div>
-            <button onclick="document.getElementById('vpCartPopupOverlay').style.display='none';" style="position:absolute; top:12px; right:14px; background:none; border:none; font-size:20px; color:#94a3b8; cursor:pointer; line-height:1;">×</button>
-        </div>
-    </div>
+{% if vendor.role == 'Fast Food' %}
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+{% for product in products %}
+<div style="border:1px solid #e5e7eb;background:#fff;padding:12px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+<div><strong>{{ product.title|e }}</strong> — <span style="color:#059669;font-weight:800">GH₵ {{ "%.2f"|format(product.price) }}</span> <span class="infinite-badge">♾️ Infinite • {{ product.menu_type|e or 'Main' }}</span> {% if product.status == 'Sold' %}<span style="background:#fee2e2;color:#dc2626;padding:2px 6px;border-radius:20px;font-size:10px;font-weight:800">SOLD</span>{% endif %}<div style="font-size:11px;color:#6b7280;margin-top:2px">Served: {{ (product.served_with or product.accompaniments or 'N/A')|e }} • 📍 {{ product.location|e }}</div></div>
+<div style="display:flex;gap:8px;align-items:center"><span style="font-size:11px;color:#6b7280">{{ product.category|e }}</span><a href="{{ url_for('delete_item', product_id=product.id) }}" style="color:#ef4444;text-decoration:none;font-size:13px;font-weight:700">🗑 Delete</a></div>
+</div>
+{% else %}<p style="color:#777;font-style:italic">No meals yet.</p>{% endfor %}
+</div>
+{% else %}
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+{% for product in products %}
+<div style="border:1px solid {% if product.status == 'Sold' or product.stock_quantity|int <=0 %}#fecaca{% else %}#e5e7eb{% endif %};background:{% if product.status == 'Sold' %}#fef2f2{% else %}#fff{% endif %};padding:12px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+<div><strong>{{ product.title|e }}</strong> — <span style="color:#059669;font-weight:800">GH₵ {{ "%.2f"|format(product.price) }}</span> <span class="{% if product.stock_quantity|int <=0 %}sold-badge{% else %}stock-badge{% endif %}">Stock: {{ product.stock_quantity }} {% if product.status == 'Sold' %}• SOLD OUT{% endif %}</span><div style="font-size:11px;color:#6b7280;margin-top:2px">{{ product.category|e }} • {{ product.location|e }} • Initial: {{ product.initial_stock_quantity or product.stock_quantity }} • Sold: {{ product.sold_quantity or 0 }}</div></div>
+<div style="display:flex;gap:8px;align-items:center"><a href="{{ url_for('delete_item', product_id=product.id) }}" style="color:#ef4444;text-decoration:none;font-size:13px;font-weight:700">🗑 Delete</a></div>
+</div>
+{% else %}<p style="color:#777;font-style:italic">No listings yet.</p>{% endfor %}
+</div>
+{% endif %}
 
-<!-- ══════════════════════════════════════════════════════════
-     🍔 FAST FOOD ACTIVE PROMOS — Uber Eats style deal cards
-     Shown on the kitchen page for ALL visitors (owner + customers)
-     ══════════════════════════════════════════════════════════ -->
-{% if vendor.role == 'Fast Food' and active_promos %}
-<section style="margin:0 0 28px; padding:0 4px;">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
-        <div>
-            <h3 style="margin:0; font-size:20px; font-weight:900; color:#111; letter-spacing:-.3px;">🔥 Today's Kitchen Deals</h3>
-            <p style="margin:4px 0 0; font-size:12px; color:#6b7280;">Limited-time promo prices from this kitchen.</p>
-        </div>
-        <a href="{{ url_for('promo_marketplace') }}" style="font-size:12px; font-weight:800; background:#06C167; color:#fff; text-decoration:none; padding:7px 12px; border-radius:8px;">🛵 All Today's Deals</a>
-    </div>
-    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:14px;">
-    {% for deal in active_promos %}
-    <article style="background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.10); border:1.5px solid #f3f4f6; display:flex; flex-direction:column;">
-        <!-- Media -->
-        <div style="width:100%; height:160px; background:#111; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;">
-            {% if deal.promo_product_video %}
-                <video style="width:100%;height:100%;object-fit:cover;" autoplay muted playsinline loop preload="metadata">
-                    <source src="{{ url_for('stream_video', filename=deal.promo_product_video) }}">
-                </video>
-            {% elif deal.promo_product_image and deal.promo_product_image != 'fast-food-placeholder.svg' %}
-                <img src="{{ url_for('static', filename='uploads/' + deal.promo_product_image) }}" alt="{{ deal.promo_product_title or deal.title }}" style="width:100%;height:100%;object-fit:cover;">
-            {% else %}
-                <span style="font-size:52px;">🍔</span>
-            {% endif %}
-            <!-- Discount badge -->
-            {% if deal.discount %}
-            <span style="position:absolute;top:10px;left:10px;background:#06C167;color:#fff;font-size:10px;font-weight:900;padding:3px 8px;border-radius:999px;">{{ "%.0f"|format(deal.discount|float) }}% OFF</span>
-            {% endif %}
-        </div>
-        <!-- Body -->
-        <div style="padding:12px 14px 14px; display:flex; flex-direction:column; flex:1;">
-            <div style="font-size:10px; font-weight:900; color:#06C167; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px;">⚡ Limited Offer</div>
-            <h4 style="margin:0 0 4px; font-size:15px; font-weight:900; color:#111; line-height:1.2;">{{ deal.title }}</h4>
-            {% if deal.promo_product_title %}
-                <div style="font-size:11px; color:#6b7280; margin-bottom:6px;">Item: {{ deal.promo_product_title }}</div>
-            {% endif %}
-            {% if deal.description %}
-                <p style="margin:0 0 10px; font-size:12px; color:#374151; line-height:1.45; flex:1;">{{ deal.description }}</p>
-            {% endif %}
-            <!-- Price row -->
-            <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin-top:auto; margin-bottom:10px;">
-                <span style="font-size:20px; font-weight:900; color:#111;">GH₵ {{ "%.2f"|format(deal.promo_effective_price) }}</span>
-                <span style="font-size:12px; text-decoration:line-through; color:#9ca3af;">GH₵ {{ "%.2f"|format(deal.promo_original_price) }}</span>
-            </div>
-            <!-- Ends at -->
-            <div style="font-size:10px; color:#9ca3af; margin-bottom:10px;">⏰ Ends {{ deal.ends_at }}</div>
-            <!-- CTA -->
-            {% if vendor_whatsapp %}
-            <a href="https://wa.me/{{ vendor_whatsapp }}?text=Hello%20{{ vendor.company_name|urlencode }}%2C%20I%20saw%20your%20promo%20on%20BizHub%20and%20want%20to%20order!" target="_blank" rel="noopener" style="display:block; text-align:center; background:#06C167; color:#fff; font-weight:800; font-size:13px; text-decoration:none; padding:10px; border-radius:10px;">🛒 Order Now</a>
-            {% else %}
-            <a href="{{ url_for('vendor_profile', username=vendor.username) }}" style="display:block; text-align:center; background:#06C167; color:#fff; font-weight:800; font-size:13px; text-decoration:none; padding:10px; border-radius:10px;">🍔 View Kitchen</a>
-            {% endif %}
-        </div>
-    </article>
-    {% endfor %}
-    </div>
+<div style="margin-top:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:12px;color:#475569">
+<b>Expiry Logic (2 months free):</b> Registered at {{ vendor.registered_at or 'N/A' }} • Trial started {{ vendor.trial_started_at or 'N/A' }} • Expires {{ subscription.expires if subscription else 'N/A' }} • Plan {{ subscription.name if subscription else 'Basic' }} • After expiry, only 3 newest listings visible to customers (Basic limit). Sold out logic: stock decremented on confirm_order, status Sold when ≤0, returned on cancel.
+</div>
+</div>
+
+<!-- ACTIVE PROMOS -->
+{% if active_promos %}
+<section style="margin-top:20px">
+<h3 style="font-size:18px">🔥 Active Promos — {% if vendor.role == 'Fast Food' %}Uber Eats{% else %}Amazon Lightning{% endif %} Style</h3>
+<div style="display:flex;gap:12px;overflow-x:auto;padding:10px 0;scroll-snap-type:x mandatory">
+{% for promo in active_promos %}
+<div style="flex:0 0 240px;background:#fff;border:1px solid {% if vendor.role == 'Fast Food' %}#bbf7d0{% else %}#fecaca{% endif %};border-radius:12px;padding:12px;scroll-snap-align:start">
+<div style="font-size:11px;font-weight:800;color:{% if vendor.role == 'Fast Food' %}#06C167{% else %}#CC0C39{% endif %}">⚡ {{ promo.title or 'Promo' }}</div>
+<div style="font-size:13px;font-weight:800;margin:4px 0">GH₵ {{ "%.2f"|format(promo.effective_price or promo.promo_price or 0) }} {% if promo.discount %}<span style="font-size:10px;background:{% if vendor.role == 'Fast Food' %}#06C167{% else %}#CC0C39{% endif %};color:#fff;padding:2px 6px;border-radius:4px">-{{ promo.discount|int }}%</span>{% endif %}</div>
+<div style="font-size:10px;color:#6b7280">{{ promo.description or '' }}</div>
+</div>
+{% endfor %}
+</div>
 </section>
 {% endif %}
 
-<!-- 🍟 FIX 3: ADD EMOJIS TO THE KEYS SO JINJA MATCHES THE DATABASE VALUE PERFECTLY -->
-<!-- 🍟 HISTORY MATRIX LAYER: Removed emoji prefixes from keys to match the database values -->
-{% if is_owner %}
-  {% if vendor.role == 'Fast Food' %}
-    <h3>📋 Kitchen Menu History Log</h3>
-    {% set sections = [
-        ('Main Dishes', 'Main Dishes'),
-        ('Sides', 'Sides & Appetizers'),
-        ('Drinks', 'Beverages & Drinks'),
-        ('Desserts', 'Desserts & Sweets')
-    ] %}
-    {% for section_key, section_label in sections %}
-        <h4 style="margin-top: 15px; color: #ffb703;">History Log: {{ section_label }}</h4>
-        {% set filtered_products = products | selectattr('menu_type', 'equalto', section_key) | list %}
-        {% for product in filtered_products %}
-            <div style="border-bottom: 1px solid #333; padding: 10px 0; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <strong>{{ product.title }}</strong> — <span style="color: #4ad66d;">GH₵ {{ "%.2f"|format(product.price) }}</span>
-                    {% if product.served_with %}<br><span style="font-size: 13px; color: #aaa;">🥗 Side: {{ product.served_with }}</span>{% endif %}
-                </div>
-                <a href="{{ url_for('delete_item', product_id=product.id) }}" style="color: #ff4a4a; text-decoration: none; font-size: 13px;">🗑 Delete</a>
-            </div>
-        {% else %}
-            <p style="color: #777; font-size: 13px; font-style: italic;">No records for {{ section_label }}.</p>
-        {% endfor %}
-    {% endfor %}
-  {% else %}
-    <h3>📋 Store Listing History Log</h3>
-    <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
-    {% for product in products %}
-        <div style="border: 1px solid #e5e7eb; background: #fff; padding: 10px 12px; border-radius:8px; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <strong>{{ product.title }}</strong> — <span style="color: #059669; font-weight:700;">GH₵ {{ "%.2f"|format(product.price) }}</span>
-                <span style="font-size:11px; color:#6b7280; margin-left:6px;">{{ product.category }} • Stock: {{ product.stock_quantity }}</span>
-            </div>
-            <a href="{{ url_for('delete_item', product_id=product.id) }}" style="color: #ef4444; text-decoration: none; font-size: 13px; font-weight:700;">🗑 Delete</a>
-        </div>
-    {% else %}
-        <p style="color: #777; font-size: 13px; font-style: italic;">No listings yet.</p>
-    {% endfor %}
-    </div>
-  {% endif %}
-{% endif %}
+</div>
 
+<!-- CART POPUP -->
+<div id="vpCartPopupOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99990;align-items:center;justify-content:center">
+<div style="background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);padding:28px 24px;max-width:360px;width:calc(100% - 32px);text-align:center;position:relative">
+<div style="font-size:44px;margin-bottom:10px">🛒</div>
+<h3 style="margin:0 0 6px;font-size:18px;font-weight:900">Added to Cart!</h3>
+<p id="vpCartPopupItemName" style="margin:0 0 20px;color:#64748b;font-size:14px;font-weight:600">Item added</p>
+<div style="display:flex;flex-direction:column;gap:10px">
+<a href="/cart" style="display:block;background:#0B192C;color:#fff;text-decoration:none;padding:12px;border-radius:8px;font-weight:800;font-size:14px">🛍️ Go to Cart (Qty editable + - works for fast food)</a>
+<button onclick="document.getElementById('vpCartPopupOverlay').style.display='none'" style="background:#f1f5f9;color:#334155;border:none;padding:12px;border-radius:8px;font-weight:700;cursor:pointer">Continue Shopping</button>
+</div>
+<button onclick="document.getElementById('vpCartPopupOverlay').style.display='none'" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;color:#94a3b8;cursor:pointer">×</button>
+</div>
+</div>
 
- 
+<footer class="footer">© 2026 BizHub Marketplace ·Vendor Store/Kitchen · A Product Of TOZOTS Company</footer>
 
-
-</main>
-
-<footer class="footer">
-    <p>© 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS  Company</p>
-</footer>
-
-<!-- INTERACTIVE SCRIPTS -->
 <script>
-    // Clickable Accompaniment Pills Populator
-    function addAccompaniment(item) {
-        const input = document.getElementById('accompanimentsInput');
-        if (!input) return;
-        if (input.value.trim() === '') {
-            input.value = item;
-        } else {
-            // Avoid duplicate additions
-            const currentList = input.value.split(',').map(s => s.trim());
-            if (!currentList.includes(item)) {
-                input.value += ', ' + item;
-            }
-        }
-    }
-
-    // Toggle File Inputs & Show 'X' Cancel Button
-    function handleMediaSelectionToggle(selectedType) {
-        const imgInput = document.getElementById('bizhubProductImageInput');
-        const videoInput = document.getElementById('bizhubProductVideoInput');
-        const clearImg = document.getElementById('clearImageBtn');
-        const clearVideo = document.getElementById('clearVideoBtn');
-
-        if (selectedType === 'image' && imgInput.files.length > 0) {
-            clearImg.style.display = 'inline-block';
-            videoInput.value = '';
-            videoInput.disabled = true;
-            clearVideo.style.display = 'none';
-        } else if (selectedType === 'video' && videoInput.files.length > 0) {
-            clearVideo.style.display = 'inline-block';
-            imgInput.value = '';
-            imgInput.disabled = true;
-            clearImg.style.display = 'none';
-        }
-    }
-
-    // Reset Selected Media Input Field
-    function resetSelectedMediaField(typeToClear) {
-        const imgInput = document.getElementById('bizhubProductImageInput');
-        const videoInput = document.getElementById('bizhubProductVideoInput');
-        const clearImg = document.getElementById('clearImageBtn');
-        const clearVideo = document.getElementById('clearVideoBtn');
-
-        if (typeToClear === 'image') {
-            imgInput.value = '';
-            clearImg.style.display = 'none';
-            videoInput.disabled = false;
-        } else if (typeToClear === 'video') {
-            videoInput.value = '';
-            clearVideo.style.display = 'none';
-            imgInput.disabled = false;
-        }
-    }
-
-    // Filter Menu Items for Customers
-    function executeKitchenMenuFilter(selectedSection) {
-        const rows = document.getElementsByClassName('bizhub-menu-item-row');
-        for (let i = 0; i < rows.length; i++) {
-            const cardSection = rows[i].getAttribute('data-menu-section');
-            if (selectedSection === 'All-Meals' || cardSection === selectedSection) {
-                rows[i].style.display = 'flex';
-            } else {
-                rows[i].style.display = 'none';
-            }
-        }
-
-        // Highlight Active Filter Pill
-        const pills = document.getElementsByClassName('uber-menu-pill');
-        for (let pill of pills) {
-            pill.classList.remove('active');
-        }
-        if (event && event.target) {
-            event.target.classList.add('active');
-        }
-    }
-
-    // 🛒 Add to Cart buttons on vendor profile — show popup then POST
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.bizhub-add-to-cart-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                var productId = btn.dataset.productId;
-                var productTitle = btn.dataset.productTitle || 'Item';
-                // Show popup
-                var overlay = document.getElementById('vpCartPopupOverlay');
-                var nameEl  = document.getElementById('vpCartPopupItemName');
-                if (nameEl)    nameEl.textContent = '"' + productTitle + '" has been added to your cart.';
-                if (overlay)   overlay.style.display = 'flex';
-                // POST to add-to-cart route in background
-                var form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/add-to-cart/' + productId;
-                form.style.display = 'none';
-                var csrfInput = document.createElement('input');
-                csrfInput.type  = 'hidden';
-                csrfInput.name  = 'csrf_token';
-                var csrfMeta   = document.querySelector('meta[name="csrf-token"]');
-                var csrfHidden = document.querySelector('input[name="csrf_token"]');
-                csrfInput.value = csrfMeta ? csrfMeta.content : (csrfHidden ? csrfHidden.value : '');
-                form.appendChild(csrfInput);
-                document.body.appendChild(form);
-                form.submit();
-            });
-        });
-        // Close popup on backdrop click
-        var overlay = document.getElementById('vpCartPopupOverlay');
-        if (overlay) {
-            overlay.addEventListener('click', function(e) {
-                if (e.target === overlay) overlay.style.display = 'none';
-            });
-        }
-    });
+function showVendorView(v){
+ const grid=document.getElementById('gridView'), hist=document.getElementById('historyView'), pub=document.getElementById('publishView');
+ const bG=document.getElementById('toggleGridBtn'), bH=document.getElementById('toggleHistoryBtn'), bP=document.getElementById('togglePublishBtn');
+ if(grid) grid.style.display = (v==='grid')?'block':'none';
+ if(hist) hist.style.display = (v==='history')?'block':'none';
+ if(pub) pub.style.display = (v==='publish')?'block':'none';
+ if(bG) bG.classList.toggle('active', v==='grid');
+ if(bH) bH.classList.toggle('active', v==='history');
+ if(bP) bP.classList.toggle('active', v==='publish');
+}
+function addAccompaniment(item){
+ const input=document.getElementById('accompanimentsInput'); if(!input) return;
+ if(input.value.trim()===''){input.value=item}else{
+  const list=input.value.split(',').map(s=>s.trim());
+  if(!list.includes(item)) input.value+=', '+item;
+ }
+}
+function handleMediaSelectionToggle(t){
+ const img=document.getElementById('bizhubProductImageInput'), vid=document.getElementById('bizhubProductVideoInput');
+ const cI=document.getElementById('clearImageBtn'), cV=document.getElementById('clearVideoBtn');
+ if(t==='image' && img.files.length>0){cI.style.display='inline-block';vid.value='';vid.disabled=true;cV.style.display='none';}
+ else if(t==='video' && vid.files.length>0){cV.style.display='inline-block';img.value='';img.disabled=true;cI.style.display='none';}
+}
+function resetSelectedMediaField(t){
+ const img=document.getElementById('bizhubProductImageInput'), vid=document.getElementById('bizhubProductVideoInput');
+ const cI=document.getElementById('clearImageBtn'), cV=document.getElementById('clearVideoBtn');
+ if(t==='image'){img.value='';cI.style.display='none';vid.disabled=false;} else if(t==='video'){vid.value='';cV.style.display='none';img.disabled=false;}
+}
+function executeKitchenMenuFilter(sec){
+ const rows=document.getElementsByClassName('bizhub-menu-item-row');
+ for(let i=0;i<rows.length;i++){const s=rows[i].getAttribute('data-menu-section'); rows[i].style.display = (sec==='All-Meals' || s===sec)?'flex':'none';}
+ const pills=document.getElementsByClassName('uber-menu-pill'); for(let p of pills){p.classList.remove('active');} if(event&&event.target) event.target.classList.add('active');
+}
+document.addEventListener('DOMContentLoaded', function(){
+ const overlay=document.getElementById('vpCartPopupOverlay');
+ if(overlay){overlay.addEventListener('click', function(e){if(e.target===overlay) overlay.style.display='none';});}
+});
 </script>
 </body>
 </html>
