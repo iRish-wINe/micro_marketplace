@@ -36,7 +36,8 @@
 <header class="bh-global-header" role="banner">
   <div class="bh-topbar">
     <a class="bh-brand" href="{{ url_for('home') }}" aria-label="BizHub home"><span class="bh-brand-mark">B</span><span>BizHub<span class="bh-brand-sub">Your Local Market, Unified Online</span></span></a>
-    <a class="bh-location" href="{{ url_for('home') }}"><span>📍</span><span><small>Delivering from</small><strong>{{ session.get('business_location') or 'Ghana' }}</strong></span><span>📍</span><span><small>Ordering from</small><strong>{{ session.get('customer_location') or 'Ghana' }}</strong></span><span>📍</span><span><small>Dispatching from</small><strong>{{ session.get('delivery_service_location') or 'Ghana' }}</strong></span></a>
+    <a class="bh-location" href="{{ url_for('home') }}"><span>📍</span><span><small>Delivering from</small><strong>{{ session.get('business_location') or 'Ghana' }}</strong></span>
+    
     
     <a class="bh-action" href="{{ url_for('settings') }}"><span class="icon">👤</span><span><span class="small">Hello,</span><strong>{{ session.get('username') }}{% if session.get('role') %} <span style="font-size:9px;color:#febd69;text-transform:uppercase">{{ session.get('role') }}</span>{% endif %}</strong></span></a>
   </div>

@@ -162,6 +162,7 @@
         <a href="{{ url_for('features') }}">🎯 Features</a>
         <a href="{{ url_for('order_history') }}">Orders</a>
         <a href="{{ url_for('settings') }}">Your Account</a>
+        <a href="{{ url_for('notifications') }}">🔔Biz Alerts</a>
     </nav>
 
 <main class="wrap">
@@ -202,13 +203,62 @@
         </div>
     </section>
 
-    <!-- FULFILLMENT WARNING ALERT -->
-    {% if is_owner and vendor.role == 'Fast Food' %}
-        <div style="background: #fffbeeb0; border-left: 5px solid #f59e0b; padding: 12px 16px; border-radius: 8px;">
-            <b style="color: #b45309; text-transform: uppercase; font-size: 11px; display: block; margin-bottom: 2px;">⚠️ Compulsory Fulfillment Notice:</b>
-            <span style="font-size: 13px;">WhatsApp messages do not deduct inventory automatically. Confirm transactions directly inside your <a href="/orders" style="color: #b45309; font-weight: 800;">Orders Dashboard</a> to clear pending customer slots.</span>
+ <!-- STEP 4 CODE ADDITION: VENDOR OPERATIONAL GUIDE BLOCK -->
+{% if is_owner %}
+  {% if vendor.role == 'Fast Food' %}
+    <!-- UBER EATS THEME STYLE FOR FAST FOOD VENDORS -->
+    <section style="background: #06C167; color: #FFFFFF; font-family: 'Uber Move Text', -apple-system, BlinkMacSystemFont, sans-serif; border-radius: 12px; padding: 24px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(6, 193, 103, 0.2);">
+      <h2 style="margin-top: 0; font-size: 22px; font-weight: 700; border-bottom: 2px solid rgba(255,255,255,0.2); padding-bottom: 10px;">
+        🍳 Fast Food Kitchen Guide & Operations
+      </h2>
+      <p style="font-size: 14px; opacity: 0.9;">Follow these steps to maximize your kitchen dispatches and sales on BizHub:</p>
+
+      <ul style="list-style: none; padding: 0; margin: 20px 0;">
+        <li style="margin-bottom: 12px; font-size: 14px; line-height: 1.5;">
+          <strong>🚀 1. Find Delivery:</strong> Access <em>Find Delivery</em> to locate nearby riders and instant dispatch drivers available to fulfill customer meal deliveries.
+        </li>
+        <li style="margin-bottom: 12px; font-size: 14px; line-height: 1.5;">
+          <strong>💳 2. Manage Accounts:</strong> Use <em>Manage Accounts</em> to upgrade to a <strong>Premium Kitchen</strong>, unlocking unlimited meal listing slots and video showcases.
+        </li>
+        <li style="margin-bottom: 12px; font-size: 14px; line-height: 1.5;">
+          <strong> 3🎯. Operational Features:</strong> Send delivery requests at find delivery to track live dispatch updates, monitor active delivery requests, and manage restaurant orders seamlessly inside <em>Features</em>.
+        </li>
+        <li style="margin-bottom: 12px; font-size: 14px; line-height: 1.5;">
+          <strong>🛡️ 4. Kitchen Verification:</strong> Submit a <em>Request Verification</em> so BizHub can audit and issue a <strong>Verified Kitchen Badge</strong> to boost customer trust.
+        </li>
+      </ul>
+    </section>
+
+  {% else %}
+
+    <!-- AMAZON THEME STYLE FOR GENERAL VENDORS -->
+    <section style="background: #131921; color: #FFFFFF; border-top: 4px solid #FF9900; border-radius: 8px; padding: 24px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <h2 style="margin-top: 0; color: #FF9900; font-size: 20px; font-weight: 700; border-bottom: 1px solid #37475A; padding-bottom: 10px;">
+        📦 Merchant Operational Playbook
+      </h2>
+      <p style="font-size: 13px; color: #DDD;">Get the most out of your BizHub storefront with these essential tools:</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px;">
+        <div style="background: #232F3E; padding: 15px; border-radius: 6px;">
+          <h4 style="color: #FF9900; margin: 0 0 8px 0; font-size: 15px;">🚚 Find Delivery</h4>
+          <p style="margin: 0; font-size: 12px; color: #CCC; line-height: 1.4;">Locate nearby delivery services and couriers to dispatch orders to buyers efficiently.</p>
         </div>
-    {% endif %}
+        <div style="background: #232F3E; padding: 15px; border-radius: 6px;">
+          <h4 style="color: #FF9900; margin: 0 0 8px 0; font-size: 15px;">💳 Manage Accounts</h4>
+          <p style="margin: 0; font-size: 12px; color: #CCC; line-height: 1.4;">Upgrade to <strong>Premium Store</strong> to expand product limits, list promos, and run video ads.</p>
+        </div>
+        <div style="background: #232F3E; padding: 15px; border-radius: 6px;">
+          <h4 style="color: #FF9900; margin: 0 0 8px 0; font-size: 15px;">📈 Features & Tracking</h4>
+          <p style="margin: 0; font-size: 12px; color: #CCC; line-height: 1.4;">Track dispatch statuses, run coupon codes, and review store sales analytics.</p>
+        </div>
+        <div style="background: #232F3E; padding: 15px; border-radius: 6px;">
+          <h4 style="color: #FF9900; margin: 0 0 8px 0; font-size: 15px;">✅ Request Verification</h4>
+          <p style="margin: 0; font-size: 12px; color: #CCC; line-height: 1.4;">Ask BizHub to assess and verify your store to earn the official trust badge.</p>
+        </div>
+      </div>
+    </section>
+  {% endif %}
+{% endif %}
 
     <!-- 🚀 PUBLISH PRODUCT CONSOLE -->
     {% if is_owner %}
@@ -320,13 +370,21 @@
                 <article class="product-card bizhub-menu-item-row" data-menu-section="{{ product.menu_type or 'Main Dishes' }}">
                     <div>
                         <!-- 📸 MEDIA RENDERING: video first, then image, then placeholder -->
-                        {% if product.video_file %}
-                            <video class="product-img" controls autoplay muted playsinline loop preload="metadata" style="object-fit:cover;">
-                                <source src="{{ url_for('stream_video', filename=product.video_file) }}">
-                            </video>
-                        {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' %}
-                            <img class="product-img" src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}">
-                        {% else %}
+                        <!-- STEP 1 FIX: DYNAMIC MEDIA DISPLAY FOR BOTH FAST FOOD & GENERAL VENDORS -->
+<div class="card-media-container" style="position: relative; width: 100%; height: 220px; overflow: hidden; background: #000; border-radius: 8px;">
+  {% if product.video_file %}
+    <video controls preload="metadata" style="width: 100%; height: 100%; object-fit: cover;">
+      <source src="{{ url_for('static', filename='uploads/' + product.video_file) }}" type="video/mp4">
+      Your browser does not support video playback.
+    </video>
+  {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' %}
+    <img src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+  {% else %}
+    <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #222; color: #fff;">
+      <span>🍔 Tasty Meal Showcase</span>
+    </div>
+  {% endif %}
+</div>
                             <div class="product-img" style="display:grid; place-items:center; font-size:36px; background:#f3f4f6;">
                                 {% if vendor.role == 'Fast Food' %}🍔{% else %}🛍️{% endif %}
                             </div>
@@ -476,7 +534,7 @@
 </main>
 
 <footer class="footer">
-    <p>© 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS 🇬🇭 Company</p>
+    <p>© 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS  Company</p>
 </footer>
 
 <!-- INTERACTIVE SCRIPTS -->

@@ -52,8 +52,17 @@
 <body>
 
 <header class="top"><a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a><div style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</div></header>
-<nav class="nav"><a href="{{ url_for('home') }}">☰ Marketplace</a><a href="{{ url_for('all_stores') }}">All Stores</a><a href="{{ url_for('fast_food_stores') }}">Fast Food</a><a href="{{ url_for('features') if session.get('username') else url_for('login') }}">Features</a><a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">Favorites</a><a href="{{ url_for('settings') if session.get('username') else url_for('login') }}">Your Account</a>{% if session.get('role') in ['Vendor','Fast Food'] %}{% endif %}</nav>
-
+   <!-- 📌 STICKY NAVIGATION BAR -->
+    <nav class="nav">
+        <a href="{{ url_for('home') }}">☰ Marketplace</a>
+        <a href="{{ url_for('all_stores') }}">All Stores</a>
+        <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
+        <a href="{{ url_for('favorites') }}">Favorites</a>
+        <a href="{{ url_for('features') }}">🎯 Features</a>
+        <a href="{{ url_for('order_history') }}">Orders</a>
+        <a href="{{ url_for('settings') }}">Your Account</a>
+        <a href="{{ url_for('notifications') }}">🔔Biz Alerts</a>
+    </nav>
 <div class="wrap">
     <!-- 👑 LAYER 2: STREAMLINED ACTION FORM CARD ENGINE -->
     <div class="card">

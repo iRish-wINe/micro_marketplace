@@ -52,8 +52,19 @@ body{margin:0;background:#f3f4f6;color:#111827;font-family:Arial,Helvetica,sans-
 </head>
 <body>
 
-<header class="top"><a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a><div style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</div></header><nav class="nav"><a href="{{ url_for('home') }}">☰ Marketplace</a><a href="{{ url_for('all_stores') }}">All Stores</a><a href="{{ url_for('fast_food_stores') }}">Fast Food</a><a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">Favorites</a><a href="{{ url_for('features') }}">Features</a><a href="{{ url_for('settings') if session.get('username') else url_for('login') }}">Your Account</a>{% if session.get('role') in ['Vendor','Fast Food'] %}{% endif %}</nav>
-
+<header class="top"><a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a><div style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</div>
+</header>
+    <!-- 📌 STICKY NAVIGATION BAR -->
+    <nav class="nav">
+        <a href="{{ url_for('home') }}">☰ Marketplace</a>
+        <a href="{{ url_for('all_stores') }}">All Stores</a>
+        <a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
+        <a href="{{ url_for('favorites') }}">Favorites</a>
+        <a href="{{ url_for('features') }}">🎯 Features</a>
+        <a href="{{ url_for('order_history') }}">Orders</a>
+        <a href="{{ url_for('settings') }}">Your Account</a>
+        <a href="{{ url_for('notifications') }}">🔔Biz Alerts</a>
+    </nav>
     <div class="container">
         <h2 class="deals-header">⚡ Today's Limited Commercial Lightning Deals</h2>
         <div class="deals-grid">
@@ -64,13 +75,23 @@ body{margin:0;background:#f3f4f6;color:#111827;font-family:Arial,Helvetica,sans-
                 <div class="card ff-promo-card" style="background-color: #0A0A0A; border: 2px solid #06C167; border-radius: 12px; padding: 20px; color: #FFFFFF; box-shadow: 0 4px 15px rgba(0,0,0,0.25); display: flex; flex-direction: column; justify-content: space-between;">
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <span style="background-color: #06C167; color: #0A0A0A; font-weight: 800; font-size: 11px; padding: 4px 10px; border-radius: 20px; text-transform: uppercase;">🍔 BizHub Deal</span>
+                            <div class="deal-badge-container">
+  {% if deal.is_owner %}
+    <span style="background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+       Your promo
+    </span>
+  {% else %}
+    <span style="background: #f59e0b; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+      ⚡ Deal
+    </span>
+  {% endif %}
+</div>
                             <span style="color: #A0A0A0; font-size: 12px;">📍 {{ deal.product_location or 'Ghana' }}</span>
                         </div>
                         
                         <!-- 👑 NEW: COMPANY PROFILE BREADCRUMB -->
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; background: #111; padding: 6px 10px; border-radius: 6px; border: 1px solid #222;">
-                            <span style="font-size: 14px;">🏪</span>
+                            <span style="font-size: 14px;"></span>
                             <span style="font-size: 12px; font-weight: 700; color: #06C167;">Kitchen: {{ deal.business_label or deal.seller or 'Verified Chef' }}</span>
                         </div>
 
@@ -114,11 +135,63 @@ body{margin:0;background:#f3f4f6;color:#111827;font-family:Arial,Helvetica,sans-
                             {% endif %}
                         </div>
                         
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
-                            <a href="whatsapp://send?phone={{ deal.vendor_whatsapp }}&text={{ deal.inquiry_text }}" style="background-color: #06C167; color: #0A0A0A; text-decoration: none; display: block; text-align: center; padding: 10px; border-radius: 8px; font-weight: 800; font-size: 13px;">🚀 Order via Whatsapp</a>
-                            <!-- 👑 ADDED TO BASKET ACTION TAB -->
-                            <a href="/add-to-cart/{{ deal.product_id }}" style="background-color: #FFFFFF; color: #000; text-decoration: none; display: block; text-align: center; padding: 10px; border-radius: 8px; font-weight: 800; font-size: 13px; border: 1px solid #cbd5e1;">🛒 Add to Basket</a>
-                        </div>
+                        <!-- STEP 2 CODE ADDITION: 30-SEC PROMO AD TRIGGER BUTTON -->
+{% if deal.video_file or deal.promo_product_video %}
+  <div class="promo-ad-action-wrapper" style="margin: 10px 0;">
+    <button type="button" 
+            onclick="openPromoVideoModal('{{ url_for('static', filename='uploads/' + (deal.video_file or deal.promo_product_video)) }}')" 
+            style="width: 100%; background: #10b981; color: white; border: none; padding: 10px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      ▶️ Tap to view ad video (30s)
+    </button>
+  </div>
+
+  <!-- Modal Script & Container if not present -->
+  <div id="promoVideoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center;">
+    <div style="position:relative; width:90%; max-width:500px; background:#111; padding:15px; border-radius:12px;">
+      <button onclick="closePromoVideoModal()" style="position:absolute; top:-12px; right:-12px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:30px; height:30px; font-weight:bold; cursor:pointer;">✕</button>
+      <video id="promoModalVideoPlayer" controls style="width:100%; border-radius:8px;" autoplay>
+        <source id="promoModalVideoSource" src="" type="video/mp4">
+      </video>
+    </div>
+  </div>
+
+  <script>
+    function openPromoVideoModal(videoUrl) {
+      document.getElementById('promoModalVideoSource').src = videoUrl;
+      const player = document.getElementById('promoModalVideoPlayer');
+      player.load();
+      document.getElementById('promoVideoModal').style.display = 'flex';
+    }
+    function closePromoVideoModal() {
+      const player = document.getElementById('promoModalVideoPlayer');
+      player.pause();
+      document.getElementById('promoVideoModal').style.display = 'none';
+    }
+  </script>
+{% endif %}
+
+                     <div class="deal-actions-wrapper" style="margin-top: 15px;">
+  {% if not deal.is_owner %}
+    <!-- Order via WhatsApp & Add to Cart visible ONLY to other users -->
+    <a href="https://wa.me/{{ deal.vendor_whatsapp }}?text={{ deal.inquiry_text }}" 
+       target="_blank" 
+       style="display: inline-block; background: #25D366; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; margin-right: 8px;">
+       Order via WhatsApp
+    </a>
+
+    {% if deal.product_id %}
+      <a href="{{ url_for('add_to_cart', product_id=deal.product_id) }}" 
+         style="display: inline-block; background: #3b82f6; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+        🛒 Add to Cart
+      </a>
+    {% endif %}
+  {% else %}
+    <!-- Owner indicator notice -->
+    <div style="background: #f3f4f6; color: #4b5563; padding: 8px 12px; border-radius: 6px; font-size: 13px; text-align: center;">
+      ℹ️ This is your active promotion ad. Buyers will see ordering buttons here.
+    </div>
+  {% endif %}
+</div>
                     </div>
                 </div>
             {% else %}
@@ -126,13 +199,23 @@ body{margin:0;background:#f3f4f6;color:#111827;font-family:Arial,Helvetica,sans-
                 <div class="card merchant-promo-card" style="background-color: #FFFFFF; border: 1px solid #E5E7EB; border-top: 4px solid #CC0C39; border-radius: 8px; padding: 12px; color: #111111; box-shadow: 0 2px 8 rgba(0,0,0,0.06); display: flex; flex-direction: column; justify-content: space-between;">
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px;">
-                            <span style="background-color: #CC0C39; color: #FFFFFF; font-weight: 800; font-size: 11px; padding: 4px 8px; border-radius: 4px; text-transform: uppercase;">🎁 BizHub Limited Deal</span>
+                            <div class="deal-badge-container">
+  {% if deal.is_owner %}
+    <span style="background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+       Your promo
+    </span>
+  {% else %}
+    <span style="background: #f59e0b; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+      ⚡ Hot Deal
+    </span>
+  {% endif %}
+</div>
                             <span style="color: #666666; font-size: 12px;">📍 {{ deal.product_location or 'Ghana' }}</span>
                         </div>
 
                         <!-- 👑 NEW: COMPANY PROFILE BREADCRUMB -->
                         <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; background: #F8FAFC; padding: 5px 8px; border-radius: 4px; border: 1px solid #E2E8F0;">
-                            <span style="font-size: 13px;">🏪</span>
+                            <span style="font-size: 13px;"></span>
                             <span style="font-size: 11px; font-weight: 700; color: #0F172A;">Store: {{ deal.business_label or deal.seller or 'Official Brand' }}</span>
                         </div>
 
@@ -169,18 +252,35 @@ body{margin:0;background:#f3f4f6;color:#111827;font-family:Arial,Helvetica,sans-
                                 <span style="background-color: rgba(204,12,57,0.1); color: #CC0C39; font-weight: 800; font-size: 14px; padding: 4px 8px; border-radius: 6px;">-{{ deal.discount_percent|int }}% OFF</span>
                             {% endif %}
                         </div>
-                        
-                          <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <a href="whatsapp://send?phone={{ deal.vendor_whatsapp }}&text={{ deal.inquiry_text }}" style="background-color: #FFD814; color: #111111; text-decoration: none; display: block; text-align: center; padding: 9px; border-radius: 20px; font-weight: 700; font-size: 13px; border: 1px solid #FCD200; box-shadow: 0 2px 5px rgba(213,217,213,0.5);">💬 Secure Item Claim</a>
-                            <!-- 👑 SYNCHRONIZED MULTI-VIEWPORT ADD TO BASKET SHORTCUT -->
-                            <a href="/add-to-cart/{{ deal.product_id }}" style="background-color: #F0F2F2; color: #111; text-decoration: none; display: block; text-align: center; padding: 9px; border-radius: 20px; font-weight: 700; font-size: 13px; border: 1px solid #D5D9D9;">🛒 Add to Basket</a>
-                        </div>
+                      <div class="deal-actions-wrapper" style="margin-top: 15px;">
+  {% if not deal.is_owner %}
+    <!-- Order via WhatsApp & Add to Cart visible ONLY to other users -->
+    <a href="https://wa.me/{{ deal.vendor_whatsapp }}?text={{ deal.inquiry_text }}" 
+       target="_blank" 
+       style="display: inline-block; background: #25D366; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; margin-right: 8px;">
+       Order via WhatsApp
+    </a>
+
+    {% if deal.product_id %}
+      <a href="{{ url_for('add_to_cart', product_id=deal.product_id) }}" 
+         style="display: inline-block; background: #3b82f6; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+        🛒 Add to Cart
+      </a>
+    {% endif %}
+  {% else %}
+    <!-- Owner indicator notice -->
+    <div style="background: #f3f4f6; color: #4b5563; padding: 8px 12px; border-radius: 6px; font-size: 13px; text-align: center;">
+      ℹ️ This is your active promotion ad. Buyers will see ordering buttons here.
+    </div>
+  {% endif %}
+</div>  
+                      
                     </div>
                 </div>
             {% endif %}
         {% else %}
             <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: #565959; background: white; border-radius: 8px; border: 1px dashed #D5D9D9;">
-                📭 No active corporate promotions or limited lightning deals running right now.
+                 No active corporate promotions or limited lightning deals running right now.
             </div>
         {% endfor %}
 
@@ -189,7 +289,7 @@ body{margin:0;background:#f3f4f6;color:#111827;font-family:Arial,Helvetica,sans-
     </div>
         <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
         <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
-                 © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS 🇬🇭 Company
+                 © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS  Company
         </footer>
 </body>
 </html>
