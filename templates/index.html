@@ -1,310 +1,2065 @@
 <!DOCTYPE html>
-<html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}">
+<!-- 🚀 DYNAMIC ENGINE BOUNDARY CONNECTOR CLASS -->
+<html lang="en" {% if app_theme == 'night' %}class="night-theme"{% endif %}>
 
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1, viewport-fit=cover">
-<title>BizHub Marketplace - Clean Vendor Nav + 3.5s Welcome + Autoplay Listings</title>
-<style>
-:root{--navy:#131921;--navy2:#232f3e;--yellow:#febd69;--bg:#eaeded;--border:#EAEDED;--border-red:#FECACA}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:#0F1111;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important}
-.bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:#131921;box-shadow:0 2px 12px rgba(0,0,0,0.18);width:100%}
-.bh-topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px}
-.bh-brand{color:#fff;font-weight:900;font-size:20px;text-decoration:none;white-space:nowrap}.bh-brand span{color:#febd69}
-.bh-location{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;flex-shrink:0}
-.bh-location small{font-size:9px;font-weight:800;text-transform:uppercase;display:block}
-.bh-location strong{font-size:11px;font-weight:800;display:block;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bh-search{display:flex;flex:1;max-width:600px;height:40px;border-radius:5px;overflow:hidden;background:#fff}
-.bh-search input{border:0;outline:0;flex:1;padding:0 12px;font-size:14px}
-.bh-search button{width:48px;border:0;background:#febd69;color:#111;font-size:16px;cursor:pointer}
-.bh-subbar{min-height:42px;background:#232f3e;display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
-.bh-subbar::-webkit-scrollbar{display:none}
-.bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px;flex-shrink:0}
-.bh-subbar a:hover{border-color:#fff}
-.bh-subbar a.top20{color:#FFD814 !important;font-weight:900;border:1px solid #FFD814;border-radius:4px;padding:6px 10px}
-.verified-bizhub-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#10B981 0%,#059669 100%);color:#fff;font-size:8px;font-weight:900;padding:3px 7px;border-radius:20px;border:1px solid #10B981;animation:glowGreenVerified 2s infinite;white-space:nowrap}
-.verified-bizhub-badge.kitchen{background:linear-gradient(135deg,#F59E0B 0%,#D97706 100%);border-color:#F59E0B;animation:glowOrangeVerified 2s infinite}
-@keyframes glowGreenVerified{0%{box-shadow:0 0 0 0 rgba(16,185,129,0.7)}50%{box-shadow:0 0 0 5px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
-@keyframes glowOrangeVerified{0%{box-shadow:0 0 0 0 rgba(245,158,11,0.7)}50%{box-shadow:0 0 0 5px rgba(245,158,11,0)}100%{box-shadow:0 0 0 0 rgba(245,158,11,0)}}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-.card{background:#fff;border:1px solid #F0F2F2;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,0.08);transition:all 0.2s}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.12);transform:translateY(-1px)}
-.card-media-wrapper{height:130px;min-height:130px;background:#fff;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #F0F2F2;position:relative;overflow:hidden;cursor:pointer}
-.card-media-wrapper:hover::after{content:'🔍 Tap to view';position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:#fff;font-size:7px;font-weight:800;padding:3px 7px;border-radius:10px;white-space:nowrap}
-.card-media-wrapper img{max-width:100%;max-height:100%;object-fit:contain;padding:6px}
-.card-media-wrapper video{width:100%;height:100%;object-fit:cover;background:#000}
-.promo-marketplace-card{background:#fff;border:1.5px solid #FECACA;border-radius:10px;box-shadow:0 2px 8px rgba(185,28,28,0.08)}
-.promo-marketplace-card .card-media-wrapper{height:120px;min-height:120px;background:#f9fafb}
-#mediaModal{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:999999;display:none;align-items:center;justify-content:center;padding:10px;overflow:auto;-webkit-overflow-scrolling:touch}
-#mediaModal.active{display:flex}
-.media-modal-box{position:relative;background:#000;border-radius:12px;max-width:95vw;max-height:90vh;display:flex;align-items:center;justify-content:center;box-shadow:0 20px 60px rgba(0,0,0,0.6);border:2px solid #222}
-.media-modal-box img{max-width:95vw;max-height:85vh;width:auto;height:auto;object-fit:contain;display:block}
-.media-modal-box video{max-width:95vw;max-height:85vh;width:auto;height:auto;object-fit:contain;display:block;background:#000}
-.modal-close-x{position:absolute;top:12px;right:12px;width:44px;height:44px;background:rgba(0,0,0,0.7);color:#fff;border:2px solid rgba(255,255,255,0.3);border-radius:50%;font-size:20px;font-weight:900;cursor:pointer;z-index:10;display:grid;place-items:center;backdrop-filter:blur(4px)}
-@media(max-width:768px){.modal-close-x{width:48px;height:48px;top:16px;right:16px;font-size:22px;background:rgba(0,0,0,0.8);border:2px solid rgba(255,255,255,0.5)}}
-.bizhub-contact-footer{background:#131A22;color:#fff;padding:24px 16px 0 16px;margin-top:40px;border-top:1px solid #2a2a2a}
-.contact-footer-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:20px;padding-bottom:20px}
-.contact-brand .contact-logo{font-size:22px;font-weight:900;color:#fff}.contact-brand .contact-logo span{color:#febd69}
-.contact-brand p{margin:6px 0 0;color:#999;font-size:12px}
-.contact-links{display:flex;gap:16px;flex-wrap:wrap}
-.contact-links a{color:#fff;text-decoration:none;display:flex;flex-direction:column;gap:2px;background:rgba(255,255,255,0.05);padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1)}
-.contact-links a span{font-size:10px;color:#999;text-transform:uppercase;font-weight:700}
-.contact-links a b{font-size:12px;color:#fff}
-.contact-footer-bottom{background:#0F1111;color:#999;text-align:center;padding:14px 16px;font-size:11px;border-top:1px solid #222;margin:0 -16px}
-/* Welcome splash 3.5s */
-#bizhub-splash-screen{position:fixed;inset:0;background:linear-gradient(135deg,#131921 0%,#232f3e 100%);z-index:1000000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;transition:opacity 0.5s ease, visibility 0.5s ease}
-#bizhub-splash-screen .splash-logo{font-size:36px;font-weight:900;color:#fff;letter-spacing:-0.5px}
-#bizhub-splash-screen .splash-logo span{color:#febd69}
-#bizhub-splash-screen .splash-sub{color:#999;font-size:13px;font-weight:600;letter-spacing:0.5px}
-#bizhub-splash-screen .splash-loader{width:40px;height:40px;border:3px solid rgba(254,189,105,0.2);border-top-color:#febd69;border-radius:50%;animation:spin 0.8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Biz Hub - Your Local Market, Unified Online</title>
+    <meta name="theme-color" content="#0B192C">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="BizHub">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+    <link rel="icon" type="image/png" href="/static/uploads/bizhub-app-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=4">
+    <style>
+        /* 👑 STANDARDIZED CORE APPERANCE THEME CSS MATRIX */
+        :root {
+            --bg-abyssal: #0F172A;
+            --primary: #1E3A8A;
+            --primary-light: #3B82F6;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --danger: #EF4444;
+            --bg-light: #EAEDED; 
+            --bg-card: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #565959; 
+            --border-color: #D5D9D9; 
+            --radius-sm: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 1px 2px rgba(15,23,42,0.05);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 👑 🦉 TWITTER HIGH-DENSITY DIM NIGHT THEME PROPERTY OVERRIDE */
+        :root.night-theme, .night-theme body {
+            --bg-abyssal: #15202B !important;      /* Twitter's Iconic Dark Blue Background */
+            --bg-light: #15202B !important;        /* Smooth Global Continuity Canvas */
+            --bg-card: #1E2732 !important;         /* Twitter Slate Card Blocks */
+            --text-main: #F7F9F9 !important;       /* Pristine High-Contrast Off-White Text */
+            --text-muted: #8899A6 !important;      /* Muted Ice-Blue Descriptive Labels */
+            --border-color: #38444D !important;    /* Twitter Slate Segment Borders */
+            --primary: #1D9BF0 !important;         /* Twitter Vivid Accent Blue */
+            --primary-light: #1A8CD8 !important;   
+            --nav: #1E2732 !important;
+        }
+
+        /* 🚀 Global Override Elements Cascade to Enforce Theme Uniformity */
+        .night-theme .card, .night-theme .sidebar, .night-theme .sidebar-card, .night-theme .auth-shell {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+        .night-theme input, .night-theme select, .night-theme textarea {
+            background-color: #15202B !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+
+                
+
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: var(--bg-light); color: var(--text-main); margin: 0; padding: env(safe-area-inset-top) env(safe-area-inset-right) calc(60px + env(safe-area-inset-bottom)) env(safe-area-inset-left); overflow-x: hidden; }
+        .container { width: 100%; max-width: 1480px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
+
+        #bizhub-splash-screen {
+            position: fixed; inset: 0; width: 100vw; height: 100dvh; min-height: 100vh;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            box-sizing: border-box; background: radial-gradient(circle at 50% 40%, #132946 0%, #0B192C 46%, #050C16 100%);
+            z-index: 99999; display:flex; flex-direction:column; justify-content:center; align-items:center;
+            overflow:hidden; transition:opacity .5s ease, visibility .5s ease; opacity:1; visibility:visible;
+        }
+        #bizhub-splash-screen::before { content:""; position:absolute; width:280px; height:280px; border-radius:50%;
+            background:radial-gradient(circle, rgba(245,158,11,.16) 0%, rgba(245,158,11,0) 68%); animation:splashGlow 2.2s ease-in-out infinite; }
+        .splash-brand { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; text-align:center; }
+        .splash-logo-wrap { width:132px; height:132px; display:grid; place-items:center; margin-bottom:20px; animation:splashLogoIn .65s ease-out both; }
+        .splash-logo-image { width:132px; height:132px; display:block; object-fit:contain; animation:splashLogoRotate 1.15s cubic-bezier(.4,0,.2,1) both, splashLogoFloat 2.2s 1.15s ease-in-out infinite; filter:drop-shadow(0 16px 34px rgba(0,0,0,.42)); }
+        .splash-title { color:#fff; font-size:36px; line-height:1; font-weight:900; letter-spacing:-1.4px; margin:0 0 10px; animation:splashTextIn .7s .15s ease-out both; }
+        .splash-title span { color:var(--accent); }
+        .splash-motto { color:#E2E8F0; font-size:13px; font-weight:700; letter-spacing:.2px; text-align:center; margin:0 20px 28px; animation:splashTextIn .7s .25s ease-out both; }
+        .splash-rule { width:58px; height:2px; border-radius:999px; background:var(--accent); opacity:.9; margin-bottom:22px; animation:splashRuleIn .65s .35s ease-out both; }
+        .splash-spinner { width:20px; height:20px; border:2px solid rgba(255,255,255,.14); border-top-color:var(--accent); border-radius:50%; animation:spinNode .8s linear infinite; }
+        .splash-caption { color:#94A3B8; font-size:9px; font-weight:800; letter-spacing:1.7px; text-transform:uppercase; margin-top:12px; animation:splashTextIn .7s .4s ease-out both; }
+        @keyframes splashLogoRotate { from { transform:rotate(-210deg) scale(.68); opacity:0; } to { transform:rotate(0deg) scale(1); opacity:1; } }
+        @keyframes splashLogoIn { from { transform:translateY(10px); } to { transform:translateY(0); } }
+        @keyframes splashLogoFloat { 0%,100% { transform:translateY(0) rotate(0deg); } 50% { transform:translateY(-4px) rotate(4deg); } }
+        @keyframes splashTextIn { from { transform:translateY(8px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+        @keyframes splashRuleIn { from { transform:scaleX(0); opacity:0; } to { transform:scaleX(1); opacity:.9; } }
+        @keyframes splashGlow { 0%,100% { transform:scale(.92); opacity:.65; } 50% { transform:scale(1.08); opacity:1; } }
+        @keyframes spinNode { to { transform:rotate(360deg); } }
+        @media (max-width:480px) { .splash-logo-wrap,.splash-logo-image { width:104px; height:104px; } .splash-title { font-size:32px; } .splash-motto { font-size:12px; } }
+        @media (prefers-reduced-motion:reduce) { .splash-logo-image,.splash-logo-wrap,.splash-title,.splash-motto,.splash-rule,.splash-spinner,.splash-caption,#bizhub-splash-screen::before { animation:none !important; } }
+
+        .navbar { display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-abyssal); padding: 12px 30px; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm); }
+        .brand-logo { font-size: 24px; font-weight: 900; color: white; text-decoration: none; letter-spacing: -0.5px; }
+        .brand-logo span { color: var(--accent); }
+        .nav-links { display: flex; align-items: center; gap: 20px; color: #94A3B8; font-size: 14px; }
+        .nav-links b { color: white; }
+        .nav-links a { text-decoration: none; color: #E2E8F0; font-weight: 700; transition: var(--transition); padding: 6px 12px; border-radius: var(--radius-sm); }
+        .nav-links a:hover { color: var(--accent); background: rgba(255,255,255,0.05); }
+
+        .search-hero { background-color: var(--bg-abyssal); padding: 15px 0; color: white; }
+        .search-panel { display: flex; flex-wrap: nowrap;overflow-x: auto; background: white; border-radius: var(--radius-sm); overflow: hidden; box-shadow: var(--shadow-sm); max-width: 1100px; margin: 0 auto; width: 100%; border: 1px solid rgba(0,0,0,0.2); padding: 2px; box-sizing: border-box; }
+        .search-panel select, .search-panel input { border: none; padding: 12px 16px; font-size: 14px; outline: none; color: var(--text-main); box-sizing: border-box; }
+        .filter-select { background: #F3F3F3; font-weight: 700; border-right: 1px solid var(--border-color) !important; cursor: pointer; color: #444 !important; }
+        .search-input { flex-grow: 1; min-width: 240px; }
+        .search-btn { background: var(--accent); border: none; padding: 0 30px; color: var(--bg-abyssal); font-weight: 800; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; cursor: pointer; transition: var(--transition); font-size: 14px; }
+        .search-btn:hover { background: var(--accent-hover); }
+
+                .marketplace-hero {
+            width: 100%;
+            max-width: 1440px;
+            height: 300px;
+            margin: 0 auto 20px;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            overflow: hidden;
+            position: relative;
+            background: #0B192C;
+            box-shadow: var(--shadow-md);
+        }
+        .marketplace-hero::after {
+            content: ""; position: absolute; inset: 0;
+            background: linear-gradient(90deg, rgba(11,25,44,.92) 0%, rgba(11,25,44,.72) 42%, rgba(11,25,44,.12) 78%, rgba(11,25,44,.04) 100%);
+        }
+        .marketplace-hero-content { position: relative; z-index: 2; max-width: 610px; padding: 46px 40px; color: #fff; }
+        .marketplace-hero-content h1 { margin: 0 0 10px; font-size: 32px; line-height: 1.08; font-weight: 900; letter-spacing: -.7px; }
+        .marketplace-hero-content h1 span { color: var(--accent); }
+        .marketplace-hero-content p { margin: 0; color: #E2E8F0; font-size: 14px; line-height: 1.55; max-width: 540px; }
+        .marketplace-hero-tag { display:inline-block; margin-bottom:10px; padding:5px 10px; border-radius:999px; background:rgba(245,158,11,.96); color:#111827; font-size:10px; font-weight:900; text-transform:uppercase; }
+
+.amazon-billboard { width: 100%; max-width: 1440px; height: 260px; margin: 0 auto 20px auto; background: linear-gradient(180deg, #1E293B 0%, var(--bg-light) 100%); border-radius: 0 0 var(--radius-sm) var(--radius-sm); position: relative; overflow: hidden; display: flex; align-items: center; padding: 0 40px; box-sizing: border-box; }
+        .billboard-text-layer { max-width: 600px; z-index: 2; color: white; }
+        .billboard-text-layer h1 { font-size: 28px; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -0.5px; }
+        .billboard-text-layer p { font-size: 14px; margin: 0 0 15px 0; color: #E2E8F0; line-height: 1.5; }
+        .billboard-promo-tag { background: var(--accent); color: var(--bg-abyssal); padding: 4px 10px; font-weight: 800; font-size: 11px; border-radius: 4px; text-transform: uppercase; display: inline-block; margin-bottom: 10px; }
+
+        .layout { display: grid; grid-template-columns: 1fr; gap: 20px; width: 100%; }
+        @media (min-width: 1200px) { .layout { grid-template-columns: 320px 1fr 320px; } }
+        
+        .panel-box { background: var(--bg-card); padding: 20px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); height: fit-content; margin-bottom: 20px; }
+        .panel-box h3 { margin-top: 0; font-size: 16px; font-weight: 800; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 14px; color: var(--bg-abyssal); text-transform: uppercase; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+        .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; font-size: 13px; outline: none; transition: var(--transition); }
+        .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15); }
+        .submit-btn { background-color: #F7CA00; color: #111; border: 1px solid #F0B800; padding: 10px; cursor: pointer; border-radius: var(--radius-sm); font-size: 13px; width: 100%; font-weight: 700; transition: var(--transition); box-shadow: 0 2px 5px rgba(213,217,213,0.5); }
+        .submit-btn:hover { background-color: #F5B800; }
+        .submit-btn:disabled { opacity: .75; cursor: not-allowed; }
+        .listing-alert { margin:0 0 14px; padding:11px 13px; border-radius:8px; background:#FFF7ED; border:1px solid #FED7AA; color:#9A3412; font-size:12px; font-weight:700; }
+        .media-choice { border:1px solid var(--border-color); border-radius:8px; padding:10px; background:#FAFAFA; }
+        .media-status { font-size:11px; margin-top:6px; color:var(--text-muted); }
+        .media-preview-wrap { position:relative; margin-top:8px; }
+        .media-preview { display:none; width:100%; max-height:150px; object-fit:contain; background:#000; border-radius:6px; }
+        .stock-badge { display:inline-flex; align-items:center; width:max-content; max-width:100%; margin:0 0 7px; padding:4px 8px; border-radius:999px; font-size:10px; font-weight:900; }
+        .stock-good { background:#ECFDF5; color:#047857; border:1px solid #A7F3D0; }
+        .stock-low { background:#FFF7ED; color:#C2410C; border:1px solid #FED7AA; }
+        .stock-sold { background:#FEF2F2; color:#B91C1C; border:1px solid #FECACA; }
+        .cart-qty-control { display:flex; align-items:center; gap:6px; margin-top:6px; }
+        .cart-qty-control button { width:28px; height:28px; border:1px solid var(--border-color); background:#fff; border-radius:6px; font-weight:900; cursor:pointer; }
+        .cart-qty-control input { width:42px; height:28px; text-align:center; border:1px solid var(--border-color); border-radius:6px; font-weight:800; }
+        .cart-stock-note { display:block; margin-top:3px; font-size:10px; color:var(--text-muted); }
+        .bizhub-contact-footer { margin-top: 30px; background: var(--bg-abyssal); color:#fff; border-top:1px solid rgba(255,255,255,.08); }
+        .contact-footer-inner { max-width:1440px; margin:0 auto; padding:28px 30px; display:flex; justify-content:space-between; align-items:center; gap:30px; }
+        .contact-logo { font-size:24px; font-weight:900; letter-spacing:-.5px; }
+        .contact-logo span { color:var(--accent); }
+        .contact-brand p { margin:5px 0 0; color:#94A3B8; font-size:11px; }
+        .contact-links { display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end; }
+        .contact-links a { display:flex; align-items:center; gap:7px; padding:10px 13px; background:#172235; border:1px solid rgba(255,255,255,.09); border-radius:7px; color:#fff; text-decoration:none; font-size:12px; font-weight:700; transition:var(--transition); }
+        .contact-links a:hover { border-color:var(--accent); transform:translateY(-1px); }
+        .contact-links a span { color:#94A3B8; font-size:10px; text-transform:uppercase; }
+        .contact-links a b { color:#fff; }
+        .contact-footer-bottom { border-top:1px solid rgba(255,255,255,.07); padding:12px 20px; text-align:center; color:#64748B; font-size:10px; }
+        @media(max-width:767px){ .marketplace-hero{height:245px;border-radius:0 0 var(--radius-sm) var(--radius-sm)} .marketplace-hero-content{padding:32px 20px}.marketplace-hero-content h1{font-size:25px}.marketplace-hero-content p{font-size:12px}.contact-footer-inner{padding:22px 15px;display:block}.contact-links{margin-top:16px;justify-content:stretch}.contact-links a{flex:1 1 100%;justify-content:flex-start} }
+
+        .media-cancel { display:none; margin-top:6px; width:100%; border:1px solid #FED7D7; background:#FFF5F5; color:#B91C1C; border-radius:6px; padding:6px 8px; font-size:11px; font-weight:700; cursor:pointer; }
+        .media-cancel-x { display:none; position:absolute; top:6px; right:6px; z-index:5; width:30px; height:30px; border:2px solid #fff; border-radius:999px; background:rgba(0,0,0,.72); color:#fff; font-size:18px; line-height:24px; font-weight:900; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.35); padding:0; }
+        .media-cancel-x:hover { background:rgba(185,28,28,.95); }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 15px; }
+        
+        /* ==========================================================================
+           👑 BIZHUB HIGH-PERFORMANCE UNBREAKABLE MULTI-VIEWPORT CAROUSEL LAYOUTS 
+           ========================================================================== */
+        /* 🖥️ LAPTOPS & DESKTOPS: Expands into balanced wide grid tiles */
+        @media (min-width: 768px) {
+            #masterCatalogGrid {
+                display: grid !important;
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+                gap: 20px !important;
+                width: 100% !important;
+            }
+        }
+
+        /* 📱 MOBILE PHONES: Activates clean Amazon-style horizontal touch swiping rows */
+        @media (max-width: 767px) {
+            #masterCatalogGrid {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                gap: 12px !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: none !important; /* Hides default ugly scrollbars */
+                width: 100% !important;
+                scroll-snap-type: x mandatory !important;
+                padding-bottom: 15px !important;
+            }
+            #masterCatalogGrid::-webkit-scrollbar {
+                display: none !important; /* Hides webkit scroll trackers */
+            }
+            /* Forces each product card container to lock into a uniform mobile size bounds */
+            #masterCatalogGrid .product-card-wrapper {
+                flex: 0 0 250px !important;
+                scroll-snap-align: start !important;
+                box-sizing: border-box !important;
+            }
+        }
+
+  
+            /* Fast Food Kitchens: Amazon-style swipeable row on phones */
+            .kitchen-swipe-grid {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                gap: 12px !important;
+                overflow-x: auto !important;
+                scroll-snap-type: x mandatory !important;
+                padding: 10px 4px 20px 4px !important;
+                -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: none !important;
+            }
+            .kitchen-swipe-grid::-webkit-scrollbar { display: none !important; }
+            .kitchen-swipe-grid article {
+                flex: 0 0 240px !important;
+                scroll-snap-align: start !important;
+                box-sizing: border-box !important;
+                margin: 0 !important;
+            }
+        
+
+
+   
+
+
+
+/* MOBILE BASKET NOTIFICATION */
+.basket-mobile-popup { display:none; }
+@media (max-width: 767px) {
+    .basket-mobile-popup {
+        position:fixed;
+        top:58px;
+        left:10px;
+        right:10px;
+        width:auto;
+        max-width:none;
+        box-sizing:border-box;
+        background:var(--bg-abyssal);
+        color:#fff;
+        padding:12px 14px;
+        border-radius:10px;
+        box-shadow:0 8px 25px rgba(0,0,0,.25);
+        z-index:99999;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        text-align:center;
+        gap:3px;
+        cursor:pointer;
+        touch-action:manipulation;
+        user-select:none;
+        animation:basketPopupIn .3s ease-out;
+    }
+    .basket-mobile-popup strong { font-size:15px; }
+    .basket-mobile-popup span { font-size:13px; color:#E2E8F0; }
+    @keyframes basketPopupIn {
+        from { opacity:0; transform:translateY(-15px); }
+        to { opacity:1; transform:translateY(0); }
+    }
+}
+
+/* MOBILE NAVIGATION: all account/session links remain inside the same header */
+@media (max-width: 767px) {
+    .navbar {
+        display:grid;
+        grid-template-columns:auto minmax(0,1fr);
+        align-items:center;
+        gap:8px;
+        width:100%;
+        min-width:0;
+        box-sizing:border-box;
+        padding:7px 9px;
+        overflow:visible;
+    }
+    .brand-logo { font-size:19px; letter-spacing:-.6px; white-space:nowrap; }
+    .nav-links {
+        display:grid;
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:4px;
+        width:100%;
+        min-width:0;
+        box-sizing:border-box;
+        font-size:10px;
+        align-items:stretch;
+        overflow:visible;
+    }
+    .nav-links span { display:none; }
+    .nav-links a {
+        min-width:0;
+        box-sizing:border-box;
+        padding:6px 4px;
+        border-radius:7px;
+        text-align:center;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+    }
+    .marketplace-hero { height:210px; }
+}
+
+    .card {
+        padding: 8px;
+    }
+
+    .card-media-wrapper {
+        height: 130px;
+    }
+
+    .card-title {
+        font-size: 13px;
+    }
+
+    .card-price {
+        font-size: 14px;
+    }
+
+    .card-text {
+        font-size: 11px;
+    }
+
+    .card-actions {
+        gap: 5px;
+    }
+    .card-actions .btn-action {
+        font-size: 10px;
+        padding: 7px 5px;
+    }
+
+        .card { background-color: var(--bg-card); border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color); display: flex; flex-direction: column; transition: var(--transition); padding: 12px; box-sizing: border-box; }
+                /* 🔴 AMAZON SPECIAL LIMITED-TIME LIGHTNING CARD THEME OVERRIDE */
+        .card.amazon-active-promo-deal {
+            border-top: 4px solid #d03e1a !important;
+            background-color: #FFFDFD !important;
+            box-shadow: 0 4px 12px rgba(204,12,57,0.06) !important;
+        }
+        
+        .card.amazon-active-promo-deal:hover {
+            border-color: #CC0C39 !important;
+        }
+
+        
+        .card-media-wrapper { width: 100%; height: 170px; background-color: #FFF; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 10px; }
+        .card-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: var(--transition); }
+        video.card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+        .loc-badge { position: absolute; bottom: 0; left: 0; background: #ECEFF1; color: #37474F; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 2px; }
+
+        .card-body { display: flex; flex-direction: column; flex-grow: 1; padding: 0; }
+        .card-brand-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .card-logo-circle { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); background: #F8FAFC; }
+        .card-brand { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        
+        .card-title { font-size: 14px; font-weight: 600; margin: 0 0 4px 0; color: #0F1111; height: 38px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.35; text-decoration: none; }
+        .card-title:hover { color: #C7511F; }
+        .card-price { color: #B12704; font-size: 21px; font-weight: 700; margin-bottom: 6px; }
+        .card-text { color: var(--text-muted); font-size: 12px; margin: 0 0 10px 0; height: 32px; overflow: hidden; display: -webkit-box;  -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.35; }
+        .card-metadata { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; border-top: 1px dashed var(--border-color); padding-top: 6px; }
+        
+        .card-actions { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+        .btn-action { text-align: center; text-decoration: none; padding: 8px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; width: 100%; box-sizing: border-box; display: block; border: 1px solid; cursor: pointer; transition: var(--transition); }
+        .btn-cart { background: #FFF; color: #0F1111; border-color: var(--border-color); box-shadow: 0 2px 5px rgba(213,217,213,0.3); }
+        .btn-cart:hover { background: #F7FAFA; }
+        .btn-momo { background: #FFA41C; color: #0F1111; border-color: #FF9900; }
+        .btn-momo:hover { background: #F59200; }
+        .btn-delete { background-color: #FFF5F5; color: var(--danger); border-color: #FED7D7; }
+
+        .cart-sidebar { background: var(--bg-card); padding: 20px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); height: fit-content; position: sticky; top: 85px; }
+        .cart-item-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px; }
+        .cart-total-row { display: flex; justify-content: space-between; font-weight: 800; font-size: 15px; color: #B12704; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border-color); }
+        .btn-whatsapp-checkout { background-color: var(--success); color: white; text-align: center; text-decoration: none; padding: 10px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 800; display: block; margin-top: 10px; text-transform: uppercase; border: none; }
+        .clear-cart-link { display: block; color: var(--text-muted); text-align: center; font-size: 12px; margin-top: 16px; text-decoration: none; font-weight: 600; transition: var(--transition); }
+        .clear-cart-link:hover { color: var(--danger); }
+                @keyframes pulseFire {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 4px #CC0C39); }
+            100% { transform: scale(1); }
+        }
+/* =========================================================
+   MOBILE HORIZONTAL NAVIGATION WITHOUT PAGE OVERFLOW
+   ========================================================= */
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+.bh-global-header {
+    position: sticky;
+    top: 0;
+    z-index: 10000;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.bh-topbar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.bh-subbar {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    gap: 14px !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto;
+    min-height: 42px;
+
+    padding: 0 12px !important;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    white-space: nowrap !important;
+
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+}
+
+.bh-subbar::-webkit-scrollbar {
+    display: none;
+}
+
+.bh-subbar > a {
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+
+    width: auto !important;
+    min-width: max-content !important;
+    max-width: none !important;
+
+    align-items: center;
+    justify-content: center;
+
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+
+    padding: 10px 3px !important;
+}
+
+/* Do not allow the spacer to create unwanted width */
+.bh-subbar .bh-grow {
+    display: none !important;
+}
+
+/* Prevent large header items from forcing the page wider */
+.bh-brand,
+.bh-action,
+.bh-search {
+    min-width: 0;
+    max-width: 100%;
+}
+
+@media (max-width: 767px) {
+    .bh-topbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 6px;
+        padding: 7px 8px;
+    }
+
+    .bh-brand {
+        overflow: hidden;
+        white-space: nowrap;
+        font-size: 19px;
+    }
+
+    .bh-action {
+        max-width: 120px;
+        overflow: hidden;
+    }
+
+    .bh-action strong {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .bh-search {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .bh-search input {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .bh-subbar {
+        gap: 13px !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+
+    .bh-subbar > a {
+        font-size: 12px !important;
+        padding: 10px 2px !important;
+    }
+}
+                
+            
+
+        /* 🛒 AMAZON-STYLE UNIFORM CARD SIZING - SAFE BIZHUB FLOW */
+        .grid, #masterCatalogGrid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+            gap: 12px !important;
+        }
+        @media(min-width: 768px){
+            .grid, #masterCatalogGrid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)) !important; }
+        }
+        @media(min-width: 1200px){
+            .grid, #masterCatalogGrid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important; }
+        }
+        .card, .product-card-wrapper, .promo-marketplace-card {
+            width: 100% !important;
+            min-height: 420px !important;
+            max-height: 460px !important;
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            background: #fff !important;
+            border: 1px solid #F0F2F2 !important;
+            border-radius: 8px !important;
+            overflow: hidden !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+            transition: all 0.2s ease !important;
+            position: relative !important;
+        }
+        .card:hover, .product-card-wrapper:hover {
+            box-shadow: 0 4px 14px rgba(0,0,0,0.14) !important;
+            transform: translateY(-2px) !important;
+            border-color: #E5E7EB !important;
+        }
+        .card-media-wrapper, .product-card-wrapper div[style*="height:160px"] {
+            height: 220px !important;
+            min-height: 220px !important;
+            max-height: 220px !important;
+            background: #fff !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-bottom: 1px solid #F3F4F6 !important;
+            position: relative !important;
+            overflow: hidden !important;
+            cursor: pointer !important;
+        }
+        .card-media-wrapper img, .product-card-wrapper img {
+            max-width: 100% !important;
+            max-height: 200px !important;
+            width: auto !important;
+            height: auto !important;
+            object-fit: contain !important;
+            padding: 8px !important;
+            transition: transform 0.25s ease !important;
+        }
+        .card:hover img, .product-card-wrapper:hover img { transform: scale(1.04) !important; }
+        .card-media-wrapper video, .product-card-wrapper video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            background: #000 !important;
+            cursor: pointer !important;
+        }
+        /* Clickable overlay hint */
+        .card-media-wrapper::after {
+            content: '🔍 Tap to expand' !important;
+            position: absolute !important;
+            bottom: 8px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: rgba(0,0,0,0.75) !important;
+            color: #fff !important;
+            font-size: 9px !important;
+            font-weight: 800 !important;
+            padding: 4px 10px !important;
+            border-radius: 12px !important;
+            opacity: 0 !important;
+            transition: opacity 0.2s !important;
+            pointer-events: none !important;
+            white-space: nowrap !important;
+        }
+        .card:hover .card-media-wrapper::after, .product-card-wrapper:hover .card-media-wrapper::after { opacity: 1 !important; }
+        @media(max-width: 768px){
+            .card-media-wrapper::after { opacity: 1 !important; font-size: 8px !important; }
+        }
+        /* Kitchen cards same size */
+        .kitchen-swipe-grid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+            gap: 14px !important;
+        }
+        .kitchen-swipe-grid > article, .kitchen-swipe-grid > div {
+            min-height: 200px !important;
+            height: 100% !important;
+        }
+        /* Ensure all bizhub flows stay visible - clamp title to 2 lines amazon style */
+        .card h4, .product-card-wrapper h4 {
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden !important;
+            min-height: 38px !important;
+            max-height: 38px !important;
+        }
+        /* Make entire card media clickable on phone */
+        .card-media-wrapper, .card-media-wrapper img, .card-media-wrapper video {
+            touch-action: manipulation !important;
+            -webkit-tap-highlight-color: rgba(254,189,105,0.3) !important;
+        }
+
 </style>
+    
+    <!-- PWA Installation Icon Anchors -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/bizhub-app-icon.svg') }}?v=3">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/icon-192.png') }}?v=3">
 </head>
-<body>
+    <body data-bizhub-logged-in="{{ '1' if session.get('username') else '0' }}">
 
-<!-- WELCOME MESSAGE 3.5 SECS -->
-<div id="bizhub-splash-screen">
-<div class="splash-logo">Biz<span>Hub</span></div>
-<div class="splash-sub">Your Local Market, Unified Online</div>
-<div class="splash-loader"></div>
-<div style="color:#666;font-size:11px;font-weight:700;margin-top:8px">Loading marketplace...</div>
-</div>
+    <div id="bizhub-splash-screen" aria-label="BizHub loading">
+        <div class="splash-brand">
+            <div class="splash-logo-wrap">
+                <!-- 🌀 FIXED: Extensions matched cleanly from .svg over to .png to eliminate the broken asset error -->
+                <img class="splash-logo-image" src="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}" alt="BizHub" style="border-radius: 14px;">
+            </div>
+            <div class="splash-title">Biz<span>Hub</span></div>
+            <p class="splash-motto">Your Local Market, Unified Online</p>
+            <div class="splash-rule" aria-hidden="true"></div>
+            <div class="splash-spinner" aria-hidden="true"></div>
+            <div class="splash-caption">Local commerce • One marketplace</div>
+        </div>
 
-<div class="bh-global-header">
-<div class="bh-topbar">
-<a class="bh-brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a>
-<div class="bh-location"><span>📍</span><div>
-{% if session.get('role') == 'Delivery Service' %}
-<small style="color:#FEBD69">Dispatching from</small><strong>{{ (service.operating_location if service is defined and service else '') or 'Ghana' }}</strong>
-{% elif session.get('role') in ['Vendor','Fast Food'] %}
-<small style="color:#10B981">Delivering from</small><strong>{{ user.business_location or 'Ghana' }}</strong>
-{% else %}
-<small style="color:#C7D0D9">Ordering from</small><strong>{{ (user.business_location if user is defined and user and user.business_location else 'Ghana') }}</strong>
-{% endif %}
-</div></div>
-<form method="GET" action="/" class="bh-search"><input type="text" name="company_search" value="{{ company_search or '' }}" placeholder="Search item, store or brand..."><button type="submit">🔍</button></form>
-<div style="color:#febd69;font-size:11px;font-weight:700;flex-shrink:0">👤 {{ session.get('username') or 'Guest' }}</div>
-</div>
+    </div>
 
-<nav class="bh-subbar">
-<a href="javascript:void(0)" onclick="toggleAmazonSidebarMenu(true); return false;" style="color:#febd69 !important">☰ All</a>
-<a href="{{ url_for('promo_marketplace') }}">Today's Deals</a>
-<a href="/top-brands" class="top20">🏆 Top 20 Brands</a>
-<a href="{{ url_for('cart_page') }}">🛒 Cart {% if cart_count and cart_count|int >0 %}<span style="background:#EF4444;color:#fff;font-size:10px;font-weight:900;padding:1px 6px;border-radius:10px">{{ cart_count }}</span>{% endif %}</a>
-<a href="{{ url_for('favorites') }}">Favorites</a>
-<a href="{{ url_for('features') }}">🎯 Features</a>
-<a href="{{ url_for('all_stores') }}">All Stores</a>
-<a href="{{ url_for('fast_food_stores') }}">Fast Food</a>
-<a href="/notifications">🔔 Biz Alerts {% if unread_notifications_count %}<span style="background:#F59E0B;color:#000;font-size:9px;font-weight:900;padding:1px 5px;border-radius:8px">{{ unread_notifications_count }}</span>{% endif %}</a>
-
-{% if session.get('username') %}
-<a href="{{ url_for('order_history') }}">Orders</a>
-<a href="{{ url_for('settings') }}">Your Account</a>
-
-{# ✅ CLEAN & SAFE - VENDORS ONLY #}
-{% if session.get('role') in ['Vendor','Fast Food'] %}
-<a href="{{ url_for('subscription') }}" style="color:#febd69">💳 Manage Accounts</a>
-<a href="{{ url_for('delivery_services') }}">🚚 Find Delivery</a>
+{% if request.args.get('cart_added') == '1' %}
+    <div id="basketMobilePopup" class="basket-mobile-popup" role="button" tabindex="0" aria-label="Item added to basket. Click to buy in Your cart.">
+        🛒 <strong>Item added to basket</strong>
+        <span>Click to buy in Your cart</span>
+    </div>
 {% endif %}
 
-{% if session.get('role') == 'Delivery Service' %}
-<a href="{{ url_for('delivery_dashboard') }}" style="color:#febd69">🔙 Back to Dashboard</a>
-{% endif %}
-
-{% if session.get('role') == 'Fast Food' %}
-<a href="{{ url_for('vendor_profile', username=session.get('username')) }}" style="color:#ea580c;font-weight:800">🍳 My Kitchen</a>
-{% elif session.get('role') == 'Vendor' %}
-<a href="{{ url_for('vendor_profile', username=session.get('username')) }}" style="color:#febd69;font-weight:800">🏪 My Store</a>
-{% endif %}
-
-{% endif %}
-</nav>
+<!-- 🛒 ADD TO CART CONFIRMATION POPUP (index page) -->
+<div id="indexCartPopupOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:99990; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,0.25); padding:28px 24px; max-width:360px; width:calc(100% - 32px); text-align:center; position:relative;">
+        <div style="font-size:44px; margin-bottom:10px;">🛒</div>
+        <h3 style="margin:0 0 6px; font-size:18px; font-weight:900; color:#111;">Added to Cart!</h3>
+        <p id="indexCartPopupItemName" style="margin:0 0 20px; color:#64748b; font-size:14px; font-weight:600;">Item added successfully.</p>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <a href="/cart" style="display:block; background:#0B192C; color:#fff; text-decoration:none; padding:12px; border-radius:8px; font-weight:800; font-size:14px; text-transform:uppercase; letter-spacing:0.3px;">🛍️ Go to Your Cart</a>
+            <button onclick="document.getElementById('indexCartPopupOverlay').style.display='none';" style="background:#F1F5F9; color:#334155; border:none; padding:12px; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer;">Continue Shopping</button>
+        </div>
+        <button onclick="document.getElementById('indexCartPopupOverlay').style.display='none';" style="position:absolute; top:12px; right:14px; background:none; border:none; font-size:20px; color:#94a3b8; cursor:pointer; line-height:1;">×</button>
+    </div>
 </div>
 
-<!-- AMAZON SIDEBAR -->
-<div id="amazonGlobalOverlay" style="position:fixed;inset:0;background:rgba(5,12,22,0.65);z-index:99999;display:none" onclick="toggleAmazonSidebarMenu(false)">
-<div id="amazonDrawer" style="width:340px;height:100%;background:#fff;position:absolute;top:0;left:-340px;display:flex;flex-direction:column;transition:left 0.25s ease;box-shadow:4px 0 24px rgba(0,0,0,0.3)" onclick="event.stopPropagation()">
-<div style="background:#0B192C;padding:18px 24px;display:flex;align-items:center;gap:12px;color:#fff;border-bottom:3px solid #F59E0B"><div style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-weight:bold">👤</div><b>Hello, {% if session.get('username') %}@{{ session['username'] }}{% else %}sign in{% endif %}</b></div>
-<div style="flex:1;overflow-y:auto;padding:20px 0">
-<div style="padding:0 24px 6px 24px;font-size:12px;font-weight:800;color:#64748B;text-transform:uppercase">Directories</div>
-<a href="/all-stores" style="display:flex;justify-content:space-between;align-items:center;padding:11px 24px;color:#1E293B;text-decoration:none;font-size:14px;font-weight:600"><span>Browse General Vendor Stores</span><span style="color:#F59E0B">➔</span></a>
-<a href="/fast-food" style="display:flex;justify-content:space-between;align-items:center;padding:11px 24px;color:#1E293B;text-decoration:none;font-size:14px;font-weight:600"><span>Browse Fast Food Kitchens</span><span style="color:#F59E0B">➔</span></a>
-<a href="/top-brands" style="display:flex;justify-content:space-between;align-items:center;padding:11px 24px;color:#1E293B;text-decoration:none;font-size:14px;font-weight:700;background:#FFFBEB"><span>🏆 Top 20 Brands Leaderboard</span><span style="color:#F59E0B">➔</span></a>
-<div style="padding:16px 24px 6px 24px;font-size:12px;font-weight:800;color:#64748B;text-transform:uppercase;margin-top:10px">Vendor Exclusive</div>
-{% if session.get('role') in ['Vendor','Fast Food'] %}
-<a href="{{ url_for('subscription') }}" style="display:block;padding:11px 24px;color:#b91c1c;text-decoration:none;font-size:14px;font-weight:700">💳 Manage Accounts (Vendors Only)</a>
-<a href="{{ url_for('delivery_services') }}" style="display:block;padding:11px 24px;color:#1E293B;text-decoration:none;font-size:14px;font-weight:600">🚚 Find Delivery (Vendors Only)</a>
-{% endif %}
-</div>
-</div>
-</div>
-<script>function toggleAmazonSidebarMenu(open){const o=document.getElementById('amazonGlobalOverlay');const d=document.getElementById('amazonDrawer');if(open){o.style.display='block';setTimeout(()=>{d.style.left='0'},10)}else{d.style.left='-340px';setTimeout(()=>{o.style.display='none'},280)}}</script>
 
-<div id="mediaModal" onclick="if(event.target===this) closeMediaModal()">
-<div class="media-modal-box">
-<button class="modal-close-x" onclick="closeMediaModal()">✕</button>
-<img id="modalImage" style="display:none" alt="media">
-<video id="modalVideo" style="display:none" controls playsinline></video>
+ {% if welcome_message %}
+    <div id="new-registrant-welcome" style="position:fixed; inset:0; z-index:99999; display:flex; align-items:center; justify-content:center; background:rgba(11,25,44,0.75); padding:16px;">
+        <div style="width:100%; max-width:400px; background:var(--bg-card); border:2px solid var(--accent); border-radius:16px; padding:28px 24px; text-align:center; box-shadow:0 12px 32px rgba(0,0,0,0.35);">
+            <div style="width:52px; height:52px; border-radius:50%; background:rgba(16,185,129,0.15); color:var(--success); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; font-size:26px; font-weight:bold;">✓</div>
+            <div style="font-size:20px; font-weight:900; color:var(--text-main); margin-bottom:8px;">Welcome to BizHub!</div>
+            <div style="font-size:13px; color:var(--text-muted); line-height:1.5;">Your account is ready. Welcome to your local marketplace.</div>
+        </div>
+    </div>
+    <script>
+        window.setTimeout(function(){
+            const welcome = document.getElementById('new-registrant-welcome');
+            if (welcome) { 
+                welcome.style.transition = 'opacity .35s ease, transform .35s ease'; 
+                welcome.style.opacity = '0'; 
+                welcome.style.transform = 'scale(0.95)';
+                window.setTimeout(() => welcome.remove(), 350); 
+            }
+        }, 3500);
+    </script>
+    {% endif %}  
+
+
+
+<style id="bizhub-global-header-styles">
+:root{--bh-navy:#131921;--bh-navy2:#232f3e;--bh-orange:#ff9900;--bh-yellow:#febd69}
+.bh-global-header{position:relative;z-index:10000;font-family:Arial,Helvetica,sans-serif;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.bh-topbar{min-height:64px;background:var(--bh-navy);display:flex;align-items:center;gap:10px;padding:8px 14px;box-sizing:border-box}
+.bh-brand{display:flex;align-items:center;gap:7px;text-decoration:none;color:#fff;font-weight:900;letter-spacing:-.5px;font-size:22px;line-height:1;white-space:nowrap;padding:8px 7px;border:1px solid transparent;border-radius:3px}.bh-brand:hover{border-color:#fff;color:#fff}.bh-brand-mark{font-size:23px}.bh-brand-sub{display:block;font-size:10px;letter-spacing:1.1px;color:#febd69;margin-top:3px;font-weight:700}
+.bh-location{min-width:108px;display:flex;align-items:center;gap:7px;padding:7px 8px;border:1px solid transparent;border-radius:3px;text-decoration:none;color:#fff}.bh-location:hover{border-color:#fff}.bh-location small{display:block;color:#c7d0d9;font-size:10px}.bh-location strong{display:block;font-size:13px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bh-search{display:flex;flex:1;min-width:150px;height:42px;border-radius:5px;overflow:hidden;background:#fff;box-shadow:0 0 0 2px transparent}.bh-search:focus-within{box-shadow:0 0 0 2px var(--bh-orange)}.bh-search input{border:0;outline:0;flex:1;padding:0 14px;font-size:15px;color:#111;min-width:0}.bh-search button{width:52px;border:0;background:var(--bh-yellow);color:#111;font-size:18px;cursor:pointer}.bh-search button:hover{background:#f3a847}
+.bh-action{display:flex;align-items:center;gap:5px;text-decoration:none;color:#fff;border:1px solid transparent;border-radius:3px;padding:7px 8px;min-height:42px;box-sizing:border-box}.bh-action:hover{border-color:#fff;color:#fff}.bh-action .small{display:block;font-size:10px;color:#e6e6e6;line-height:12px}.bh-action strong{display:block;font-size:13px;white-space:nowrap}.bh-action .icon{font-size:21px}.bh-badge{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;border-radius:10px;background:var(--bh-orange);color:#111;font-size:10px;font-weight:900;margin-left:-3px;margin-top:-14px}
+.bh-subbar{min-height:42px;background:var(--bh-navy2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap}.bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px}.bh-subbar a:hover{border-color:#fff;color:#fff}.bh-subbar .bh-grow{flex:1}.bh-role-pill{font-size:10px;color:#febd69;margin-left:3px;text-transform:uppercase}
+/* ==========================================================================
+   👑 BIZHUB SMARTPHONE CORE: UNBRKABLE FULL-FEATURE LAYOUT EXCLUSIVITY
+   ========================================================================== */
+.bh-global-header {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    background: #131921;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+
+.bh-topbar {
+    min-height: 64px;
+    background: #131921;
+    display: flex !important; /* Forces strict row alignment on mobile phone wraps */
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 14px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* 📍 PERMANENTLY UNLOCKS GEOLOCATION ROUTING DECK ON PHONE APP SCREENS */
+.bh-location {
+    display: flex !important; /* Overrides and wipes out any old phone-hiding rules */
+    align-items: center;
+    gap: 7px;
+    padding: 7px 8px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    text-decoration: none;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.bh-location small {
+    display: block;
+    color: #c7d0d9;
+    font-size: 10px;
+}
+
+.bh-location strong {
+    display: block;
+    font-size: 13px;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 🔍 SECURES UNIFORM MULTI-ROLE LINKS MATRIX VISIBILITY */
+.bh-action {
+    display: flex !important; /* Keeps every account button node live on screens */
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    color: #fff;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    min-height: 42px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+/* 👑 APP VIEWPORT ADJUSTMENT: Provides stable margin space to anchor the sticky frame */
+body {
+    padding-top: 110px !important;
+}
+
+/* Scroll layout safety guards */
+html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+@media(max-width:560px){.bh-topbar{gap:5px;padding:7px}.bh-brand{font-size:19px}.bh-brand-sub{display:none}.bh-action{padding:6px 5px}.bh-action .small{display:none}.bh-action strong{font-size:11px}.bh-action .icon{font-size:19px}.bh-subbar a{font-size:12px;padding:10px 9px}.bh-search{height:40px}}
+/* ── Promo card tiers ─────────────────────────────── */
+.promo-owner    { border:2px solid #10B981; }
+.promo-favorite { border:2px solid #F59E0B; }
+.promo-active   { border:2px solid #FECACA; }
+
+/* General Vendor promo cards — light red / white theme */
+.promo-marketplace-card {
+    background: #fff !important;
+    color: #1e1e1e !important;
+    border: 1.5px solid #FECACA !important;
+    box-shadow: 0 2px 10px rgba(185,28,28,0.08) !important;
+}
+.promo-marketplace-card .card-title,
+.promo-marketplace-card .card-text,
+.promo-marketplace-card .card-brand,
+.promo-marketplace-card .card-metadata { color: #1e1e1e !important; }
+.promo-marketplace-card .card-brand-wrapper a { color: #b91c1c !important; }
+.promo-marketplace-card .card-text { opacity: .85; }
+.promo-marketplace-card .card-price { color: #b91c1c !important; font-weight: 900; }
+.promo-marketplace-card .promo-old-price { text-decoration: line-through; color: #9CA3AF; }
+.promo-marketplace-card .promo-accent-badge {
+    background: #FEE2E2; color: #991B1B;
+    font-size: 10px; font-weight: 900;
+    padding: 3px 8px; border-radius: 999px;
+    display: inline-block;
+}
+/* card-media dark strip → white for general vendor promos */
+.promo-marketplace-card .card-media-wrapper { background: #f9fafb !important; }
+</style>
+<!-- ==========================================================================
+   👑 BIZHUB FULL-VELOCITY SECURE STICKY FLOATING NAVBAR LAYER
+   ========================================================================== -->
+<div class="bh-global-header" style="position: fixed; top: 0; left: 0; right: 0; z-index: 10000; background: #131921; box-shadow: 0 2px 12px rgba(0,0,0,0.18); width: 100%; max-width: 100%; box-sizing: border-box;">
+    
+    <!-- PRIMARY NAVIGATION DECK: KEEPING SEARCH INLINE ON ALL DEVICES -->
+    <div class="bh-topbar" style="min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 14px; box-sizing: border-box; width: 100%; max-width: 100%;">
+        
+        
+        <a class="bh-brand" href="{{ url_for('home') }}" style="display: flex; align-items: center; gap: 6px; text-decoration: none; color: #fff; font-weight: 900; font-size: 20px; white-space: nowrap; flex-shrink: 0;">
+            <span class="bh-brand-mark" style="color: #ff9900;">B</span>
+            <div style="line-height: 1;">
+                Biz<span style="color: #febd69;">Hub</span>
+                <span class="bh-brand-sub" style="display: block; font-size: 9px; color: #febd69; font-weight: 700; letter-spacing: 0.5px; margin-top: 2px;">MARKET</span>
+            </div>
+        </a>
+
+        <!-- 📍 LOCATION DISPLAY - Role-based: Ordering / Delivering / Dispatching - Visible on phones -->
+        <div class="bh-location" style="min-width:110px; display:flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid rgba(255,255,255,0.2); border-radius:4px; color:#fff; flex-shrink:0;">
+            <span style="font-size:16px;">📍</span>
+            <div style="line-height:1.1;">
+                {% if session.get('role') == 'Delivery Service' %}
+                    <small style="display:block; color:#FEBD69; font-size:9px; font-weight:800; text-transform:uppercase;">Dispatching from</small>
+                    <strong style="display:block; font-size:11px; font-weight:800; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ (service.operating_location if service is defined and service else '') or (user.business_location if user is defined and user else '') or 'Ghana' }}</strong>
+                {% elif session.get('role') in ['Vendor', 'Fast Food'] %}
+                    <small style="display:block; color:#10B981; font-size:9px; font-weight:800; text-transform:uppercase;">Delivering from</small>
+                    <strong style="display:block; font-size:11px; font-weight:800; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ (user.business_location if user is defined and user and user.business_location else 'Ghana') }}</strong>
+                {% else %}
+                    <small style="display:block; color:#C7D0D9; font-size:9px; font-weight:700; text-transform:uppercase;">Ordering from</small>
+                    <strong style="display:block; font-size:11px; font-weight:800; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ (user.business_location if user is defined and user and user.business_location else 'Ghana') }}</strong>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Center Predictive Autocomplete Inputs Form Box -->
+        <form method="GET" action="/" class="bh-search" style="display: flex; flex: 1; max-width: 600px; height: 40px; border-radius: 5px; overflow: hidden; background: #fff; margin: 0; position: relative;">
+            <input type="text" name="company_search" value="{{ company_search or '' }}" autocomplete="off" placeholder="Search item, store or brand..." style="border: 0; outline: 0; flex: 1; padding: 0 12px; font-size: 14px; color: #111;" oninput="if(typeof fetchBizHubSuggestions === 'function') fetchBizHubSuggestions(this.value)">
+            <button type="submit" style="width: 48px; border: 0; background: #febd69; color: #111; font-size: 16px; cursor: pointer;">🔍</button>
+        </form>
+
+        <!-- Right Side Direct Actions/Pills Map -->
+        <div style="display: flex; align-items: center; gap: 8px; color: white; flex-shrink: 0;">
+            {% if session.get('username') %}
+                <span style="font-size: 11px; font-weight: 700; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #febd69;">👤 {{ session['username'] }}</span>
+            {% else %}
+                <a href="{{ url_for('login') }}" style="color: white; text-decoration: none; font-size: 12px; font-weight: 700;">Sign In</a>
+            {% endif %}
+        </div>
+    </div>
+
+<!-- LOWER SUBBAR STRIPE: SWIPEABLE LINK MATRIX INCLUDING CART NODE -->
+    <nav class="bh-subbar" style="min-height: 42px; background: #232f3e; display: flex; align-items: center; gap: 2px; padding: 0 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; box-sizing: border-box; border-top: 1px solid rgba(255,255,255,0.05);">
+        <a href="javascript:void(0)" onclick="toggleAmazonSidebarMenu(true); return false;" style="color: #febd69 !important; text-decoration: none; font-size: 13px; font-weight: 700; cursor: pointer;">☰ All</a>
+        <a href="{{ url_for('promo_marketplace') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Today's Deals</a>
+        
+        <!-- 🛒 CART ROUTE WITH DYNAMIC NOTIFICATION ROUND COUNT PILLS -->
+        <a href="{{ url_for('cart_page') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+            🛒 Your Cart 
+            {% if cart_count and cart_count|int > 0 %}
+                <span style="background: #EF4444; color: white; font-size: 10px; font-weight: 900; padding: 1px 6px; border-radius: 10px; line-height: 1.2;">{{ cart_count }}</span>
+            {% endif %}
+        </a>
+
+        <a href="{{ url_for('favorites') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Favorites</a>
+        <a href="{{ url_for('features') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">🎯 Features</a>
+        <a href="{{ url_for('all_stores') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">All Stores</a>
+        <a href="/top-brands" style="color: #FFD814; text-decoration: none; font-size: 13px; font-weight: 900; border:1px solid #FFD814; border-radius:4px; padding:6px 10px;">🏆 Top 20 Brands</a>
+        <a href="{{ url_for('fast_food_stores') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Fast Food</a>
+        <!-- 🚨 FIND AND REPLACE YOUR OLD 'Biz Alerts' LINK WITH THIS BLOCK: -->
+        <a href="/notifications" class="bell-wrapper">
+    <!-- Update line 741 in templates/index.html to look like this: -->
+<span id="notification-bell" class="{% if (unread_notifications_count | default(0)) > 0 %}bell-shake-active{% endif %}">🔔</span>
+    Biz Alerts
+</a>
+
+        <!-- 1, 2, 3: VENDOR AND ROLE-SPECIFIC DYNAMIC HEADER NAVIGATORS -->
+        {% if session.get('username') %}
+            <a href="{{ url_for('order_history') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Orders</a>
+            <a href="{{ url_for('settings') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Your Account</a>
+
+            <!-- 2. Manage Accounts navigator for Vendors only -->
+            {% if session.get('role') in ['Vendor', 'Fast Food'] %}
+                <a href="{{ url_for('subscription') }}" style="color: #febd69; text-decoration: none; font-size: 13px; font-weight: 700;">💳 Manage Accounts</a>
+                <!-- 3. Find Delivery navigator for Vendors only -->
+                <a href="{{ url_for('delivery_services') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">🚚 Find Delivery</a>
+            {% endif %}
+
+            <!-- 3. Back to Dashboard navigator for Delivery Service only -->
+            {% if session.get('role') == 'Delivery Service' %}
+                <a href="{{ url_for('delivery_dashboard') }}" style="color: #febd69; text-decoration: none; font-size: 13px; font-weight: 700;">🔙 Back to Dashboard</a>
+            {% endif %}
+
+            <!-- 1. My Store / My Kitchen header link (hidden from Delivery Services & Customers) -->
+            {% if session.get('role') == 'Fast Food' %}
+                <a href="{{ url_for('vendor_profile', username=session.get('username')) }}" style="color: #ea580c; text-decoration: none; font-size: 13px; font-weight: 800;">🍳 My Kitchen</a>
+            {% elif session.get('role') == 'Vendor' %}
+                <a href="{{ url_for('vendor_profile', username=session.get('username')) }}" style="color: #febd69; text-decoration: none; font-size: 13px; font-weight: 800;">🏪 My Store</a>
+            {% endif %}
+        {% endif %}
+    </nav>
 </div>
+
+<!-- 👑 STABLE SPACING OVERLAYS: Prevents feed text items from breaking behind the sticky panel -->
+<style>
+    body { padding-top: 106px !important; }
+    .bh-subbar::-webkit-scrollbar { display: none !important; }
+
+        
+        /* 📍 Location visible on phones - Ordering from / Dispatching from */
+        .bh-location { display:flex !important; }
+        @media(max-width:768px){
+            .bh-location { display:flex !important; min-width:90px !important; padding:5px 8px !important; }
+            .bh-location small { font-size:8px !important; }
+            .bh-location strong { font-size:10px !important; max-width:85px !important; }
+            .bh-topbar { gap:6px !important; }
+        }
+
+        /* ===== AMAZON EXACT CARD SIZE ===== */
+        .master-catalog-grid, #masterCatalogGrid, #marketplacePromosGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        .card, .product-card-wrapper {
+            background: #fff !important;
+            border: 1px solid #F0F2F2 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 1px 2px rgba(15,17,17,0.15) !important;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .card-media-wrapper {
+            background: #fff !important;
+            height: 185px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #F0F2F2 !important;
+        }
+        .card-media-wrapper img {
+            max-width: 100% !important;
+            max-height: 100% !important;
+            object-fit: contain !important;
+            padding: 8px;
+        }
+        .card-title {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-size: 13px !important;
+            font-weight: 400 !important;
+            color: #0F1111 !important;
+            line-height: 1.25 !important;
+            min-height: 32px;
+        }
+        .card-price {
+            font-size: 17px !important;
+            font-weight: 700 !important;
+            color: #0F1111 !important;
+        }
+        .bizhub-add-to-cart-btn {
+            background: #FFD814 !important;
+            color: #0F1111 !important;
+            border: 1px solid #FCD200 !important;
+            border-radius: 8px !important;
+            font-size: 12px !important;
+            box-shadow: 0 2px 5px rgba(213,217,217,0.5) !important;
+        }
+        @media (max-width: 768px) {
+            .container { padding: 0 8px !important; }
+            .master-catalog-grid, #masterCatalogGrid, #marketplacePromosGrid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
+            }
+            .card-media-wrapper {
+                height: 145px !important;
+            }
+            .card-title { font-size: 12px !important; min-height: 30px; }
+            .card-price { font-size: 15px !important; }
+        }
+        @media (min-width: 1024px) {
+            .master-catalog-grid, #masterCatalogGrid {
+                grid-template-columns: repeat(4, 1fr) !important;
+            }
+        }
+
+</style>
+
+
+
+
+<!-- 👑 BIZHUB CORE THEME REPLICA SLIDING SIDEBAR DESK OVERLAY -->
+<div id="amazonGlobalOverlay" style="position: fixed; inset: 0; background: rgba(5,12,22,0.65); z-index: 999999; display: none;" onclick="toggleAmazonSidebarMenu(false);">
+    <div style="width: 340px; height: 100%; background: #FFFFFF; position: absolute; top: 0; left: -340px; display: flex; flex-direction: column; transition: left 0.25s ease-in-out; box-shadow: 4px 0 24px rgba(0,0,0,0.3);" onclick="event.stopPropagation();">
+        
+        <!-- Header Profile Banner Module inside Brand Colors -->
+        <div style="background: #0B192C; padding: 18px 24px; display: flex; align-items: center; gap: 12px; color: #FFFFFF; border-bottom: 3px solid #F59E0B;">
+            <div style="width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">👤</div>
+            <b style="font-size: 16px; letter-spacing: -0.2px; color: #FFFFFF;">Hello, {% if session.get('username') %}@{{ session['username'] }}{% else %}sign in{% endif %}</b>
+        </div>
+        
+        <!-- Scrollable Link Sub-Groups Matrix -->
+        <div style="flex: 1; overflow-y: auto; padding: 20px 0; font-family: -apple-system, sans-serif;">
+            <div style="padding: 0 24px 6px 24px; font-size: 12px; font-weight: 800; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px;">Directories</div>
+            <a href="/all-stores" style="display: flex; justify-content: space-between; align-items: center; padding: 11px 24px; color: #1E293B; text-decoration: none; font-size: 14px; font-weight: 600;"><span>Browse General Vendor Stores</span> <span style="color:#F59E0B;">➔</span></a>
+            <a href="/fast-food" style="display: flex; justify-content: space-between; align-items: center; padding: 11px 24px; color: #1E293B; text-decoration: none; font-size: 14px; font-weight: 600;"><span>Browse Fast Food Kitchens</span> <span style="color:#F59E0B;">➔</span></a>
+            
+            <div style="margin: 15px 0; border-top: 1px solid #E2E8F0;"></div>
+            
+            <!-- SYNCHRONIZED CLASSIFICATION MATRIX DEPARTMENTS -->
+            <div style="padding: 0 24px 6px 24px; font-size: 12px; font-weight: 800; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px;">Shop By Department</div>
+            <a href="/all-stores?category=Phones+%26+Accessories" style="display:flex; justify-content:space-between; padding:11px 24px; color:#1E293B; text-decoration:none; font-size:14px; font-weight:600;"><span>Phones & Smart Accessories</span> <span style="color:#CBD5E1;">➔</span></a>
+            <a href="/all-stores?category=Groceries" style="display:flex; justify-content:space-between; padding:11px 24px; color:#1E293B; text-decoration:none; font-size:14px; font-weight:600;"><span>Supermarket Groceries</span> <span style="color:#CBD5E1;">➔</span></a>
+            <a href="/all-stores?category=Clothing" style="display:flex; justify-content:space-between; padding:11px 24px; color:#1E293B; text-decoration:none; font-size:14px; font-weight:600;"><span>Clothing & Footwear Fashion</span> <span style="color:#CBD5E1;">➔</span></a>
+            <a href="/all-stores?category=Books" style="display:flex; justify-content:space-between; padding:11px 24px; color:#1E293B; text-decoration:none; font-size:14px; font-weight:600;"><span>Books & Stationery</span> <span style="color:#CBD5E1;">➔</span></a>
+            <a href="/all-stores?category=Health+%26+Beauty" style="display:flex; justify-content:space-between; padding:11px 24px; color:#1E293B; text-decoration:none; font-size:14px; font-weight:600;"><span>Health, Beauty & Cosmetics</span> <span style="color:#CBD5E1;">➔</span></a>
+            <a href="/all-stores?category=Home+%26+Kitchen" style="display:flex; justify-content:space-between; padding:11px 24px; color:#1E293B; text-decoration:none; font-size:14px; font-weight:600;"><span>Home Appliances & Kitchenware</span> <span style="color:#CBD5E1;">➔</span></a>
+            <a href="/all-stores?category=Electronics" style="display:flex; justify-content:space-between; padding:11px 24px; color:#1E293B; text-decoration:none; font-size:14px; font-weight:600;"><span>Consumer Electronics & Tech</span> <span style="color:#CBD5E1;">➔</span></a>
+            <a href="/all-stores?category=Furniture" style="display:flex; justify-content:space-between; padding:11px 24px; color:#1E293B; text-decoration:none; font-size:14px; font-weight:600;"><span>Furniture & Home Decor</span> <span style="color:#CBD5E1;">➔</span></a>
+        </div>
+    </div>
 </div>
+
+       
+
 <script>
-function openMediaModal(src, type){
-  const modal=document.getElementById('mediaModal');
-  const img=document.getElementById('modalImage');
-  const vid=document.getElementById('modalVideo');
-  img.style.display='none'; vid.style.display='none';
-  vid.pause(); vid.removeAttribute('src'); img.removeAttribute('src');
-  if(type==='video'){vid.src=src; vid.style.display='block'; vid.load(); vid.play().catch(()=>{});}else{img.src=src; img.style.display='block';}
-  modal.classList.add('active'); modal.style.display='flex';
-  document.body.style.overflow='hidden'; document.body.style.position='fixed'; document.body.style.width='100%';
-}
-function closeMediaModal(){
-  const modal=document.getElementById('mediaModal');
-  const vid=document.getElementById('modalVideo');
-  const img=document.getElementById('modalImage');
-  vid.pause(); vid.removeAttribute('src'); img.removeAttribute('src');
-  modal.classList.remove('active'); modal.style.display='none';
-  document.body.style.overflow=''; document.body.style.position=''; document.body.style.width='';
-}
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeMediaModal(); });
-window.addEventListener('DOMContentLoaded', function(){
-  // 3.5 SECS WELCOME MESSAGE
-  setTimeout(function(){
-    const s=document.getElementById('bizhub-splash-screen');
-    if(s){s.style.opacity='0'; s.style.visibility='hidden'; setTimeout(()=>{s.remove()},500);}
-  },3500);
-  // Autoplay listing videos
-  const vids=document.querySelectorAll('video[data-autoplay-listing]');
-  if(!('IntersectionObserver' in window)){vids.forEach(v=>{v.muted=true; v.play().catch(()=>{});}); return;}
-  const obs=new IntersectionObserver(entries=>{entries.forEach(en=>{const v=en.target; if(en.isIntersecting){v.muted=true; v.play().catch(()=>{});} else{v.pause();}});},{threshold:0.35});
-  vids.forEach(v=>obs.observe(v));
-});
+    function toggleAmazonSidebarMenu(open) {
+        const overlay = document.getElementById('amazonGlobalOverlay');
+        const drawer = overlay.querySelector('div');
+        if (open) {
+            overlay.style.display = 'block';
+            setTimeout(() => { drawer.style.left = '0'; }, 10);
+        } else {
+            drawer.style.left = '-365px';
+            setTimeout(() => { overlay.style.display = 'none'; }, 280);
+        }
+    }
 </script>
 
-<div style="max-width:1280px;margin:0 auto;padding:16px">
-<div style="display:grid;grid-template-columns:1fr 320px;gap:16px">
+</header>
 
-<div>
-{% if marketplace_promos %}
-<section style="margin-bottom:20px">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h3 style="margin:0;font-size:14px;font-weight:900">🔥 Live Promos • Listing autoplay • Promo ad button only</h3><a href="/promo/marketplace" style="font-size:11px;font-weight:900;background:#FEF3C7;border:1px solid #FCD34D;padding:5px 9px;border-radius:8px;text-decoration:none;color:#92400E">View Today's Deals</a></div>
-<div class="grid">
-{% for promo in marketplace_promos %}
-<article class="card promo-marketplace-card">
-<div class="card-media-wrapper" onclick="{% if promo.product_video %}openMediaModal('{{ url_for('stream_video', filename=promo.product_video) }}','video'){% elif promo.product_image %}openMediaModal('{{ url_for('static', filename='uploads/' + promo.product_image) }}','image'){% endif %}">
-{% if promo.is_verified_brand %}<div style="position:absolute;top:4px;left:4px;z-index:5"><span class="verified-bizhub-badge">✅ Verified</span></div>{% endif %}
-{% if promo.product_video %}
-<video data-autoplay-listing autoplay muted playsinline loop preload="metadata" style="width:100%;height:100%;object-fit:cover"><source src="{{ url_for('stream_video', filename=promo.product_video) }}"></video>
-<div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,0.7);color:#fff;font-size:7px;font-weight:900;padding:2px 5px;border-radius:10px">▶️ Autoplay</div>
-{% elif promo.product_image %}
-<img src="{{ url_for('static', filename='uploads/' + promo.product_image) }}" style="max-width:100%;max-height:100%;object-fit:contain;padding:6px">
-{% else %}<div style="font-size:24px">🔥</div>{% endif %}
-</div>
-<div style="padding:7px 8px">
-<div style="font-size:10px;font-weight:800;color:#b91c1c">🏬 {{ (promo.company_name or promo.vendor_username)[:14] }}{% if promo.is_verified_brand %} <span class="verified-bizhub-badge">✅ Store</span>{% endif %}</div>
-<div style="font-size:11px;font-weight:700;margin:2px 0;height:28px;overflow:hidden">{{ promo.title[:34] }}</div>
-<div style="display:flex;gap:4px;align-items:center;margin-top:4px"><span style="font-size:10px;text-decoration:line-through;color:#999">GH₵{{ "%.2f"|format(promo.original_price) }}</span><span style="font-size:12px;font-weight:900;color:#B12704">GH₵{{ "%.2f"|format(promo.effective_price) }}</span></div>
-{% if promo.video_file %}
-<div style="margin-top:6px;background:#FFF1F2;border:1px dashed #FECACA;border-radius:6px;padding:5px 7px;display:flex;align-items:center;justify-content:space-between">
-<div><div style="font-size:8px;font-weight:800;color:#991B1B">🎬 30-SEC PROMO AD</div><div style="font-size:7px;color:#999">Not autoplay</div></div>
-<a href="javascript:void(0)" onclick="openMediaModal('{{ url_for('stream_video', filename=promo.video_file) }}','video')" style="font-size:8px;font-weight:800;background:#CC0C39;color:#fff;padding:4px 8px;border-radius:20px;text-decoration:none">🎬 View promo ad</a>
-</div>
+
+    <div class="search-hero">
+    
+    <div class="container">
+            <!-- 👑 BIZHUB PREMIUM LIVE PREDICTIVE AUTOCOMPLETE HINTS SEARCH SYSTEM -->
+            <form method="POST" action="/" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+               
+                <!-- 🔮 LIVE DYNAMIC FLOATING POPUP HINTS OVERLAY DRAWER -->
+                <div id="searchSuggestionsDropdown" style="position: absolute; top: 100%; left: 0; right: 0; background: #FFFFFF; border: 1px solid #D5D9D9; border-radius: 8px; margin-top: 5px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); display: none; z-index: 99999; max-height: 320px; overflow-y: auto; box-sizing: border-box;"></div>
+            </form>
+
+            <script>
+                function fetchBizHubSuggestions(val) {
+                    const dropdown = document.getElementById('searchSuggestionsDropdown');
+                    if (!val || val.trim().length < 2) {
+                        dropdown.style.display = 'none';
+                        return;
+                    }
+                    
+                    fetch(`/api/search-suggestions?q=${encodeURIComponent(val)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (!data.suggestions || data.suggestions.length === 0) {
+                                dropdown.style.display = 'none';
+                                return;
+                            }
+                            
+                            let htmlContent = '';
+                            data.suggestions.forEach(item => {
+                                const badgeText = item.is_kitchen ? '🍳 Kitchen' : '🏪 Shop';
+                                const badgeColor = item.is_kitchen ? '#06C167' : '#CC0C39';
+                                
+                                htmlContent += `
+                                    <div style="padding: 12px 16px; border-bottom: 1px solid #F3F4F6; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: background 0.2s; color: #111;" 
+                                         onclick="window.location.href='/vendor/${item.username}';">
+                                        <div>
+                                            <b style="font-size: 14px; display: block; color: #0F172A;">${item.label}</b>
+                                            <span style="font-size: 11px; color: #64748B;">📍 ${item.location}</span>
+                                        </div>
+                                        <span style="background: ${badgeColor}; color: white; font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">${badgeText}</span>
+                                    </div>
+                                `;
+                            });
+                            
+                            dropdown.innerHTML = htmlContent;
+                            dropdown.style.display = 'block';
+                        })
+                        .catch(() => { dropdown.style.display = 'none'; });
+                }
+
+                // Close hints popup container instantly if user clicks outside of bounds
+                document.addEventListener('click', function(e) {
+                    const dropdown = document.getElementById('searchSuggestionsDropdown');
+                    if (dropdown && !document.getElementById('liveSearchField').contains(e.target)) {
+                        dropdown.style.display = 'none';
+                    }
+                });
+            </script>
+   
+
+        </div>
+    </div>
+
+    <!-- BIZHUB LOCAL MARKET SHOWCASE HERO -->
+    <div class="marketplace-hero">
+        <div class="marketplace-hero-content">
+            <span class="marketplace-hero-tag">🇬🇭 Shop Local on BizHub</span>
+            <h1>Your <span>Local Market</span>, Unified Online</h1>
+            <p>Discover products, food and trusted local stores across Ghana — all in one simple marketplace.</p>
+        </div>
+    </div>
+    {% if session.get('role') == 'Fast Food' %}
+    <!-- 🍳 Fast Food vendor: show "Open Your Kitchen" CTA instead of kitchens list -->
+    <section id="fastFoodOwnerCTA" style="margin:18px auto 20px; max-width:1180px; padding:24px; background:linear-gradient(135deg,#fff7ed,#fffbeb); border:1px solid #fed7aa; border-radius:12px; text-align:center;">
+        <div style="font-size:48px; margin-bottom:10px;">🍳</div>
+        <h2 style="margin:0 0 8px; color:#9a3412; font-size:22px; font-weight:900;">Open Your Kitchen</h2>
+        <p style="margin:0 0 18px; color:#9a3412; font-size:14px;">Manage your menu, publish new dishes, and see live orders from your kitchen dashboard.</p>
+        {% if session.get('username') %}
+        <a href="/vendor/{{ session['username'] }}" class="btn-action" style="display:inline-block; background:#ea580c; color:#fff; text-decoration:none; padding:12px 32px; font-size:15px; font-weight:800; border-radius:8px;">🍳 Open Your Kitchen</a>
+        {% endif %}
+    </section>
+    {% elif fast_food_vendors %}
+    <!-- Customers / other roles: show full kitchens listing -->
+    <section id="fastFoodKitchens" style="margin:18px auto 20px; max-width:1180px; padding:18px; background:linear-gradient(135deg,#fff7ed,#fffbeb); border:1px solid #fed7aa; border-radius:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+            <div><h2 style="margin:0;color:#9a3412;font-size:20px;font-weight:900;">🍔 Fast Food Kitchens</h2><p style="margin:4px 0 0;color:#9a3412;font-size:12px;">Restaurant-style kitchens — open a kitchen to browse its menu.</p></div>
+        </div>
+        <div class="kitchen-swipe-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;">
+        {% for kitchen in fast_food_vendors %}
+            <article style="background:#fff;border:1px solid #fed7aa;border-radius:12px;padding:14px;">
+                {% if kitchen.company_logo %}<img src="{{ url_for('static', filename='uploads/' + kitchen.company_logo) }}" alt="{{ kitchen.business_label }}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;margin-bottom:8px;">{% endif %}
+                <div style="font-weight:900;color:#7c2d12;">{{ kitchen.business_label }}</div>
+                <div style="font-size:11px;color:#9a3412;margin-top:3px;">@{{ kitchen.username }}{% if kitchen.business_location %} · 📍 {{ kitchen.business_location }}{% endif %}</div>
+                <div style="font-size:11px;color:#9a3412;margin-top:4px;">{{ kitchen.menu_count }} menu item{% if kitchen.menu_count != 1 %}s{% endif %}</div>
+                <a href="/vendor/{{ kitchen.username }}" class="btn-action" style="display:block;text-align:center;margin-top:10px;background:#ea580c;color:#fff;text-decoration:none;">🍔 Order Your Food Now — Buy from {{ kitchen.business_label }}</a>
+            </article>
+        {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+
+
+    <!-- 👑 CINEMATIC ADVERTISING BILLBOARD MATRIX GRID -->
+
+{% if session.get('role') in ['Vendor', 'Fast Food'] %}
+    <div class="amazon-billboard">
+        <div class="billboard-text-layer">
+            {% if vendor_subscription and vendor_subscription.trial and vendor_subscription.expires_iso %}
+                <span class="billboard-promo-tag">🎁 Premium Trial Active</span>
+                <h1>⏳ Your Free Premium Trial Is Running</h1>
+                <p>Enjoy unlimited listings, showcase videos, priority marketplace placement, and your full Premium Store experience while your launch trial is active.</p>
+                <div id="trialCountdown" data-expires="{{ vendor_subscription.expires_iso }}" style="display:inline-flex; align-items:center; gap:8px; padding:9px 14px; background:rgba(255,255,255,0.12); border:1px solid rgba(245,158,11,0.55); border-radius:8px; color:white; font-size:15px; font-weight:900; letter-spacing:.3px;">
+                    ⏱️ <span id="trialCountdownValue">Calculating...</span>
+                </div>
+            {% elif vendor_subscription and vendor_subscription.name == 'Premium Store' %}
+                <span class="billboard-promo-tag">💎 Premium Store Active</span>
+                <h1>Your Premium Store Is Active</h1>
+                <p>Your account is currently on a paid Premium Store subscription. Use Manage Account to review your plan and renewal details.</p>
+            {% else %}
+                <span class="billboard-promo-tag">⚡ Trial Ended</span>
+                <h1>Your Free Premium Trial Has Ended</h1>
+                <p>Upgrade to Premium Store to restore unlimited listings, showcase videos, priority placement, and the full merchant experience.</p>
+            {% endif %}
+        </div>
+    </div>
 {% endif %}
-</div>
-</article>
-{% endfor %}
-</div>
-</section>
-{% endif %}
 
-<h3 style="margin:0 0 10px 0;font-size:14px;font-weight:900"> Marketplace • General Vendors • Listing videos autoplay</h3>
-<div class="grid">
-{% for product in products if not product.is_kitchen %}
-<div class="card">
-<div class="card-media-wrapper" onclick="{% if product.video_file %}openMediaModal('{{ url_for('stream_video', filename=product.video_file) }}','video'){% elif product.image_file %}openMediaModal('{{ url_for('static', filename='uploads/' + product.image_file) }}','image'){% endif %}">
-{% if product.is_verified_brand %}<div style="position:absolute;top:4px;left:4px;z-index:5"><span class="verified-bizhub-badge">✅ Verified Store</span></div>{% endif %}
-{% if product.video_file %}
-<video data-autoplay-listing autoplay muted playsinline loop preload="metadata" style="width:100%;height:100%;object-fit:cover"><source src="{{ url_for('stream_video', filename=product.video_file) }}"></video>
-<div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,0.7);color:#fff;font-size:7px;padding:2px 5px;border-radius:10px">▶️ Autoplay • Tap</div>
-{% elif product.image_file %}
-<img src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}">
-{% else %}<div>📦</div>{% endif %}
-</div>
-<div style="padding:7px 8px">
-<div style="font-size:9px;font-weight:700;color:#b91c1c"> {{ (product.business_label or product.seller)[:14] }}</div>
-<div style="font-size:11px;font-weight:700;margin:2px 0;height:28px;overflow:hidden">{{ product.title[:34] }}</div>
-<div style="font-size:12px;font-weight:900;color:#0F1111">GH₵{{ "%.2f"|format(product.price) }}</div>
-{% if product.status == 'Sold' or (product.stock_quantity|int <=0 and not product.is_kitchen) %}
-<div style="margin-top:6px;background:#fee2e2;color:#dc2626;padding:4px 6px;border-radius:6px;font-size:10px;font-weight:800;text-align:center">⛔ Sold Out</div>
-{% else %}
-<form method="POST" action="{{ url_for('add_to_cart', product_id=product.id) }}" style="margin-top:6px;display:flex;gap:4px;align-items:center">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-<input type="number" name="quantity" value="1" min="1" max="{% if product.is_kitchen %}999{% else %}{{ product.stock_quantity }}{% endif %}" style="width:54px;padding:6px 6px;border:1px solid #e5e7eb;border-radius:6px;text-align:center;font-weight:800;font-size:12px">
-<button type="submit" style="flex:1;background:#FFD814;border:1px solid #FCD200;color:#111;padding:6px 8px;border-radius:6px;font-size:11px;font-weight:900;cursor:pointer">🛒 Add</button>
-</form>
-{% endif %}
-</div>
-</div>
-{% endfor %}
-</div>
+    <div class="container">
+        <div class="layout">
 
-<h3 style="margin:20px 0 10px 0;font-size:14px;font-weight:900"> Fast Food Kitchens • Listing videos autoplay</h3>
-<div class="grid">
-{% for product in products if product.is_kitchen %}
-<div class="card" style="border:1.5px solid #06C167">
-<div class="card-media-wrapper" style="background:#111" onclick="{% if product.video_file %}openMediaModal('{{ url_for('stream_video', filename=product.video_file) }}','video'){% elif product.image_file %}openMediaModal('{{ url_for('static', filename='uploads/' + product.image_file) }}','image'){% endif %}">
-{% if product.is_verified_brand %}<div style="position:absolute;top:4px;left:4px;z-index:5"><span class="verified-bizhub-badge kitchen">✅ Kitchen Brand</span></div>{% endif %}
-{% if product.video_file %}
-<video data-autoplay-listing autoplay muted playsinline loop preload="metadata" style="width:100%;height:100%;object-fit:cover"><source src="{{ url_for('stream_video', filename=product.video_file) }}"></video>
-<div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,0.7);color:#fff;font-size:7px;padding:2px 5px;border-radius:10px">▶️ Autoplay Meal</div>
-{% elif product.image_file %}
-<img src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}">
-{% else %}<div style="color:#06C167">🍔</div>{% endif %}
-</div>
-<div style="padding:7px 8px">
-<div style="font-size:9px;font-weight:700;color:#06C167"> {{ (product.business_label or product.seller)[:14] }}{% if product.is_verified_brand %} <span class="verified-bizhub-badge kitchen">✅ Verified</span>{% endif %}</div>
-<div style="font-size:11px;font-weight:700;margin:2px 0;height:28px;overflow:hidden">{{ product.title[:34] }}</div>
-<div style="font-size:12px;font-weight:900;color:#0F1111">GH₵{{ "%.2f"|format(product.price) }}</div>
-<div style="margin-top:2px"><span style="font-size:8px;background:#ecfdf5;color:#065f46;padding:2px 6px;border-radius:20px;border:1px solid #a7f3d0;font-weight:800">♾️ Static Menu • Buyer enters qty</span></div>
-<form method="POST" action="{{ url_for('add_to_cart', product_id=product.id) }}" style="margin-top:6px;display:flex;gap:4px;align-items:center">
-<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-<input type="number" name="quantity" value="1" min="1" max="{% if product.is_kitchen %}999{% else %}{{ product.stock_quantity }}{% endif %}" style="width:54px;padding:6px 6px;border:1px solid #bbf7d0;border-radius:20px;text-align:center;font-weight:900;font-size:12px;background:#f0fdf4">
-<button type="submit" style="flex:1;background:#000;color:#fff;border:none;padding:6px 8px;border-radius:20px;font-size:11px;font-weight:900;cursor:pointer">🛒 Add</button>
-</form>
-</div>
-</div>
-{% endfor %}
-</div>
+           
+                             <!-- PANEL 1: SIDEBAR CONTAINER (CLEANED FOR VENDOR EXCLUSIVITY) -->
+            <div>
+                <!-- Form console removed here. Product publishing lives inside Vendor Profiles. -->
+            </div>
+ 
+                      
+                                   
 
-</div>
+    <!-- 👑 BROWSE BIZHUB TOP 20 BRANDS - QUARTERLY LEADERBOARD - AMAZON AUTO-FLASH CAROUSEL -->
+    <style>
+        .bizhub-top20-section {
+            background: white;
+            border: 1px solid #EAEDED;
+            border-radius: 12px;
+            padding: 18px 0 14px 0;
+            margin-bottom: 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+        .bizhub-top20-header {
+            display:flex; align-items:center; justify-content:space-between; gap:12px;
+            padding: 0 20px 14px 20px;
+            border-bottom: 1px solid #F0F2F2;
+            margin-bottom: 14px;
+        }
+        .bizhub-top20-title {
+            font-size:18px; font-weight:900; letter-spacing:-0.4px; color:#0F1111; margin:0;
+            display:flex; align-items:center; gap:8px;
+        }
+        .bizhub-top20-title span.trophy { font-size:20px; }
+        .bizhub-top20-subtitle { font-size:11px; color:#565959; font-weight:600; margin-top:2px; }
+        .bizhub-top20-badge {
+            background:#FEF3C7; border:1px solid #FCD34D; color:#92400E;
+            font-size:10px; font-weight:900; padding:5px 10px; border-radius:20px;
+            text-transform:uppercase; letter-spacing:0.3px;
+        }
+        .top20-carousel-viewport {
+            overflow:hidden;
+            position:relative;
+            padding: 0 0 0 0;
+        }
+        .top20-track {
+            display:flex;
+            gap:12px;
+            padding: 0 20px;
+            overflow-x:auto;
+            scroll-behavior:smooth;
+            scrollbar-width:none;
+            -ms-overflow-style:none;
+            will-change: transform;
+        }
+        .top20-track::-webkit-scrollbar { display:none; }
+        .top20-brand-card {
+            min-width:150px;
+            max-width:150px;
+            background:#fff;
+            border:1px solid #F0F2F2;
+            border-radius:10px;
+            padding:12px 10px 10px 10px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            text-align:center;
+            flex-shrink:0;
+            transition: all 0.2s ease;
+            position:relative;
+        }
+        .top20-brand-card:hover {
+            border-color:#F59E0B;
+            box-shadow:0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .top20-brand-logo {
+            width:64px; height:64px; border-radius:50%; background:#F7F8F8; border:2px solid #F0F2F2;
+            display:grid; place-items:center; overflow:hidden; margin-bottom:8px;
+            font-weight:900; font-size:20px; color:#0F1111;
+        }
+        .top20-brand-logo img { width:100%; height:100%; object-fit:cover; }
+        .top20-rank {
+            position:absolute; top:6px; left:6px; background:#0F1111; color:white;
+            font-size:9px; font-weight:900; width:20px; height:20px; border-radius:50%;
+            display:grid; place-items:center;
+        }
+        .top20-rank.top1 { background: linear-gradient(135deg, #FFD700, #FFA500); color:#000; }
+        .top20-rank.top2 { background: linear-gradient(135deg, #C0C0C0, #A8A8A8); color:#000; }
+        .top20-rank.top3 { background: linear-gradient(135deg, #CD7F32, #A0522D); color:white; }
+        .top20-brand-name {
+            font-size:12px; font-weight:700; color:#0F1111; line-height:1.25;
+            display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+            min-height:30px; max-height:30px; margin-bottom:4px;
+        }
+        .top20-rating {
+            display:flex; align-items:center; gap:3px; font-size:10px; color:#067D62; font-weight:700;
+            background:#ECFDF5; border:1px solid #A7F3D0; padding:2px 6px; border-radius:10px; margin-bottom:6px;
+        }
+        .top20-open-btn {
+            width:100%; padding:6px 8px; border-radius:6px; font-size:11px; font-weight:800;
+            text-decoration:none; text-align:center; display:block; cursor:pointer; border:1px solid;
+            transition: all 0.15s;
+        }
+        .top20-open-btn.kitchen {
+            background:#000; color:white; border-color:#000;
+        }
+        .top20-open-btn.kitchen:hover { background:#1F1F1F; }
+        .top20-open-btn.store {
+            background:#FFD814; color:#0F1111; border-color:#FCD200;
+            box-shadow:0 2px 5px rgba(213,217,217,0.5);
+        }
+        .top20-open-btn.store:hover { background:#F7CA00; }
+        .top20-controls {
+            display:flex; gap:8px; align-items:center;
+        }
+        .top20-nav-btn {
+            width:32px; height:32px; border-radius:50%; background:white; border:1px solid #D5D9D9;
+            display:grid; place-items:center; cursor:pointer; font-size:14px; font-weight:900;
+            box-shadow:0 2px 5px rgba(15,17,17,0.15);
+        }
+        .top20-nav-btn:hover { background:#F0F2F2; }
+        /* Auto flash animation - Amazon style continuous scroll on hover pause */
+        @media (min-width: 768px) {
+            .top20-track.auto-scroll {
+                animation: autoFlashScroll 60s linear infinite;
+            }
+            .top20-track.auto-scroll:hover {
+                animation-play-state: paused;
+            }
+        }
+        @keyframes autoFlashScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        @media (max-width: 768px) {
+            .bizhub-top20-section { border-radius:0; margin-left:-8px; margin-right:-8px; border-left:none; border-right:none; }
+            .top20-brand-card { min-width:130px; max-width:130px; }
+            .top20-brand-logo { width:56px; height:56px; }
+            .bizhub-top20-header { padding: 0 12px 12px 12px; }
+            .top20-track { padding: 0 12px; gap:8px; }
+        }
+    </style>
 
-<div style="background:#fff;border:1px solid #EAEDED;border-radius:12px;padding:16px;position:sticky;top:116px">
-<h3 style="margin:0 0 12px 0;font-size:14px;font-weight:900">🛒 Basket</h3>
-<p style="font-size:11px;color:#64748B">Vendor nav only for vendors • Clean & safe • Welcome 3.5s • Listing autoplay • Promo ad button only • Original footer</p>
-{% if session.get('role') in ['Vendor','Fast Food'] %}
-<div style="margin-top:12px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px">
-<div style="font-size:11px;font-weight:900;color:#92400E"> Vendor Exclusive Panel</div>
-<div style="font-size:10px;color:#78350F;margin-top:4px">Manage Accounts & Find Delivery visible only to you (vendors)</div>
-<a href="{{ url_for('subscription') }}" style="display:block;margin-top:8px;background:#fff;border:1px solid #FDE68A;padding:8px;border-radius:6px;text-align:center;font-size:11px;font-weight:800;color:#92400E;text-decoration:none">💳 Manage Accounts</a>
-<a href="{{ url_for('delivery_services') }}" style="display:block;margin-top:6px;background:#fff;border:1px solid #E2E8F0;padding:8px;border-radius:6px;text-align:center;font-size:11px;font-weight:700;color:#1E293B;text-decoration:none">🚚 Find Delivery</a>
-</div>
-{% endif %}
-</div>
+    {% if top_20_brands %}
+    <section class="bizhub-top20-section">
+        <div class="bizhub-top20-header">
+            <div>
+                <h2 class="bizhub-top20-title"><span class="trophy">🏆</span> Browse BizHub Top 20 Brands</h2>
+                <div class="bizhub-top20-subtitle">Quarterly leaderboard • Based on customer ratings • Top rated stores & kitchens</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="bizhub-top20-badge">⭐ Quarterly Top 20</span>
+                <div class="top20-controls">
+                    <button class="top20-nav-btn" onclick="document.getElementById('top20Track').scrollBy({left:-300, behavior:'smooth'})">‹</button>
+                    <button class="top20-nav-btn" onclick="document.getElementById('top20Track').scrollBy({left:300, behavior:'smooth'})">›</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="top20-carousel-viewport">
+            <div class="top20-track" id="top20Track">
+                {% for brand in top_20_brands %}
+                <div class="top20-brand-card">
+                    <div class="top20-rank {% if loop.index == 1 %}top1{% elif loop.index == 2 %}top2{% elif loop.index == 3 %}top3{% endif %}">{{ loop.index }}</div>
+                    <div class="top20-brand-logo">
+                        {% if brand.company_logo %}
+                            <img src="{{ url_for('static', filename='uploads/' + brand.company_logo) }}" alt="{{ brand.business_label }}">
+                        {% else %}
+                            {{ brand.business_label[0]|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="top20-brand-name" title="{{ brand.business_label }}">{{ brand.business_label }}</div>
+                    <div class="top20-rating">⭐ {{ "%.1f"|format(brand.avg_rating) }} • {{ brand.rating_count }} ratings</div>
+                    <div style="font-size:10px; color:#565959; margin-bottom:6px;">📍 {{ brand.business_location or 'Ghana' }} • {{ brand.product_count }} items</div>
+                    {% if brand.role == 'Fast Food' %}
+                        <a href="{{ url_for('vendor_profile', username=brand.username) }}" class="top20-open-btn kitchen">🍳 Open Kitchen</a>
+                    {% else %}
+                        <a href="{{ url_for('vendor_profile', username=brand.username) }}" class="top20-open-btn store">🏬 Open Store</a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <!-- Duplicate for seamless auto-flash loop on desktop -->
+                {% for brand in top_20_brands %}
+                <div class="top20-brand-card" style="opacity:0.9;">
+                    <div class="top20-rank {% if loop.index == 1 %}top1{% elif loop.index == 2 %}top2{% elif loop.index == 3 %}top3{% endif %}">{{ loop.index }}</div>
+                    <div class="top20-brand-logo">
+                        {% if brand.company_logo %}
+                            <img src="{{ url_for('static', filename='uploads/' + brand.company_logo) }}" alt="{{ brand.business_label }}">
+                        {% else %}
+                            {{ brand.business_label[0]|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="top20-brand-name">{{ brand.business_label }}</div>
+                    <div class="top20-rating">⭐ {{ "%.1f"|format(brand.avg_rating) }} • {{ brand.rating_count }}</div>
+                    <div style="font-size:10px; color:#565959; margin-bottom:6px;">📍 {{ brand.business_location or 'Ghana' }}</div>
+                    {% if brand.role == 'Fast Food' %}
+                        <a href="{{ url_for('vendor_profile', username=brand.username) }}" class="top20-open-btn kitchen">🍳 Open Kitchen</a>
+                    {% else %}
+                        <a href="{{ url_for('vendor_profile', username=brand.username) }}" class="top20-open-btn store">🏬 Open Store</a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <script>
+        // Amazon-style auto flash scroll
+        (function(){
+            const track = document.getElementById('top20Track');
+            if (!track) return;
+            let isDown = false, startX, scrollLeft;
+            // Mouse drag to scroll
+            track.addEventListener('mousedown', (e)=>{ isDown=true; track.classList.add('active'); startX=e.pageX-track.offsetLeft; scrollLeft=track.scrollLeft; });
+            track.addEventListener('mouseleave', ()=>{ isDown=false; });
+            track.addEventListener('mouseup', ()=>{ isDown=false; });
+            track.addEventListener('mousemove', (e)=>{ if(!isDown) return; e.preventDefault(); const x=e.pageX-track.offsetLeft; const walk=(x-startX)*2; track.scrollLeft=scrollLeft-walk; });
+            
+            // Auto scroll every 3s like Amazon brand flash
+            let autoScrollInterval;
+            function startAutoScroll(){
+                if(window.innerWidth < 768) return; // No auto on mobile, manual swipe
+                autoScrollInterval = setInterval(()=>{
+                    if(track.matches(':hover')) return;
+                    track.scrollBy({left: 160, behavior:'smooth'});
+                    // Loop back to start when near end
+                    if(track.scrollLeft + track.clientWidth >= track.scrollWidth - 10){
+                        setTimeout(()=>{ track.scrollTo({left:0, behavior:'smooth'}); }, 800);
+                    }
+                }, 2500);
+            }
+            startAutoScroll();
+            track.addEventListener('mouseenter', ()=>{ clearInterval(autoScrollInterval); });
+            track.addEventListener('mouseleave', ()=>{ startAutoScroll(); });
+        })();
+        </script>
+    </section>
+    {% endif %}
+    <!-- END TOP 20 -->
 
-</div>
-</div>
+            <!-- PANEL 2: MAIN MARKETPLACE FEED -->
+            <div>
 
-<footer class="bizhub-contact-footer">
-<div class="contact-footer-inner">
-<div class="contact-brand"><div class="contact-logo">Biz<span>Hub</span></div><p>Your Local Market, Unified Online</p></div>
-<div class="contact-links">
-<a href="https://wa.me/233558272972" target="_blank">💬 <span>WhatsApp</span><b>0558272972</b></a>
-<a href="mailto:contactBizHub@proton.me">✉️ <span>Email</span><b>contactBizHub@proton.me</b></a>
-<a href="tel:+233540901856">📞 <span>Phone</span><b>0540901856</b></a>
-</div>
-</div>
-<div class="contact-footer-bottom">© 2026 BizHub Marketplace · Marketplace · A Product Of The TOZOTS Company· <a href="/rules" style="color:#E2E8F0;text-decoration:none;">Rules &amp; Regulations</a></div>
-</footer>
+                {% if marketplace_promos %}
+                <section style="margin-bottom:28px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+                        <div><h3 style="margin:0;font-size:20px;color:var(--bg-abyssal);font-weight:900;">{% if session.get('role') == 'Vendor' %}🔥 Your Promo on Marketplace{% else %}🔥 Live Promotions{% endif %}</h3><p style="margin:5px 0 0;color:#64748B;font-size:12px;">Active promotional offers from BizHub vendors.</p></div>
+                        <a href="{{ url_for('promo_marketplace') }}" style="font-size:12px;font-weight:900;color:#B45309;text-decoration:none;background:#FEF3C7;border:1px solid #FCD34D;padding:7px 10px;border-radius:8px;">View Today's Deals</a>
+                    </div>
+                    <div class="grid" id="marketplacePromosGrid">
+                    {% for promo in marketplace_promos %}
+                    <article class="card promo-marketplace-card{% if promo.is_owner %} promo-owner{% elif promo.is_favorite %} promo-favorite{% else %} promo-active{% endif %}">
+                        <div class="card-media-wrapper" style="display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:170px;">
+                            {% if promo.product_video %}<video class="card-img" controls autoplay muted playsinline loop preload="auto"><source src="{{ url_for('stream_video', filename=promo.product_video) }}"></video>
+                            {% elif promo.product_image and promo.product_image != 'fast-food-placeholder.svg' %}<img class="card-img" src="{{ url_for('static', filename=(promo.product_image if promo.product_image.startswith('uploads/') else 'uploads/' + promo.product_image)) }}" alt="{{ promo.product_title }}">
+                            {% elif promo.image_file %}<img class="card-img" src="{{ url_for('static', filename=(promo.image_file if promo.image_file.startswith('uploads/') else 'uploads/' + promo.image_file)) }}" alt="{{ promo.title }}">
+                            {% else %}<div style="font-size:42px;color:#b91c1c;">🔥</div>{% endif %}
+                        </div>
+                        <div class="card-body">
+                            {% if promo.is_owner %}
+                              <span class="promo-accent-badge" style="background:#DCFCE7;color:#166534;">YOUR PROMO</span>
+                            {% elif promo.is_favorite %}
+                              <span class="promo-accent-badge" style="background:#FEF3C7;color:#92400E;">⭐ FAVORITED VENDOR</span>
+                            {% else %}
+                              <span class="promo-accent-badge">🔥 ACTIVE PROMO</span>
+                            {% endif %}
+                            <div class="card-brand-wrapper" style="margin-top:6px;"><a href="{{ url_for('vendor_profile', username=promo.vendor_username) }}" class="card-brand" style="text-decoration:none;color:#b91c1c;">🏬 {{ promo.company_name or promo.vendor_username }}</a></div>
+                            <h4 class="card-title" style="color:#111;margin:6px 0 4px;">{{ promo.title }}</h4>
+                            {% if promo.product_title %}
+                              <div style="font-size:12px;font-weight:800;color:#475569;margin-bottom:5px;">Item: {{ promo.product_title }}</div>
+                            {% endif %}
+                            {% if promo.description %}
+                              <p class="card-text" style="color:#374151;">{{ promo.description }}</p>
+                            {% elif promo.product_description %}
+                              <p class="card-text" style="color:#374151;">{{ promo.product_description }}</p>
+                            {% endif %}
+                            <div class="promo-price-stack" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex-wrap:wrap;margin-top:8px;">
+                                <span class="promo-old-price">GH₵ {{ "%.2f"|format(promo.original_price) }}</span>
+                                <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:900;color:#b91c1c;text-transform:uppercase;"><span style="font-size:20px;line-height:1;">🔥</span> Promo price</span>
+                                <span class="card-price">GH₵ {{ "%.2f"|format(promo.effective_price) }}</span>
+                                {% if promo.discount_percent %}<span style="font-size:10px;font-weight:900;color:#991B1B;background:#FEE2E2;padding:4px 7px;border-radius:999px;">{{ "%.0f"|format(promo.discount_percent) }}% OFF</span>{% endif %}
+                            </div>
+                            <div style="font-size:11px;color:#64748B;margin-top:8px;">📍 {{ promo.business_location or promo.product_location or 'Location not provided' }} · ⏰ Ends {{ promo.ends_at }}</div>
+                            {% if promo.video_file %}
+                              <div style="margin-top:10px;font-size:10px;font-weight:800;color:#b91c1c;">🎬 Promo Ad Video</div>
+                              <video controls autoplay muted playsinline loop preload="auto" style="width:100%;max-height:160px;border-radius:10px;margin-top:5px;background:#f3f4f6;">
+                                <source src="{{ url_for('stream_video', filename=promo.video_file) }}">
+                              </video>
+                            {% endif %}
+                        </div>
+                    </article>
+                    {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+
+                {% if your_marketplace_products and session.get('role') not in ['Vendor', 'Fast Food'] %}
+                <div style="margin-bottom:26px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
+                        <h3 style="margin:0; font-size:18px; color:var(--bg-abyssal); font-weight:800;">{% if session.get('role') == 'Vendor' %}🛍️ Your Listings on Marketplace{% else %}🛍️ Your Listings{% endif %}</h3>
+                        <span style="font-size:12px;font-weight:800;color:#475569;background:#F1F5F9;border:1px solid #CBD5E1;padding:7px 10px;border-radius:8px;">{{ your_marketplace_products|length }} published</span>
+                    </div>
+                                
+                                <!-- 👑 FIXED AMAZON SLIDER DECK CANVAS CONSOLE -->
+                <div class="grid master-catalog-grid" id="masterCatalogGrid" style="box-sizing: border-box;">
+
+
+
+
+                    {% for product in products %}
+                        <!-- 🚀 UPDATE THIS CARD LINE TO INCLUDE THE CONDITION MODIFIER -->
+                        <div class="card {% if product.active_promo_id %}amazon-active-promo-deal{% endif %}">
+                            <!-- 👑 DYNAMIC MULTI-MEDIA RENDERING ENGINE ENGINE FIXED -->
+                            <div class="card-media-wrapper" style="background-color: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; height: 170px;">
+
+
+
+                                {% if product.video_file %}
+                                    <video class="card-img" controls autoplay muted playsinline loop preload="metadata"><source src="{{ url_for('stream_video', filename=product.video_file) }}">Your browser does not support video playback.</video>
+                                {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' and product.image_file %}
+                                    <a href="{{ url_for('static', filename='uploads/' + product.image_file) }}" target="_blank" rel="noopener noreferrer" style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;text-decoration:none;"><img class="card-img" src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}"></a>
+                                {% else %}
+                                    <div style="color:#9CA3AF;font-size:12px;padding:20px;text-align:center;">Media unavailable</div>
+                                {% endif %}
+                                <span class="loc-badge">📍 {{ product.location }}</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="card-brand-wrapper">
+                                    {% if vendor_logos.get(product.seller) %}
+                                        <img class="card-logo-circle" src="{{ url_for('static', filename='uploads/' + vendor_logos[product.seller]) }}" alt="logo">
+                                    {% else %}
+                                        <div class="card-logo-circle" style="display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:bold;color:white;background:var(--primary-light);">BH</div>
+                                    {% endif %}
+                                    <a href="{{ url_for('vendor_profile', username=product.seller) }}" class="card-brand" style="text-decoration:none;">🏬 {{ product.business_label }}</a>
+                                </div>
+                                <span style="display:inline-block;width:max-content;margin:0 0 5px;padding:3px 7px;border-radius:999px;background:#DCFCE7;color:#166534;font-size:9px;font-weight:900;">YOUR LISTING</span>
+                                                                <h4 class="card-title">{{ product.title }}</h4>
+                                
+                                <!-- 👑 PLACED HIGHER-DENSITY DYNAMIC PROMO PRICING ENGINE -->
+                                {% if product.active_promo_id %}
+                                    <div style="font-size: 12px; color: #767676; text-decoration: line-through; font-weight: 600;">List Price: GH₵ {{ "%.2f"|format(product.promo_original_price) }}</div>
+                                    <!-- Dynamic promo price calculation -->
+                                    {% set savings = product.promo_original_price * (product.promo_discount_percent / 100) %}
+                                    {% set effective_promo_price = product.promo_original_price - savings %}
+                                    <div class="card-price" style="color: #B12704; margin-top: 2px; font-size: 21px; font-weight: 800;">GH₵ {{ "%.2f"|format(effective_promo_price) }} <span style="font-size:18px; display:inline-block; animation: pulseFire 1s infinite;">🔥</span></div>
+                                {% else %}
+                                    <div class="card-price">GH₵ {{ "%.2f"|format(product.price) }}</div>
+                                {% endif %}
+
+                                
+
+                                
+                                <p class="card-text">{{ product.description }}</p>
+                                <div class="card-metadata">Owner: @{{ product.seller }}</div>
+                                <div class="card-actions"><a href="{{ url_for('delete_item', product_id=product.id) }}" class="btn-action btn-delete">🗑️ Delete</a></div>
+                            </div>
+                        </div>
+                                            {% endfor %}
+                    </div>
+                </div>
+
+                {% endif %}
+
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
+                        
+                                    
+                
+                
+                                
+                    <h3 style="margin:0; font-size:18px; color:var(--bg-abyssal); font-weight:800;"> Live Marketplace Feed</h3>
+                                        <!-- 🚀 RE-ROUTED LIVE PROMO LINK: OPENS ALL STORES LOGS FOR CUSTOMERS & DISPATCHERS -->
+                    {% if session.get('role') in ['Customer', 'Delivery Service'] %}
+                        <a href="{{ url_for('all_stores') }}" style="font-size:12px;font-weight:800;color:#B45309;text-decoration:none;background:#FEF3C7;border:1px solid #FCD34D;padding:7px 10px;border-radius:8px;">🔥 Run all stores</a>
+                    {% endif %}
+ 
+                </div>
+                <div class="grid" id="masterCatalogGrid">
+                     <!-- 👑 BIZHUB HIGH-PERFORMANCE CHRONOLOGICAL TIERED PRODUCT CARD LOOP ENGINE -->
+                    {% for product in processed_items if not product.is_kitchen %}
+                        <div class="card product-card-wrapper" style="background:#FFF; border:1px solid var(--border-color); border-radius:12px; padding:16px; position:relative; display:flex; flex-direction:column; justify-content:space-between; box-sizing:border-box;">
+                            
+                            <!-- 👑 DYNAMIC CHRONOLOGICAL TIER BADGES INTAKE MODULE -->
+                            <div style="position:absolute; top:12px; left:12px; z-index:10; display:flex; flex-direction:column; gap:4px; max-width:calc(100% - 24px);">
+                                <span style="background: rgba(11,25,44,0.9); backdrop-filter:blur(4px); color: #FFF; font-size:10px; font-weight:800; padding:4px 8px; border-radius:4px; text-transform:uppercase; letter-spacing:0.3px; width:fit-content; box-shadow:0 2px(4px) rgba(0,0,0,0.1); white-space: nowrap;">
+                                    {{ product.display_badge }}
+                                </span>
+                                <span style="background:#F1F5F9; color:#475569; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; width:fit-content; border:1px solid #E2E8F0; white-space: nowrap;">📍 {{ product.business_location or 'Accra' }}</span>
+                            </div>
+
+                            <!-- DYNAMIC MULTI-MEDIA RENDERING CONTAINER -->
+                            <div style="width:100%; height:160px; display:flex; align-items:center; justify-content:center; background:#FFF; border-radius:8px; overflow:hidden; margin-top:32px; margin-bottom:12px; position:relative; border:1px solid rgba(0,0,0,0.04);">
+                                {% if product.video_file %}
+                                    <video style="width:100%; height:100%; object-fit:cover; background:#000;cursor:pointer" onclick="openMediaModal(this.querySelector('source').src,'video')" controls autoplay muted playsinline loop preload="metadata">
+                                        <source src="{{ url_for('stream_video', filename=product.video_file) }}">
+                                    </video>
+                                {% elif product.image_file and product.image_file != 'fast-food-placeholder.svg' and product.image_file %}
+                                    <a href="{{ url_for('static', filename='uploads/' + product.image_file) }}" target="_blank" rel="noopener noreferrer" style="display:flex; width:100%; height:100%; align-items:center; justify-content:center;">
+                                        <img src="{{ url_for('static', filename='uploads/' + product.image_file) }}" alt="{{ product.title }}" style="max-width:100%; max-height:100%; object-fit:contain;cursor:pointer" onclick="openMediaModal('{{ url_for('static', filename='uploads/' + product.image_file) }}','image')" loading="lazy">
+                                    </a>
+                                {% else %}
+                                    <div style="color:#9CA3AF; font-size:12px; padding:20px; text-align:center;">Media unavailable</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- CARD CORE INFORMATION CONTENTS -->
+                            <div style="flex-grow:1; display:flex; flex-direction:column;">
+                                <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                                    <a href="/vendor/{{ product.seller }}" style="text-decoration:none; font-size:12px; font-weight:700; color:var(--primary-light);">🏪 {{ product.business_label or product.seller }}</a>
+                                </div>
+                                
+                                <h4 style="font-size:15px; font-weight:700; margin:0 0 6px 0; color:var(--text-main); height:38px; overflow:hidden; line-height:1.25;" title="{{ product.title }}">{{ product.title }}</h4>
+                                
+                                <!-- DYNAMIC INTEGRATED PRICING ENGINE -->
+                                {% if product.is_promo %}
+                                    <div style="font-size:11px; color:#767676; text-decoration:line-through; font-weight:600;">List: GH₵ {{ "%.2f"|format(product.promo_original_price) }}</div>
+                                    <div style="font-size:18px; font-weight:800; color:#B12704; margin-bottom:8px;">GH₵ {{ "%.2f"|format(product.promo_effective_price) }} <span style="font-size:14px; animation: pulseFire 1s infinite; display:inline-block;">🔥</span></div>
+                                {% else %}
+                                    <div style="font-size:18px; font-weight:800; color:var(--text-main); margin-bottom:8px; margin-top:14px;">GH₵ {{ "%.2f"|format(product.price) }}</div>
+                                {% endif %}
+                                
+                                <p style="font-size:12px; color:var(--text-muted); margin:0 0(12px) 0; height:32px; overflow:hidden; line-height:1.35;">{{ product.description }}</p>
+                                
+                                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; border-top:1px dashed #E2E8F0; padding-top:6px; font-size:11px; font-weight:600; color:#64748B;">
+                                    <span>Owner: @{{ product.seller }}</span>
+                                    {% if product.is_kitchen %}
+                                        <span style="color:var(--success);">🍟 Hot Meal</span>
+                                    {% else %}
+                                        <span>📦 {{ product.stock_quantity }} items left</span>
+                                    {% endif %}
+                                </div>
+
+                                                               <!-- 👑 HARMONIZED INTERACTIVE ACTION CONTROLS -->
+                                <div style="margin-top:auto; display:flex; flex-direction:column; gap:6px;">
+                                    
+                                    {% set contact_name = product.business_label or product.seller %}
+                                    {% set inquiry_message = 'Hello ' ~ contact_name ~ ', I saw your listing for "' ~ product.title ~ '" on BizHub and I would love to make an inquiry about it!' %}
+                                    
+                                    <!-- 🔒 SECURITY BLOCK: Identifies asset ownership handles explicitly -->
+                                    {% if session.get('username') and session.get('username') == product.seller %}
+                                        <div style="background: #F8FAFC; border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box; width: 100%;">
+                                            <span style="font-size: 11px; color: var(--muted); font-weight: 700;">🏪 Your Asset Dashboard</span>
+                                            <a href="/delete-item/{{ product.id }}" style="color: var(--danger); font-size: 11px; font-weight: 800; text-decoration: underline;" onclick="return confirm('Confirm permanent deletion? This action cannot be reversed.');">🗑️ Delete</a>
+                                        </div>
+                                    {% elif session.get('role') in ['Vendor', 'Fast Food'] %}
+                                        <div style="background: #FFFBEB; border: 1px solid #FDE68A; padding: 8px; border-radius: 6px; text-align: center; font-size: 11px; font-weight: 800; color: #92400E; width: 100%; box-sizing: border-box;">🏪 Vendor View - Buyers see Add to Cart</div>
+                                    {% else %}
+                                        <div style="display: flex; gap: 6px; width: 100%;">
+                                            <a href="https://wa.me/{{ product.seller_whatsapp if product.seller_whatsapp else '233558272972' }}?text={{ inquiry_message|urlencode }}" class="btn-action" style="flex: 1; text-align: center; text-decoration: none; background: #FFF; color: #111; border: 1px solid #CBD5E1; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;" target="_blank" rel="noopener noreferrer">
+                                                💬 Inquire
+                                            </a>
+
+                                            {% if product.status == 'Sold' or product.stock_quantity|int <= 0 %}
+                                                <span class="btn-action" style="flex: 1; background: #E5E7EB; color: #6B7280; cursor: not-allowed; text-align: center; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e1;">🔴 Sold Out</span>
+                                            {% else %}
+                                                <button type="button"
+                                                    class="btn-action bizhub-add-to-cart-btn"
+                                                    data-product-id="{{ product.id }}"
+                                                    data-product-title="{{ product.title }}"
+                                                    style="flex: 1; background: #FFD814; color: #111; border: 1px solid #FCD200; padding: 8px 0; font-weight: 700; font-size: 12px; border-radius: 6px; cursor:pointer;">
+                                                    🛒 Add to Cart
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div> <!-- Closes .card-actions container element -->
+
+                            </div> <!-- Closes .card-body core information elements -->
+                        </div> <!-- Closes .card product-card-wrapper component -->
+                    {% endfor %}
+                    
+                    <!-- 👑 CORRECT FACTORIZED LOCATION OUTSIDE LOOP FOR FALLBACK NOTICE -->
+                    {% if not processed_items %}
+                        <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); background: white; border-radius: 8px; border: 1px dashed var(--border-color); font-weight: 600; width: 100%; box-sizing: border-box;">
+                            📭 No matching marketplace items found right now.
+                        </div>
+                    {% endif %}
+
+                </div> <!-- 🚀 SEALS MASTER GRID CONTAINER FOR HIGH-DENSITY LAPTOP RENDERS -->
+
+                                          
+                
+
+
+                </div>
+            </div>
+
+            <!-- PANEL 3: BASKET -->
+            <div id="basket" class="cart-sidebar">
+                <h3>🛒 Shopping Basket ({{ cart_count }})</h3>
+                {% if cart_items %}
+                                        <!-- 👑 STABILIZED SHOPPING BASKET DRAWER LOG ENGINE -->
+                    {% for item in cart_items %}
+                        <div class="cart-item-row" style="display:block; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                            <div style="display:flex; justify-content:space-between; gap:8px; align-items:flex-start; margin-bottom: 6px;">
+                                <span style="font-size: 14px; font-weight: 600; color: var(--text-main);">• {{ item.title }}</span>
+                                <b style="font-size: 14px; color: var(--text-main);">GH₵ {{ "%.2f"|format(item.cart_line_total) }}</b>
+                            </div>
+                            
+                            <!-- 👑 WORKING HOMEPAGE BASKET INCREMENT CONTROLLER -->
+                            <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 5px; margin-bottom: 10px;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <form method="POST" action="/update-cart/{{ item.id }}" style="margin:0; display:inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <input type="hidden" name="action_direction" value="decrease">
+                                        <input type="submit" value="−" style="padding: 4px 12px; font-weight: bold; background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 4px; cursor: pointer; color: #000; appearance: none; -webkit-appearance: none;">
+                                    </form>
+                                    
+                                    <span style="font-size: 14px; font-weight: 700; min-width: 24px; text-align: center; color: var(--text-main);">{{ item.cart_quantity }}</span>
+                                    
+                                    <form method="POST" action="/update-cart/{{ item.id }}" style="margin:0; display:inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <input type="hidden" name="action_direction" value="increase">
+                                        <input type="submit" value="+" style="padding: 4px 12px; font-weight: bold; background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 4px; cursor: pointer; color: #000; appearance: none; -webkit-appearance: none;">
+                                    </form>
+                                </div>
+                                <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">{{ item.stock_quantity }} available now</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <!-- 💰 TOTAL COST AND CHECKOUT MATRIX OUTSIDE THE ITEM LOOP -->
+                    <div class="cart-total-row" style="display: flex; justify-content: space-between; margin-top: 15px; font-weight: 800; font-size: 15px; border-top: 2px solid var(--border-color); padding-top: 10px;">
+                        <span style="color: var(--text-main);">Total Basket Cost:</span>
+                        <span style="color: #B12704;">GH₵ {{ "%.2f"|format(cart_total) }}</span>
+                    </div>
+                    
+                    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                        {% for order in seller_orders %}
+                            <a href="whatsapp://send?phone={{ order.number }}&text={{ order.whatsapp_text }}" class="btn-whatsapp-checkout" style="display: block; text-align: center; text-decoration: none; background: #06C167; color: white; padding: 10px; border-radius: 6px; font-weight: 700; font-size: 13px;">💬 Pay Vendor @{{ order.seller }}</a> 
+                        {% endfor %}
+                    </div>
+
+                    <a href="/clear-cart" class="clear-cart-link">Empty Basket</a>
+                {% else %}
+                    <p style="color:var(--text-muted); font-size:13px; text-align:center;">Basket is empty.</p>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- BIZHUB CONTACT FOOTER -->
+    <footer class="bizhub-contact-footer">
+        <div class="contact-footer-inner">
+            <div class="contact-brand">
+                <div class="contact-logo">Biz<span>Hub</span></div>
+                <p>Your Local Market, Unified Online</p>
+            </div>
+            <div class="contact-links">
+                <a href="https://wa.me/233558272972" target="_blank" rel="noopener" aria-label="Contact BizHub on WhatsApp">💬 <span>WhatsApp</span><b>0558272972</b></a>
+                <a href="mailto:contactBizHub@proton.me" aria-label="Email BizHub">✉️ <span>Email</span><b>contactBizHub@proton.me</b></a>
+                <a href="tel:+233540901856" aria-label="Call BizHub">📞 <span>Phone</span><b>0540901856</b></a>
+            </div>
+        </div>
+        <div class="contact-footer-bottom">      © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Subsidiary Of The TOZOTS 🇬🇭 Company· <a href="/rules" style="color:#E2E8F0;text-decoration:none;">Rules &amp; Regulations</a></div>
+    </footer>
+
+    <!-- JAVASCRIPT MASTER OPERATIONS CONTROL PACK -->
+    <script>
+        window.addEventListener("DOMContentLoaded", function() {
+            startTrialCountdown();
+
+            if ("serviceWorker" in navigator) {
+                navigator.serviceWorker.register("{{ url_for('service_worker') }}", { scope: "/" }).catch(function() {});
+            }
+
+            setupAutoplayVideos();
+
+            setTimeout(function() {
+                let s = document.getElementById("bizhub-splash-screen");
+                if(s) { s.style.opacity = "0"; s.style.visibility = "hidden"; }
+            }, 1700);
+        });
+
+
+
+
+        function setupAutoplayVideos() {
+            const videos = document.querySelectorAll("video.card-img, video[data-autoplay]");
+            videos.forEach(function(video) {
+                video.muted = true;
+                video.setAttribute("muted", "");
+                video.setAttribute("playsinline", "");
+                video.setAttribute("autoplay", "");
+                video.setAttribute("loop", "");
+            });
+            if (!('IntersectionObserver' in window)) { videos.forEach(v => v.play().catch(()=>{})); return; }
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    const v = entry.target;
+                    if (entry.isIntersecting) v.play().catch(()=>{});
+                    else v.pause();
+                });
+            }, {threshold:0.35});
+            videos.forEach(v => observer.observe(v));
+        }
+
+        function startTrialCountdown() {
+            const countdown = document.getElementById("trialCountdown");
+            const value = document.getElementById("trialCountdownValue");
+            if (!countdown || !value) return;
+
+            const expiry = new Date(countdown.dataset.expires);
+            if (Number.isNaN(expiry.getTime())) {
+                value.textContent = "Trial end date unavailable";
+                return;
+            }
+
+            function update() {
+                const remaining = expiry.getTime() - Date.now();
+                if (remaining <= 0) {
+                    value.textContent = "Trial expired";
+                    countdown.style.borderColor = "rgba(239,68,68,0.65)";
+                    return;
+                }
+
+                const totalSeconds = Math.floor(remaining / 1000);
+                const days = Math.floor(totalSeconds / 86400);
+                const hours = Math.floor((totalSeconds % 86400) / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+
+                value.textContent = `${days}d ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s remaining`;
+            }
+
+            update();
+            setInterval(update, 1000);
+        }
+
+        function filterCatalogCards() {
+            const field = document.getElementById("liveSearchField");
+            const input = (field ? field.value : "").toLowerCase().trim();
+            const cards = document.getElementsByClassName("card");
+
+            for (let i = 0; i < cards.length; i++) {
+                // Search all visible card information: item name, description, vendor/company and location.
+                const cardText = (cards[i].textContent || cards[i].innerText || "").toLowerCase();
+                cards[i].style.display = !input || cardText.indexOf(input) > -1 ? "" : "none";
+            }
+        }
+
+// Basket notification: clickable, touch-safe, keyboard-accessible and auto-dismisses after 3.5s.
+document.addEventListener("DOMContentLoaded", function() {
+    const basketPopup = document.getElementById("basketMobilePopup");
+    const basket = document.getElementById("basket");
+    if (!basketPopup) return;
+
+    // Toast now redirects straight to the Your cart page
+    const goToBasket = function() {
+        window.location.href = "/cart";
+    };
+    basketPopup.addEventListener("click", goToBasket);
+    basketPopup.addEventListener("touchend", function(event) {
+        event.preventDefault();
+        goToBasket();
+    }, { passive:false });
+    basketPopup.addEventListener("keydown", function(event) {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            goToBasket();
+        }
+    });
+    setTimeout(function() {
+        basketPopup.style.transition = "opacity .4s ease, transform .4s ease";
+        basketPopup.style.opacity = "0";
+        basketPopup.style.transform = "translateY(-8px)";
+        setTimeout(function(){ basketPopup.remove(); }, 400);
+    }, 3500);
+});
+
+    </script>
+    <!-- BizHub phone/web push registration: no manual VAPID/Firebase setup required. -->
+    <script>
+        function setupBizHubPhoneNotifications() {
+            if (!window.BIZHUB_LOGGED_IN) return;
+            if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
+
+            fetch('{{ url_for("vapid_public_key") }}')
+                .then(function (response) { return response.ok ? response.json() : null; })
+                .then(function (keys) {
+                    if (!keys || !keys.public_key) return null;
+                    return navigator.serviceWorker.ready.then(function (registration) {
+                        return registration.pushManager.getSubscription().then(function (subscription) {
+                            if (subscription) return subscription;
+                            if (Notification.permission === 'denied') return null;
+
+                            var permissionPromise = Notification.permission === 'granted'
+                                ? Promise.resolve('granted')
+                                : Notification.requestPermission();
+
+                            return permissionPromise.then(function (permission) {
+                                if (permission !== 'granted') return null;
+                                var padding = '='.repeat((4 - keys.public_key.length % 4) % 4);
+                                var base64 = keys.public_key.replace(/-/g, '+').replace(/_/g, '/') + padding;
+                                var raw = atob(base64);
+                                var applicationServerKey = Uint8Array.from(raw, function (character) {
+                                    return character.charCodeAt(0);
+                                });
+                                return registration.pushManager.subscribe({
+                                    userVisibleOnly: true,
+                                    applicationServerKey: applicationServerKey
+                                });
+                            });
+                        });
+                    });
+                })
+                .then(function (subscription) {
+                    if (!subscription) return null;
+                    return fetch('{{ url_for("subscribe_push") }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(subscription)
+                    });
+                })
+                .catch(function () {
+                    // Push notifications are optional; never break marketplace functionality.
+                });
+        }
+
+        window.BIZHUB_LOGGED_IN = document.body.getAttribute('data-bizhub-logged-in') === '1';
+
+        document.addEventListener('DOMContentLoaded', function () {
+            setupBizHubPhoneNotifications();
+
+            document.addEventListener('click', function () {
+                if (window.BIZHUB_LOGGED_IN && 'Notification' in window && Notification.permission === 'default') {
+                    setupBizHubPhoneNotifications();
+                }
+            }, { once: true });
+        });
+    document.addEventListener('DOMContentLoaded', function () {
+        setupBizHubPhoneNotifications();
+        document.addEventListener('click', function () {
+            if (window.BIZHUB_LOGGED_IN && 'Notification' in window && Notification.permission === 'default') {
+                setupBizHubPhoneNotifications();
+            }
+        }, { once: true });
+    });
+    </script>
+<script>
+function submitBasketQty(form){
+    const input=form.querySelector('input[name="quantity"]');
+    const max=parseInt(form.dataset.max||input.max||'0',10);
+    let qty=parseInt(input.value||'0',10);
+    if(Number.isNaN(qty)) qty=0;
+    qty=Math.max(0, qty);
+    if(max>0) qty=Math.min(qty,max);
+    input.value=qty;
+    form.submit();
+}
+function changeBasketQty(button, delta){
+    const form=button.closest('form');
+    const input=form.querySelector('input[name="quantity"]');
+    const max=parseInt(form.dataset.max||input.max||'0',10);
+    let qty=parseInt(input.value||'0',10);
+    if(Number.isNaN(qty)) qty=0;
+    qty+=delta;
+    qty=Math.max(0, qty);
+    if(max>0) qty=Math.min(qty,max);
+    input.value=qty;
+    submitBasketQty(form);
+}
+</script>
+<script>
+        // Real-time notification lifecycle dispatcher trigger
+        window.addEventListener("DOMContentLoaded", function(){
+            // Check if the server passed down a fresh 'cart_added' state parameter variable query string
+            const urlSearchParameters = new URLSearchParams(window.location.search);
+            if (urlSearchParameters.get('cart_added') === '1') {
+                const cartToastElement = document.getElementById('bizhubCartToast');
+                if (cartToastElement) {
+                    setTimeout(() => { cartToastElement.style.bottom = '24px'; }, 200);
+                    setTimeout(() => { cartToastElement.style.bottom = '-100px'; }, 4700);
+                }
+            }
+
+            // 🛒 Add to Cart buttons — show popup then POST to add_to_cart
+            document.querySelectorAll('.bizhub-add-to-cart-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var productId = btn.dataset.productId;
+                    var productTitle = btn.dataset.productTitle || 'Item';
+                    // Show popup immediately
+                    var overlay = document.getElementById('indexCartPopupOverlay');
+                    var nameEl = document.getElementById('indexCartPopupItemName');
+                    if (nameEl) nameEl.textContent = '"' + productTitle + '" has been added to your cart.';
+                    if (overlay) overlay.style.display = 'flex';
+                    // POST add-to-cart in background
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/add-to-cart/' + productId;
+                    form.style.display = 'none';
+                    var csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = 'csrf_token';
+                    csrfInput.value = document.querySelector('meta[name="csrf-token"]') ?
+                        document.querySelector('meta[name="csrf-token"]').content :
+                        (document.querySelector('input[name="csrf_token"]') ? document.querySelector('input[name="csrf_token"]').value : '');
+                    form.appendChild(csrfInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+            });
+
+            // Close popup on overlay background click
+            var overlay = document.getElementById('indexCartPopupOverlay');
+            if (overlay) {
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) overlay.style.display = 'none';
+                });
+            }
+        });
+</script>
+    <!-- 👑 BIZHUB HIGH-CONVERTING INTERACTIVE MOBILE TOAST POPUP NOTIFICATION -->
+    <div id="bizhubCartToast" style="position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 420px; background: var(--bg-abyssal); border: 2px solid var(--accent); padding: 14px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: space-between; gap: 12px; z-index: 99999; cursor: pointer; transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-sizing: border-box;" onclick="window.location.href='/cart';">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 20px; animation: pulseFire 1.2s infinite;">🛒</span>
+            <div>
+                <b style="color: #FFFFFF; font-size: 14px; display: block; letter-spacing: -0.2px;">Item added to basket</b>
+                <span style="color: var(--accent); font-size: 12px; font-weight: 700;">Click to buy in Your cart ➔</span>
+            </div>
+        </div>
+        <div style="color: #FFFFFF; opacity: 0.6; font-size: 18px; font-weight: bold; padding: 0 4px;" onclick="event.stopPropagation(); document.getElementById('bizhubCartToast').style.bottom = '-100px';">×</div>
+    </div>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const bellElement = document.getElementById("notification-bell");
+        
+        // Polling function that requests unread details asynchronously
+        function checkLiveNotifications() {
+            fetch("/api/unread-notifications-count")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.unread_count > 0) {
+                        // Unread notification found! Trigger dynamic shake rules
+                        if (!bellElement.classList.contains("bell-shake-active")) {
+                            bellElement.classList.add("bell-shake-active");
+                        }
+                    } else {
+                        // Total cleared or marked read, stop the movement
+                        bellElement.classList.remove("bell-shake-active");
+                    }
+                })
+                .catch(err => console.log("Notification link polling error safely caught:", err));
+        }
+
+        // Run checking loops every 5 seconds (5000 milliseconds)
+        if (bellElement) {
+            setInterval(checkLiveNotifications, 5000);
+        }
+    });
+</script>
 
 </body>
-</html>
+</html> 
