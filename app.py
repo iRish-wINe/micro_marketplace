@@ -1087,13 +1087,33 @@ def valid_reset_token(token):
 def save_company_logo(upload):
     if not upload or not upload.filename:
         return None
-    # 👑 FIXED INDEX CHANNELS: Grabs the extension string from the tuple safely
-    extension = os.path.splitext(upload.filename)[1].lower()
-    if extension not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
+    try:
+        extension = os.path.splitext(upload.filename)[1].lower()
+        if extension not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
+            return None
+        # Prevent OOM - size check
+        try:
+            upload.stream.seek(0, os.SEEK_END)
+            size = upload.stream.tell()
+            upload.stream.seek(0)
+            if size > 5 * 1024 * 1024:
+                return None
+        except Exception:
+            pass
+        filename = f"company-{uuid.uuid4().hex}{extension}"
+        dest = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        upload.save(dest)
+        try:
+            from PIL import Image
+            im = Image.open(dest)
+            im.thumbnail((400,400))
+            im.save(dest, optimize=True)
+        except Exception:
+            pass
+        return filename
+    except Exception:
+        logger.exception("Logo save failed")
         return None
-    filename = f"company-{uuid.uuid4().hex}{extension}"
-    upload.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-    return filename
 
 # ==========================================================================
 # 🍟 FAST FOOD RESTAURANT EXTENSION MODULES (SAFE SCHEMA INTEGRATION)
@@ -1789,13 +1809,20 @@ def add_to_cart(product_id):
 
 @app.route("/cart")
 def cart_page():
-    if "username" not in session:
-        return redirect(url_for("login"))
+    # 🛒 IMPULSE BUYER FIX: Allow guest cart, don't force login
+    user = None
+    is_guest = True
+    if session.get("username"):
+        user = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
+        if user:
+            is_guest = False
+        else:
+            session.clear()
 
-    user = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
-    if not user:
-        session.clear()
-        return redirect(url_for("login"))
+    # If guest, create a fake guest user object for template
+    if is_guest:
+        user = {"username": "Guest", "role": "Guest", "id": 0, "whatsapp_number": None, "company_name": "Guest"}
+    
 
     cart_items = []
     cart_total = 0.0
@@ -1861,22 +1888,26 @@ def cart_page():
         seller_order["whatsapp_text"] = quote(message)
 
 
-    history = query_db(
-        "SELECT id, product_id, title, seller, price, quantity_added, cart_quantity_after, added_at FROM cart_history WHERE user_id = ? ORDER BY id DESC LIMIT 200",
-        (user["id"],)
-    ) or []
+    history = []
+    if not is_guest and user.get("id"):
+        history = query_db(
+            "SELECT id, product_id, title, seller, price, quantity_added, cart_quantity_after, added_at FROM cart_history WHERE user_id = ? ORDER BY id DESC LIMIT 200",
+            (user["id"],)
+        ) or []
 
     vendor_notification_count = 0
     customer_notification_count = 0
-    if user["role"] in ["Vendor", "Fast Food"]:
-        row = query_db("SELECT COUNT(*) AS count FROM vendor_notifications WHERE vendor_id = ? AND is_read = 0", (user["id"],), one=True)
-        vendor_notification_count = row["count"] if row else 0
-    else:
-        row = query_db("SELECT COUNT(*) AS count FROM notifications WHERE recipient_id = ? AND is_read = 0", (user["id"],), one=True)
-        customer_notification_count = row["count"] if row else 0
+    if not is_guest and user.get("id"):
+        if user["role"] in ["Vendor", "Fast Food"]:
+            row = query_db("SELECT COUNT(*) AS count FROM vendor_notifications WHERE vendor_id = ? AND is_read = 0", (user["id"],), one=True)
+            vendor_notification_count = row["count"] if row else 0
+        else:
+            row = query_db("SELECT COUNT(*) AS count FROM notifications WHERE recipient_id = ? AND is_read = 0", (user["id"],), one=True)
+            customer_notification_count = row["count"] if row else 0
 
     return render_template(
         "cart.html",
+        is_guest=is_guest,
         user=user,
         cart_items=cart_items,
         cart_count=sum(int(item.get("cart_quantity", 0)) for item in cart_items),
@@ -1976,8 +2007,20 @@ def remove_coupon():
 
 @app.route("/place-order", methods=["POST"])
 def place_order():
+    # 🛒 IMPULSE BUYER: Allow guest order with phone number
+    is_guest_order = False
+    guest_phone = request.form.get("guest_whatsapp", "").strip()
+    guest_name = request.form.get("guest_name", "Guest Buyer").strip() or "Guest Buyer"
     if "username" not in session:
-        return redirect(url_for("login"))
+        is_guest_order = True
+        if not guest_phone:
+            # Instead of forcing login, show phone input error on cart
+            return redirect(url_for("cart_page", guest_error="Please enter WhatsApp number to order as guest"))
+        # Normalize phone
+        guest_phone = normalize_whatsapp_number(guest_phone) or guest_phone
+        customer_username = f"guest_{guest_phone}_{uuid.uuid4().hex[:4]}"
+    else:
+        customer_username = session["username"]
     cart = session.get("cart") or {}
     if isinstance(cart, list):
         cart = {str(pid): 1 for pid in cart}
@@ -2045,7 +2088,7 @@ def place_order():
 
         cur = conn.execute(
             "INSERT INTO orders (customer_username, total, status, payment_status, coupon_code, discount_amount, created_at) VALUES (?, ?, 'Pending', 'Unpaid', ?, ?, ?)",
-            (session["username"], round(total, 2), active_coupon["code"] if active_coupon else None, round(discount_amount, 2), created_at)
+            (customer_username, round(total, 2), active_coupon["code"] if active_coupon else None, round(discount_amount, 2), created_at)
         )
         order_id = cur.lastrowid
         external_vendor_notifications = []
@@ -2058,7 +2101,8 @@ def place_order():
             )
             vendor = conn.execute("SELECT id FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food')", (item["seller"],)).fetchone()
             if vendor:
-                message = f"New purchase from @{session['username']}: {item['title']} x{qty} for GH₵{order_unit_prices[int(item['id'])] * qty:.2f}. Location: {item.get('location') or 'Not specified'}."
+                buyer_label = session.get("username") or f"{guest_name} ({guest_phone})"
+                message = f"New purchase from @{buyer_label}: {item['title']} x{qty} for GH₵{order_unit_prices[int(item['id'])] * qty:.2f}. Location: {item.get('location') or 'Not specified'}."
                 conn.execute(
                     "INSERT INTO vendor_notifications (vendor_id, order_id, product_id, customer_username, item_name, price, location, message, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (vendor["id"], order_id, item["id"], session["username"], item["title"], order_unit_prices[int(item["id"])] * qty, item.get("location"), message, created_at)
@@ -3928,8 +3972,14 @@ def register():
         email = request.form.get("reg_email", "").strip()
         password = request.form.get("reg_pass", "")
         submitted_role = request.form.get("role", "").strip()
-        role_aliases = {"customer": "Customer", "vendor": "Vendor", "fast food": "Fast Food", "delivery service": "Delivery Service"}
-        role = role_aliases.get(submitted_role.lower(), submitted_role)
+        role_aliases = {"customer": "Customer", "vendor": "Vendor", "general store": "Vendor", "store": "Vendor", "general vendor": "Vendor", "fast food": "Fast Food", "kitchen": "Fast Food", "delivery service": "Delivery Service"}
+        submitted_raw = submitted_role.strip()
+        role = role_aliases.get(submitted_raw.lower(), submitted_raw)
+        if role not in ("Customer", "Vendor", "Fast Food", "Delivery Service"):
+            if "food" in submitted_raw.lower() or "kitchen" in submitted_raw.lower():
+                role = "Fast Food"
+            else:
+                role = "Vendor"
         
         if not username or not email or not password:
             return render_template("login.html", reg_error="Username, email, and password are required.")
@@ -3974,20 +4024,23 @@ def register():
             trial_expires_at = trial_started_at + timedelta(days=60)  # FIXED: 60 days vendor
             user_plan = "trial" if role in ["Vendor", "Fast Food"] else "basic"  # FIXED: clear trial label
             
-            conn = sqlite3.connect(os.path.join(app.root_path, "marketplace.db"), timeout=60)
+            conn = sqlite3.connect(os.path.join(app.root_path, "marketplace.db"), timeout=30)
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, trial_started_at, subscription_expires_at, catalog_mode, company_logo, business_location, registered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (username, email, hashed_pwd, role, seller_type, company_name, whatsapp_number, user_plan, trial_started_at.isoformat() if role in ["Vendor", "Fast Food"] else None, trial_expires_at.isoformat() if role in ["Vendor", "Fast Food"] else None, catalog_mode, company_logo_filename, business_location, datetime.now(timezone.utc).isoformat())
             )
             inserted_id = cursor.lastrowid
-            conn.commit()
-            
             if inserted_id and selected_categories:
-                for category in selected_categories:
-                    cursor.execute("INSERT INTO vendor_categories (user_id, category) VALUES (?, ?)", (inserted_id, category))
-                conn.commit()
-            conn.close()
+                try:
+                    cursor.executemany("INSERT OR IGNORE INTO vendor_categories (user_id, category) VALUES (?, ?)", [(inserted_id, c) for c in selected_categories])
+                except sqlite3.OperationalError:
+                    pass
+            conn.commit()
+            try:
+                conn.close()
+            except:
+                pass
                     
             session.clear()
             session["username"] = username

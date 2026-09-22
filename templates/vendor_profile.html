@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}"></html>
+<html lang="en">
 
 <head>
 <meta charset="UTF-8">
@@ -9,7 +9,10 @@
 <style>
 :root{--nav:#131921;--nav2:#232f3e;--yellow:#febd69;--bg:#f3f4f6;--bg-card:#fff;--text-main:#111827;--text-muted:#64748b;--border:#e5e7eb;--border-red:#FECACA;--success:#06C167;--danger:#ef4444;--uber-green:#06C167;--uber-green-dark:#05944F;--uber-black:#000000;--uber-black-soft:#121212;--amazon-red:#CC0C39}
 :root.night-theme{--bg:#0f172a !important;--bg-card:#1e293b !important;--text-main:#f8fafc !important;--text-muted:#94a3b8 !important;--border:#334155 !important;--nav:#0f172a !important}
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text-main);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important}
+*{box-sizing:border-box}
+html{height:100%;overflow-x:hidden;overflow-y:auto}
+body{margin:0;background:var(--bg);color:var(--text-main);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important;min-height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+html.night-theme, body.night-theme{overflow-y:auto}
 .bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:var(--nav);box-shadow:0 2px 12px rgba(0,0,0,.18);width:100%}
 .bh-topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px}
 .bh-brand{font-size:22px;font-weight:900;color:#fff;text-decoration:none}.bh-brand span{color:#ff9900}
@@ -123,8 +126,8 @@
 <body>
 <div id="mediaModal" onclick="if(event.target===this) closeMediaModal()"><div class="media-modal-box"><button class="modal-close-x" onclick="closeMediaModal()">✕</button><img id="modalImage" style="display:none"><video id="modalVideo" style="display:none" controls playsinline></video></div></div>
 <script>
-function openMediaModal(src,type){const m=document.getElementById('mediaModal'),i=document.getElementById('modalImage'),v=document.getElementById('modalVideo');i.style.display='none';v.style.display='none';v.pause();if(type==='video'){v.src=src;v.style.display='block';v.play().catch(()=>{});}else{i.src=src;i.style.display='block';}m.classList.add('active');m.style.display='flex';document.body.style.overflow='hidden';}
-function closeMediaModal(){const m=document.getElementById('mediaModal'),v=document.getElementById('modalVideo');v.pause();v.src='';m.classList.remove('active');m.style.display='none';document.body.style.overflow='';}
+function openMediaModal(src,type){const m=document.getElementById('mediaModal'),i=document.getElementById('modalImage'),v=document.getElementById('modalVideo');i.style.display='none';v.style.display='none';v.pause();if(type==='video'){v.src=src;v.style.display='block';v.play().catch(()=>{});}else{i.src=src;i.style.display='block';}m.classList.add('active');m.style.display='flex';document.documentElement.style.overflow='hidden';document.body.style.overflow='hidden';}
+function closeMediaModal(){const m=document.getElementById('mediaModal'),v=document.getElementById('modalVideo');v.pause();v.src='';m.classList.remove('active');m.style.display='none';document.documentElement.style.overflow='';document.body.style.overflow='';}
 </script>
 
 <header class="bh-global-header {% if vendor.role == 'Fast Food' %}uber-theme{% endif %}">
@@ -168,7 +171,8 @@ function closeMediaModal(){const m=document.getElementById('mediaModal'),v=docum
 </div>
 <div style="display:flex;gap:8px;flex-wrap:wrap">
 {% if not is_owner %}
-<a href="https://wa.me/{{ vendor.whatsapp_number }}?text={{ ('Hello ' + (vendor.company_name or vendor.username) + ', I saw your kitchen on BizHub')|urlencode }}" target="_blank" class="uber-btn" style="background:#25D366">💬 Chat Kitchen</a>
+<a href="https://wa.me/{{ vendor.whatsapp_number }}?text={{ ('Hello ' + (vendor.company_name or vendor.username) + ', I saw your kitchen on BizHub and I want to ask about what you sell')|urlencode }}" target="_blank" class="uber-btn" style="background:#25D366"> Chat Kitchen</a>
+<a href="{{ url_for('report_user', user_id=vendor.id) }}" class="uber-btn" style="background:#fff;color:#111;border:1.5px solid #e5e7eb">🚩 Report Kitchen</a>
 {% endif %}
 {% if is_owner %}<div style="display:flex;gap:8px;flex-wrap:wrap"><a href="{{ url_for('subscription') }}" class="uber-btn" style="font-size:12px;padding:10px 14px">👑 Subscription</a><a href="{{ url_for('promotions') }}" class="uber-btn" style="background:#fff;color:#111;border:1.5px solid #e5e7eb;font-size:12px;padding:10px 14px;border-radius:50px">⚡ Manage Promos</a></div>{% endif %}
 </div>
@@ -190,7 +194,8 @@ function closeMediaModal(){const m=document.getElementById('mediaModal'),v=docum
 </div>
 <div style="display:flex;gap:8px;flex-wrap:wrap">
 {% if not is_owner %}
-<a href="https://wa.me/{{ vendor.whatsapp_number }}?text={{ ('Hello ' + (vendor.company_name or vendor.username) + ', I saw your store on BizHub')|urlencode }}" target="_blank" style="background:#25D366;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:800;font-size:13px">💬 WhatsApp</a>
+<a href="https://wa.me/{{ vendor.whatsapp_number }}?text={{ ('Hello ' + (vendor.company_name or vendor.username) + ', I saw your store on BizHub and I want to ask about a product')|urlencode }}" target="_blank" style="background:#e3cc49;color:#282c74;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:800;font-size:13px"> WhatsApp</a>
+<a href="{{ url_for('report_user', user_id=vendor.id) }}" style="background:#fff;color:#111;border:1.5px solid #e5e7eb;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:800;font-size:13px">🚩 Report Store</a>
 {% endif %}
 {% if is_owner %}<div style="display:flex;gap:8px;flex-wrap:wrap"><a href="{{ url_for('subscription') }}" style="background:#131921;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:800;font-size:13px">👑 Subscription</a><a href="{{ url_for('promotions') }}" style="background:#fff;color:#111;border:1.5px solid #e5e7eb;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:800;font-size:13px">⚡ Manage Promos</a></div>{% endif %}
 </div>
@@ -206,7 +211,7 @@ function closeMediaModal(){const m=document.getElementById('mediaModal'),v=docum
 <button id="toggleGuideBtn" class="btn active" onclick="showVendorView('guide')">📖 {% if vendor.role == 'Fast Food' %}Guide for Kitchen{% else %}Guide for Store{% endif %}</button>
 <button id="toggleHistoryBtn" class="btn" onclick="showVendorView('history')">📋 History Log ({{ product_count }})</button>
 <button id="togglePublishBtn" class="btn" onclick="showVendorView('publish')">➕ Publish New {% if vendor.role == 'Fast Food' %}Meal{% else %}Product{% endif %}</button>
-<button id="toggleGridBtn" class="btn" onclick="showVendorView('grid')" style="display:none">Grid</button>
+<button id="toggleGridBtn" class="btn" onclick="showVendorView('grid')">Preview Store</button>
 </div>
 
 <!-- 📖 GUIDE - VENDOR ONLY -->
@@ -217,7 +222,7 @@ function closeMediaModal(){const m=document.getElementById('mediaModal'),v=docum
 <b>1️⃣ Track Orders:</b><br>Go to <a href="{{ url_for('order_history') }}">Orders</a> - Pending → Confirmed → Out for Delivery → Delivered.
 </div>
 <div style="background:#fffbeb;border:1px solid #fde68a;padding:12px;border-radius:8px">
-<b>2️⃣ Confirm Payment on WhatsApp:</b><br>Customer taps 💬 Chat → comes to your WhatsApp with product name. Confirm price + MoMo, then mark as Confirmed in Order History.
+<b>2️⃣ Confirm Payment on WhatsApp:</b><br>Customer taps  Chat → comes to your WhatsApp with product name. Confirm price + MoMo, then mark as Confirmed in Order History.
 </div>
 <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:12px;border-radius:8px">
 <b>3️⃣ Send Delivery Request:</b><br>After payment, go to <a href="{{ url_for('delivery_services') }}">Find Delivery</a> → Choose rider in {{ vendor.business_location or 'Ghana' }} → Rider tracks order.
@@ -416,10 +421,10 @@ function closeMediaModal(){const m=document.getElementById('mediaModal'),v=docum
 <footer class="footer">© 2026 BizHub Marketplace ·Vendor Store/Kitchen · A Product Of TOZOTS Company</footer>
 
 <script>
-function showVendorView(v){
+ function showVendorView(v){
  const grid=document.getElementById('gridView'), hist=document.getElementById('historyView'), pub=document.getElementById('publishView'), guide=document.getElementById('guideView');
  const bG=document.getElementById('toggleGridBtn'), bH=document.getElementById('toggleHistoryBtn'), bP=document.getElementById('togglePublishBtn'), bGuide=document.getElementById('toggleGuideBtn');
- if(grid) grid.style.display = (v==='grid' || v==='guide')?'block':'none';
+ if(grid) grid.style.display = (v==='grid')?'block':'none';
  if(hist) hist.style.display = (v==='history')?'block':'none';
  if(pub) pub.style.display = (v==='publish')?'block':'none';
  if(guide) guide.style.display = (v==='guide')?'block':'none';
@@ -427,7 +432,9 @@ function showVendorView(v){
  if(bH) bH.classList.toggle('active', v==='history');
  if(bP) bP.classList.toggle('active', v==='publish');
  if(bGuide) bGuide.classList.toggle('active', v==='guide');
+ window.scrollTo({top:0,behavior:'smooth'});
 }
+
 function addAccompaniment(item){
  const input=document.getElementById('accompanimentsInput'); if(!input) return;
  if(input.value.trim()===''){input.value=item}else{
