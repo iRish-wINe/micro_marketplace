@@ -18,6 +18,16 @@
 .bh-search{display:flex;flex:1;max-width:500px;height:40px;border-radius:5px;overflow:hidden;background:#fff}.bh-search input{border:0;outline:0;flex:1;padding:0 12px;font-size:14px}.bh-search button{width:48px;border:0;background:var(--yellow);cursor:pointer}
 .bh-subbar{min-height:42px;background:var(--nav2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}.bh-subbar::-webkit-scrollbar{display:none}
 .bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px;flex-shrink:0}.bh-subbar a:hover{border-color:#fff}.bh-subbar a.active{background:#fff;color:#0F1111 !important;border-radius:6px}
+/* 🍔 UBER EATS THEME FOR FAST FOOD - HEADER ONLY */
+.bh-global-header.uber-theme{background:#000000 !important; border-bottom:2px solid #06C167 !important}
+.bh-global-header.uber-theme .bh-topbar{background:#000000 !important}
+.bh-global-header.uber-theme .bh-subbar{background:#111111 !important; border-top:1px solid #222 !important}
+.bh-global-header.uber-theme .bh-brand{color:#fff !important}
+.bh-global-header.uber-theme .bh-brand span{color:#06C167 !important}
+.bh-global-header.uber-theme .bh-search button{background:#06C167 !important; color:#fff !important}
+.bh-global-header.uber-theme .bh-location{border-color:rgba(6,193,103,0.3) !important; background:rgba(6,193,103,0.08) !important}
+.bh-global-header.uber-theme .bh-subbar a:hover{border-color:#06C167 !important}
+.bh-global-header.uber-theme .bh-subbar a.active{background:#06C167 !important; color:#fff !important}
 .top{position:static;background:transparent;padding:0;display:block}
 .wrap{max-width:1180px;margin:20px auto;padding:0 16px;display:flex;flex-direction:column;gap:20px}
 .card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 3px 15px rgba(0,0,0,.04)}
@@ -71,7 +81,7 @@ function openMediaModal(src,type){const m=document.getElementById('mediaModal'),
 function closeMediaModal(){const m=document.getElementById('mediaModal'),v=document.getElementById('modalVideo');v.pause();v.src='';m.classList.remove('active');m.style.display='none';document.body.style.overflow='';}
 </script>
 
-<div class="bh-global-header">
+<div class="bh-global-header {% if vendor.role == 'Fast Food' %}uber-theme{% endif %}"></div>
 <div class="bh-topbar">
 <a class="bh-brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a>
 <div class="bh-location"><small>{% if vendor.role == 'Fast Food' %}Kitchen{% else %}Store{% endif %} Location</small><strong>{{ vendor.business_location or 'Ghana' }}</strong></div>
@@ -234,8 +244,6 @@ function closeMediaModal(){const m=document.getElementById('mediaModal'),v=docum
 {% for product in products %}
 <article class="product-card bizhub-menu-item-row {% if product.status == 'Sold' or (product.stock_quantity|int <=0 and product.category != 'Fast Food') %}sold-out{% endif %}" data-menu-section="{{ product.menu_type or 'Main Dishes' }}">
 <div>
-<div class="card-media-container">
-{% if product.video_file %}
 
 <div class="card-media-container" onclick="{% if product.video_file %}openMediaModal('{{ url_for('stream_video', filename=product.video_file) }}','video'){% elif product.image_file %}openMediaModal('{{ url_for('static', filename='uploads/' + product.image_file) }}','image'){% endif %}">
 {% if product.video_file %}
