@@ -673,7 +673,7 @@ def init_db():
                 continue
             try:
                 trial_started_at = datetime.fromisoformat(started_at)
-                trial_expires_at = trial_started_at + timedelta(days=150)
+                trial_expires_at = trial_started_at + timedelta(days=90)
                 cursor.execute("UPDATE users SET plan = 'basic', trial_started_at = ?, subscription_expires_at = ? WHERE id = ?", (trial_started_at.isoformat(), trial_expires_at.isoformat(), user_id))
             except ValueError:
                 pass
@@ -700,38 +700,51 @@ def normalize_whatsapp_number(number):
         digits = "233" + digits[1:]
     return digits
 
-def subscription_status(user):
-    """👑 BIZHUB SUBSCRIPTION METRICS ENGINE: Fixes premature trial expiration bugs."""
-    if not user:
-        return {"name": "Basic", "is_premium": False, "trial": False, "expires": None, "expires_iso": None}
-        
-    now = datetime.now(timezone.utc)
-    expiry_raw = user.get("subscription_expires_at")
-    expiry = None
-    
-    if expiry_raw:
-        try:
-            clean_expiry = expiry_raw.strip().replace(" ", "T")
-            if not "+" in clean_expiry and not "Z" in clean_expiry:
-                clean_expiry += "+00:00"
-            expiry = datetime.fromisoformat(clean_expiry)
-        except (ValueError, TypeError):
-            expiry = None
+def parse_subscription_expiry(raw):
+    """Robust ISO parser: handles '2026-01-01 12:00:00', '...T...+00:00', '...Z'"""
+    if not raw:
+        return None
+    s = str(raw).strip()
+    if not s:
+        return None
+    s = s.replace('Z', '+00:00')
+    s = s.replace(' ', 'T')
+    try:
+        if '+' not in s and s.count('T') == 1:
+            dt = datetime.fromisoformat(s)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt
+        return datetime.fromisoformat(s)
+    except Exception:
+        for fmt in ("%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
+            try:
+                dt = datetime.strptime(s.split('+')[0].split('.')[0][:19], fmt.split('%z')[0].strip())
+                return dt.replace(tzinfo=timezone.utc)
+            except Exception:
+                continue
+        return None
 
-    is_vendor_role = bool(user.get("role") in ["Vendor", "Fast Food", "Delivery Service"])
+def subscription_status(user):
+    """BIZHUB SUBSCRIPTION ENGINE v2 - 60 days vendor / 90 days delivery"""
+    if not user:
+        return {"name": "Basic", "is_premium": False, "trial": False, "expires": None, "expires_iso": None, "days_left": 0}
+    now = datetime.now(timezone.utc)
+    expiry = parse_subscription_expiry(user.get("subscription_expires_at"))
     has_time_left = bool(expiry and expiry > now)
-    
+    days_left = (expiry - now).days if has_time_left else 0
+    is_vendor_role = bool(user.get("role") in ["Vendor", "Fast Food", "Delivery Service"])
     if is_vendor_role and has_time_left:
-        # Check if it's a paid tier or the introductory free package
-        is_paid_premium = bool(user.get("plan") == "premium" and user.get("trial_started_at") is None)
-        
+        plan = (user.get("plan") or "").lower()
+        trial_start = user.get("trial_started_at")
+        is_paid_premium = bool(plan == "premium" and not trial_start)
+        is_trial = bool(plan == "trial" or (plan == "premium" and trial_start))
         if is_paid_premium:
-            plan_label = "Premium Delivery" if user.get("role") == "Delivery Service" else "Premium Store"
-            return {"name": plan_label, "is_premium": True, "trial": False, "expires": expiry.strftime("%d %b %Y"), "expires_iso": expiry.isoformat()}
+            label = "Premium Delivery" if user.get("role") == "Delivery Service" else "Premium Store"
+            return {"name": label, "is_premium": True, "trial": False, "expires": expiry.strftime("%d %b %Y"), "expires_iso": expiry.isoformat(), "days_left": days_left}
         else:
-            return {"name": "Free trial", "is_premium": True, "trial": True, "expires": expiry.strftime("%d %b %Y"), "expires_iso": expiry.isoformat()}
-            
-    return {"name": "Basic", "is_premium": False, "trial": False, "expires": None, "expires_iso": None}
+            return {"name": "Free trial", "is_premium": True, "trial": True, "expires": expiry.strftime("%d %b %Y"), "expires_iso": expiry.isoformat(), "days_left": days_left}
+    return {"name": "Basic", "is_premium": False, "trial": False, "expires": None, "expires_iso": None, "days_left": 0}
 
 
 
@@ -3051,8 +3064,8 @@ def delivery_register():
         logo = save_company_logo(logo_upload) if logo_upload and logo_upload.filename else None
         try:
             trial_started_at = datetime.now(timezone.utc)
-            trial_expires_at = trial_started_at + timedelta(days=150)
-            user_id = query_db("INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, trial_started_at, subscription_expires_at, registered_at) VALUES (?, ?, ?, 'Delivery Service', 'Delivery Service', ?, ?, 'basic', ?, ?, ?)", (username, email, generate_password_hash(password), service_name, phone_number, trial_started_at.isoformat(), trial_expires_at.isoformat(), trial_started_at.isoformat()))
+            trial_expires_at = trial_started_at + timedelta(days=90)
+            user_id = query_db("INSERT INTO users (username, email, password_hash, role, seller_type, company_name, whatsapp_number, plan, trial_started_at, subscription_expires_at, registered_at) VALUES (?, ?, ?, 'Delivery Service', 'Delivery Service', ?, ?, 'trial', ?, ?, ?)", (username, email, generate_password_hash(password), service_name, phone_number, trial_started_at.isoformat(), trial_expires_at.isoformat(), trial_started_at.isoformat()))
             user = query_db("SELECT id FROM users WHERE username = ?", (username,), one=True)
             if not user:
                 raise sqlite3.IntegrityError
@@ -3563,9 +3576,15 @@ def subscription_receipt(receipt_id):
 def approve_premium(user_id):
     if not is_admin():
         return redirect(url_for("admin_login"))
-    expiry = datetime.now(timezone.utc) + timedelta(days=30)
-    query_db("UPDATE users SET plan = 'premium', subscription_expires_at = ?, upgrade_requested_at = NULL WHERE id = ? AND role IN ('Vendor', 'Fast Food', 'Delivery Service')", (expiry.isoformat(), user_id))
-    query_db("UPDATE delivery_services SET availability = 'Unavailable', updated_at = ? WHERE user_id = ?", (datetime.now(timezone.utc).isoformat(), user_id))
+    now = datetime.now(timezone.utc)
+    existing = query_db("SELECT subscription_expires_at, plan FROM users WHERE id =?", (user_id,), one=True)
+    base_expiry = parse_subscription_expiry(existing.get("subscription_expires_at")) if existing else None
+    if base_expiry and base_expiry > now:
+        expiry = base_expiry + timedelta(days=30)
+    else:
+        expiry = now + timedelta(days=30)
+    query_db("UPDATE users SET plan = 'premium', trial_started_at = NULL, subscription_expires_at =?, upgrade_requested_at = NULL WHERE id =? AND role IN ('Vendor', 'Fast Food', 'Delivery Service')", (expiry.isoformat(), user_id))
+    query_db("UPDATE delivery_services SET availability = 'Unavailable', updated_at =? WHERE user_id =?", (now.isoformat(), user_id))
     return redirect(url_for("admin_dashboard"))
 
 @app.route("/admin/enforce/<int:user_id>", methods=["POST"])
@@ -3952,8 +3971,8 @@ def register():
         try:
             hashed_pwd = generate_password_hash(password)
             trial_started_at = datetime.now(timezone.utc)
-            trial_expires_at = trial_started_at + timedelta(days=60)
-            user_plan = "premium" if role in ["Vendor", "Fast Food"] else "basic"
+            trial_expires_at = trial_started_at + timedelta(days=60)  # FIXED: 60 days vendor
+            user_plan = "trial" if role in ["Vendor", "Fast Food"] else "basic"  # FIXED: clear trial label
             
             conn = sqlite3.connect(os.path.join(app.root_path, "marketplace.db"), timeout=60)
             cursor = conn.cursor()
