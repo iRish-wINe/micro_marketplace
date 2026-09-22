@@ -1720,7 +1720,7 @@ def promo_marketplace():
         deals.append(deal)
 
     deals.sort(key=lambda d: (0 if d["is_owner"] else 1 if d["is_favorite"] else 2, -int(d["id"])))
-        return render_template("todays_deals.html", deals=deals, current_user=current_user, search_query=search_q)
+    return render_template("todays_deals.html", deals=deals, current_user=current_user, search_query=search_q)
 
 @app.route("/add-to-cart/<int:product_id>", methods=["POST"])
 def add_to_cart(product_id):
