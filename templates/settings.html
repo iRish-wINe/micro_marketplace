@@ -72,8 +72,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-body);color
 <div class="container">
 
 <div class="nav-actions-row">
-<a href="{{ url_for('home') }}" class="top-btn btn-back">← Back to Marketplace</a>
-{% if user.role in ['Vendor','Fast Food'] %}<a href="{{ url_for('vendor_profile', username=user.username) }}" class="top-btn btn-mystore">🏪 My Store</a>{% endif %}
+
+
 <a href="{{ url_for('logout') }}" class="top-btn btn-logout" style="margin-left:auto">🚪 Logout</a>
 </div>
 

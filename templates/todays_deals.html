@@ -3,7 +3,7 @@
 
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0, viewport-fit=cover">
-<title>Today's Deals - Uber Eats Kitchens vs Amazon Vendors</title>
+<title>Today's Deals - 🔥 Donkomi oo Donkomi</title>
 <style>
 :root{--navy:#131921;--navy2:#232f3e;--yellow:#febd69;--bg:#eaeded;--text:#0F1111;--muted:#565959;--uber-green:#06C167;--uber-black:#000;--amazon-red:#CC0C39;--amazon-orange:#F90}
 *{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;padding-top:106px !important}
@@ -31,12 +31,15 @@
 </head>
 <body>
 <div class="bh-global-header">
-<div class="bh-topbar"><a class="bh-brand" href="/">Biz<span>Hub</span></a><div class="bh-location"><span>⚡</span><div><small style="color:#FEBD69">Today's Deals</small><strong>Lightning Deals</strong></div></div><form class="bh-search"><input placeholder="Search deals..."><button>🔍</button></form><div style="color:#febd69;font-size:11px;font-weight:700">🛒 {{ cart_count or 0 }}</div></div>
+<div class="bh-topbar"><a class="bh-brand" href="/">Biz<span>Hub</span></a><div class="bh-location"><span>⚡</span><div><small style="color:#FEBD69">Today's Deals</small><strong>Lightning Deals</strong></div></div><form class="bh-search" method="GET" action="{{ url_for('promo_marketplace') }}">
+<input type="text" name="q" value="{{ request.args.get('q','') }}" placeholder="Search deals, kitchen, store...">
+<button type="submit">🔍</button>
+</form><div style="color:#febd69;font-size:11px;font-weight:700">🛒 {{ cart_count or 0 }}</div></div>
 <nav class="bh-subbar"><a href="/">☰ Marketplace</a><a href="{{ url_for('promo_marketplace') }}" class="active">Today's Deals</a><a href="/top-brands" class="top20">🏆 Top 20</a><a href="{{ url_for('cart_page') }}">🛒 Cart</a></nav>
 </div>
 
 <div class="container">
-<div class="deals-header">⚡ Today's Deals — <span style="color:#06C167">Uber Eats Kitchens</span> vs <span style="color:#CC0C39">Amazon Vendors</span> — Listing videos autoplay • Promo ad = View button only</div>
+<div class="deals-header">⚡ Today's Deals — <span style="color:#06C167">BizHub Kitchens</span> and <span style="color:#CC0C39">BizHub Vendors</span> — Listing videos autoplay • Promo ad = View button only</div>
 
 <div class="deals-grid">
 {% for deal in deals or [] %}
@@ -137,7 +140,7 @@
 <button type="submit" style="flex:1;background:#FFD814;border:1px solid #FCD200;color:#111;padding:7px;border-radius:8px;font-size:10px;font-weight:900;cursor:pointer">🛒 Add</button>
 </form>
 {% endif %}
-{% else %}<div style="width:100%;background:#F3F4F6;color:#4B5563;padding:6px;border-radius:6px;font-size:9px;text-align:center">ℹ️ Your Amazon promo</div>{% endif %}
+{% else %}<div style="width:100%;background:#F3F4F6;color:#4B5563;padding:6px;border-radius:6px;font-size:9px;text-align:center">ℹ️ Your BizHub promo</div>{% endif %}
 </div>
 </div>
 </div>
@@ -156,7 +159,7 @@ function closeMediaModal(){document.getElementById('mediaModal').classList.remov
 document.addEventListener('DOMContentLoaded',()=>{const s=document.getElementById('bizhub-splash-screen');if(s)setTimeout(()=>{s.style.opacity='0';setTimeout(()=>s.style.display='none',500)},800)})
 </script>
 <footer class="bizhub-contact-footer">
-<div class="contact-footer-bottom">© 2026 BizHub Marketplace ·Today's Deals· A Product Of The TOZOTS Company· <a href="/rules" style="color:#E2E8F0;text-decoration:none;">Rules &amp; Regulations</a></div>
+<div class="footer">© 2026 BizHub Marketplace ·Today's Deals· A Product Of The TOZOTS Company· <a href="/rules" style="color:#E2E8F0;text-decoration:none;">Rules &amp; Regulations</a></div>
 </footer>
 </body>
 </html>

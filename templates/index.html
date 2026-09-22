@@ -903,13 +903,17 @@ html, body {
         <a href="{{ url_for('favorites') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Favorites</a>
         <a href="{{ url_for('features') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">🎯 Features</a>
         <a href="{{ url_for('all_stores') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">All Stores</a>
-        <a href="/top-brands" style="color: #FFD814; text-decoration: none; font-size: 13px; font-weight: 900; border:1px solid #FFD814; border-radius:4px; padding:6px 10px;">🏆 Top 20 Brands</a>
+        <a href="{{ url_for('top_brands') }}" style="color: #FFD814; text-decoration: none; font-size: 13px; font-weight: 900; border:1px solid #FFD814; border-radius:4px; padding:6px 10px;">🏆 Top 20 Brands</a>
+         {% if not session.get('username') %}
+        <a href="{{ url_for('login') }}" class="visitor-auth-links" style="color:#fff;background:#0F172A;border:1px solid #fff;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;">Sign In</a>
+        <a href="{{ url_for('register') }}" class="visitor-auth-links" style="color:#0F1111;background:#FFD814;border:1px solid #FCD200;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;">Sign Up</a>
+        {% endif %}
         <a href="{{ url_for('fast_food_stores') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Fast Food</a>
         <!-- 🚨 FIND AND REPLACE YOUR OLD 'Biz Alerts' LINK WITH THIS BLOCK: -->
         <a href="/notifications" class="bell-wrapper">
     <!-- Update line 741 in templates/index.html to look like this: -->
 <span id="notification-bell" class="{% if (unread_notifications_count | default(0)) > 0 %}bell-shake-active{% endif %}">🔔</span>
-    Biz Alerts
+    BizHub Alerts
 </a>
 
         <!-- 1, 2, 3: VENDOR AND ROLE-SPECIFIC DYNAMIC HEADER NAVIGATORS -->
@@ -1024,10 +1028,13 @@ html, body {
                 grid-template-columns: repeat(4, 1fr) !important;
             }
         }
-
+/* 📍 RESTORED LOCATION BANNER - VISIBLE ON PHONE */
+.bh-location { display:flex !important; visibility:visible !important; opacity:1 !important; align-items:center; gap:6px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); border-radius:6px; padding:6px 10px; }
+@media(max-width:768px){
+  .bh-location { display:flex !important; min-width:92px !important; max-width:115px !important; padding:5px 8px !important; flex-shrink:0 !important; }
+  .bh-topbar { flex-wrap:nowrap !important; gap:6px !important; }
+}
 </style>
-
-
 
 
 <!-- 👑 BIZHUB CORE THEME REPLICA SLIDING SIDEBAR DESK OVERLAY -->
@@ -1391,27 +1398,8 @@ html, body {
                     {% endif %}
                 </div>
                 {% endfor %}
-                <!-- Duplicate for seamless auto-flash loop on desktop -->
-                {% for brand in top_20_brands %}
-                <div class="top20-brand-card" style="opacity:0.9;">
-                    <div class="top20-rank {% if loop.index == 1 %}top1{% elif loop.index == 2 %}top2{% elif loop.index == 3 %}top3{% endif %}">{{ loop.index }}</div>
-                    <div class="top20-brand-logo">
-                        {% if brand.company_logo %}
-                            <img src="{{ url_for('static', filename='uploads/' + brand.company_logo) }}" alt="{{ brand.business_label }}">
-                        {% else %}
-                            {{ brand.business_label[0]|upper }}
-                        {% endif %}
-                    </div>
-                    <div class="top20-brand-name">{{ brand.business_label }}</div>
-                    <div class="top20-rating">⭐ {{ "%.1f"|format(brand.avg_rating) }} • {{ brand.rating_count }}</div>
-                    <div style="font-size:10px; color:#565959; margin-bottom:6px;">📍 {{ brand.business_location or 'Ghana' }}</div>
-                    {% if brand.role == 'Fast Food' %}
-                        <a href="{{ url_for('vendor_profile', username=brand.username) }}" class="top20-open-btn kitchen">🍳 Open Kitchen</a>
-                    {% else %}
-                        <a href="{{ url_for('vendor_profile', username=brand.username) }}" class="top20-open-btn store">🏬 Open Store</a>
-                    {% endif %}
-                </div>
-                {% endfor %}
+                
+                    
             </div>
         </div>
         <script>

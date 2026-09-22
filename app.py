@@ -1437,7 +1437,7 @@ def home():
     
     # Top 20 brands by avg rating this quarter, fallback to all-time if not enough
     top_20_brands = query_db("""
-        SELECT u.id, u.username, u.company_name, u.company_logo, u.business_location, u.role, u.is_verified_brand, u.verified_brand_type,
+        SELECT DISTINCT u.id, u.username, u.company_name, u.company_logo, u.business_location, u.role, u.is_verified_brand, u.verified_brand_type,
                ROUND(AVG(r.rating), 1) AS avg_rating,
                COUNT(r.id) AS rating_count,
                (SELECT COUNT(*) FROM products p WHERE p.seller = u.username AND p.status='Available') AS product_count
@@ -1656,22 +1656,44 @@ def promo_marketplace():
             favorite_rows = query_db("SELECT vendor_id FROM favorites WHERE customer_id = ?", (current_user["id"],)) or []
             favorite_vendor_ids = {int(row["vendor_id"]) for row in favorite_rows}
 
-    rows = query_db("""
-        SELECT pr.*, p.id AS product_id, p.title AS product_title, p.price AS product_price,
-               p.description AS product_description, p.image_file AS product_image, p.video_file AS product_video,
-               p.stock_quantity, p.status AS product_status, p.location AS product_location,
-               u.id AS vendor_user_id, u.username AS vendor_username, u.company_name, u.business_location,
-               u.whatsapp_number, u.company_logo, u.role AS vendor_role
-        FROM promotions pr
-        JOIN users u ON u.id = pr.vendor_id
-        LEFT JOIN products p ON p.id = pr.product_id
-        WHERE pr.active = 1
-          AND replace(pr.starts_at, 'T', ' ') <= ? AND replace(pr.ends_at, 'T', ' ') >= ?
-          AND p.status = 'Available' AND (p.category = 'Fast Food' OR p.stock_quantity > 0)
-          AND u.role IN ('Vendor', 'Fast Food')
-          AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
-        ORDER BY pr.id DESC
-    """, (now_iso, now_iso)) or []
+            search_q = (request.args.get("q") or "").strip()
+    search_pattern = f"%{search_q.lower()}%" if search_q else None
+
+    if search_pattern:
+        rows = query_db("""
+            SELECT pr.*, p.id AS product_id, p.title AS product_title, p.price AS product_price,
+                   p.description AS product_description, p.image_file AS product_image, p.video_file AS product_video,
+                   p.stock_quantity, p.status AS product_status, p.location AS product_location,
+                   u.id AS vendor_user_id, u.username AS vendor_username, u.company_name, u.business_location,
+                   u.whatsapp_number, u.company_logo, u.role AS vendor_role
+            FROM promotions pr
+            JOIN users u ON u.id = pr.vendor_id
+            LEFT JOIN products p ON p.id = pr.product_id
+            WHERE pr.active = 1
+              AND replace(pr.starts_at, 'T', ' ') <= ? AND replace(pr.ends_at, 'T', ' ') >= ?
+              AND p.status = 'Available' AND (p.category = 'Fast Food' OR p.stock_quantity > 0)
+              AND u.role IN ('Vendor', 'Fast Food')
+              AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
+              AND (lower(p.title) LIKE ? OR lower(u.company_name) LIKE ? OR lower(u.username) LIKE ? OR lower(pr.title) LIKE ?)
+            ORDER BY pr.id DESC
+        """, (now_iso, now_iso, search_pattern, search_pattern, search_pattern, search_pattern)) or []
+    else:
+        rows = query_db("""
+            SELECT pr.*, p.id AS product_id, p.title AS product_title, p.price AS product_price,
+                   p.description AS product_description, p.image_file AS product_image, p.video_file AS product_video,
+                   p.stock_quantity, p.status AS product_status, p.location AS product_location,
+                   u.id AS vendor_user_id, u.username AS vendor_username, u.company_name, u.business_location,
+                   u.whatsapp_number, u.company_logo, u.role AS vendor_role
+            FROM promotions pr
+            JOIN users u ON u.id = pr.vendor_id
+            LEFT JOIN products p ON p.id = pr.product_id
+            WHERE pr.active = 1
+              AND replace(pr.starts_at, 'T', ' ') <= ? AND replace(pr.ends_at, 'T', ' ') >= ?
+              AND p.status = 'Available' AND (p.category = 'Fast Food' OR p.stock_quantity > 0)
+              AND u.role IN ('Vendor', 'Fast Food')
+              AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
+            ORDER BY pr.id DESC
+        """, (now_iso, now_iso)) or []
 
     deals = []
     for row in rows:
@@ -1698,7 +1720,7 @@ def promo_marketplace():
         deals.append(deal)
 
     deals.sort(key=lambda d: (0 if d["is_owner"] else 1 if d["is_favorite"] else 2, -int(d["id"])))
-    return render_template("todays_deals.html", deals=deals, current_user=current_user)
+        return render_template("todays_deals.html", deals=deals, current_user=current_user, search_query=search_q)
 
 @app.route("/add-to-cart/<int:product_id>", methods=["POST"])
 def add_to_cart(product_id):
@@ -2366,6 +2388,38 @@ def fast_food_stores():
         kitchen["is_owner"] = kitchen.get("username") == owner_username
         kitchen["is_favorite"] = kitchen.get("id") in favorite_vendor_ids
     return render_template("fast_food_stores.html", kitchens=kitchens, favorite_added_message=favorite_added_message)
+
+@app.route("/top-brands")
+def top_brands():
+    if "username" in session:
+        current_user = query_db("SELECT id, username, role FROM users WHERE username = ?", (session["username"],), one=True)
+    else:
+        current_user = None
+    try:
+        now_dt = datetime.now(timezone.utc)
+        quarter_start_month = ((now_dt.month - 1) // 3) * 3 + 1
+        quarter_start = datetime(now_dt.year, quarter_start_month, 1, tzinfo=timezone.utc).isoformat()
+        top_20_brands = query_db("""
+            SELECT DISTINCT u.id, u.username, u.company_name, u.company_logo, u.business_location, u.role,
+                   ROUND(AVG(r.rating),1) AS avg_rating, COUNT(r.id) AS rating_count
+            FROM users u JOIN reviews r ON r.vendor_id = u.id
+            WHERE u.role IN ('Vendor','Fast Food') AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
+            AND r.created_at >= ?
+            GROUP BY u.id ORDER BY avg_rating DESC, rating_count DESC LIMIT 20
+        """, (quarter_start,)) or []
+        if len(top_20_brands) < 5:
+            top_20_brands = query_db("""
+                SELECT DISTINCT u.id, u.username, u.company_name, u.company_logo, u.business_location, u.role,
+                       ROUND(AVG(r.rating),1) AS avg_rating, COUNT(r.id) AS rating_count
+                FROM users u JOIN reviews r ON r.vendor_id = u.id
+                WHERE u.role IN ('Vendor','Fast Food') AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
+                GROUP BY u.id ORDER BY avg_rating DESC, rating_count DESC LIMIT 20
+            """) or []
+        for b in top_20_brands:
+            b['business_label'] = b.get('company_name') or b.get('username')
+    except:
+        top_20_brands = []
+    return render_template("top_brands.html", top_20_brands=top_20_brands, current_user=current_user)
 
 FAVORITE_ACTOR_ROLES = {"Customer", "Vendor", "Fast Food", "Delivery Service"}
 
