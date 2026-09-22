@@ -7,7 +7,7 @@
 <title>{{ vendor.company_name or vendor.username }} {% if vendor.role == 'Fast Food' %}Kitchen{% else %}Store{% endif %} | BizHub</title>
 <meta name="csrf-token" content="{{ csrf_token }}">
 <style>
-:root{--nav:#131921;--nav2:#232f3e;--yellow:#febd69;--bg:#f3f4f6;--bg-card:#fff;--text-main:#111827;--text-muted:#64748b;--border:#e5e7eb;--border-red:#FECACA;--success:#06C167;--danger:#ef4444;--uber-green:#06C167;--uber-black:#000;--amazon-red:#CC0C39}
+:root{--nav:#131921;--nav2:#232f3e;--yellow:#febd69;--bg:#f3f4f6;--bg-card:#fff;--text-main:#111827;--text-muted:#64748b;--border:#e5e7eb;--border-red:#FECACA;--success:#06C167;--danger:#ef4444;--uber-green:#06C167;--uber-green-dark:#05944F;--uber-black:#000000;--uber-black-soft:#121212;--amazon-red:#CC0C39}
 :root.night-theme{--bg:#0f172a !important;--bg-card:#1e293b !important;--text-main:#f8fafc !important;--text-muted:#94a3b8 !important;--border:#334155 !important;--nav:#0f172a !important}
 *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text-main);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important}
 .bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:var(--nav);box-shadow:0 2px 12px rgba(0,0,0,.18);width:100%}
@@ -18,16 +18,62 @@
 .bh-search{display:flex;flex:1;max-width:500px;height:40px;border-radius:5px;overflow:hidden;background:#fff}.bh-search input{border:0;outline:0;flex:1;padding:0 12px;font-size:14px}.bh-search button{width:48px;border:0;background:var(--yellow);cursor:pointer}
 .bh-subbar{min-height:42px;background:var(--nav2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}.bh-subbar::-webkit-scrollbar{display:none}
 .bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px;border:1px solid transparent;border-radius:2px;flex-shrink:0}.bh-subbar a:hover{border-color:#fff}.bh-subbar a.active{background:#fff;color:#0F1111 !important;border-radius:6px}
-/* 🍔 UBER EATS THEME FOR FAST FOOD - HEADER ONLY */
-.bh-global-header.uber-theme{background:#000000 !important; border-bottom:2px solid #06C167 !important}
-.bh-global-header.uber-theme .bh-topbar{background:#000000 !important}
-.bh-global-header.uber-theme .bh-subbar{background:#111111 !important; border-top:1px solid #222 !important}
-.bh-global-header.uber-theme .bh-brand{color:#fff !important}
-.bh-global-header.uber-theme .bh-brand span{color:#06C167 !important}
-.bh-global-header.uber-theme .bh-search button{background:#06C167 !important; color:#fff !important}
-.bh-global-header.uber-theme .bh-location{border-color:rgba(6,193,103,0.3) !important; background:rgba(6,193,103,0.08) !important}
-.bh-global-header.uber-theme .bh-subbar a:hover{border-color:#06C167 !important}
-.bh-global-header.uber-theme .bh-subbar a.active{background:#06C167 !important; color:#fff !important}
+/* ==============================
+   🍔 BIZHUB KITCHENS - UBER EATS THEME
+   Black + Green - Kitchens Only
+   ============================== */
+.bh-global-header.uber-theme{
+  background: var(--uber-black) !important;
+  border-bottom: 3px solid var(--uber-green) !important;
+}
+.bh-global-header.uber-theme .bh-topbar{
+  background: var(--uber-black) !important;
+  min-height: 64px;
+}
+.bh-global-header.uber-theme .bh-subbar{
+  background: var(--uber-black-soft) !important;
+  border-top: 1px solid #222 !important;
+}
+.bh-global-header.uber-theme .bh-brand{
+  color: #fff !important;
+  font-weight: 900;
+  letter-spacing: -.5px;
+}
+.bh-global-header.uber-theme .bh-brand span{
+  color: var(--uber-green) !important;
+}
+/* Search button = Uber Green */
+.bh-global-header.uber-theme .bh-search button{
+  background: var(--uber-green) !important;
+  color: #fff !important;
+  font-weight: 800;
+}
+.bh-global-header.uber-theme .bh-search button:hover{
+  background: var(--uber-green-dark) !important;
+}
+/* Location pill */
+.bh-global-header.uber-theme .bh-location{
+  border-color: rgba(6,193,103,.35) !important;
+  background: rgba(6,193,103,.08) !important;
+}
+/* NAVIGATORS - Maintain as seen in shot */
+.bh-global-header.uber-theme .bh-subbar a{
+  color: #d1d5db !important;
+  border: 1px solid transparent;
+  transition: all .2s ease;
+}
+.bh-global-header.uber-theme .bh-subbar a:hover{
+  color: #fff !important;
+  border-color: var(--uber-green) !important;
+  background: rgba(6,193,103,.1);
+}
+.bh-global-header.uber-theme .bh-subbar a.active{
+  background: var(--uber-green) !important;
+  color: #fff !important;
+  border-color: var(--uber-green) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 2px 8px rgba(6,193,103,.3);
+}
 .top{position:static;background:transparent;padding:0;display:block}
 .wrap{max-width:1180px;margin:20px auto;padding:0 16px;display:flex;flex-direction:column;gap:20px}
 .card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 3px 15px rgba(0,0,0,.04)}
@@ -81,7 +127,7 @@ function openMediaModal(src,type){const m=document.getElementById('mediaModal'),
 function closeMediaModal(){const m=document.getElementById('mediaModal'),v=document.getElementById('modalVideo');v.pause();v.src='';m.classList.remove('active');m.style.display='none';document.body.style.overflow='';}
 </script>
 
-<div class="bh-global-header {% if vendor.role == 'Fast Food' %}uber-theme{% endif %}"></div>
+<header class="bh-global-header {% if vendor.role == 'Fast Food' %}uber-theme{% endif %}">
 <div class="bh-topbar">
 <a class="bh-brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a>
 <div class="bh-location"><small>{% if vendor.role == 'Fast Food' %}Kitchen{% else %}Store{% endif %} Location</small><strong>{{ vendor.business_location or 'Ghana' }}</strong></div>
