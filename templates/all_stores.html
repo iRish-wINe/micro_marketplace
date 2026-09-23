@@ -1,11 +1,68 @@
 <!DOCTYPE html><!-- 🚀 REPLICA INJECTOR BOUNDARY PATHWAY AT THE VERY TOP OF ALL FILE TEMPLATES -->
 <html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}"></html>
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>All Stores | BizHub</title><style>body{margin:0;background:#f3f4f6;color:#111827;font-family:Arial,Helvetica,sans-serif}a{text-decoration:none}.top{background:#131921;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}.brand{font-size:22px;font-weight:900;color:#fff}.brand span{color:#ff9900}.nav{background:#232f3e;display:flex;gap:4px;overflow:auto;white-space:nowrap;padding:0 10px}.nav a{color:#fff;padding:11px 12px;font-weight:700;font-size:13px}.wrap{max-width:1180px;margin:24px auto;padding:0 16px}.hero{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:22px;margin-bottom:18px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:15px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px;box-shadow:0 3px 15px rgba(0,0,0,.06)}.logo{width:68px;height:68px;border-radius:16px;object-fit:cover;background:#e5e7eb}.owner{display:inline-block;background:#dcfce7;color:#166534;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900;margin-bottom:8px}.btn{display:block;text-align:center;margin-top:13px;background:#1d4ed8;color:#fff;padding:10px;border-radius:9px;font-weight:800;font-size:13px}.muted{color:#64748b;font-size:12px;line-height:1.5}
-.favorite-toast{position:fixed;top:18px;right:18px;z-index:9999;max-width:380px;background:#0B192C;color:#fff;border:2px solid #F59E0B;border-radius:14px;padding:15px 18px;box-shadow:0 12px 35px rgba(0,0,0,.25);font-size:13px;font-weight:800;line-height:1.45;animation:bizhubToastIn .25s ease-out;}
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0, viewport-fit=cover"><title>All Stores | BizHub Market</title>
+  <meta name="theme-color" content="#0B192C">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="BizHub">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+    <link rel="icon" type="image/png" href="/static/uploads/bizhub-app-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=4">
+    
+<style>
+:root{--nav:#131921;--nav2:#232f3e;--yellow:#febd69;--bg:#f3f4f6;--bg-card:#fff;--text-main:#111827;--text-muted:#64748b;--border:#e5e7eb;--amazon-yellow:#FFD814;--amazon-blue:#131921}
+
+      /* 👑 🦉 TWITTER HIGH-DENSITY DIM NIGHT THEME PROPERTY OVERRIDE */
+        :root.night-theme, .night-theme body {
+            --bg-abyssal: #15202B !important;      /* Twitter's Iconic Dark Blue Background */
+            --bg-light: #15202B !important;        /* Smooth Global Continuity Canvas */
+            --bg-card: #1E2732 !important;         /* Twitter Slate Card Blocks */
+            --text-main: #F7F9F9 !important;       /* Pristine High-Contrast Off-White Text */
+            --text-muted: #8899A6 !important;      /* Muted Ice-Blue Descriptive Labels */
+            --border-color: #38444D !important;    /* Twitter Slate Segment Borders */
+            --primary: #1D9BF0 !important;         /* Twitter Vivid Accent Blue */
+            --primary-light: #1A8CD8 !important;   
+            --nav: #1E2732 !important;
+        }
+
+        /* 🚀 Global Override Elements Cascade to Enforce Theme Uniformity */
+        .night-theme .card, .night-theme .sidebar, .night-theme .sidebar-card, .night-theme .auth-shell {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+        .night-theme input, .night-theme select, .night-theme textarea {
+            background-color: #15202B !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+*{box-sizing:border-box}html{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}body{margin:0;background:var(--bg);color:var(--text-main);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:90px !important;min-height:100%;overflow-y:auto;overflow-x:hidden}
+a{text-decoration:none}
+.bh-sticky-wrap{position:fixed;top:0;left:0;right:0;z-index:10000;width:100%;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.top{background:var(--nav);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;height:48px}
+.brand{font-size:22px;font-weight:900;color:#fff}.brand span{color:#ff9900}
+.nav{background:var(--nav2);display:flex;gap:4px;overflow:auto;white-space:nowrap;padding:0 10px;height:42px;align-items:center;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{color:#fff;padding:10px 12px;font-weight:700;font-size:13px;flex-shrink:0;border:1px solid transparent;border-radius:2px;text-decoration:none}
+.nav a:hover{border-color:#fff}
+.nav a.active{background:#fff;color:#0F1111 !important;border-radius:6px}
+.wrap{max-width:1180px;margin:24px auto;padding:0 16px}
+.hero{background:#fff;border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.hero h1{margin:0 0 6px;font-size:24px;font-weight:900}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 3px 15px rgba(0,0,0,.06);transition:all .2s}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.logo{width:68px;height:68px;border-radius:12px;object-fit:cover;background:#f3f4f6;border:1px solid var(--border)}
+.owner{display:inline-flex;align-items:center;background:#dcfce7;color:#166534;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:900;margin-bottom:8px;border:1px solid #bbf7d0}
+.btn{display:block;text-align:center;margin-top:13px;background:#131921;color:#fff;padding:10px;border-radius:8px;font-weight:800;font-size:13px;text-decoration:none;border:1px solid #131921}
+.btn:hover{background:#232f3e}
+.muted{color:var(--text-muted);font-size:12px;line-height:1.5}
+.favorite-toast{position:fixed;top:90px;right:18px;z-index:99999;max-width:380px;background:#0B192C;color:#fff;border:2px solid #F59E0B;border-radius:14px;padding:15px 18px;box-shadow:0 12px 35px rgba(0,0,0,.25);font-size:13px;font-weight:800;line-height:1.45;animation:bizhubToastIn .25s ease-out;}
 .favorite-toast strong{color:#F59E0B;}
 @keyframes bizhubToastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 </style></head>
-<body><header class="top"><a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a><div style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</div></header>
+<body><div class="bh-sticky-wrap"><header class="top"><a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a><div style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</div></header>
    <!-- 📌 STICKY NAVIGATION BAR -->
     <nav class="nav">
         <a href="{{ url_for('home') }}">☰ Marketplace</a>       
@@ -14,9 +71,38 @@
         <a href="{{ url_for('features') }}">🎯 Features</a>
         <a href="{{ url_for('order_history') }}">Orders</a>
         <a href="{{ url_for('settings') }}">Your Account</a>
-        <a href="{{ url_for('notifications') }}">🔔Biz Alerts</a>
-    </nav>
-  <main class="wrap"><section class="hero"><h1 style="margin:0 0 6px"> All Stores</h1><p class="muted" style="margin:0">Browse general Vendor stores only. Fast Food kitchens are listed separately.</p></section><div class="grid">{% for store in stores %}<article class="card">{% if store.is_owner %}<span class="owner">YOUR STORE</span>{% endif %}{% if store.company_logo %}<img class="logo" src="{{ url_for('static', filename='uploads/' + store.company_logo) }}" alt="{{ store.business_label }}">{% else %}<div class="logo" style="display:grid;place-items:center;font-size:30px"></div>{% endif %}<h2 style="font-size:18px;margin:10px 0 4px">{{ store.business_label }}</h2><div class="muted">@{{ store.username }}</div><div class="muted" style="margin-top:7px">📍 {{ store.business_location or 'Location not provided' }}</div><div class="muted" style="margin-top:5px">📦 {{ store.product_count }} product{% if store.product_count != 1 %}s{% endif %}</div><a class="btn" href="{{ url_for('vendor_profile', username=store.username) }}">Open Store</a>
+        <a href="{{ url_for('notifications') }}">🔔BizHub Alerts</a>
+    </nav></div>
+  <main class="wrap"><section class="hero"><h1 style="margin:0 0 6px"> All Stores</h1><p class="muted" style="margin:0">Browse general Vendor stores only. Fast Food kitchens are listed separately.</p></section>
+<!-- 🏆 TOP 20 VENDORS OF THE QUARTER - AUTO FLASH AMAZON STYLE -->
+{% if top_vendors_quarter and top_vendors_quarter|length>0 %}
+<section class="top-flash-section" style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px 16px 14px 16px;margin-bottom:18px;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+<div style="display:flex;align-items:center;gap:8px">
+<span style="background:#FFD814;color:#0F1111;font-size:11px;font-weight:900;padding:4px 10px;border-radius:20px;border:1px solid #FCD200">🏆 TOP 20 • {{ quarter_name or 'This Quarter' }}</span>
+<span style="font-size:12px;font-weight:800;color:#0F1111">Best Rated Stores</span>
+</div>
+<span style="font-size:11px;color:#565959">Auto flashing • {{ top_vendors_quarter|length }} stores</span>
+</div>
+<div class="flash-track" id="vendorFlashTrack" style="display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:4px 2px 8px 2px;scroll-snap-type:x mandatory">
+{% for brand in top_vendors_quarter %}
+<div class="square-card amazon-card" style="flex:0 0 160px;width:160px;height:160px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;scroll-snap-align:start;box-shadow:0 2px 8px rgba(0,0,0,.04);transition:all .2s">
+<div style="width:48px;height:48px;border-radius:10px;background:#f7f8f8;border:1px solid #f0f2f2;display:grid;place-items:center;overflow:hidden;flex-shrink:0">
+{% if brand.company_logo %}<img src="{{ url_for('static', filename='uploads/' + brand.company_logo) }}" style="width:100%;height:100%;object-fit:cover">{% else %}<span style="font-weight:900;font-size:20px">{{ (brand.business_label or brand.username)[0]|upper }}</span>{% endif %}
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;margin:6px 0;width:100%">
+<div style="font-size:12px;font-weight:800;color:#0F1111;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px">{{ brand.business_label }}</div>
+<div style="font-size:10px;color:#565959;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px">📍 {{ (brand.business_location or 'Ghana')[:18] }}</div>
+<div style="font-size:10px;background:#ECFDF5;border:1px solid #A7F3D0;color:#065f46;padding:2px 6px;border-radius:10px;font-weight:800;margin-top:2px">⭐ {{ "%.1f"|format(brand.avg_rating or 0) }} • {{ brand.rating_count or 0 }}</div>
+</div>
+<a href="{{ url_for('vendor_profile', username=brand.username) }}" style="width:100%;background:#FFD814;border:1px solid #FCD200;color:#0F1111;padding:6px;border-radius:7px;font-size:11px;font-weight:800;text-align:center;text-decoration:none">🏬 Open Store</a>
+</div>
+{% endfor %}
+</div>
+</section>
+{% endif %}
+
+<div class="grid">{% for store in stores %}<article class="card">{% if store.is_owner %}<span class="owner">YOUR STORE</span>{% endif %}{% if store.company_logo %}<img class="logo" src="{{ url_for('static', filename='uploads/' + store.company_logo) }}" alt="{{ store.business_label }}">{% else %}<div class="logo" style="display:grid;place-items:center;font-size:30px"></div>{% endif %}<h2 style="font-size:18px;margin:10px 0 4px">{{ store.business_label }}</h2><div class="muted">@{{ store.username }}</div><div class="muted" style="margin-top:7px">📍 {{ store.business_location or 'Location not provided' }}</div><div class="muted" style="margin-top:5px">📦 {{ store.product_count }} product{% if store.product_count != 1 %}s{% endif %}</div><a class="btn" href="{{ url_for('vendor_profile', username=store.username) }}">Open Store</a>
 {% if session.get('role') in ['Customer', 'Vendor', 'Fast Food', 'Delivery Service'] and not store.is_owner %}
 <form method="POST" action="{{ url_for('toggle_favorite', username=store.username) }}" style="margin-top:8px">
 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -39,6 +125,22 @@ document.addEventListener('DOMContentLoaded', function(){
 {% endif %}
         <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
         <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
-                 © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS Company
+                 © 2026 BizHub Marketplace · All Stores · A Product Of The TOZOTS Company
         </footer>
+
+<script>
+(function(){
+const track=document.getElementById('vendorFlashTrack');
+if(!track) return;
+let pos=0; let dir=1;
+setInterval(()=>{
+ if(track.matches(':hover')) return;
+ pos+=dir*0.6;
+ track.scrollLeft=pos;
+ if(pos>=track.scrollWidth - track.clientWidth - 10){dir=-1}
+ if(pos<=0){dir=1}
+},20);
+})();
+</script>
+
 </body></html>

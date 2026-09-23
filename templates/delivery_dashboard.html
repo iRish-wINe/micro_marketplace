@@ -1,12 +1,20 @@
 <!DOCTYPE html>
 <!-- 🚀 REPLICA INJECTOR BOUNDARY PATHWAY AT THE VERY TOP OF ALL FILE TEMPLATES -->
-<html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}"></html>
+<html lang="en"class="{% if app_theme == 'night' %}night-theme{% endif %}"></html>
 
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Driver Partner Console | BizHub Fleet</title>
+    <title>BizHub Courier | BizHub Market</title>
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-title" content="BizHub">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+<link rel="icon" type="image/png" href="/static/uploads/bizhub-app-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=4">
+    
     <style>
         /* 👑 BIZHUB FLEET DESIGN SYSTEM (UBER RIDE ENTERPRISE LIGHT/DARK MATRIX) */
         :root {
@@ -24,20 +32,44 @@
             --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--uber-gray-light); color: var(--uber-black); margin: 0; padding-bottom: 40px; }
+         /* 👑 🦉 TWITTER HIGH-DENSITY DIM NIGHT THEME PROPERTY OVERRIDE */
+        :root.night-theme, .night-theme body {
+            --bg-abyssal: #15202B !important;      /* Twitter's Iconic Dark Blue Background */
+            --bg-light: #15202B !important;        /* Smooth Global Continuity Canvas */
+            --bg-card: #1E2732 !important;         /* Twitter Slate Card Blocks */
+            --text-main: #F7F9F9 !important;       /* Pristine High-Contrast Off-White Text */
+            --text-muted: #8899A6 !important;      /* Muted Ice-Blue Descriptive Labels */
+            --border-color: #38444D !important;    /* Twitter Slate Segment Borders */
+            --primary: #1D9BF0 !important;         /* Twitter Vivid Accent Blue */
+            --primary-light: #1A8CD8 !important;   
+            --nav: #1E2732 !important;
+        }
+
+        /* 🚀 Global Override Elements Cascade to Enforce Theme Uniformity */
+        .night-theme .card, .night-theme .sidebar, .night-theme .sidebar-card, .night-theme .auth-shell {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+        .night-theme input, .night-theme select, .night-theme textarea {
+            background-color: #15202B !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+        html{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--uber-gray-light); color: var(--uber-black); margin: 0; padding-top:64px !important; padding-bottom: 40px; min-height:100%; overflow-y:auto; overflow-x:hidden; }
         .container { width: 100%; max-width: 1440px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
 
         /* BIZHUB UNIFORM BLACK NAVBAR */
-        .bh-global-header { background: var(--uber-black); color: white; min-height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-sizing: border-box; position: sticky; top: 0; z-index: 1000; }
+        .bh-global-header { background: var(--uber-black); color: white; min-height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-sizing: border-box; position: fixed; top: 0; left:0; right:0; width:100%; z-index: 10000; box-shadow:0 2px 12px rgba(0,0,0,.4); border-bottom:2px solid #06C167; }
         .bh-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: white; font-weight: 900; font-size: 22px; }
         .bh-brand span { color: var(--accent); }
         .bh-nav { display: flex; align-items: center; gap: 8px; }
-        .bh-nav a { color: #E2E8F0; text-decoration: none; font-weight: 700; font-size: 13px; padding: 10px 14px; border-radius: 8px; transition: var(--transition); }
+        .bh-nav a { color: #d1d5db; text-decoration: none; font-weight: 700; font-size: 13px; padding: 8px 14px; border-radius: 20px; transition: var(--transition); border:1px solid transparent; }
         .bh-nav a:hover { background: rgba(255, 255, 255, 0.1); color: var(--accent); }
         .bh-nav a.active { background: white; color: var(--uber-black); }
 
         /* INTERFACE GRID INFRASTRUCTURE */
-        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 24px; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 16px; }
         @media(min-width: 992px) { .dashboard-grid { grid-template-columns: 380px 1fr; } }
 
         .uber-card { background: white; border-radius: var(--radius); border: 1px solid var(--uber-gray-border); padding: 24px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(0,0,0,0.04); height: fit-content; margin-bottom: 24px; }
@@ -230,7 +262,7 @@ main.container {
         overflow-wrap: anywhere;
     }
 }
-    </style>
+    .favorite-toast{position:fixed;top:72px;right:18px;z-index:99999;max-width:380px;background:#000;color:#fff;border:2px solid #06C167;border-radius:14px;padding:15px 18px;box-shadow:0 12px 35px rgba(0,0,0,.25);font-size:13px;font-weight:800;}</style>
 </head>
 <body>
 
@@ -243,6 +275,7 @@ main.container {
             <a href="/">☰ Marketplace</a>
             <a href="/delivery" class="active">🚗 Driver Terminal</a>
             <a href="/delivery/manage-accounts">💳 Manage Account</a>
+            <a href="{{ url_for('settings') }}">Account Settings</a>
             <a href="/logout" style="color: var(--danger-red);">🚪 Sign Out</a>
         </nav>
     </header>
@@ -495,7 +528,7 @@ main.container {
 
                                 <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
                                     {% if req.vendor_whatsapp %}
-                                    <a href="https://wa.me/{{ req.vendor_whatsapp }}?text={{ ('Hello ' + req.vendor_username + ', I am ' + (service.service_name if service else 'your driver') + ' from BizHub. I received your delivery request #' + req.id|string + '. I am on it!')|urlencode }}" target="_blank" rel="noopener" style="flex:1; background:#25D366; color:white; text-decoration:none; padding:10px; border-radius:8px; font-weight:800; font-size:12px; text-align:center; display:flex; align-items:center; justify-content:center; gap:6px;">💬 WhatsApp Vendor</a>
+                                    <a href="https://wa.me/{{ req.vendor_whatsapp }}?text={{ ('Hello ' + req.vendor_username + ', I am ' + (service.service_name if service else 'your driver') + ' from BizHub. I received your delivery request #' + req.id|string + '. I am on it!')|urlencode }}" target="_blank" rel="noopener" style="flex:1; background:#25D366; color:white; text-decoration:none; padding:10px; border-radius:8px; font-weight:800; font-size:12px; text-align:center; display:flex; align-items:center; justify-content:center; gap:6px;"> WhatsApp Vendor</a>
                                     {% endif %}
                                     <a href="tel:{{ req.vendor_whatsapp }}" style="background:#F1F5F9; color:#0F172A; border:1px solid #E2E8F0; text-decoration:none; padding:10px 12px; border-radius:8px; font-weight:700; font-size:12px;">📞 Call</a>
                                 </div>
@@ -566,7 +599,7 @@ main.container {
         </div>
                 <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
         <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
-                  © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Product Of The TOZOTS Company
+                  © 2026 BizHub Marketplace · Delivery Services · A Product Of The TOZOTS Company
         </footer>
     </main>
 

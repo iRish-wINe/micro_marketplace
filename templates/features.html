@@ -2,10 +2,44 @@
 <html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}"></html>
 
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Features & Account Tools | BizHub - Amazon Style</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0, viewport-fit=cover">
+<title>Features & Account Tools | BizHub Market</title>
+    <meta name="theme-color" content="#0B192C">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="BizHub">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+    <link rel="icon" type="image/png" href="/static/uploads/bizhub-app-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=4">
+    
 <style>
 :root{--navy:#131921;--navy2:#232f3e;--orange:#ff9900;--yellow:#febd69;--bg:#eaeded;--card:#fff;--text:#0F1111;--muted:#565959;--border:#EAEDED;--success:#067647;--accent:#F59E0B;--danger:#EF4444}
+
+ /* 👑 🦉 TWITTER HIGH-DENSITY DIM NIGHT THEME PROPERTY OVERRIDE */
+        :root.night-theme, .night-theme body {
+            --bg-abyssal: #15202B !important;      /* Twitter's Iconic Dark Blue Background */
+            --bg-light: #15202B !important;        /* Smooth Global Continuity Canvas */
+            --bg-card: #1E2732 !important;         /* Twitter Slate Card Blocks */
+            --text-main: #F7F9F9 !important;       /* Pristine High-Contrast Off-White Text */
+            --text-muted: #8899A6 !important;      /* Muted Ice-Blue Descriptive Labels */
+            --border-color: #38444D !important;    /* Twitter Slate Segment Borders */
+            --primary: #1D9BF0 !important;         /* Twitter Vivid Accent Blue */
+            --primary-light: #1A8CD8 !important;   
+            --nav: #1E2732 !important;
+        }
+
+        /* 🚀 Global Override Elements Cascade to Enforce Theme Uniformity */
+        .night-theme .card, .night-theme .sidebar, .night-theme .sidebar-card, .night-theme .auth-shell {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+        .night-theme input, .night-theme select, .night-theme textarea {
+            background-color: #15202B !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important}
 .bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:#131921;box-shadow:0 2px 12px rgba(0,0,0,0.18);width:100%}
@@ -53,14 +87,14 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',syst
 <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">{% if session.get('username') %}<span style="font-size:11px;font-weight:700;color:var(--yellow)">👤 {{ session['username'] }}</span>{% else %}<a href="/login" style="color:#fff;font-size:12px;font-weight:700;text-decoration:none">Sign In</a>{% endif %}</div>
 </div>
 <nav class="bh-subbar">
-<a href="javascript:void(0)" onclick="document.getElementById('amazonOverlay').style.display='block'; setTimeout(()=>document.getElementById('amazonDrawer').style.left='0',10); return false;" style="color:#febd69 !important">☰ All</a>
-<a href="/">Today's Deals</a>
+<a href="{{ url_for('home') }}">☰ Marketplace</a>
+<a href="/promo-marketplace">Today's Deals</a>
 <a href="/top-brands" class="top20">🏆 Top 20 Brands</a>
 <a href="/all-stores">All Stores</a>
 <a href="/fast-food">Fast Food</a>
 <a href="/cart">🛒 Cart</a>
 <a href="/favorites">Favorites</a>
-<a href="/notifications">🔔 Biz Alerts</a>
+<a href="/notifications">🔔 BizHub Alerts</a>
 <a href="/orders">Orders</a>
 <a href="/features" style="background:#fff;color:#0F1111 !important;border-radius:6px">🎯 Features</a>
 <a href="/settings">Your Account</a>

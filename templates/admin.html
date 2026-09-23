@@ -1,10 +1,44 @@
 <!DOCTYPE html>
 <html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}"></html>
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>BizHub Admin - VERIFIED FINAL + Transaction Ledgers + Disputes + Moderation Sheets</title>
+    <meta name="theme-color" content="#0B192C">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="BizHub">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+    <link rel="icon" type="image/png" href="/static/uploads/bizhub-app-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=4">
+    
 <style>
 :root{--navy:#131921;--navy2:#232f3e;--yellow:#febd69;--bg:#eaeded;--card:#fff;--border:#FECACA;--border2:#EAEDED;--text:#0F1111;--muted:#565959;--lightred:#FFF5F5;--lightred2:#FEE2E2;--lightred3:#FFF1F2;--red:#B91C1C;--red2:#991B1B;--success:#10B981;--danger:#EF4444}
+
+ /* 👑 🦉 TWITTER HIGH-DENSITY DIM NIGHT THEME PROPERTY OVERRIDE */
+        :root.night-theme, .night-theme body {
+            --bg-abyssal: #15202B !important;      /* Twitter's Iconic Dark Blue Background */
+            --bg-light: #15202B !important;        /* Smooth Global Continuity Canvas */
+            --bg-card: #1E2732 !important;         /* Twitter Slate Card Blocks */
+            --text-main: #F7F9F9 !important;       /* Pristine High-Contrast Off-White Text */
+            --text-muted: #8899A6 !important;      /* Muted Ice-Blue Descriptive Labels */
+            --border-color: #38444D !important;    /* Twitter Slate Segment Borders */
+            --primary: #1D9BF0 !important;         /* Twitter Vivid Accent Blue */
+            --primary-light: #1A8CD8 !important;   
+            --nav: #1E2732 !important;
+        }
+
+        /* 🚀 Global Override Elements Cascade to Enforce Theme Uniformity */
+        .night-theme .card, .night-theme .sidebar, .night-theme .sidebar-card, .night-theme .auth-shell {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+        .night-theme input, .night-theme select, .night-theme textarea {
+            background-color: #15202B !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important}
 .bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:var(--navy);box-shadow:0 2px 12px rgba(0,0,0,0.18);width:100%}

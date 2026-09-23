@@ -1,14 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"class="{% if app_theme == 'night' %}night-theme{% endif %}"></html>
 
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>{{ vendor.company_name or vendor.username }} {% if vendor.role == 'Fast Food' %}Kitchen{% else %}Store{% endif %} | BizHub</title>
+<title>{{ vendor.company_name or vendor.username }} {% if vendor.role == 'Fast Food' %}Kitchen{% else %}Store{% endif %} | BizHub Market</title>
 <meta name="csrf-token" content="{{ csrf_token }}">
+{% if vendor.role == 'Fast Food' %}
+<meta name="theme-color" content="#000000">
+{% else %}
+<meta name="theme-color" content="#131921">
+{% endif %}
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BizHub">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+<link rel="icon" type="image/png" href="/static/uploads/bizhub-app-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=4">
 <style>
+
 :root{--nav:#131921;--nav2:#232f3e;--yellow:#febd69;--bg:#f3f4f6;--bg-card:#fff;--text-main:#111827;--text-muted:#64748b;--border:#e5e7eb;--border-red:#FECACA;--success:#06C167;--danger:#ef4444;--uber-green:#06C167;--uber-green-dark:#05944F;--uber-black:#000000;--uber-black-soft:#121212;--amazon-red:#CC0C39}
-:root.night-theme{--bg:#0f172a !important;--bg-card:#1e293b !important;--text-main:#f8fafc !important;--text-muted:#94a3b8 !important;--border:#334155 !important;--nav:#0f172a !important}
+
+ /* 👑 🦉 TWITTER HIGH-DENSITY DIM NIGHT THEME PROPERTY OVERRIDE */
+        :root.night-theme, .night-theme body {
+            --bg-abyssal: #15202B !important;      /* Twitter's Iconic Dark Blue Background */
+            --bg-light: #15202B !important;        /* Smooth Global Continuity Canvas */
+            --bg-card: #1E2732 !important;         /* Twitter Slate Card Blocks */
+            --text-main: #F7F9F9 !important;       /* Pristine High-Contrast Off-White Text */
+            --text-muted: #8899A6 !important;      /* Muted Ice-Blue Descriptive Labels */
+            --border-color: #38444D !important;    /* Twitter Slate Segment Borders */
+            --primary: #1D9BF0 !important;         /* Twitter Vivid Accent Blue */
+            --primary-light: #1A8CD8 !important;   
+            --nav: #1E2732 !important;
+        }
+
+        /* 🚀 Global Override Elements Cascade to Enforce Theme Uniformity */
+        .night-theme .card, .night-theme .sidebar, .night-theme .sidebar-card, .night-theme .auth-shell {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+        .night-theme input, .night-theme select, .night-theme textarea {
+            background-color: #15202B !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
 *{box-sizing:border-box}
 html{height:100%;overflow-x:hidden;overflow-y:auto}
 body{margin:0;background:var(--bg);color:var(--text-main);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important;min-height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}

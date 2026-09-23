@@ -2426,17 +2426,51 @@ def fast_food_stores():
         current_user = query_db("SELECT id, username, role FROM users WHERE username = ?", (session["username"],), one=True)
     else:
         current_user = None
+
+    # --- TOP 20 KITCHENS OF QUARTER (auto flash) ---
+    try:
+        now_dt = datetime.now(timezone.utc)
+        quarter_start_month = ((now_dt.month - 1) // 3) * 3 + 1
+        quarter_start = datetime(now_dt.year, quarter_start_month, 1, tzinfo=timezone.utc).isoformat()
+        quarter_name = f"Q{((now_dt.month-1)//3)+1} {now_dt.year}"
+        top_kitchens_quarter = query_db("""
+            SELECT DISTINCT u.id, u.username, u.company_name, u.business_location, u.company_logo,
+                   ROUND(AVG(r.rating),1) AS avg_rating, COUNT(r.id) AS rating_count,
+                   (SELECT COUNT(*) FROM products p WHERE p.seller = u.username AND p.category = 'Fast Food') AS menu_count
+            FROM users u JOIN reviews r ON r.vendor_id = u.id
+            WHERE u.role = 'Fast Food' AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
+            AND r.created_at >= ?
+            GROUP BY u.id ORDER BY avg_rating DESC, rating_count DESC LIMIT 20
+        """, (quarter_start,)) or []
+        if len(top_kitchens_quarter) < 3:
+            top_kitchens_quarter = query_db("""
+                SELECT DISTINCT u.id, u.username, u.company_name, u.business_location, u.company_logo,
+                       ROUND(AVG(r.rating),1) AS avg_rating, COUNT(r.id) AS rating_count,
+                       (SELECT COUNT(*) FROM products p WHERE p.seller = u.username AND p.category = 'Fast Food') AS menu_count
+                FROM users u JOIN reviews r ON r.vendor_id = u.id
+                WHERE u.role = 'Fast Food' AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
+                GROUP BY u.id ORDER BY avg_rating DESC, rating_count DESC LIMIT 20
+            """) or []
+        for b in top_kitchens_quarter:
+            b['business_label'] = b.get('company_name') or b.get('username')
+    except Exception as e:
+        logger.exception("top kitchens quarter failed")
+        top_kitchens_quarter = []
+        quarter_name = ""
+
+    # --- ALL KITCHENS ---
     kitchens = query_db("""
         SELECT u.id, u.username, u.company_name, u.business_location, u.company_logo, u.whatsapp_number,
                (SELECT COUNT(*) FROM products p WHERE p.seller = u.username AND p.category = 'Fast Food') AS menu_count
         FROM users u
         WHERE u.role = 'Fast Food' AND COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')
         ORDER BY u.id DESC
-            """) or []
+    """) or []
+
     owner_username = current_user["username"] if current_user and current_user["role"] == "Fast Food" else None
     favorite_vendor_ids = set()
     if current_user and current_user.get("role") in FAVORITE_ACTOR_ROLES:
-        favorite_rows = query_db("SELECT vendor_id FROM favorites WHERE customer_id = ?""", (current_user["id"],)) or []
+        favorite_rows = query_db("SELECT vendor_id FROM favorites WHERE customer_id = ?", (current_user["id"],)) or []
         favorite_vendor_ids = {row["vendor_id"] for row in favorite_rows}
     favorite_added_message = session.pop("favorite_added_message", None)
     kitchens.sort(key=lambda k: (k.get("username") != owner_username, -int(k.get("id") or 0)))
@@ -2444,7 +2478,8 @@ def fast_food_stores():
         kitchen["business_label"] = kitchen.get("company_name") or kitchen.get("username")
         kitchen["is_owner"] = kitchen.get("username") == owner_username
         kitchen["is_favorite"] = kitchen.get("id") in favorite_vendor_ids
-    return render_template("fast_food_stores.html", kitchens=kitchens, favorite_added_message=favorite_added_message)
+
+    return render_template("fast_food_stores.html", kitchens=kitchens, top_kitchens_quarter=top_kitchens_quarter, quarter_name=quarter_name, favorite_added_message=favorite_added_message)
 
 @app.route("/top-brands")
 def top_brands():
@@ -2482,7 +2517,6 @@ FAVORITE_ACTOR_ROLES = {"Customer", "Vendor", "Fast Food", "Delivery Service"}
 
 @app.route("/all-stores")
 def all_stores():
-    """👑 CORE LOGISTICS MATRIX FILTER: Filters businesses by broad queries, specific locations, or product categories."""
     if "username" in session:
         current_user = query_db("SELECT id, username, role FROM users WHERE username = ?", (session["username"],), one=True)
     else:
@@ -2493,48 +2527,69 @@ def all_stores():
     target_role = request.args.get("role", "").strip()
     
     product_args = []
-    # Base filtering rules: filters out suspended or restricted accounts securely
     base_conditions = ["COALESCE(u.account_status, 'Active') NOT IN ('Suspended', 'Terminated')"]
-    
     if target_role:
-        base_conditions.append("u.role = ?")
-        product_args.append(target_role)
+        base_conditions.append("u.role = ?"); product_args.append(target_role)
     elif target_category:
-        base_conditions.append("u.id IN (SELECT user_id FROM vendor_categories WHERE category = ?)")
-        product_args.append(target_category)
+        base_conditions.append("u.id IN (SELECT user_id FROM vendor_categories WHERE category = ?)"); product_args.append(target_category)
     elif search_query:
         search_pattern = f"%{search_query}%"
         base_conditions.append("(u.company_name LIKE ? OR u.username LIKE ? OR u.business_location LIKE ?)")
         product_args.extend([search_pattern, search_pattern, search_pattern])
     else:
-        # Default fallback view state
         base_conditions.append("u.role = 'Vendor'")
+
+    # --- TOP 20 VENDORS OF QUARTER (auto flash) ---
+    try:
+        now_dt = datetime.now(timezone.utc)
+        quarter_start_month = ((now_dt.month - 1) // 3) * 3 + 1
+        quarter_start = datetime(now_dt.year, quarter_start_month, 1, tzinfo=timezone.utc).isoformat()
+        quarter_name = f"Q{((now_dt.month-1)//3)+1} {now_dt.year}"
+        top_vendors_quarter = query_db("""
+            SELECT DISTINCT u.id, u.username, u.company_name, u.business_location, u.company_logo,
+                   ROUND(AVG(r.rating),1) AS avg_rating, COUNT(r.id) AS rating_count,
+                   (SELECT COUNT(*) FROM products p WHERE p.seller = u.username) AS product_count
+            FROM users u JOIN reviews r ON r.vendor_id = u.id
+            WHERE u.role = 'Vendor' AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
+            AND r.created_at >= ?
+            GROUP BY u.id ORDER BY avg_rating DESC, rating_count DESC LIMIT 20
+        """, (quarter_start,)) or []
+        if len(top_vendors_quarter) < 3:
+            top_vendors_quarter = query_db("""
+                SELECT DISTINCT u.id, u.username, u.company_name, u.business_location, u.company_logo,
+                       ROUND(AVG(r.rating),1) AS avg_rating, COUNT(r.id) AS rating_count,
+                       (SELECT COUNT(*) FROM products p WHERE p.seller = u.username) AS product_count
+                FROM users u JOIN reviews r ON r.vendor_id = u.id
+                WHERE u.role = 'Vendor' AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
+                GROUP BY u.id ORDER BY avg_rating DESC, rating_count DESC LIMIT 20
+            """) or []
+        for b in top_vendors_quarter:
+            b['business_label'] = b.get('company_name') or b.get('username')
+    except Exception:
+        top_vendors_quarter = []; quarter_name = ""
 
     stores_query = f"""
         SELECT u.id, u.username, u.company_name, u.business_location, u.company_logo, u.whatsapp_number, u.role,
                (SELECT COUNT(*) FROM products p WHERE p.seller = u.username) AS product_count
-        FROM users u
-        WHERE {" AND ".join(base_conditions)}
-        ORDER BY u.id DESC
+        FROM users u WHERE {" AND ".join(base_conditions)} ORDER BY u.id DESC
     """
     stores = query_db(stores_query, product_args) or []
-
     owner_username = current_user["username"] if current_user and current_user["role"] in ("Vendor", "Fast Food") else None
     favorite_vendor_ids = set()
     if current_user and current_user.get("role") in FAVORITE_ACTOR_ROLES:
         favorite_rows = query_db("SELECT vendor_id FROM favorites WHERE customer_id = ?", (current_user["id"],)) or []
         favorite_vendor_ids = {row["vendor_id"] for row in favorite_rows}
-        
     favorite_added_message = session.pop("favorite_added_message", None)
     stores.sort(key=lambda s: (s.get("username") != owner_username, -int(s.get("id") or 0)))
-    
     for store in stores:
         store["business_label"] = store.get("company_name") or store.get("username")
         store["is_owner"] = store.get("username") == owner_username
         store["is_favorite"] = store.get("id") in favorite_vendor_ids
         
-    return render_template("all_stores.html", stores=stores, favorite_added_message=favorite_added_message, search_query=search_query or target_category or target_role)
+    return render_template("all_stores.html", stores=stores, top_vendors_quarter=top_vendors_quarter, quarter_name=quarter_name, favorite_added_message=favorite_added_message, search_query=search_query or target_category or target_role)
+   
 
+ 
 
 @app.route("/favorites")
 def favorites():
@@ -2560,31 +2615,53 @@ def favorites():
     return render_template("favorites.html", vendors=vendors, current_user=user)
 
 
-@app.route("/favorites/toggle/<username>", methods=["POST"])
+@app.route("/toggle-favorite/<username>", methods=["POST"])
 def toggle_favorite(username):
     if "username" not in session:
         return redirect(url_for("login"))
-    actor = query_db("SELECT id, username, role FROM users WHERE username = ?", (session["username"],), one=True)
+    actor = query_db("SELECT id, username, role, whatsapp_number FROM users WHERE username = ?", (session["username"],), one=True)
     if not actor or actor.get("role") not in FAVORITE_ACTOR_ROLES:
         return redirect(safe_internal_referrer(url_for("vendor_profile", username=username)))
-    vendor = query_db("SELECT id, username, company_name FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food')", (username,), one=True)
+    vendor = query_db("SELECT id, username, company_name, whatsapp_number, business_location, role FROM users WHERE username = ? AND role IN ('Vendor', 'Fast Food')", (username,), one=True)
     if not vendor or actor["id"] == vendor["id"]:
         return redirect(safe_internal_referrer(url_for("vendor_profile", username=username)))
     existing = query_db("SELECT id FROM favorites WHERE customer_id = ? AND vendor_id = ?", (actor["id"], vendor["id"]), one=True)
     if existing:
         query_db("DELETE FROM favorites WHERE id = ?", (existing["id"],))
+        session["favorite_added_message"] = f"Removed {vendor.get('company_name') or vendor.get('username')} from favorites"
     else:
         query_db("INSERT INTO favorites (customer_id, vendor_id, created_at) VALUES (?, ?, ?)", (actor["id"], vendor["id"], datetime.now(timezone.utc).isoformat()))
         company_name = vendor.get("company_name") or vendor.get("username")
-        session["favorite_added_message"] = f"Added {company_name} to your favorites. You can remove them from favorite when you want"
-        create_notification(vendor["id"], "favorite", "New Favorite", f"@{actor['username']} added your store to their favorites.", url_for("vendor_profile", username=username))
+
+        # TOAST for user
+        session["favorite_added_message"] = f"Added {company_name} to your favorites. You can remove them when you want"
+
+        # 1. IN-APP NOTIFICATION TO VENDOR (existing)
+        create_notification(vendor["id"], "favorite", "New Favorite ❤️", f"@{actor['username']} added your store {company_name} to their favorites.", url_for("vendor_profile", username=username))
+        
+        # 2. FEEDBACK IN-APP TO USER WHO DID IT (existing)
         create_notification(
-            actor["id"],
-            "favorite",
-            "Thank You for Adding a Favorite ❤️🙏",
-            f"Thank you for adding @{username} to your BizHub favorites! ❤️🙏 We appreciate your support and hope you enjoy staying connected with their store.",
+            actor["id"], "favorite", "Thank You for Adding a Favorite ❤️🙏",
+            f"Thank you for adding @{username} ({company_name}) to your BizHub favorites! ❤️🙏",
             url_for("notifications")
         )
+
+        # 3. NEW: WHATSAPP NOTIFICATIONS - SAFE, NON-BLOCKING
+        try:
+            vendor_wa = normalize_whatsapp_number(vendor.get("whatsapp_number"))
+            if vendor_wa:
+                wa_text_vendor = f"❤️ BizHub Favorite Alert!\n\nHello {company_name}, @{actor['username']} just favorited your {'kitchen' if vendor['role']=='Fast Food' else 'store'} on BizHub! 🎉 They will see your new products first."
+                # Save to vendor_notifications so vendor sees WA text in dashboard + in-app
+                query_db(
+                    "INSERT INTO vendor_notifications (vendor_id, customer_username, item_name, message, created_at, is_read) VALUES (?, ?, ?, ?, ?, 0)",
+                    (vendor["id"], actor["username"], f"Favorite: {company_name}", wa_text_vendor, datetime.now(timezone.utc).isoformat())
+                )
+                # WhatsApp link for customer to optionally message vendor (impulse chat)
+                vendor_wa_link = f"https://wa.me/{vendor_wa}?text={quote(f'Hi {company_name}! I just added your store to my BizHub favorites ❤️')}"
+                session["favorite_vendor_wa_link"] = vendor_wa_link
+        except Exception as e:
+            print(f"Favorite WhatsApp hook failed: {e}")
+
     return redirect(safe_internal_referrer(url_for("vendor_profile", username=username)))
 
 @app.route("/notifications/<int:notification_id>/open", methods=["POST"])

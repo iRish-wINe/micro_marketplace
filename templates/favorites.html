@@ -1,7 +1,68 @@
 <!DOCTYPE html><!-- 🚀 REPLICA INJECTOR BOUNDARY PATHWAY AT THE VERY TOP OF ALL FILE TEMPLATES -->
-<html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}"></html>
+<html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}">
 
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Favorites | BizHub</title><style>body{margin:0;background:#f3f4f6;color:#111827;font-family:Arial,Helvetica,sans-serif}a{text-decoration:none}.top{background:#131921;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}.brand{font-size:22px;font-weight:900;color:#fff}.brand span{color:#ff9900}.nav{background:#232f3e;display:flex;gap:4px;overflow:auto;white-space:nowrap;padding:0 10px}.nav a{color:#fff;padding:11px 12px;font-weight:700;font-size:13px}.wrap{max-width:1180px;margin:24px auto;padding:0 16px}.hero{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:22px;margin-bottom:18px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:15px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px;box-shadow:0 3px 15px rgba(0,0,0,.06)}.logo{width:68px;height:68px;border-radius:16px;object-fit:cover;background:#e5e7eb}.owner{display:inline-block;background:#dcfce7;color:#166534;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900;margin-bottom:8px}.btn{display:block;text-align:center;margin-top:13px;background:#1d4ed8;color:#fff;padding:10px;border-radius:9px;font-weight:800;font-size:13px}.muted{color:#64748b;font-size:12px;line-height:1.5}</style></head><body><header class="top"><a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a><div style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</div></header><nav class="nav"><a href="{{ url_for('home') }}">☰ Marketplace</a><a href="{{ url_for('all_stores') }}">All Stores</a><a href="{{ url_for('fast_food_stores') }}">Fast Food</a><a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">Favorites</a><a href="{{ url_for('settings') if session.get('username') else url_for('login') }}">Your Account</a>{% if session.get('role') in ['Vendor','Fast Food'] %}{% endif %}</nav><main class="wrap"><section class="hero"><h1 style="margin:0 0 6px">⭐ My Favorite Stores & Kitchens</h1><p class="muted" style="margin:0">Stores and kitchens you have added to your favorites. Owners are notified when someone favorites their store or kitchen.</p></section><div class="grid">{% for vendor in vendors %}<article class="card">{% if vendor.company_logo %}<img class="logo" src="{{ url_for('static', filename='uploads/' + vendor.company_logo) }}" alt="{{ vendor.business_label }}">{% else %}<div class="logo" style="display:grid;place-items:center;font-size:30px">{{ '🍔' if vendor.role == 'Fast Food' else '🏪' }}</div>{% endif %}<h2 style="font-size:18px;margin:10px 0 4px">{{ vendor.business_label }}</h2><div class="muted">@{{ vendor.username }}</div><div class="muted" style="margin-top:7px">{{ '🍔 Fast Food Kitchen' if vendor.role == 'Fast Food' else '🏪 General Vendor Store' }}</div><div class="muted" style="margin-top:5px">📍 {{ vendor.business_location or 'Location not provided' }}</div><div style="display:flex;gap:8px;margin-top:13px"><a class="btn" style="margin:0;flex:1" href="{{ url_for('vendor_profile', username=vendor.username) }}">Open</a><form method="POST" action="{{ url_for('toggle_favorite', username=vendor.username) }}" style="flex:1">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0, viewport-fit=cover"><title>Favorites | BizHub</title>
+    <meta name="theme-color" content="#0B192C">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="BizHub">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+    <link rel="icon" type="image/png" href="/static/uploads/bizhub-app-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=4">
+    
+<style>
+:root{--nav:#131921;--nav2:#232f3e;--yellow:#febd69;--bg:#f3f4f6;--bg-card:#fff;--text-main:#111827;--text-muted:#64748b;--border:#e5e7eb;--amazon-yellow:#FFD814;--amazon-blue:#131921}
+
+ /* 👑 🦉 TWITTER HIGH-DENSITY DIM NIGHT THEME PROPERTY OVERRIDE */
+        :root.night-theme, .night-theme body {
+            --bg-abyssal: #15202B !important;      /* Twitter's Iconic Dark Blue Background */
+            --bg-light: #15202B !important;        /* Smooth Global Continuity Canvas */
+            --bg-card: #1E2732 !important;         /* Twitter Slate Card Blocks */
+            --text-main: #F7F9F9 !important;       /* Pristine High-Contrast Off-White Text */
+            --text-muted: #8899A6 !important;      /* Muted Ice-Blue Descriptive Labels */
+            --border-color: #38444D !important;    /* Twitter Slate Segment Borders */
+            --primary: #1D9BF0 !important;         /* Twitter Vivid Accent Blue */
+            --primary-light: #1A8CD8 !important;   
+            --nav: #1E2732 !important;
+        }
+
+        /* 🚀 Global Override Elements Cascade to Enforce Theme Uniformity */
+        .night-theme .card, .night-theme .sidebar, .night-theme .sidebar-card, .night-theme .auth-shell {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+        .night-theme input, .night-theme select, .night-theme textarea {
+            background-color: #15202B !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+*{box-sizing:border-box}html{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}body{margin:0;background:var(--bg);color:var(--text-main);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:90px !important;min-height:100%;overflow-y:auto;overflow-x:hidden}
+a{text-decoration:none}
+.bh-sticky-wrap{position:fixed;top:0;left:0;right:0;z-index:10000;width:100%;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.top{background:var(--nav);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;height:48px}
+.brand{font-size:22px;font-weight:900;color:#fff}.brand span{color:#ff9900}
+.nav{background:var(--nav2);display:flex;gap:4px;overflow:auto;white-space:nowrap;padding:0 10px;height:42px;align-items:center;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{color:#fff;padding:10px 12px;font-weight:700;font-size:13px;flex-shrink:0;border:1px solid transparent;border-radius:2px;text-decoration:none}
+.nav a:hover{border-color:#fff}
+.nav a.active{background:#fff;color:#0F1111 !important;border-radius:6px}
+.wrap{max-width:1180px;margin:24px auto;padding:0 16px}
+.hero{background:#fff;border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.hero h1{margin:0 0 6px;font-size:24px;font-weight:900}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 3px 15px rgba(0,0,0,.06);transition:all .2s}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.logo{width:68px;height:68px;border-radius:12px;object-fit:cover;background:#f3f4f6;border:1px solid var(--border)}
+.owner{display:inline-flex;align-items:center;background:#dcfce7;color:#166534;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:900;margin-bottom:8px;border:1px solid #bbf7d0}
+.btn{display:block;text-align:center;margin-top:13px;background:#131921;color:#fff;padding:10px;border-radius:8px;font-weight:800;font-size:13px;text-decoration:none;border:1px solid #131921}
+.btn:hover{background:#232f3e}
+.muted{color:var(--text-muted);font-size:12px;line-height:1.5}
+.favorite-toast{position:fixed;top:90px;right:18px;z-index:99999;max-width:380px;background:#0B192C;color:#fff;border:2px solid #F59E0B;border-radius:14px;padding:15px 18px;box-shadow:0 12px 35px rgba(0,0,0,.25);font-size:13px;font-weight:800;line-height:1.45;animation:bizhubToastIn .25s ease-out;}
+.favorite-toast strong{color:#F59E0B;}
+@keyframes bizhubToastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+</style></head><body><div class="bh-sticky-wrap"><header class="top"><a class="brand" href="{{ url_for('home') }}">Biz<span>Hub</span></a><div style="font-size:12px;color:#cbd5e1">Your Local Market, Unified Online</div></header><nav class="nav"><a href="{{ url_for('home') }}">☰ Marketplace</a><a href="{{ url_for('all_stores') }}">All Stores</a><a href="{{ url_for('fast_food_stores') }}">Fast Food</a><a href="{{ url_for('favorites') if session.get('username') else url_for('login') }}">Favorites</a><a href="{{ url_for('settings') if session.get('username') else url_for('login') }}">Your Account</a>{% if session.get('role') in ['Vendor','Fast Food'] %}{% endif %}</nav></div><main class="wrap"><section class="hero"><h1 style="margin:0 0 6px">⭐ My Favorite Stores & Kitchens</h1><p class="muted" style="margin:0">Stores and kitchens you have added to your favorites. Owners are notified when someone favorites their store or kitchen.</p></section><div class="grid">{% for vendor in vendors %}<article class="card">{% if vendor.company_logo %}<img class="logo" src="{{ url_for('static', filename='uploads/' + vendor.company_logo) }}" alt="{{ vendor.business_label }}">{% else %}<div class="logo" style="display:grid;place-items:center;font-size:30px">{{ '🍔' if vendor.role == 'Fast Food' else 'General Vendor Store' }}</div>{% endif %}<h2 style="font-size:18px;margin:10px 0 4px">{{ vendor.business_label }}</h2><div class="muted">@{{ vendor.username }}</div><div class="muted" style="margin-top:7px">{{ '🍔 Fast Food Kitchen' if vendor.role == 'Fast Food' else 'General Vendor Store' }}</div><div class="muted" style="margin-top:5px">📍 {{ vendor.business_location or 'Location not provided' }}</div><div style="display:flex;gap:8px;margin-top:13px"><a class="btn" style="margin:0;flex:1" href="{{ url_for('vendor_profile', username=vendor.username) }}">Open</a><form method="POST" action="{{ url_for('toggle_favorite', username=vendor.username) }}" style="flex:1">
 <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn" style="width:100%;border:0;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;cursor:pointer">Remove Favorite</button></form></div></article>{% else %}<div class="card"><strong>You have no favorite stores or kitchens yet.</strong><p class="muted">Open a Vendor store or Fast Food kitchen and choose “Add to Favorites”.</p></div>{% endfor %}</div>        <!-- 👑 OFFICIAL BUSINESS LOGISTICS PLATFORM FOOTER -->
         <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
                    © 2026 BizHub Marketplace · Favorites· A Product Of The TOZOTS Company

@@ -4,8 +4,17 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{{ product['title'] }} | Biz Hub</title>
+        <meta name="theme-color" content="#0B192C">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="BizHub">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+    <link rel="icon" type="image/png" href="/static/uploads/bizhub-app-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=4">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root { --bh-bg: #f3f4f6; --bh-card: #ffffff; --bh-text: #111827; --bh-muted: #6b7280; --bh-border: #e5e7eb; }
