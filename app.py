@@ -2726,6 +2726,26 @@ def subscribe_push():
         query_db("INSERT OR IGNORE INTO push_subscriptions (user_id, subscription_json, created_at) VALUES (?, ?, ?)", (user["id"], json.dumps(subscription, separators=(",", ":"), sort_keys=True), datetime.now(timezone.utc).isoformat()))
     return {"ok": True}
 
+@app.route("/save-fcm-token", methods=["POST"])
+def save_fcm_token():
+    if "username" not in session:
+        return "", 204
+    data = request.get_json() or {}
+    token = data.get("token")
+    if token:
+        try:
+            db = get_db()
+            # try create column if e no exist
+            try:
+                db.execute("ALTER TABLE users ADD COLUMN fcm_token TEXT")
+            except:
+                pass
+            db.execute("UPDATE users SET fcm_token = ? WHERE username = ?", (token, session["username"]))
+            db.commit()
+        except Exception as e:
+            print(e)
+    return "", 204
+
 @app.route("/push/vapid-public-key")
 def vapid_public_key():
     if "username" not in session:

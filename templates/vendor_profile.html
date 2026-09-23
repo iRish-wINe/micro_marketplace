@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}">
+<html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}"></html>
 
 <head>
 <meta charset="UTF-8">
@@ -7,6 +7,7 @@
 <title>{{ vendor.company_name or vendor.username }} {% if vendor.role == 'Fast Food' %}Kitchen{% else %}Store{% endif %} | BizHub Market</title>
 <meta name="csrf-token" content="{{ csrf_token }}">
 {% if vendor.role == 'Fast Food' %}
+
 <meta name="theme-color" content="#000000">
 {% else %}
 <meta name="theme-color" content="#131921">
@@ -46,8 +47,8 @@
             color: var(--text-main) !important;
         }
 *{box-sizing:border-box}
-html{height:100%;overflow-x:hidden;overflow-y:auto}
-body{margin:0;background:var(--bg);color:var(--text-main);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important;min-height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+html{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
+body{margin:0;background:var(--bg);color:var(--text-main);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important;min-height:100vh;overflow-y:auto !important;overflow-x:hidden;position:relative;-webkit-overflow-scrolling:touch}
 html.night-theme, body.night-theme{overflow-y:auto}
 .bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:var(--nav);box-shadow:0 2px 12px rgba(0,0,0,.18);width:100%}
 .bh-topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px}
@@ -162,8 +163,8 @@ html.night-theme, body.night-theme{overflow-y:auto}
 <body>
 <div id="mediaModal" onclick="if(event.target===this) closeMediaModal()"><div class="media-modal-box"><button class="modal-close-x" onclick="closeMediaModal()">✕</button><img id="modalImage" style="display:none"><video id="modalVideo" style="display:none" controls playsinline></video></div></div>
 <script>
-function openMediaModal(src,type){const m=document.getElementById('mediaModal'),i=document.getElementById('modalImage'),v=document.getElementById('modalVideo');i.style.display='none';v.style.display='none';v.pause();if(type==='video'){v.src=src;v.style.display='block';v.play().catch(()=>{});}else{i.src=src;i.style.display='block';}m.classList.add('active');m.style.display='flex';document.documentElement.style.overflow='hidden';document.body.style.overflow='hidden';}
-function closeMediaModal(){const m=document.getElementById('mediaModal'),v=document.getElementById('modalVideo');v.pause();v.src='';m.classList.remove('active');m.style.display='none';document.documentElement.style.overflow='';document.body.style.overflow='';}
+function openMediaModal(src,type){const m=document.getElementById('mediaModal'),i=document.getElementById('modalImage'),v=document.getElementById('modalVideo');i.style.display='none';v.style.display='none';v.pause();if(type==='video'){v.src=src;v.style.display='block';v.play().catch(()=>{});}else{i.src=src;i.style.display='block';}m.classList.add('active');m.style.display='flex';document.documentElement.style.overflow='hidden';document.body.style.overflow='hidden';document.body.style.position='fixed';document.body.style.width='100%';}
+function closeMediaModal(){const m=document.getElementById('mediaModal'),v=document.getElementById('modalVideo');v.pause();v.src='';m.classList.remove('active');m.style.display='none';document.documentElement.style.overflow='';document.body.style.overflow='';document.body.style.position='';document.body.style.width='';}
 </script>
 
 <header class="bh-global-header {% if vendor.role == 'Fast Food' %}uber-theme{% endif %}">

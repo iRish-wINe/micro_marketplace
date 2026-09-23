@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}"></html>
+<html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}">
 
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -168,6 +168,81 @@ document.body.appendChild(b);setTimeout(()=>{if(b.parentElement){b.style.opacity
 }
 }
 });
+</script>
+
+
+<!-- 🔔 FIREBASE FCM - REAL PUSH + SOUND + VIBRATE FOR PWA -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCyutGoQfbfBOqJd5GstrfFuz1J2x1yIi4",
+    authDomain: "bizhub-market.firebaseapp.com",
+    projectId: "bizhub-market",
+    storageBucket: "bizhub-market.firebasestorage.app",
+    messagingSenderId: "815993881097",
+    appId: "1:815993881097:web:92711c0ebbacea9362eed8",
+    measurementId: "G-QCMSD9TYVZ"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const messaging = getMessaging(app);
+
+  // Register SW for FCM
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/firebase-messaging-sw.js')
+      .then(reg => {
+        console.log('FCM SW registered', reg);
+        // Request notification permission
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            console.log('Notification permission granted');
+            // Get FCM token
+            getToken(messaging, { vapidKey: 'BB0Dqp6bA0Olln1lXnmtq4NdP0q2A3gdoOljyKziBDIHrTf3dAilbZN2iMo2rMikjSwZZJAjJ5XNQ5k5rzid-3g', serviceWorkerRegistration: reg })
+              .then(currentToken => {
+                if (currentToken) {
+                  console.log('FCM Token:', currentToken);
+                  // SEND THIS TOKEN TO YOUR BACKEND - save to users table
+                  fetch('/save-fcm-token', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({token: currentToken})
+                  });
+                } else {
+                  console.log('No token');
+                }
+              }).catch(err => console.log('Token error', err));
+          }
+        });
+      }).catch(err => console.log('SW reg fail', err));
+  }
+
+  // Foreground messages - when PWA is open
+  onMessage(messaging, (payload) => {
+    console.log('Foreground FCM', payload);
+    // Play sound + vibrate + modal same as existing
+    try {
+      const a = document.getElementById('notifSound');
+      if (a) { a.volume=0.8; a.currentTime=0; a.play().catch(()=>{}); setTimeout(()=>a.play().catch(()=>{}),300); }
+      if (navigator.vibrate) navigator.vibrate([300,100,300]);
+    } catch(e){}
+
+    // Show floating banner with payload
+    const title = payload.notification?.title || payload.data?.title || 'New BizHub Alert!';
+    const body = payload.notification?.body || payload.data?.body || 'You have a new notification';
+    
+    if (!document.getElementById('fcmBanner')) {
+      const b = document.createElement('div');
+      b.id='fcmBanner';
+      b.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:0;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.4);z-index:99999;display:flex;align-items:stretch;max-width:92%;width:400px;overflow:hidden;border:2px solid #06C167;animation:slideUp 0.4s ease';
+      b.innerHTML=`<div style="width:52px;background:#06C167;display:grid;place-items:center;font-size:22px">🔔</div><div style="flex:1;padding:12px"><div style="font-weight:900;font-size:13px">${title}</div><div style="font-size:11px;color:#9CA3AF;margin-top:3px">${body}</div><div style="margin-top:8px;display:flex;gap:6px"><button onclick="window.location.reload()" style="background:#fff;color:#000;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:800;flex:1;cursor:pointer">View</button><button onclick="this.closest('#fcmBanner').remove()" style="background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer">Dismiss</button></div></div><button onclick="this.closest('#fcmBanner').remove()" style="background:transparent;border:none;color:#6B7280;width:30px;display:grid;place-items:center;cursor:pointer">✕</button>`;
+      document.body.appendChild(b);
+      setTimeout(()=>{ if(b.parentElement){ b.style.opacity='0'; b.style.transform='translateX(-50%) translateY(20px)'; b.style.transition='all 0.4s'; setTimeout(()=>b.remove(),400)}},10000);
+    }
+  });
 </script>
 
 </body>
