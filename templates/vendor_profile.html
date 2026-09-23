@@ -47,9 +47,8 @@
             color: var(--text-main) !important;
         }
 *{box-sizing:border-box}
-html{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
-body{margin:0;background:var(--bg);color:var(--text-main);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important;min-height:100vh;overflow-y:auto !important;overflow-x:hidden;position:relative;-webkit-overflow-scrolling:touch}
-html.night-theme, body.night-theme{overflow-y:auto}
+html{min-height:100%;overflow-x:hidden;overflow-y:scroll;-webkit-overflow-scrolling:touch}
+body{margin:0;background:var(--bg);color:var(--text-main);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-top:106px !important;min-height:100vh;overflow-x:hidden;position:relative;-webkit-overflow-scrolling:touch}
 .bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:var(--nav);box-shadow:0 2px 12px rgba(0,0,0,.18);width:100%}
 .bh-topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px}
 .bh-brand{font-size:22px;font-weight:900;color:#fff;text-decoration:none}.bh-brand span{color:#ff9900}
@@ -184,7 +183,7 @@ function closeMediaModal(){const m=document.getElementById('mediaModal'),v=docum
 <a href="{{ url_for('cart_page') }}">🛒 Cart {% if cart_count and cart_count|int>0 %}<span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:10px;font-size:10px">{{ cart_count }}</span>{% endif %}</a>
 <a href="{{ url_for('vendor_profile', username=vendor.username) }}" class="active">{{ vendor.company_name or vendor.username }}</a>
 </nav>
-</div>
+</header>
 
 <div class="wrap">
 
@@ -455,7 +454,7 @@ function closeMediaModal(){const m=document.getElementById('mediaModal'),v=docum
 </div>
 </div>
 
-<footer class="footer">© 2026 BizHub Marketplace ·Vendor Store/Kitchen · A Product Of TOZOTS Company</footer>
+<footer class="footer">© 2026 BizHub Marketplace ·Vendor Store/Kitchen · A Product Of The TOZOTS Company</footer>
 
 <script>
  function showVendorView(v){
