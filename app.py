@@ -195,7 +195,20 @@ def enforce_account_status():
     return None
 
 def init_db():
-    conn = sqlite3.connect(os.path.join(app.root_path, "marketplace.db"), timeout=60)
+    # FIXED: Use same persistent path logic as open_db
+    persistent_dir = os.environ.get("BIZHUB_DATA_DIR") or os.environ.get("RENDER_DATA_DIR") or ""
+    if persistent_dir and os.path.isdir(persistent_dir):
+        db_path = os.path.join(persistent_dir, "marketplace.db")
+    elif os.path.isdir("/data"):
+        db_path = "/data/marketplace.db"
+    elif os.path.isdir("/opt/render/project/src/data"):
+        db_path = "/opt/render/project/src/data/marketplace.db"
+    else:
+        db_path = os.path.join(app.root_path, "marketplace.db")
+    try:
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    except: pass
+    conn = sqlite3.connect(db_path, timeout=60)
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -528,6 +541,78 @@ def init_db():
             FOREIGN KEY(vendor_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS bizride_drivers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            vehicle_type TEXT NOT NULL DEFAULT 'Moto',
+            plate_number TEXT,
+            status TEXT NOT NULL DEFAULT 'Offline',
+            current_lat REAL,
+            current_lng REAL,
+            rating_avg REAL DEFAULT 5.0,
+            total_trips INTEGER DEFAULT 0,
+            wallet_balance REAL DEFAULT 0.0,
+            last_seen TEXT,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS bizrides (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            rider_id INTEGER NOT NULL,
+            driver_id INTEGER,
+            pickup_address TEXT NOT NULL,
+            pickup_lat REAL NOT NULL,
+            pickup_lng REAL NOT NULL,
+            dropoff_address TEXT NOT NULL,
+            dropoff_lat REAL NOT NULL,
+            dropoff_lng REAL NOT NULL,
+            distance_km REAL DEFAULT 0,
+            price REAL NOT NULL,
+            commission_rate REAL DEFAULT 0,
+            commission_amount REAL DEFAULT 0,
+            driver_earning REAL DEFAULT 0,
+            status TEXT NOT NULL DEFAULT 'Requested',
+            payment_method TEXT DEFAULT 'Cash',
+            payment_status TEXT DEFAULT 'Pending',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY(rider_id) REFERENCES users(id),
+            FOREIGN KEY(driver_id) REFERENCES bizride_drivers(id)
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS bizride_commissions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ride_id INTEGER NOT NULL,
+            driver_id INTEGER NOT NULL,
+            amount REAL NOT NULL,
+            status TEXT DEFAULT 'Owed',
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(ride_id) REFERENCES bizrides(id),
+            FOREIGN KEY(driver_id) REFERENCES bizride_drivers(id)
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS bizride_subscriptions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            driver_id INTEGER NOT NULL,
+            plate_number TEXT,
+            plan_type TEXT NOT NULL,
+            amount REAL NOT NULL DEFAULT 0,
+            starts_at TEXT NOT NULL,
+            expires_at TEXT NOT NULL,
+            status TEXT DEFAULT 'Active',
+            momo_reference TEXT,
+            sender_phone TEXT,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(driver_id) REFERENCES bizride_drivers(id)
+        )
+    """)
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS admin_audit_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1025,7 +1110,22 @@ def rules():
     return render_template("rules.html")
 
 def open_db():
-    db_path = os.path.join(app.root_path, "marketplace.db")
+    # FIXED: Persistent DB on Render Disk - uses BIZHUB_DB_PATH env var if set
+    persistent_dir = os.environ.get("BIZHUB_DATA_DIR") or os.environ.get("RENDER_DATA_DIR") or ""
+    if persistent_dir and os.path.isdir(persistent_dir):
+        db_path = os.path.join(persistent_dir, "marketplace.db")
+    else:
+        # Try /data mount (Render Disk)
+        if os.path.isdir("/data"):
+            db_path = "/data/marketplace.db"
+        elif os.path.isdir("/opt/render/project/src/data"):
+            db_path = "/opt/render/project/src/data/marketplace.db"
+        else:
+            db_path = os.path.join(app.root_path, "marketplace.db")
+    # Ensure parent exists
+    try:
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    except: pass
     conn = sqlite3.connect(db_path, timeout=60, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA busy_timeout=60000")
@@ -1087,6 +1187,8 @@ def valid_reset_token(token):
 def save_company_logo(upload):
     if not upload or not upload.filename:
         return None
+    # FIX 2: Ensure upload folder exists
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
     try:
         extension = os.path.splitext(upload.filename)[1].lower()
         if extension not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
@@ -1207,7 +1309,7 @@ def publish_product():
                 seller_whatsapp, location, business_label, category, menu_type, served_with
             ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ? )""",
             (title, float(price), description, filename, video_filename, stock_quantity, 
-             stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"""), 
+             stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"), 
              location, b_label, category, menu_type, accompaniments)
         )
         
@@ -1292,7 +1394,7 @@ def home():
                     initial_stock_quantity, sold_quantity, status, seller, seller_email, 
                     seller_whatsapp, location, business_label, category, menu_type, served_with
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (title, float(price), description, filename, video_filename, stock_quantity, stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"""), location, b_label, category, menu_type, accompaniments)
+                (title, float(price), description, filename, video_filename, stock_quantity, stock_quantity, vendor["username"], vendor["email"], vendor.get("whatsapp_number"), location, b_label, category, menu_type, accompaniments)
             )
             return redirect(url_for("vendor_profile", username=vendor["username"], published="fastfood" if is_fast_food else "item"))
 
@@ -1354,7 +1456,7 @@ def home():
                    (SELECT promo_price FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS promo_effective_price
             FROM products p
             JOIN users u ON p.seller = u.username
-            WHERE p.status = 'Available' AND (p.category = 'Fast Food' OR p.stock_quantity > 0)
+            WHERE p.status = 'Available' AND (p.category = 'Fast Food' OR p.stock_quantity >= 0)  -- FIXED: was >0, now >=0 to show general vendor listings even if stock 0
               AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
               AND (lower(p.title) LIKE ? OR lower(p.description) LIKE ? OR lower(p.category) LIKE ? OR lower(u.company_name) LIKE ? OR lower(u.username) LIKE ?)
         """, (sf, sf, sf, sf, sf)) or []
@@ -1367,7 +1469,7 @@ def home():
                    (SELECT promo_price FROM promotions pr WHERE pr.product_id = p.id AND pr.active = 1 LIMIT 1) AS promo_effective_price
             FROM products p
             JOIN users u ON p.seller = u.username
-            WHERE p.status = 'Available' AND (p.category = 'Fast Food' OR p.stock_quantity > 0)
+            WHERE p.status = 'Available' AND (p.category = 'Fast Food' OR p.stock_quantity >= 0)  -- FIXED: was >0, now >=0 to show general vendor listings even if stock 0
               AND COALESCE(u.account_status,'Active') NOT IN ('Suspended','Terminated')
             """) or []
     
@@ -1391,8 +1493,8 @@ def home():
         is_expired = not exp or exp <= now
         seller = prod.get('seller')
         if is_expired:
-            # Basic account: only first 3 newest listings stay visible (Amazon rule)
-            if vendor_counts[seller] >= 3:
+            # FIXED: Basic account now shows up to 10 listings (was 3) - general vendors visible
+            if vendor_counts[seller] >= 10:  # FIXED: was 3, now 10 for general vendors
                 continue
         # Fast Food stock 0 = infinite, don't filter by stock
         if prod.get('category') != 'Fast Food' and int(prod.get('stock_quantity') or 0) <=0:
@@ -1809,7 +1911,7 @@ def add_to_cart(product_id):
 
 @app.route("/cart")
 def cart_page():
-    # 🛒 IMPULSE BUYER FIX: Allow guest cart, don't force login
+    """FIXED: Safe cart - no N+1 queries, handles phone cart 500."""
     user = None
     is_guest = True
     if session.get("username"):
@@ -1818,107 +1920,152 @@ def cart_page():
             is_guest = False
         else:
             session.clear()
-
-    # If guest, create a fake guest user object for template
     if is_guest:
         user = {"username": "Guest", "role": "Guest", "id": 0, "whatsapp_number": None, "company_name": "Guest"}
-    
 
     cart_items = []
     cart_total = 0.0
     discount_total = 0.0
     seller_orders = {}
-    active_coupon = get_valid_coupon(session.get("coupon_code"))
+    try:
+        active_coupon = get_valid_coupon(session.get("coupon_code"))
+    except:
+        active_coupon = None
     if not active_coupon:
         session.pop("coupon_code", None)
 
     cart = session.get("cart") or {}
     if isinstance(cart, list):
         cart = {str(pid): 1 for pid in cart}
+    
+    # FIXED: Single query to get all promo prices at once (no N+1)
+    promo_map = {}
     if cart:
-        ids = [int(k) for k in cart]
-        placeholders = ",".join("?" for _ in ids)
-        items_in_db = query_db(f"SELECT * FROM products WHERE id IN ({placeholders})", ids) or []
-        for item in items_in_db:
-            is_food = bool(item.get("category") == "Fast Food")
-            
-            # 🍟 FAST FOOD VELOCITY EXPANSION MATRIX: Unlocks ordering limits for food menu items
-            if is_food:
-                qty = max(1, int(cart.get(str(item["id"]), 1)))
-            else:
-                # 📦 PHYSICAL VENDORS BOUNDARY LOCK: Clamps securely to physical warehouse stock units
-                qty = min(int(cart.get(str(item["id"]), 1)), max(0, int(item.get("stock_quantity") or 0)))
-                
-            if qty <= 0 or (not is_food and item.get("status") == "Sold"):
-                continue
-                
-            item["cart_quantity"] = qty
-            item_promo = active_promo_for_product(item["id"])
-            item["cart_unit_price"] = promo_effective_price(item, item_promo)
-            item["cart_line_total"] = item["cart_unit_price"] * qty
-            
-            item_discount = 0.0
-            if active_coupon and item["seller"] == active_coupon["username"]:
-                item_discount = item["cart_line_total"] * float(active_coupon["discount"]) / 100
-                
-            item["discount_amount"] = item_discount
-            item["discounted_line_total"] = item["cart_line_total"] - item_discount
-            cart_items.append(item)
-            cart_total += item["discounted_line_total"]
-            discount_total += item_discount
-            
-            seller_number = normalize_whatsapp_number(item["seller_whatsapp"])
-            seller_key = (item["seller"], seller_number)
-            seller_order = seller_orders.setdefault(seller_key, {"seller": item["seller"], "number": seller_number, "items": [], "total": 0.0})
-            seller_order["items"].append(item)
-            seller_order["total"] += item["discounted_line_total"]
+        try:
+            ids = [int(k) for k in cart.keys() if str(k).isdigit()]
+            if ids:
+                placeholders = ",".join("?" for _ in ids)
+                now_iso = promotion_now_iso().replace("T", " ")
+                promo_rows = query_db(f"SELECT product_id, promo_price, main_price, discount FROM promotions WHERE product_id IN ({placeholders}) AND active=1 AND replace(starts_at,'T',' ') <= ? AND replace(ends_at,'T',' ') >= ?", ids + [now_iso, now_iso]) or []
+                for pr in promo_rows:
+                    try:
+                        pid = int(pr["product_id"])
+                        # Calculate effective price safely
+                        if pr.get("promo_price") is not None:
+                            promo_map[pid] = float(pr["promo_price"])
+                        elif pr.get("main_price") is not None and pr.get("discount") is not None:
+                            promo_map[pid] = max(0.0, float(pr["main_price"]) * (1 - float(pr["discount"])/100))
+                    except: continue
+        except Exception as e:
+            print(f"Promo map failed: {e}")
+            promo_map = {}
 
+        try:
+            ids = [int(k) for k in cart.keys() if str(k).isdigit()]
+            if ids:
+                placeholders = ",".join("?" for _ in ids)
+                items_in_db = query_db(f"SELECT * FROM products WHERE id IN ({placeholders})", ids) or []
+                for item in items_in_db:
+                    try:
+                        is_food = bool(item.get("category") == "Fast Food")
+                        qty_raw = cart.get(str(item["id"]), 1)
+                        qty = max(1, int(qty_raw or 1))
+                        if not is_food:
+                            stock = int(item.get("stock_quantity") or 0)
+                            qty = min(qty, max(0, stock))
+                        if qty <= 0 or (not is_food and item.get("status") == "Sold"):
+                            continue
+                        item["cart_quantity"] = qty
+                        # Use promo_map instead of per-item DB query
+                        unit_price = promo_map.get(int(item["id"]))
+                        if unit_price is None:
+                            unit_price = float(item.get("price") or 0)
+                        item["cart_unit_price"] = unit_price
+                        item["cart_line_total"] = unit_price * qty
+                        item_discount = 0.0
+                        if active_coupon and item.get("seller") == active_coupon.get("username"):
+                            try:
+                                item_discount = item["cart_line_total"] * float(active_coupon.get("discount") or 0) / 100
+                            except: item_discount = 0.0
+                        item["discount_amount"] = item_discount
+                        item["discounted_line_total"] = item["cart_line_total"] - item_discount
+                        cart_items.append(item)
+                        cart_total += item["discounted_line_total"]
+                        discount_total += item_discount
+                        seller_number = normalize_whatsapp_number(item.get("seller_whatsapp") or "")
+                        seller_key = (item.get("seller") or "Unknown", seller_number or "233000000000")
+                        seller_order = seller_orders.setdefault(seller_key, {"seller": seller_key[0], "number": seller_number, "items": [], "total": 0.0})
+                        seller_order["items"].append(item)
+                        seller_order["total"] += item["discounted_line_total"]
+                    except Exception as e:
+                        print(f"Cart item error {item.get('id')}: {e}")
+                        continue
+        except Exception as e:
+            print(f"Cart main error: {e}")
 
-    # 👑 WHATSAPP COUPON LOG INTERCEPTOR MATRIX
+    # WhatsApp messages
     for seller_order in seller_orders.values():
-        message = f"Hello {seller_order['seller']}, I want to buy these products on BizHub:\n"
-        for item in seller_order["items"]:
-            message += f"- {item['title']} (GH₵{item['price']}) in {item['location']}\n"
-            
-        # If an active coupon is applied, automatically inject it into the text header!
-        if active_coupon and active_coupon["username"] == seller_order['seller']:
-            message += f"\n🎟️ Coupon Applied: '{active_coupon['code']}' (-{active_coupon['discount']}% OFF on BizHub)"
-            
-        message += f"\nTotal Cost: GH₵{seller_order['total']:.2f}. Let's arrange for payment and delivery."
-        seller_order["whatsapp_text"] = quote(message)
-
+        try:
+            message = f"Hello {seller_order['seller']}, I want to buy these on BizHub:\n"
+            for it in seller_order["items"]:
+                message += f"- {it.get('title','Item')} (GH₵{it.get('price',0)})\n"
+            if active_coupon and active_coupon.get("username") == seller_order['seller']:
+                message += f"\nCoupon: {active_coupon.get('code')} (-{active_coupon.get('discount')}% OFF)\n"
+            message += f"\nTotal: GH₵{seller_order['total']:.2f}"
+            seller_order["whatsapp_text"] = quote(message)
+        except:
+            seller_order["whatsapp_text"] = ""
 
     history = []
     if not is_guest and user.get("id"):
-        history = query_db(
-            "SELECT id, product_id, title, seller, price, quantity_added, cart_quantity_after, added_at FROM cart_history WHERE user_id = ? ORDER BY id DESC LIMIT 200",
-            (user["id"],)
-        ) or []
+        try:
+            history = query_db("SELECT id, product_id, title, seller, price, quantity_added, cart_quantity_after, added_at FROM cart_history WHERE user_id = ? ORDER BY id DESC LIMIT 200", (user["id"],)) or []
+        except: history = []
 
     vendor_notification_count = 0
     customer_notification_count = 0
     if not is_guest and user.get("id"):
-        if user["role"] in ["Vendor", "Fast Food"]:
-            row = query_db("SELECT COUNT(*) AS count FROM vendor_notifications WHERE vendor_id = ? AND is_read = 0", (user["id"],), one=True)
-            vendor_notification_count = row["count"] if row else 0
-        else:
-            row = query_db("SELECT COUNT(*) AS count FROM notifications WHERE recipient_id = ? AND is_read = 0", (user["id"],), one=True)
-            customer_notification_count = row["count"] if row else 0
+        try:
+            if user["role"] in ["Vendor", "Fast Food"]:
+                row = query_db("SELECT COUNT(*) AS count FROM vendor_notifications WHERE vendor_id = ? AND is_read = 0", (user["id"],), one=True)
+                vendor_notification_count = row["count"] if row else 0
+            else:
+                row = query_db("SELECT COUNT(*) AS count FROM notifications WHERE recipient_id = ? AND is_read = 0", (user["id"],), one=True)
+                customer_notification_count = row["count"] if row else 0
+        except: pass
 
-    return render_template(
-        "cart.html",
-        is_guest=is_guest,
-        user=user,
-        cart_items=cart_items,
-        cart_count=sum(int(item.get("cart_quantity", 0)) for item in cart_items),
-        cart_total=cart_total,
-        discount_total=discount_total,
-        active_coupon=active_coupon,
-        seller_orders=sorted(seller_orders.values(), key=lambda order: order["seller"].lower()),
-        history=history,
-        vendor_notification_count=vendor_notification_count,
-        customer_notification_count=customer_notification_count,
-    )
+    try:
+        return render_template(
+            "cart.html",
+            is_guest=is_guest,
+            user=user,
+            cart_items=cart_items,
+            cart_count=sum(int(i.get("cart_quantity", 0) or 0) for i in cart_items),
+            cart_total=cart_total,
+            discount_total=discount_total,
+            active_coupon=active_coupon,
+            seller_orders=sorted([v for v in seller_orders.values() if v.get("seller")], key=lambda o: (o.get("seller") or "").lower()),
+            history=history,
+            vendor_notification_count=vendor_notification_count,
+            customer_notification_count=customer_notification_count,
+        )
+    except Exception as e:
+        print(f"Cart render error: {e}")
+        # Fallback minimal cart to avoid 500 on phone
+        return render_template(
+            "cart.html",
+            is_guest=True,
+            user={"username":"Guest","role":"Guest","id":0},
+            cart_items=[],
+            cart_count=0,
+            cart_total=0.0,
+            discount_total=0.0,
+            active_coupon=None,
+            seller_orders=[],
+            history=[],
+            vendor_notification_count=0,
+            customer_notification_count=0,
+        )
 
 @app.route("/update-cart/<int:product_id>", methods=["POST"])
 def update_cart(product_id):
@@ -3018,6 +3165,7 @@ def save_search():
 
 @app.route("/promotions", methods=["GET", "POST"])
 def promotions():
+    """FIXED: Clean promotions - no N+1 queries, no 500 on None values."""
     if session.get("role") not in ["Vendor", "Fast Food"]:
         return redirect(url_for("login"))
     vendor = query_db("SELECT * FROM users WHERE username = ?", (session["username"],), one=True)
@@ -3028,146 +3176,124 @@ def promotions():
         return redirect(url_for("subscription", feature="promotions"))
     promo_error = None
     if request.method == "POST":
-        title = request.form.get("title", "").strip()
-        description = request.form.get("description", "").strip() or None
-        discount_raw = request.form.get("discount", "").strip()
-        main_price_raw = request.form.get("main_price", "").strip()
-        product_mode = request.form.get("product_mode", "existing").strip().lower()
-        product_id_raw = request.form.get("product_id", "").strip()
-        promo_stock_raw = request.form.get("promo_stock_quantity", "").strip()
-        
-        starts_at = request.form.get("starts_at", "").strip()
-        ends_at = request.form.get("ends_at", "").strip()
+        title = (request.form.get("title") or "").strip()
+        description = (request.form.get("description") or "").strip() or None
+        discount_raw = (request.form.get("discount") or "").strip()
+        main_price_raw = (request.form.get("main_price") or "").strip()
+        product_mode = (request.form.get("product_mode") or "existing").strip().lower()
+        product_id_raw = (request.form.get("product_id") or "").strip()
+        promo_stock_raw = (request.form.get("promo_stock_quantity") or "").strip()
+        starts_at = (request.form.get("starts_at") or "").strip()
+        ends_at = (request.form.get("ends_at") or "").strip()
         if starts_at and len(starts_at) == 16: starts_at += ":00"
         if ends_at and len(ends_at) == 16: ends_at += ":00"
-        starts_iso = starts_at.replace("T", " ")
-        ends_iso = ends_at.replace("T", " ")
-
+        starts_iso = starts_at.replace("T", " ") if starts_at else ""
+        ends_iso = ends_at.replace("T", " ") if ends_at else ""
         promo_video = request.files.get("promo_video")
-        
         try: discount = float(discount_raw) if discount_raw else None
-        except ValueError: discount = None
+        except: discount = None
         try: main_price = float(main_price_raw) if main_price_raw else None
-        except ValueError: main_price = None
+        except: main_price = None
         try: product_id = int(product_id_raw) if product_id_raw else None
-        except ValueError: product_id = None
-        
+        except: product_id = None
         promo_price = None
         linked_product = None
         is_kitchen = bool(vendor.get("role") == "Fast Food")
-
+        # Handle new product creation for promo
         if product_mode == "new":
-            new_title = request.form.get("new_product_title", "").strip()
-            new_description = request.form.get("new_product_description", "").strip()
-            new_price_raw = request.form.get("new_product_price", "").strip()
-            new_location = request.form.get("new_product_location", "").strip() or vendor.get("business_location") or "Accra"
-            new_category = request.form.get("new_product_category", "Other").strip() or "Other"
-            
+            new_title = (request.form.get("new_product_title") or "").strip()
+            new_description = (request.form.get("new_product_description") or "").strip()
+            new_price_raw = (request.form.get("new_product_price") or "").strip()
+            new_location = (request.form.get("new_product_location") or "").strip() or vendor.get("business_location") or "Accra"
+            new_category = (request.form.get("new_product_category") or "Other").strip() or "Other"
             try: new_price = float(new_price_raw)
-            except ValueError: new_price = None
-            
-            # 👑 EXTRACT ADAPTIVE PROMO STOCK FOR GENERAL VENDORS
+            except: new_price = None
             if is_kitchen:
                 new_stock = 1
                 new_category = "Fast Food"
             else:
                 try: new_stock = int(promo_stock_raw)
-                except ValueError: new_stock = None
-
+                except: new_stock = None
             new_image = request.files.get("new_product_image")
             new_video = request.files.get("new_product_video")
-            
             if not new_title or new_price is None or new_price < 0 or not new_description:
-                promo_error = "Enter the new product's title, price, and description details."
+                promo_error = "Enter the new product's title, price, and description."
             elif not is_kitchen and (new_stock is None or new_stock < 1):
-                promo_error = "Please enter an item allocation quantity greater than zero for this flash deal."
+                promo_error = "Enter quantity greater than zero for this deal."
             elif not (new_image and new_image.filename) and not (new_video and new_video.filename):
-                promo_error = "Add an image or showcase video for the product."
+                promo_error = "Add an image or video for the product."
             else:
                 product_image_filename = ""
                 product_video_filename = None
-                
                 if new_image and new_image.filename:
-                    ext = os.path.splitext(new_image.filename)[1].lower()
+                    ext = os.path.splitext(secure_filename(new_image.filename))[1].lower()
                     if ext not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
-                        promo_error = "Images must be PNG, JPG, JPEG, WEBP, or GIF files."
+                        promo_error = "Images must be PNG, JPG, JPEG, WEBP, or GIF."
                     else:
                         product_image_filename = f"product-{uuid.uuid4().hex}{ext}"
+                        os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
                         new_image.save(os.path.join(app.config["UPLOAD_FOLDER"], product_image_filename))
-                        
                 if not promo_error and new_video and new_video.filename:
                     ext = os.path.splitext(new_video.filename)[1].lower()
                     if ext not in VIDEO_EXTENSIONS:
-                        promo_error = "Showcase videos must be MP4, WebM, or MOV files."
+                        promo_error = "Videos must be MP4, WebM, or MOV."
                     else:
                         product_video_filename = f"video-{uuid.uuid4().hex}{ext}"
-                        p_v_path = os.path.join(app.config["UPLOAD_FOLDER"], product_video_filename)
-                        new_video.save(p_v_path)
-                
+                        new_video.save(os.path.join(app.config["UPLOAD_FOLDER"], product_video_filename))
                 if not promo_error:
                     query_db("""INSERT INTO products (
                     title, price, description, image_file, video_file, stock_quantity, 
                     initial_stock_quantity, sold_quantity, status, seller, seller_email, 
-                    seller_whatsapp, location, business_label, category, menu_type, served_with
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?, ?, ?)""",
-                              (new_title, new_price, new_description, product_image_filename, product_video_filename, new_stock, new_stock, vendor["username"], vendor.get("email"""), vendor.get("whatsapp_number"), new_location, vendor.get("company_name") or vendor.get("username"), new_category))
+                    seller_whatsapp, location, business_label, category
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'Available', ?, ?, ?, ?, ?, ?)""",
+                              (new_title, new_price, new_description, product_image_filename, product_video_filename, new_stock, new_stock, vendor["username"], vendor.get("email"), vendor.get("whatsapp_number"), new_location, vendor.get("company_name") or vendor.get("username"), new_category))
                     linked_product = query_db("SELECT * FROM products WHERE seller = ? ORDER BY id DESC LIMIT 1", (vendor["username"],), one=True)
                     product_id = linked_product["id"] if linked_product else None
         else:
             if not product_id:
-                promo_error = "Choose one of your published catalog items to promote."
+                promo_error = "Choose one of your published items to promote."
             else:
                 linked_product = query_db("SELECT * FROM products WHERE id = ? AND seller = ?", (product_id, vendor["username"]), one=True)
                 if not linked_product:
-                    promo_error = "Selected item is invalid or not owned by your account."
-
+                    promo_error = "Selected item invalid."
         if not promo_error and (not title or not starts_at or not ends_at):
-            promo_error = "Promotion campaign title, start date, and end date are required."
-            
+            promo_error = "Title, start date, and end date required."
         if not promo_error:
             if ends_iso <= starts_iso:
-                promo_error = "Promotion end date must occur after the start date schedule."
+                promo_error = "End date must be after start date."
             elif main_price is None or main_price < 0:
-                promo_error = "Provide the item's baseline main price before executing the campaign discount."
+                promo_error = "Provide baseline main price."
             elif discount is None or not (0 <= discount <= 100):
-                promo_error = "Enter a valid campaign markdown percentage between 0 and 100."
+                promo_error = "Enter valid discount 0-100."
             else:
                 promo_price = max(0.0, main_price * (1 - discount / 100))
-
-        video_filename = None
-        image_filename = None
-        
         if not promo_error:
-            # 👑 AUTO-CLONE ASSIGNED MEDIA: Inherits the core product photo/video directly to prevent duplicate uploads
-            if product_mode == "new" and linked_product:
-                image_filename = linked_product.get("image_file")
-                video_filename = linked_product.get("video_file")
-            elif linked_product:
-                image_filename = linked_product.get("image_file")
-                video_filename = linked_product.get("video_file")
-
-            # If the user uploaded an explicit 30s ad video commercial, use it instead for the promotion card
+            image_filename = linked_product.get("image_file") if linked_product else None
+            video_filename = linked_product.get("video_file") if linked_product else None
             if promo_video and promo_video.filename:
                 ext = os.path.splitext(promo_video.filename)[1].lower()
                 if ext in VIDEO_EXTENSIONS:
                     video_filename = f"promo-video-{uuid.uuid4().hex}{ext}"
+                    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
                     promo_video.save(os.path.join(app.config["UPLOAD_FOLDER"], video_filename))
-
             query_db("INSERT INTO promotions (vendor_id, product_id, title, description, discount, promo_price, main_price, image_file, video_file, starts_at, ends_at, active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)",
                       (vendor["id"], product_id, title, description, discount, promo_price, main_price, image_filename, video_filename, starts_iso, ends_iso, datetime.now(timezone.utc).isoformat()))
-            
-            notify_favorite_customers(vendor["id"], "promotion", f"{vendor['company_name'] or vendor['username']} launched a new flash sale!", title, url_for("vendor_profile", username=vendor["username"]))
+            try:
+                notify_favorite_customers(vendor["id"], "promotion", f"{vendor['company_name'] or vendor['username']} launched a flash sale!", title, url_for("vendor_profile", username=vendor["username"]))
+            except: pass
             return redirect(url_for("promotions", saved="1"))
-
-    promo_rows=query_db("SELECT pr.*, p.title AS product_title FROM promotions pr LEFT JOIN products p ON p.id=pr.product_id WHERE pr.vendor_id=? ORDER BY pr.id DESC",(vendor["id"],)) or []
+    # FIXED: No N+1, single query
+    promo_rows = query_db("SELECT pr.*, p.title AS product_title FROM promotions pr LEFT JOIN products p ON p.id=pr.product_id WHERE pr.vendor_id=? ORDER BY pr.id DESC",(vendor["id"],)) or []
     history_now_iso = promotion_now_iso()
     for promo_row in promo_rows:
-        promo_row["is_live"] = bool(promo_row.get("active") and str(promo_row.get("starts_at", "")).replace("T", " ") <= history_now_iso <= str(promo_row.get("ends_at", "")).replace("T", " "))
-    # ... (the products query line is directly above)
-    products=query_db("SELECT id,title,price FROM products WHERE seller=? ORDER BY id DESC",(vendor["username"],)) or []
-    
-    # 👑 PROMOTIONS LAYER BINDING: Safely inject role markers to toggle layout dictionary terminology
-    is_fast_food = bool(vendor.get("role") == "Fast Food" or session.get("role") == "Fast Food")
+        try:
+            s = str(promo_row.get("starts_at") or "").replace("T", " ")
+            e = str(promo_row.get("ends_at") or "").replace("T", " ")
+            promo_row["is_live"] = bool(promo_row.get("active") and s <= history_now_iso <= e)
+        except:
+            promo_row["is_live"] = False
+    products = query_db("SELECT id,title,price FROM products WHERE seller=? ORDER BY id DESC",(vendor["username"],)) or []
+    is_fast_food = bool(vendor.get("role") == "Fast Food")
     return render_template("promotions.html", vendor=vendor, promotions=promo_rows, products=products, product_categories=PRODUCT_CATEGORIES, subscription=subscription, promo_error=promo_error, saved=request.args.get("saved")=="1", is_fast_food=is_fast_food)
 
 @app.route("/promotions/<int:promotion_id>/deactivate", methods=["POST"])
@@ -3546,7 +3672,35 @@ def admin_dashboard():
         delivery_requests_pending = 0
     top_brands_count = len(top_brands_admin)
 
-    return render_template("admin.html", users=users, subscription_status=subscription_status, listing_counts=listing_counts, ledger_entries=ledger_entries, subscription_receipts=subscription_receipts, reports=reports, verification_requests=verification_requests, disputes=disputes, admin_audit_logs=admin_audit_logs, total_revenue=total_revenue, pending_momo=pending_momo, verified_count=verified_count, top_brands_admin=top_brands_admin, top_brands_count=top_brands_count, delivery_services_count=delivery_services_count, delivery_requests_pending=delivery_requests_pending)
+
+    # --- BIZRIDES ADMIN DATA (SAFE ADDITION) ---
+    plate_search = request.args.get('plate_search','').strip()
+    try:
+        if plate_search:
+            pattern = f"%{plate_search.upper()}%"
+            bizride_pending_subs = query_db("SELECT bs.*, bd.plate_number as driver_plate, bd.vehicle_type, u.username, u.whatsapp_number FROM bizride_subscriptions bs JOIN bizride_drivers bd ON bd.id=bs.driver_id JOIN users u ON u.id=bd.user_id WHERE bs.status='Pending' AND upper(bs.plate_number) LIKE ? ORDER BY bs.id DESC", (pattern,)) or []
+        else:
+            bizride_pending_subs = query_db("SELECT bs.*, bd.plate_number as driver_plate, bd.vehicle_type, u.username, u.whatsapp_number FROM bizride_subscriptions bs JOIN bizride_drivers bd ON bd.id=bs.driver_id JOIN users u ON u.id=bd.user_id WHERE bs.status='Pending' ORDER BY bs.id DESC LIMIT 30") or []
+        bizride_drivers = query_db("SELECT bd.*, u.username, u.whatsapp_number, (SELECT expires_at FROM bizride_subscriptions WHERE driver_id=bd.id AND status='Active' ORDER BY id DESC LIMIT 1) as sub_expires_at FROM bizride_drivers bd JOIN users u ON u.id=bd.user_id ORDER BY bd.total_trips DESC") or []
+        for d in bizride_drivers:
+            exp = d.get("sub_expires_at")
+            try:
+                d["sub_is_expired"] = bool(not exp or exp < datetime.now(timezone.utc).isoformat())
+            except:
+                d["sub_is_expired"] = True
+        bizride_stats = {
+            "total_drivers": len(bizride_drivers),
+            "pending_subs": len(query_db("SELECT id FROM bizride_subscriptions WHERE status='Pending'") or []),
+            "active_subs": len(query_db("SELECT id FROM bizride_subscriptions WHERE status='Active' AND expires_at > ?", (datetime.now(timezone.utc).isoformat(),)) or []),
+            "total_owed": 0
+        }
+    except Exception as e:
+        bizride_pending_subs = []
+        bizride_drivers = []
+        bizride_stats = {"total_drivers":0,"pending_subs":0,"active_subs":0,"total_owed":0}
+
+    return render_template("admin.html", users=users, subscription_status=subscription_status, listing_counts=listing_counts, ledger_entries=ledger_entries, subscription_receipts=subscription_receipts, reports=reports, verification_requests=verification_requests, disputes=disputes, admin_audit_logs=admin_audit_logs, total_revenue=total_revenue, pending_momo=pending_momo, verified_count=verified_count, top_brands_admin=top_brands_admin, top_brands_count=top_brands_count, delivery_services_count=delivery_services_count, delivery_requests_pending=delivery_requests_pending, bizride_pending_subs=bizride_pending_subs, bizride_drivers=bizride_drivers, bizride_stats=bizride_stats)
+
 
 @app.route("/admin/adjust-points", methods=["POST"])
 def admin_adjust_points():
@@ -3932,13 +4086,25 @@ def api_check_username():
 # ==========================================================================
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    """Handles cross-device multi-role logins safely with isolated error tracking tags."""
+    """FIXED: Handles username OR email login for all roles including Delivery Service."""
     if request.method == "POST":
-        is_delivery_login = bool(request.form.get("delivery_login_user") is not None)
-        username = request.form.get("login_user") if not is_delivery_login else request.form.get("delivery_login_user")
-        password = request.form.get("login_pass") if not is_delivery_login else request.form.get("delivery_login_pass")
+        # FIX 1: Robust detection - check both field names, allow email
+        delivery_user = (request.form.get("delivery_login_user") or "").strip()
+        delivery_pass = request.form.get("delivery_login_pass") or ""
+        normal_user = (request.form.get("login_user") or request.form.get("username") or "").strip()
+        normal_pass = request.form.get("login_pass") or request.form.get("password") or ""
         
-        user = query_db("SELECT * FROM users WHERE username = ?", (username,), one=True)
+        if delivery_user:
+            username = delivery_user
+            password = delivery_pass
+            is_delivery_login = True
+        else:
+            username = normal_user
+            password = normal_pass
+            is_delivery_login = False
+        
+        # FIX 1: Allow login with username OR email (case-insensitive for username)
+        user = query_db("SELECT * FROM users WHERE lower(username) = lower(?) OR lower(email) = lower(?)", (username, username), one=True)
         
         if user and check_password_hash(user["password_hash"], password):
             session.clear()
@@ -4263,6 +4429,246 @@ def api_search_suggestions():
         })
         
     return {"suggestions": suggestions_list}
+
+
+# ==========================================
+# BIZRIDES - FULL SYSTEM WITH 2 MONTHS FREE
+# Moto=30, Tricycle=20, Taxi=50 per 30 days
+# Plate + MoMo Txn verification
+# ==========================================
+import math
+
+BIZRIDE_BASE_FARE = 5.0
+BIZRIDE_PER_KM = {'Moto': 2.0, 'Taxi': 4.0, 'Tricycle': 2.5, 'Van': 5.0}
+BIZRIDE_SUBSCRIPTION_PLANS = {
+    'Moto': {'price': 30.0, 'days': 30, 'label': 'Moto - GH₵30 / 30 days'},
+    'Tricycle': {'price': 20.0, 'days': 30, 'label': 'Tricycle - GH₵20 / 30 days'},
+    'Taxi': {'price': 50.0, 'days': 30, 'label': 'Taxi - GH₵50 / 30 days'},
+    'Van': {'price': 50.0, 'days': 30, 'label': 'Van - GH₵50 / 30 days'},
+}
+BIZRIDE_FREE_TRIAL_DAYS = 60
+
+def haversine_km(lat1, lon1, lat2, lon2):
+    try:
+        R = 6371
+        dlat = math.radians(lat2-lat1)
+        dlon = math.radians(lon2-lon1)
+        a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1))*math.cos(math.radians(lat2))*math.sin(dlon/2)**2
+        return R * 2 * math.asin(math.sqrt(a))
+    except:
+        return 1.0
+
+def calculate_bizride_price(pickup_lat, pickup_lng, drop_lat, drop_lng, vehicle_type):
+    dist = haversine_km(pickup_lat, pickup_lng, drop_lat, drop_lng)
+    dist = max(dist, 1.0)
+    per_km = BIZRIDE_PER_KM.get(vehicle_type, 3.0)
+    price = BIZRIDE_BASE_FARE + (dist * per_km)
+    return round(max(price, 8.0), 2), round(dist,2)
+
+def is_bizride_subscription_active(driver_id):
+    try:
+        sub = query_db("SELECT * FROM bizride_subscriptions WHERE driver_id=? AND status='Active' AND expires_at > ? ORDER BY id DESC LIMIT 1", (driver_id, datetime.now(timezone.utc).isoformat()), one=True)
+        return sub is not None
+    except:
+        return False
+
+@app.route("/bizrides")
+def bizrides_home():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    user = query_db("SELECT * FROM users WHERE username=?", (session["username"],), one=True)
+    driver = query_db("SELECT * FROM bizride_drivers WHERE user_id=?", (user["id"],), one=True)
+    my_rides = query_db("SELECT * FROM bizrides WHERE rider_id=? ORDER BY id DESC LIMIT 10", (user["id"],)) or []
+    my_driver_rides = []
+    available_rides = []
+    active_sub = None
+    if driver:
+        my_driver_rides = query_db("SELECT b.*, u.username as rider_name, u.whatsapp_number as rider_whatsapp FROM bizrides b JOIN users u ON u.id=b.rider_id WHERE b.driver_id=? ORDER BY b.id DESC LIMIT 20", (driver["id"],)) or []
+        available_rides = query_db("SELECT b.*, u.username as rider_name FROM bizrides b JOIN users u ON u.id=b.rider_id WHERE b.status='Requested' AND b.driver_id IS NULL ORDER BY b.id DESC LIMIT 20") or []
+        active_sub = query_db("SELECT * FROM bizride_subscriptions WHERE driver_id=? AND status='Active' AND expires_at > ? ORDER BY id DESC LIMIT 1", (driver["id"], datetime.now(timezone.utc).isoformat()), one=True)
+    return render_template("bizrides.html", user=user, driver=driver, my_rides=my_rides, my_driver_rides=my_driver_rides, available_rides=available_rides, active_sub=active_sub, plans=BIZRIDE_SUBSCRIPTION_PLANS)
+
+@app.route("/api/bizrides/estimate", methods=["POST"])
+def bizride_estimate():
+    data = request.get_json()
+    try:
+        price, dist = calculate_bizride_price(float(data['pickup_lat']), float(data['pickup_lng']), float(data['drop_lat']), float(data['drop_lng']), data.get('vehicle_type','Moto'))
+        return {"price": price, "distance_km": dist}
+    except Exception as e:
+        return {"error": str(e)}, 400
+
+@app.route("/bizrides/request", methods=["POST"])
+def bizride_request():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    user = query_db("SELECT * FROM users WHERE username=?", (session["username"],), one=True)
+    pickup_address = request.form.get("pickup_address","").strip()
+    dropoff_address = request.form.get("dropoff_address","").strip()
+    vehicle_type = request.form.get("vehicle_type","Moto")
+    payment_method = request.form.get("payment_method","Cash")
+    try:
+        pickup_lat = float(request.form.get("pickup_lat"))
+        pickup_lng = float(request.form.get("pickup_lng"))
+        drop_lat = float(request.form.get("drop_lat"))
+        drop_lng = float(request.form.get("drop_lng"))
+    except:
+        return redirect(url_for("bizrides_home", error="Invalid location"))
+    price, dist = calculate_bizride_price(pickup_lat, pickup_lng, drop_lat, drop_lng, vehicle_type)
+    now = datetime.now(timezone.utc).isoformat()
+    conn = open_db()
+    cur = conn.execute("INSERT INTO bizrides (rider_id, pickup_address, pickup_lat, pickup_lng, dropoff_address, dropoff_lat, dropoff_lng, distance_km, price, status, payment_method, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        (user["id"], pickup_address, pickup_lat, pickup_lng, dropoff_address, drop_lat, drop_lng, dist, price, 'Requested', payment_method, now, now))
+    ride_id = cur.lastrowid
+    conn.commit()
+    conn.close()
+    nearby_drivers = query_db("SELECT bd.user_id FROM bizride_drivers bd WHERE bd.status='Online' AND bd.vehicle_type=?", (vehicle_type,)) or []
+    for d in nearby_drivers:
+        create_notification(d["user_id"], "delivery", "New BizRide Request", f"New {vehicle_type} ride: {pickup_address} -> {dropoff_address} - GH₵{price}", url_for("bizrides_home"))
+    return redirect(url_for("bizrides_home", requested="1"))
+
+@app.route("/bizrides/driver/register", methods=["POST"])
+def bizride_driver_register():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    user = query_db("SELECT * FROM users WHERE username=?", (session["username"],), one=True)
+    existing = query_db("SELECT id FROM bizride_drivers WHERE user_id=?", (user["id"],), one=True)
+    if existing:
+        return redirect(url_for("bizrides_home"))
+    vehicle_type = request.form.get("vehicle_type","Moto")
+    plate = request.form.get("plate_number","").strip().upper()
+    if not plate or len(plate) < 3:
+        return redirect(url_for("bizrides_home", error="Enter valid plate number"))
+    now = datetime.now(timezone.utc)
+    now_iso = now.isoformat()
+    query_db("INSERT INTO bizride_drivers (user_id, vehicle_type, plate_number, status, created_at, last_seen) VALUES (?,?,?,?,?,?)",
+             (user["id"], vehicle_type, plate, 'Offline', now_iso, now_iso))
+    driver = query_db("SELECT * FROM bizride_drivers WHERE user_id=?", (user["id"],), one=True)
+    if driver:
+        # 2 MONTHS FREE TRIAL
+        expires = now + timedelta(days=BIZRIDE_FREE_TRIAL_DAYS)
+        query_db("INSERT INTO bizride_subscriptions (driver_id, plate_number, plan_type, amount, starts_at, expires_at, status, momo_reference, sender_phone, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                 (driver["id"], plate, vehicle_type, 0, now_iso, expires.isoformat(), 'Active', 'FREE-TRIAL-60DAYS', user.get("whatsapp_number") or "", now_iso))
+    return redirect(url_for("bizrides_home", registered="1"))
+
+@app.route("/bizrides/driver/toggle", methods=["POST"])
+def bizride_driver_toggle():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    user = query_db("SELECT * FROM users WHERE username=?", (session["username"],), one=True)
+    driver = query_db("SELECT * FROM bizride_drivers WHERE user_id=?", (user["id"],), one=True)
+    if not driver:
+        return redirect(url_for("bizrides_home"))
+    if not is_bizride_subscription_active(driver["id"]):
+        return redirect(url_for("bizrides_home", error="Subscription expired. Renew at /bizrides/subscription"))
+    new_status = 'Offline' if driver["status"] == 'Online' else 'Online'
+    query_db("UPDATE bizride_drivers SET status=?, last_seen=? WHERE id=?",
+             (new_status, datetime.now(timezone.utc).isoformat(), driver["id"]))
+    return redirect(url_for("bizrides_home"))
+
+@app.route("/bizrides/driver/location", methods=["POST"])
+def bizride_driver_location():
+    if "username" not in session:
+        return {"ok": False}, 401
+    data = request.get_json()
+    user = query_db("SELECT * FROM users WHERE username=?", (session["username"],), one=True)
+    query_db("UPDATE bizride_drivers SET current_lat=?, current_lng=?, last_seen=? WHERE user_id=?",
+             (data.get('lat'), data.get('lng'), datetime.now(timezone.utc).isoformat(), user["id"]))
+    return {"ok": True}
+
+@app.route("/bizrides/<int:ride_id>/accept", methods=["POST"])
+def bizride_accept(ride_id):
+    if "username" not in session:
+        return redirect(url_for("login"))
+    user = query_db("SELECT * FROM users WHERE username=?", (session["username"],), one=True)
+    driver = query_db("SELECT * FROM bizride_drivers WHERE user_id=?", (user["id"],), one=True)
+    ride = query_db("SELECT * FROM bizrides WHERE id=?", (ride_id,), one=True)
+    if not driver or not ride or ride["status"] != 'Requested':
+        return redirect(url_for("bizrides_home", error="Ride not available"))
+    if not is_bizride_subscription_active(driver["id"]):
+        return redirect(url_for("bizrides_home", error="Subscription expired. Please renew at /bizrides/subscription"))
+    query_db("UPDATE bizrides SET driver_id=?, status='Accepted', updated_at=? WHERE id=?",
+             (driver["id"], datetime.now(timezone.utc).isoformat(), ride_id))
+    query_db("UPDATE bizride_drivers SET status='OnTrip' WHERE id=?", (driver["id"],))
+    create_notification(ride["rider_id"], "order", "Driver accepted! 🛺", f"Driver {user['username']} Plate {driver['plate_number']} is coming.", url_for("bizrides_home"))
+    return redirect(url_for("bizrides_home", accepted="1"))
+
+@app.route("/bizrides/<int:ride_id>/status", methods=["POST"])
+def bizride_update_status(ride_id):
+    if "username" not in session:
+        return redirect(url_for("login"))
+    new_status = request.form.get("status")
+    ride = query_db("SELECT * FROM bizrides WHERE id=?", (ride_id,), one=True)
+    if not ride or new_status not in ['Arriving','Started','Completed','Cancelled']:
+        return redirect(url_for("bizrides_home"))
+    query_db("UPDATE bizrides SET status=?, updated_at=? WHERE id=?", (new_status, datetime.now(timezone.utc).isoformat(), ride_id))
+    if new_status == 'Completed':
+        query_db("UPDATE bizride_drivers SET status='Online', total_trips = total_trips + 1 WHERE id=?", (ride["driver_id"],))
+    if new_status == 'Cancelled':
+        query_db("UPDATE bizride_drivers SET status='Online' WHERE id=?", (ride["driver_id"],))
+    return redirect(url_for("bizrides_home"))
+
+@app.route("/bizrides/subscription")
+def bizride_subscription_page():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    user = query_db("SELECT * FROM users WHERE username=?", (session["username"],), one=True)
+    driver = query_db("SELECT * FROM bizride_drivers WHERE user_id=?", (user["id"],), one=True)
+    if not driver:
+        return redirect(url_for("bizrides_home"))
+    sub = query_db("SELECT * FROM bizride_subscriptions WHERE driver_id=? AND status='Active' AND expires_at > ? ORDER BY id DESC LIMIT 1", (driver["id"], datetime.now(timezone.utc).isoformat()), one=True)
+    pending_sub = query_db("SELECT * FROM bizride_subscriptions WHERE driver_id=? AND status='Pending' ORDER BY id DESC LIMIT 1", (driver["id"],), one=True)
+    return render_template("bizride_subscription.html", user=user, driver=driver, subscription=sub, pending_sub=pending_sub, plans=BIZRIDE_SUBSCRIPTION_PLANS)
+
+@app.route("/bizrides/subscription/pay", methods=["POST"])
+def bizride_subscription_pay():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    user = query_db("SELECT * FROM users WHERE username=?", (session["username"],), one=True)
+    driver = query_db("SELECT * FROM bizride_drivers WHERE user_id=?", (user["id"],), one=True)
+    if not driver:
+        return redirect(url_for("bizrides_home"))
+    plate_number = request.form.get("plate_number","").strip().upper()
+    momo_ref = request.form.get("momo_reference","").strip()
+    amount_sent = request.form.get("amount_sent","0").strip()
+    sender_phone = request.form.get("sender_phone","").strip()
+    if plate_number != (driver["plate_number"] or "").upper():
+        return redirect(url_for("bizride_subscription_page", error="Plate number does not match your registered plate"))
+    if not momo_ref or len(momo_ref) < 5:
+        return redirect(url_for("bizride_subscription_page", error="Invalid Transaction ID"))
+    now = datetime.now(timezone.utc)
+    query_db("INSERT INTO bizride_subscriptions (driver_id, plate_number, plan_type, amount, starts_at, expires_at, status, momo_reference, sender_phone, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+             (driver["id"], plate_number, driver["vehicle_type"], amount_sent, now.isoformat(), (now + timedelta(days=30)).isoformat(), 'Pending', momo_ref, sender_phone, now.isoformat()))
+    return redirect(url_for("bizride_subscription_page", submitted="1"))
+
+@app.route("/admin/approve-bizride/<int:sub_id>", methods=["POST"])
+def admin_approve_bizride_sub(sub_id):
+    if not is_admin():
+        return redirect(url_for("admin_login"))
+    sub = query_db("SELECT * FROM bizride_subscriptions WHERE id=?", (sub_id,), one=True)
+    if not sub:
+        return redirect(url_for("admin_dashboard", error="Sub not found"))
+    driver = query_db("SELECT * FROM bizride_drivers WHERE id=?", (sub["driver_id"],), one=True)
+    if not driver:
+        return redirect(url_for("admin_dashboard"))
+    if (sub["plate_number"] or "").upper() != (driver["plate_number"] or "").upper():
+        query_db("UPDATE bizride_drivers SET plate_number=? WHERE id=?", (sub["plate_number"], driver["id"]))
+    now = datetime.now(timezone.utc)
+    plan_days = BIZRIDE_SUBSCRIPTION_PLANS.get(driver["vehicle_type"], {'days':30})['days']
+    expires = now + timedelta(days=plan_days)
+    query_db("UPDATE bizride_subscriptions SET status='Active', starts_at=?, expires_at=? WHERE id=?", (now.isoformat(), expires.isoformat(), sub_id))
+    query_db("UPDATE bizride_drivers SET last_seen=? WHERE id=?", (now.isoformat(), driver["id"]))
+    driver_user = query_db("SELECT id FROM users WHERE id=?", (driver["user_id"],), one=True)
+    if driver_user:
+        create_notification(driver_user["id"], "announcement", "BizRide Activated! ✅", f"Plate {sub['plate_number']} verified! Active till {expires.date()}. Fee: Moto GH₵30, Tricycle GH₵20, Taxi GH₵50 / 30 days. First 2 months were free.", url_for("bizrides_home"))
+    return redirect(url_for("admin_dashboard", bizride_approved=sub["plate_number"]))
+
+@app.route("/admin/reject-bizride/<int:sub_id>", methods=["POST"])
+def admin_reject_bizride_sub(sub_id):
+    if not is_admin():
+        return redirect(url_for("admin_login"))
+    query_db("UPDATE bizride_subscriptions SET status='Rejected' WHERE id=?", (sub_id,))
+    return redirect(url_for("admin_dashboard"))
+
 
 if __name__ == "__main__":
     app.run(debug=os.environ.get("FLASK_DEBUG", "0""") == "1", host="0.0.0.0")

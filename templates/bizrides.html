@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BizRides <span style="font-size:12px; background:#0d7a3a; color:white; padding:2px 8px; border-radius:10px; margin-left:8px;">Ride Safer</span> | BizHub Market</title>
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" href="/static/uploads/bizhub-app-icon.png">
+<style>
+:root{--black:#000;--green:#06C167;--bg:#F6F6F6;--card:#fff;--border:#E2E2E2;--accent:#F59E0B}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;padding-top:calc(64px + env(safe-area-inset-top))}
+.bh-header{background:var(--black);color:#fff;min-height:64px;height:calc(64px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);display:flex;align-items:center;justify-content:space-between;padding-left:18px;padding-right:18px;position:fixed;top:0;left:0;right:0;z-index:10000;border-bottom:2px solid var(--green)}
+.bh-brand{font-weight:900;font-size:20px;text-decoration:none;color:#fff}.bh-brand span{color:var(--accent)}
+.container{max-width:1100px;margin:0 auto;padding:16px;display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:900px){.container{grid-template-columns:360px 1fr}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.form-control{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px}
+.btn{padding:10px 16px;border:none;border-radius:8px;font-weight:800;cursor:pointer}
+.btn-green{background:var(--green);color:#fff}.btn-black{background:#000;color:#fff}.btn-yellow{background:#FFD814;color:#111}
+.badge{padding:4px 8px;border-radius:20px;font-size:11px;font-weight:800;text-transform:uppercase}
+.badge-free{background:#D1FAE5;color:#065F46}.badge-active{background:#D1FAE5;color:#065F46}.badge-expired{background:#FEE2E2;color:#991B1B}
+#map{height:320px;border-radius:10px;background:#E5E7EB;border:1px solid var(--border)}
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+<div class="bh-header"><a class="bh-brand" href="/">Biz<span>Hub</span> <small style="color:#06C167">BizRides <span style="font-size:12px; background:#0d7a3a; color:white; padding:2px 8px; border-radius:10px; margin-left:8px;">Ride Safer</span></small></a><div style="display:flex;gap:8px">{% if driver %}
+<a href="/bizrides/subscription" class="btn btn-yellow" style="font-size:12px">💳 Subscription</a>
+{% endif %}<a href="/" style="color:#9CA3AF;text-decoration:none;font-size:13px;font-weight:700">Market</a></div></div>
+
+<div class="container">
+<!-- LEFT: Driver / Rider actions -->
+<div>
+{% if driver %}
+<div class="card" style="border:2px solid #06C167">
+<h3 style="margin:0 0 8px 0">🛺 Driver: {{ driver.plate_number }}</h3>
+<p style="margin:0;font-size:12px;color:#6B7280">{{ driver.vehicle_type }} • Status: <b>{{ driver.status }}</b></p>
+{% if active_sub %}
+<div style="margin:10px 0;padding:8px;background:#ECFDF5;border-radius:8px;font-size:12px">
+{% if active_sub.amount == 0 %}<span class="badge badge-free">FREE 2 MONTHS TRIAL</span>{% else %}<span class="badge badge-active">Active</span>{% endif %}
+ Till {{ active_sub.expires_at[:16] }}
+</div>
+{% else %}
+<div style="margin:10px 0;padding:8px;background:#FEE2E2;border-radius:8px;font-size:12px"><span class="badge badge-expired">Expired</span> Renew subscription</div>
+{% endif %}
+<form method="POST" action="/bizrides/driver/toggle" style="margin-top:10px"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="btn {% if driver.status=='Online' %}btn-black{% else %}btn-green{% endif %}" style="width:100%">{% if driver.status=='Online' %}⏸ Go Offline{% else %}🟢 Go Online{% endif %}</button></form>
+</div>
+{% else %}
+<div class="card">
+<h3>Become a BizRide Driver</h3>
+<p style="font-size:12px;color:#6B7280">First 2 months FREE! After: Moto GH₵30, Tricycle GH₵20, Taxi GH₵50 / 30 days</p>
+<form method="POST" action="/bizrides/driver/register" style="display:flex;flex-direction:column;gap:10px">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<select name="vehicle_type" class="form-control" required><option value="Moto">Moto - GH₵30/mo after free</option><option value="Tricycle">Tricycle - GH₵20/mo</option><option value="Taxi">Taxi - GH₵50/mo</option></select>
+<input name="plate_number" class="form-control" placeholder="Plate Number e.g. GT 1234-22" required style="text-transform:uppercase">
+<button type="submit" class="btn btn-green" style="width:100%">🚀 Register as Driver - Get 2 Months Free</button>
+</form>
+</div>
+{% endif %}
+
+{% if driver and driver.status=='Online' %}
+<div class="card" style="margin-top:12px">
+<h4 style="margin:0 0 8px 0">📍 Live Location</h4>
+<div id="map"></div>
+<p style="font-size:11px;color:#6B7280;margin-top:6px">Your location updates every 5 sec while Online</p>
+</div>
+{% endif %}
+
+<div class="card" style="margin-top:12px">
+<h4 style="margin:0 0 8px 0">My Recent Trips (Driver)</h4>
+{% for r in my_driver_rides or [] %}
+<div style="border-bottom:1px solid #eee;padding:8px 0;font-size:12px"><b>#{{ r.id }}</b> {{ r.pickup_address[:30] }} → {{ r.dropoff_address[:30] }}<br>GH₵{{ r.price }} • {{ r.status }} • Rider: {{ r.rider_name }}</div>
+{% else %}<p style="font-size:12px;color:#9CA3AF">No trips yet</p>{% endfor %}
+</div>
+</div>
+
+<!-- RIGHT: Rider request + available rides -->
+<div>
+<div class="card">
+<h3 style="margin:0 0 8px 0">🚕 Request a Ride</h3>
+<form method="POST" action="/bizrides/request" style="display:flex;flex-direction:column;gap:10px">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<input name="pickup_address" class="form-control" placeholder="Pickup: e.g. Oda Station, Asokore" required>
+<input name="dropoff_address" class="form-control" placeholder="Dropoff: e.g. Aboabo, Okorase" required>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<input name="pickup_lat" id="pickup_lat" class="form-control" placeholder="Pickup Lat" required>
+<input name="pickup_lng" id="pickup_lng" class="form-control" placeholder="Pickup Lng" required>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<input name="drop_lat" id="drop_lat" class="form-control" placeholder="Drop Lat" required>
+<input name="drop_lng" id="drop_lng" class="form-control" placeholder="Drop Lng" required>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<select name="vehicle_type" class="form-control"><option value="Moto">Moto</option><option value="Tricycle">Tricycle</option><option value="Taxi">Taxi</option></select>
+<select name="payment_method" class="form-control"><option value="Cash">Cash</option><option value="MoMo">MoMo</option></select>
+</div>
+<button type="button" onclick="useMyLocation()" class="btn btn-yellow" style="width:100%">📍 Use My Current Location for Pickup</button>
+<button type="submit" class="btn btn-black" style="width:100%">🛺 Request Ride Now</button>
+</form>
+<div id="map2" style="height:220px;margin-top:12px;border-radius:10px;background:#E5E7EB"></div>
+</div>
+
+{% if driver %}
+<div class="card" style="margin-top:12px;border:2px solid #F59E0B">
+<h4 style="margin:0 0 8px 0">🔔 Available Ride Requests (Nearby)</h4>
+{% for ride in available_rides or [] %}
+<div style="border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px">
+<b>#{{ ride.id }} • {{ ride.rider_name }}</b><br><small>{{ ride.pickup_address }} → {{ ride.dropoff_address }}<br>{{ ride.distance_km }}km • GH₵{{ ride.price }}</small>
+<form method="POST" action="/bizrides/{{ ride.id }}/accept" style="margin-top:8px"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="btn btn-green" style="width:100%">✅ Accept Ride (Plate {{ driver.plate_number }})</button></form>
+</div>
+{% else %}<p style="font-size:12px;color:#9CA3AF">No pending requests now</p>{% endfor %}
+</div>
+{% endif %}
+
+<div class="card" style="margin-top:12px">
+<h4 style="margin:0 0 8px 0">My Rides as Rider</h4>
+{% for r in my_rides or [] %}
+<div style="border-bottom:1px solid #eee;padding:8px 0;font-size:12px;display:flex;justify-content:space-between"><span><b>#{{ r.id }}</b> {{ r.pickup_address[:20] }}→{{ r.dropoff_address[:20] }} GH₵{{ r.price }} • {{ r.status }}</span>
+{% if r.status in ['Accepted','Arriving','Started'] %}
+<form method="POST" action="/bizrides/{{ r.id }}/status" style="display:inline"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="status" value="Completed"><button type="submit" class="btn btn-green" style="padding:4px 8px;font-size:11px">Complete</button></form>
+{% endif %}
+</div>
+{% else %}<p style="font-size:12px;color:#9CA3AF">No rides yet</p>{% endfor %}
+</div>
+
+</div>
+</div>
+<footer class="bizhub-contact-footer">
+<div class="contact-footer-bottom">© 2026 BizHub Marketplace ·BizRides-Ride Safer · A Product Of The TOZOTS  Company· <a href="/rules" style="color:#E2E8F0;text-decoration:none;">Rules &amp; Regulations</a></div>
+</footer>
+<script>
+function useMyLocation(){
+ if(navigator.geolocation){
+  navigator.geolocation.getCurrentPosition(function(pos){
+   document.getElementById('pickup_lat').value=pos.coords.latitude;
+   document.getElementById('pickup_lng').value=pos.coords.longitude;
+   if(window.map){ window.map.setView([pos.coords.latitude,pos.coords.longitude],14); L.marker([pos.coords.latitude,pos.coords.longitude]).addTo(window.map).bindPopup('Pickup');}
+  });
+ }
+}
+var mapEl=document.getElementById('map');
+if(mapEl){
+ var map=L.map('map').setView([5.929, -0.985],13);
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(map);
+ window.map=map;
+ setInterval(function(){
+  if(navigator.geolocation){
+   navigator.geolocation.getCurrentPosition(function(pos){
+    fetch('/bizrides/driver/location',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':'{{ csrf_token }}'},body:JSON.stringify({lat:pos.coords.latitude,lng:pos.coords.longitude})});
+   });
+  }
+ },5000);
+}
+var map2=document.getElementById('map2');
+if(map2){
+ var m2=L.map('map2').setView([5.929, -0.985],12);
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m2);
+ m2.on('click',function(e){
+  if(!document.getElementById('pickup_lat').value){
+   document.getElementById('pickup_lat').value=e.latlng.lat;
+   document.getElementById('pickup_lng').value=e.latlng.lng;
+  } else {
+   document.getElementById('drop_lat').value=e.latlng.lat;
+   document.getElementById('drop_lng').value=e.latlng.lng;
+  }
+  L.marker(e.latlng).addTo(m2);
+ });
+}
+</script>
+
+<!-- BizRides <span style="font-size:12px; background:#0d7a3a; color:white; padding:2px 8px; border-radius:10px; margin-left:8px;">Ride Safer</span> Twi Thank You Popup -->
+<div id="twiPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+  <div style="background:white; padding:30px; border-radius:20px; text-align:center; max-width:350px; margin:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+    <div style="font-size:50px; margin-bottom:10px;">🙏</div>
+    <h2 style="color:#0d7a3a; margin:0 0 10px 0; font-size:22px;">Yɛdaase!</h2>
+    <p style="font-size:18px; font-weight:bold; color:#333; margin:10px 0;">Wo ne Nyame nkɔ</p>
+    <p style="font-size:13px; color:#666; margin:15px 0; font-style:italic;">BizRides <span style="font-size:12px; background:#0d7a3a; color:white; padding:2px 8px; border-radius:10px; margin-left:8px;">Ride Safer</span> - Ride Safer</p>
+    <p style="font-size:14px; color:#555; margin:10px 0;">Your ride request has been sent. A driver will contact you soon.</p>
+    <button onclick="closeTwiPopup()" style="background:#0d7a3a; color:white; border:none; padding:12px 30px; border-radius:25px; font-size:16px; margin-top:15px; cursor:pointer; width:100%;">Aane, medaase</button>
+  </div>
+</div>
+<script>
+function showTwiPopup() {
+  document.getElementById('twiPopup').style.display = 'flex';
+  // Play small vibration if phone supports it
+  if(navigator.vibrate) navigator.vibrate(200);
+}
+function closeTwiPopup() {
+  document.getElementById('twiPopup').style.display = 'none';
+}
+</script>
+
+
+<script>
+// Auto-show Twi popup when ride request succeeds
+(function() {
+  const origFetch = window.fetch;
+  window.fetch = async function(...args) {
+    const res = await origFetch(...args);
+    try {
+      const url = args[0] ? args[0].toString() : '';
+      if(url.includes('/bizrides/request') || url.includes('request_ride')) {
+        const clone = res.clone();
+        const data = await clone.json().catch(()=>null);
+        if(res.ok || (data && data.success)) {
+          setTimeout(showTwiPopup, 300);
+        }
+      }
+    } catch(e) {}
+    return res;
+  };
+})();
+</script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
+<script src="/static/firebase-config.js"></script>
+<script>firebase.initializeApp(firebaseConfig);</script>
+</body>
+</html>

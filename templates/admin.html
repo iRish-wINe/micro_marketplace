@@ -387,6 +387,73 @@ tr:hover td{background:var(--lightred3)}
 </table>
 </div>
 
+
+<div class="card" id="bizrides" style="border:2px solid #06C167">
+<h3>🛺 BizRides - Driver Subscriptions & Plate Verification</h3>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px">
+<div class="metric-card" style="border-color:#06C167"><div class="label">Total Drivers</div><div class="val" style="color:#06C167">{{ bizride_stats.total_drivers if bizride_stats is defined else 0 }}</div></div>
+<div class="metric-card" style="border-color:#F59E0B"><div class="label">Pending Payments</div><div class="val" style="color:#D97706">{{ bizride_stats.pending_subs if bizride_stats is defined else 0 }}</div></div>
+<div class="metric-card" style="border-color:#10B981"><div class="label">Active Subs</div><div class="val" style="color:#065F46">{{ bizride_stats.active_subs if bizride_stats is defined else 0 }}</div></div>
+<div class="metric-card" style="border-color:#EF4444"><div class="label">Owed Commission</div><div class="val">GH₵ {{ bizride_stats.total_owed if bizride_stats is defined else 0 }}</div></div>
+</div>
+
+<!-- Search by plate -->
+<div style="background:#F0FDF4;border:1px dashed #86EFAC;padding:12px;border-radius:8px;margin-bottom:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+<form method="GET" action="#bizrides" style="display:flex;gap:6px;align-items:center;margin:0">
+<input type="text" name="plate_search" value="{{ request.args.get('plate_search','') }}" class="form-control" style="max-width:200px" placeholder="Search Plate: e.g. GT 1234-22">
+<button type="submit" class="action-btn" style="background:#06C167;color:#fff;border:none">🔍 Search Plate</button>
+</form>
+<span style="font-size:11px;color:var(--muted)">Tip: Enter plate number from MoMo message to auto-find driver and upgrade.</span>
+</div>
+
+<h4 style="font-size:13px;font-weight:900;margin:12px 0 8px 0">⏳ Pending Subscription Payments (MoMo Transaction ID + Plate)</h4>
+<div style="overflow:auto">
+<table>
+<thead><tr><th>Driver</th><th>Plate (Key)</th><th>Plan</th><th>MoMo Ref / Txn ID</th><th>Amount</th><th>Action</th></tr></thead>
+<tbody>
+{% for sub in bizride_pending_subs or [] %}
+<tr style="{% if request.args.get('plate_search','').lower() in (sub.plate_number or '')|lower %}background:#ECFDF5;border:2px solid #06C167{% endif %}">
+<td><b>{{ sub.username }}</b><br><small>@{{ sub.username }} • {{ sub.vehicle_type }}<br>💬 {{ sub.whatsapp_number }}</small></td>
+<td><b style="background:#111;color:#fff;padding:3px 8px;border-radius:4px;font-size:12px">{{ sub.plate_number }}</b></td>
+<td><span class="badge badge-pending">{{ sub.plan_type }} - GH₵{{ sub.amount }}</span><br><small>{{ sub.created_at[:16] if sub.created_at else '' }}</small></td>
+<td><code style="background:#FEF3C7;padding:4px 6px;border-radius:4px;font-size:12px">{{ sub.momo_reference }}</code></td>
+<td>GH₵ {{ sub.amount }}</td>
+<td>
+<div style="display:flex;gap:6px">
+<form method="POST" action="{{ url_for('admin_approve_bizride_sub', sub_id=sub.id) }}" style="margin:0"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="action-btn" style="background:#06C167;color:#fff;border:none">✅ Approve Plate {{ sub.plate_number }}</button></form>
+<form method="POST" action="{{ url_for('admin_reject_bizride_sub', sub_id=sub.id) }}" style="margin:0"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="action-btn" style="background:#fff;color:var(--danger)">❌ Reject</button></form>
+</div>
+</td>
+</tr>
+{% else %}
+<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">No pending BizRide payments. Drivers will appear here after they click "I have paid" with Transaction ID + Plate.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+<h4 style="font-size:13px;font-weight:900;margin:18px 0 8px 0">✅ Active BizRide Drivers</h4>
+<div style="overflow:auto">
+<table>
+<thead><tr><th>Driver / Plate</th><th>Status</th><th>Trips</th><th>Sub Expiry</th><th>Wallet</th></tr></thead>
+<tbody>
+{% for d in bizride_drivers or [] %}
+<tr>
+<td><b>{{ d.username }}</b> • <b style="background:#111;color:#fff;padding:2px 6px;border-radius:4px">{{ d.plate_number }}</b><br><small>{{ d.vehicle_type }} • {{ d.whatsapp_number }}</small></td>
+<td><span class="badge {% if d.status=='Online' %}badge-verified{% else %}badge-danger{% endif %}">{{ d.status }}</span></td>
+<td>{{ d.total_trips }}</td>
+<td>{% if d.sub_expires_at %}{{ d.sub_expires_at[:16] }}<br>{% if d.sub_is_expired %}<span class="badge badge-danger">Expired</span>{% else %}<span class="badge badge-verified">Active</span>{% endif %}{% else %}<span class="badge badge-danger">No Sub</span>{% endif %}</td>
+<td>GH₵ {{ d.wallet_balance }}</td>
+</tr>
+{% else %}
+<tr><td colspan="5" style="text-align:center;color:var(--muted)">No drivers yet</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+
+
 <div class="card" id="users">
 <h3>👥 Market Users Directory — Light Red & White</h3>
 <div style="overflow:auto">

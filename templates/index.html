@@ -14,7 +14,7 @@
     <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
     <link rel="icon" type="image/png" href="/static/uploads/bizhub-app-icon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='uploads/bizhub-app-icon.png') }}?v=4">
-    
+
     <style>
         /* 👑 STANDARDIZED CORE APPERANCE THEME CSS MATRIX */
         :root {
@@ -903,6 +903,7 @@ html, body {
 
         <a href="{{ url_for('favorites') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">Favorites</a>
         <a href="{{ url_for('features') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">🎯 Features</a>
+        <a href="/bizrides" style="color:#fff;text-decoration:none;font-weight:900">BizRides</a>
         <a href="{{ url_for('all_stores') }}" style="color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;">All Stores</a>
         <a href="{{ url_for('top_brands') }}" style="color: #FFD814; text-decoration: none; font-size: 13px; font-weight: 900; border:1px solid #FFD814; border-radius:4px; padding:6px 10px;">🏆 Top 20 Brands</a>
          {% if not session.get('username') %}
@@ -1749,7 +1750,7 @@ html, body {
             <div class="contact-links">
                 <a href="https://wa.me/233558272972" target="_blank" rel="noopener" aria-label="Contact BizHub on WhatsApp">💬 <span>WhatsApp</span><b>0558272972</b></a>
                 <a href="mailto:contactBizHub@proton.me" aria-label="Email BizHub">✉️ <span>Email</span><b>contactBizHub@proton.me</b></a>
-                <a href="tel:+233540901856" aria-label="Call BizHub">📞 <span>Phone</span><b>0540901856</b></a>
+                <a href="tel:+233551291358" aria-label="Call BizHub">📞 <span>Phone</span><b>0551291358</b></a>
             </div>
         </div>
         <div class="contact-footer-bottom">      © 2026 BizHub Marketplace · Your Local Market, Unified Online · A Subsidiary Of The TOZOTS 🇬🇭 Company· <a href="/rules" style="color:#E2E8F0;text-decoration:none;">Rules &amp; Regulations</a></div>
@@ -2049,6 +2050,10 @@ function changeBasketQty(button, delta){
         }
     });
 </script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
+<script src="/static/firebase-config.js"></script>
+<script>firebase.initializeApp(firebaseConfig);</script>
 
 </body>
 </html> 
