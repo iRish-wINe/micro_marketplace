@@ -1,5 +1,5 @@
 <!DOCTYPE html>
- <html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}"></html>
+<html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -50,15 +50,18 @@
             color: var(--text-main) !important;
         }
         * { box-sizing: border-box; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0 18px 30px; }
+        html { height:100%; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 106px 0 30px 0 !important; overflow-x:hidden; }
         
-        /* 🚀 TOP HEADER & NAVIGATION STYLES FROM ALL_STORES */
-        .top { background: #131921; color: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-        .brand { font-size: 22px; font-weight: 900; color: #fff; text-decoration: none; }
+        /* 🚀 FIXED STICKY HEADER - FITS PHONE WITHOUT SPACES */
+        .top { background: #131921; color: #fff; padding: 12px 14px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; position: fixed !important; top:0; left:0; right:0; width:100%; z-index:10000; box-shadow:0 2px 12px rgba(0,0,0,.25); border-bottom:2px solid #febd69; box-sizing:border-box; }
+        .brand { font-size: 20px; font-weight: 900; color: #fff; text-decoration: none; white-space:nowrap; }
         .brand span { color: #ff9900; }
-        .nav { background: #232f3e; display: flex; gap: 4px; overflow: auto; white-space: nowrap; padding: 0 10px; margin-bottom: 24px; }
-        .nav a { color: #fff; padding: 11px 12px; font-weight: 700; font-size: 13px; text-decoration: none; }
+        .nav { background: #232f3e; display: flex; gap: 2px; overflow-x:auto; overflow-y:hidden; white-space: nowrap; padding: 0 8px; position: fixed !important; top:48px; left:0; right:0; width:100%; z-index:9999; box-shadow:0 2px 8px rgba(0,0,0,.15); scrollbar-width:none; -webkit-overflow-scrolling:touch; box-sizing:border-box; }
+        .nav::-webkit-scrollbar { display:none; }
+        .nav a { color: #fff; padding: 11px 10px; font-weight: 700; font-size: 12px; text-decoration: none; white-space:nowrap; flex-shrink:0; }
         .nav a:hover { background: rgba(255, 255, 255, 0.1); }
+        @media(max-width:480px){ .top{padding:10px 12px; gap:8px;} .brand{font-size:18px;} .nav{top:44px; padding:0 6px;} .nav a{font-size:11px; padding:10px 8px;} }
 
         .wrap { max-width: 1100px; margin: auto; display: grid; grid-template-columns: 1fr; gap: 24px; }
         @media(min-width: 768px) { .wrap { grid-template-columns: 1fr 1fr; } }

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- 🚀 REPLICA INJECTOR BOUNDARY PATHWAY AT THE VERY TOP OF ALL FILE TEMPLATES -->
-<html lang="en"class="{% if app_theme == 'night' %}night-theme{% endif %}"></html>
+<html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}">
 
 
 <head>
@@ -56,11 +56,31 @@
             border-color: var(--border-color) !important;
             color: var(--text-main) !important;
         }
-        html{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--uber-gray-light); color: var(--uber-black); margin: 0; padding-top:64px !important; padding-bottom: 40px; min-height:100%; overflow-y:auto; overflow-x:hidden; }
+        html{height:100%;}body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--uber-gray-light); color: var(--uber-black); margin: 0; padding-top:64px !important; padding-top: calc(64px + env(safe-area-inset-top)) !important; padding-bottom: 40px; min-height:100%; overflow-y:auto; overflow-x:hidden; }
         .container { width: 100%; max-width: 1440px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
 
         /* BIZHUB UNIFORM BLACK NAVBAR */
-        .bh-global-header { background: var(--uber-black); color: white; min-height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-sizing: border-box; position: fixed; top: 0; left:0; right:0; width:100%; z-index: 10000; box-shadow:0 2px 12px rgba(0,0,0,.4); border-bottom:2px solid #06C167; }
+        .bh-global-header { 
+            background: var(--uber-black); 
+            color: white; 
+            min-height: 64px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 24px; 
+            box-sizing: border-box; 
+            position: fixed !important;
+            position: -webkit-sticky !important;
+            position: sticky !important;
+            top: 0 !important; 
+            left:0; 
+            right:0; 
+            width:100%; 
+            z-index: 10000; 
+            box-shadow:0 2px 12px rgba(0,0,0,.4); 
+            border-bottom:2px solid #06C167;
+            backdrop-filter: blur(10px);
+        }
         .bh-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: white; font-weight: 900; font-size: 22px; }
         .bh-brand span { color: var(--accent); }
         .bh-nav { display: flex; align-items: center; gap: 8px; }
@@ -689,4 +709,5 @@ main.container {
 <script>firebase.initializeApp(firebaseConfig);</script>
 </body>
 </html>
+
 

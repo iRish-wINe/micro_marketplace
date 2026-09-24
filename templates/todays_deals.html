@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}"></html>
+<html lang="en" class="{% if app_theme == 'night' %}night-theme{% endif %}">
 
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0, viewport-fit=cover">
@@ -40,13 +40,14 @@
             border-color: var(--border-color) !important;
             color: var(--text-main) !important;
         }
-*{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;padding-top:106px !important}
-.bh-global-header{position:fixed;top:0;left:0;right:0;z-index:10000;background:var(--navy);box-shadow:0 2px 12px rgba(0,0,0,.18)}
-.bh-topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px}
-.bh-brand{color:#fff;font-weight:900;font-size:20px;text-decoration:none}.bh-brand span{color:var(--yellow)}
-.bh-location{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid rgba(255,255,255,.2);border-radius:4px;color:#fff}
-.bh-search{display:flex;flex:1;max-width:600px;height:40px;border-radius:5px;overflow:hidden;background:#fff} .bh-search input{border:0;outline:0;flex:1;padding:0 12px} .bh-search button{width:48px;border:0;background:var(--yellow);cursor:pointer}
-.bh-subbar{min-height:42px;background:var(--navy2);display:flex;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none} .bh-subbar a{color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:11px 12px}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;padding-top:96px !important;overflow-x:hidden;}
+.bh-global-header{position:fixed !important;top:0;left:0;right:0;z-index:10000;background:var(--navy);box-shadow:0 2px 12px rgba(0,0,0,.25);width:100%;box-sizing:border-box;border-bottom:2px solid var(--yellow);}
+.bh-topbar{min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;box-sizing:border-box;width:100%;}
+.bh-brand{color:#fff;font-weight:900;font-size:18px;text-decoration:none;white-space:nowrap;flex-shrink:0}.bh-brand span{color:var(--yellow)}
+.bh-location{display:flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid rgba(255,255,255,.2);border-radius:4px;color:#fff;flex-shrink:0}
+.bh-search{display:flex;flex:1;max-width:600px;min-width:0;height:36px;border-radius:5px;overflow:hidden;background:#fff} .bh-search input{border:0;outline:0;flex:1;min-width:0;padding:0 10px;font-size:13px} .bh-search button{width:42px;flex-shrink:0;border:0;background:var(--yellow);cursor:pointer}
+.bh-subbar{min-height:40px;background:var(--navy2);display:flex;align-items:center;gap:2px;padding:0 8px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch;width:100%;box-sizing:border-box} .bh-subbar::-webkit-scrollbar{display:none} .bh-subbar a{color:#fff;text-decoration:none;font-size:12px;font-weight:700;padding:10px 10px;white-space:nowrap;flex-shrink:0}
+@media(max-width:480px){ .bh-topbar{min-height:50px;padding:6px 8px;gap:6px;} .bh-brand{font-size:16px;} .bh-location{padding:4px 6px;font-size:11px;} .bh-search{height:32px;} .bh-subbar a{font-size:11px;padding:9px 8px;} }
 .bh-subbar a.top20{color:#FFD814 !important;border:1px solid #FFD814;border-radius:4px;padding:6px 10px} .bh-subbar a.active{background:#fff;color:#0F1111 !important;border-radius:6px}
 .container{max-width:1200px;margin:20px auto;padding:0 16px}
 .deals-header{font-size:18px;font-weight:900;background:#fff;border:2px solid #FECACA;border-radius:10px;padding:14px 16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(185,28,28,.06)}
@@ -65,15 +66,15 @@
 </head>
 <body>
 <div class="bh-global-header">
-<div class="bh-topbar"><a class="bh-brand" href="/">Biz<span>Hub</span></a><div class="bh-location"><span>⚡</span><div><small style="color:#FEBD69">Today's Deals</small><strong>Lightning Deals</strong></div></div><form class="bh-search" method="GET" action="{{ url_for('promo_marketplace') }}">
-<input type="text" name="q" value="{{ request.args.get('q','') }}" placeholder="Search deals, kitchen, store...">
+<div class="bh-topbar"><a class="bh-brand" href="/">Biz<span>Hub</span></a><div class="bh-location"><span>🔥</span><div><small style="color:#FEBD69">Today's Deals</small><strong>🔥 Donkomi Fie</strong></div></div><form class="bh-search" method="GET" action="{{ url_for('promo_marketplace') }}">
+<input type="text" name="q" value="{{ request.args.get('q','') }}" placeholder="Search Donkomi Fie deals...">
 <button type="submit">🔍</button>
 </form><div style="color:#febd69;font-size:11px;font-weight:700">🛒 {{ cart_count or 0 }}</div></div>
 <nav class="bh-subbar"><a href="/">☰ Marketplace</a><a href="{{ url_for('promo_marketplace') }}" class="active">Today's Deals</a><a href="/top-brands" class="top20">🏆 Top 20</a><a href="{{ url_for('cart_page') }}">🛒 Cart</a></nav>
 </div>
 
 <div class="container">
-<div class="deals-header">⚡ Today's Deals — <span style="color:#06C167">BizHub Kitchens</span> and <span style="color:#CC0C39">BizHub Vendors</span> — Listing videos autoplay • Promo ad = View button only</div>
+<div class="deals-header">🔥 Donkomi Fie 🔥 — <span style="color:#06C167">BizHub Kitchens</span> and <span style="color:#CC0C39">BizHub Vendors</span> </div>
 
 <div class="deals-grid">
 {% for deal in deals or [] %}
@@ -133,7 +134,7 @@
 <div class="card" style="background:#fff;border:1.5px solid {% if deal.is_verified_brand %}#10B981{% else %}#FECACA{% endif %};border-top:4px solid {% if deal.is_verified_brand %}#10B981{% else %}#CC0C39{% endif %};border-radius:10px;padding:10px;display:flex;flex-direction:column;box-shadow:0 2px 8px rgba(185,28,28,.06)">
 <div>
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-<div>{% if deal.is_owner %}<span style="background:#8b5cf6;color:#fff;padding:3px 8px;border-radius:4px;font-size:9px;font-weight:900">Your promo</span>{% else %}<span style="background:#CC0C39;color:#fff;padding:3px 8px;border-radius:4px;font-size:9px;font-weight:900">⚡ Lightning Deal</span>{% endif %}</div>
+<div>{% if deal.is_owner %}<span style="background:#8b5cf6;color:#fff;padding:3px 8px;border-radius:4px;font-size:9px;font-weight:900">Your promo</span>{% else %}<span style="background:#CC0C39;color:#fff;padding:3px 8px;border-radius:4px;font-size:9px;font-weight:900">🔥 Lightning Deal</span>{% endif %}</div>
 <span style="color:#067D62;font-size:8px;font-weight:800;background:#ECFDF5;padding:2px 6px;border-radius:10px">Amazon Choice</span>
 </div>
 <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;background:{% if deal.is_verified_brand %}#ECFDF5{% else %}#F8FAFC{% endif %};padding:5px 7px;border-radius:5px;border:1px solid {% if deal.is_verified_brand %}#A7F3D0{% else %}#E2E8F0{% endif %};flex-wrap:wrap">
@@ -186,14 +187,14 @@
 </div>
 
 <div id="mediaModal" onclick="if(event.target===this)closeMediaModal()"><div class="media-modal-box"><button class="modal-close-x" onclick="closeMediaModal()">✕</button><div id="mediaModalContent"></div></div></div>
-
+<footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--uber-gray-border); text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 600;">
+                  © 2026 BizHub Marketplace · Todays Deals- Donkomi Fie · A Product Of The TOZOTS Company
+        </footer>
 <script>
 function openMediaModal(src,type){const m=document.getElementById('mediaModal'),c=document.getElementById('mediaModalContent');c.innerHTML=type==='video'?`<video controls autoplay playsinline style="max-width:95vw;max-height:85vh"><source src="${src}"></video>`:`<img src="${src}" style="max-width:95vw;max-height:85vh">`;m.classList.add('active');document.body.style.overflow='hidden'}
 function closeMediaModal(){document.getElementById('mediaModal').classList.remove('active');document.getElementById('mediaModalContent').innerHTML='';document.body.style.overflow=''}
 document.addEventListener('DOMContentLoaded',()=>{const s=document.getElementById('bizhub-splash-screen');if(s)setTimeout(()=>{s.style.opacity='0';setTimeout(()=>s.style.display='none',500)},800)})
 </script>
-<footer class="bizhub-contact-footer">
-<div class="footer">© 2026 BizHub Marketplace ·Today's Deals· A Product Of The TOZOTS Company· <a href="/rules" style="color:#E2E8F0;text-decoration:none;">Rules &amp; Regulations</a></div>
-</footer>
+
 </body>
 </html>

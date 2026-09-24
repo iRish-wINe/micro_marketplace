@@ -80,7 +80,7 @@ body{margin:0;background:var(--bg);font-family:'Segoe UI',system-ui,-apple-syste
 <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">{% if session.get('username') %}<span style="font-size:11px;font-weight:700;color:var(--yellow)">👤 {{ session['username'] }}</span>{% else %}<a href="/login" style="color:#fff;font-size:12px;font-weight:700;text-decoration:none">Sign In</a>{% endif %}</div>
 </div>
 <nav class="bh-subbar">
-<a href="javascript:void(0)" onclick="document.getElementById('amazonOverlay').style.display='block'; setTimeout(()=>document.getElementById('amazonDrawer').style.left='0',10); return false;" style="color:#febd69 !important">☰ All</a>
+<a href="{{ url_for('home') }}">☰ Marketplace</a>
 <a href="/">Today's Deals</a>
 <a href="/top-brands" class="top20">🏆 Top 20 Brands</a>
 <a href="/all-stores">All Stores</a>
